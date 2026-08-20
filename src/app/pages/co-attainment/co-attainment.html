@@ -1,0 +1,128 @@
+<app-navbar></app-navbar>
+
+<div class="container">
+  <app-sidebar></app-sidebar>
+
+  <div class="content">
+    <div class="page-header">
+      <div class="header-title">
+        <h1>📊 CO Attainment Analysis</h1>
+        <p>Track and analyze course outcome achievement against targets</p>
+      </div>
+      <button class="btn btn-primary" (click)="exportToCSV()">📥 Export CSV</button>
+    </div>
+
+    <!-- Overall Achievement Card -->
+    <div class="overall-card">
+      <div class="overall-content">
+        <h2>Overall CO Achievement</h2>
+        <div class="overall-value">{{ overallAchievement }}%</div>
+        <p>Average achievement across all course outcomes</p>
+      </div>
+      <div class="overall-chart">
+        <div class="progress-ring">
+          <svg viewBox="0 0 100 100" class="ring-svg">
+            <circle cx="50" cy="50" r="45" class="ring-bg"></circle>
+            <circle cx="50" cy="50" r="45" class="ring-progress" 
+              [style.strokeDashoffset]="282.7 - (overallAchievement / 100) * 282.7"></circle>
+          </svg>
+          <div class="ring-text">{{ overallAchievement }}%</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Stats Grid -->
+    <div class="stats-grid">
+      <div class="stat-card achieved">
+        <div class="stat-number">{{ getAchievedCount() }}</div>
+        <div class="stat-label">Achieved (≥{{ targetPercentage }}%)</div>
+      </div>
+      <div class="stat-card partial">
+        <div class="stat-number">{{ getPartialCount() }}</div>
+        <div class="stat-label">Partial (50-{{ targetPercentage }}%)</div>
+      </div>
+      <div class="stat-card not-achieved">
+        <div class="stat-number">{{ getNotAchievedCount() }}</div>
+        <div class="stat-label">Not Achieved (<50%)</div>
+      </div>
+    </div>
+
+    <!-- Search and Filter -->
+    <div class="toolbar">
+      <div class="search-box">
+        <input 
+          type="text" 
+          placeholder="🔍 Search by CO code or description..."
+          [(ngModel)]="searchQuery"
+          (input)="onSearchChange()"
+          class="search-input"
+        />
+      </div>
+      <select 
+        [(ngModel)]="filterStatus"
+        (change)="onFilterChange()"
+        class="filter-select"
+      >
+        <option value="">All Status</option>
+        <option value="Achieved">Achieved</option>
+        <option value="Partial">Partial</option>
+        <option value="Not Achieved">Not Achieved</option>
+      </select>
+    </div>
+
+    <!-- CO Attainment Cards -->
+    <div class="attainment-grid">
+      <div *ngIf="filteredAttainments.length === 0" class="empty-state">
+        <p>📭 No course outcomes found</p>
+        <p class="hint">Create course outcomes and assessments to view attainment analysis</p>
+      </div>
+
+      <div *ngFor="let co of filteredAttainments" class="attainment-card">
+        <div class="card-header">
+          <div class="co-info">
+            <h3>{{ co.code }}</h3>
+            <p>{{ co.description }}</p>
+          </div>
+          <div class="status-badge" [style.backgroundColor]="getStatusBgColor(co.status)" [style.color]="getStatusColor(co.status)">
+            {{ co.status }}
+          </div>
+        </div>
+
+        <div class="card-body">
+          <div class="achievement-display">
+            <div class="achievement-value">{{ co.achievement }}%</div>
+            <div class="target-value">Target: {{ co.targetPercentage }}%</div>
+          </div>
+
+          <div class="progress-bar-container">
+            <div class="progress-bar">
+              <div class="progress-fill" 
+                [style.width]="getProgressWidth(co.achievement) + '%'"
+                [style.backgroundColor]="getStatusColor(co.status)"></div>
+            </div>
+            <div class="progress-labels">
+              <span>0%</span>
+              <span>50%</span>
+              <span>{{ co.targetPercentage }}%</span>
+              <span>100%</span>
+            </div>
+          </div>
+
+          <div class="co-stats">
+            <div class="stat">
+              <span class="stat-label">Assessments</span>
+              <span class="stat-value">{{ co.assessmentCount }}</span>
+            </div>
+            <div class="stat">
+              <span class="stat-label">Students</span>
+              <span class="stat-value">{{ co.studentCount }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<app-footer></app-footer>

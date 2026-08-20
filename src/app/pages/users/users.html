@@ -1,0 +1,53 @@
+<app-navbar></app-navbar>
+
+<div class="container">
+
+  <app-sidebar></app-sidebar>
+
+  <div class="content">
+
+    <div class="page-header">
+      <h1>👥 Users Management</h1>
+      <p>Manage faculty and student accounts, with add/edit/delete/search actions.</p>
+    </div>
+
+    <div class="users-actions">
+      <button mat-button class="action-button" [class.active]="selectedTab === 'faculty'" (click)="toggleTab('faculty')">Faculty</button>
+      <button mat-button class="action-button" [class.active]="selectedTab === 'students'" (click)="toggleTab('students')">Students</button>
+      <button mat-button class="primary">Add {{ selectedTab === 'faculty' ? 'Faculty' : 'Student' }}</button>
+      <button mat-button>Search {{ selectedTab === 'faculty' ? 'Faculty' : 'Student' }}</button>
+    </div>
+
+    <div class="users-table-card">
+      <table>
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Name</th>
+            <th>Email</th>
+            <th>Role</th>
+            <th>Department</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let user of currentUsers">
+            <td>{{ user.id }}</td>
+            <td>{{ user.name }}</td>
+            <td>{{ user.email }}</td>
+            <td>{{ user.role }}</td>
+            <td>{{ user.department }}</td>
+            <td>
+              <button mat-button>Edit</button>
+              <button mat-button color="warn">Delete</button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+  </div>
+
+</div>
+
+<app-footer></app-footer>

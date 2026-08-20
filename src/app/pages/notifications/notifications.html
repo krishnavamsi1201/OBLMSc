@@ -1,0 +1,117 @@
+<app-navbar></app-navbar>
+
+<div class="container">
+  <app-sidebar></app-sidebar>
+
+  <div class="content">
+    <div class="page-header">
+      <div class="header-title">
+        <h1>🔔 Notifications</h1>
+        <p>System notifications and alerts</p>
+      </div>
+      <div class="header-actions">
+        <button class="btn btn-secondary" *ngIf="getUnreadCount() > 0" (click)="markAllAsRead()">Mark All as Read</button>
+        <button class="btn btn-secondary" *ngIf="allNotifications.some(n => n.isRead)" (click)="deleteAllRead()">Delete Read</button>
+      </div>
+    </div>
+
+    <!-- Unread Badge -->
+    <div *ngIf="getUnreadCount() > 0" class="unread-badge">
+      <span class="badge-content">{{ getUnreadCount() }} unread notification(s)</span>
+    </div>
+
+    <!-- Filters -->
+    <div class="toolbar">
+      <div class="search-box">
+        <input 
+          type="text" 
+          placeholder="🔍 Search notifications..."
+          [(ngModel)]="searchQuery"
+          (input)="onSearchChange()"
+          class="search-input"
+        />
+      </div>
+      <select 
+        [(ngModel)]="filterType"
+        (change)="onFilterChange()"
+        class="filter-select"
+      >
+        <option *ngFor="let type of notificationTypes" [value]="type.value">{{ type.label }}</option>
+      </select>
+      <select 
+        [(ngModel)]="filterStatus"
+        (change)="onFilterChange()"
+        class="filter-select"
+      >
+        <option value="">All Status</option>
+        <option value="unread">Unread</option>
+        <option value="read">Read</option>
+      </select>
+    </div>
+
+    <!-- Notifications List -->
+    <div class="notifications-list">
+      <div *ngIf="filteredNotifications.length === 0" class="empty-state">
+        <p>📭 No notifications</p>
+      </div>
+
+      <div *ngFor="let notif of filteredNotifications" 
+        class="notification-item"
+        [class.unread]="!notif.isRead"
+        [style.borderLeftColor]="getTypeColor(notif.type)">
+        
+        <div class="notif-icon">{{ getTypeIcon(notif.type) }}</div>
+
+        <div class="notif-content">
+          <div class="notif-header">
+            <h3>{{ notif.title }}</h3>
+            <span class="type-badge" [style.backgroundColor]="getTypeColor(notif.type)">
+              {{ notif.type | uppercase }}
+            </span>
+          </div>
+          <p class="notif-message">{{ notif.message }}</p>
+          <div class="notif-meta">
+            <span class="time">🕐 {{ getTimeAgo(notif.timestamp) }}</span>
+            <span *ngIf="notif.relatedData" class="related" [attr.data-type]="notif.relatedData.type">
+              {{ notif.relatedData.type | titlecase }}
+            </span>
+          </div>
+        </div>
+
+        <div class="notif-actions">
+          <button 
+            *ngIf="notif.actionUrl"
+            class="btn-action action-link"
+            [routerLink]="notif.actionUrl"
+            title="Open related page">
+            🔗
+          </button>
+          <button 
+            *ngIf="!notif.isRead"
+            class="btn-action action-read"
+            (click)="markAsRead(notif)"
+            title="Mark as read"
+            class="tooltip">
+            ✓
+          </button>
+          <button 
+            *ngIf="notif.isRead"
+            class="btn-action action-unread"
+            (click)="markAsUnread(notif)"
+            title="Mark as unread">
+            ◯
+          </button>
+          <button 
+            class="btn-action action-delete"
+            (click)="deleteNotification(notif.id)"
+            title="Delete notification">
+            ✕
+          </button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<app-footer></app-footer>

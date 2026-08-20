@@ -1,0 +1,25 @@
+<app-navbar></app-navbar>
+
+<div class="container">
+
+  <app-sidebar></app-sidebar>
+
+  <div class="content">
+
+    <div class="page-header">
+      <h1>⚙️ Settings</h1>
+      <p>Manage profile, security, and system configuration from a single dashboard.</p>
+    </div>
+
+    <div class="settings-grid">
+      <a class="settings-card" *ngFor="let card of settingsCards" [routerLink]="card.route">
+        <h3>{{ card.title }}</h3>
+        <p>{{ card.description }}</p>
+      </a>
+    </div>
+
+  </div>
+
+</div>
+
+<app-footer></app-footer>

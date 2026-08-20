@@ -1,0 +1,156 @@
+<app-navbar></app-navbar>
+
+<div class="container">
+  <app-sidebar></app-sidebar>
+
+  <div class="content">
+    <div class="page-header">
+      <div class="header-title">
+        <h1>🎓 Student Management</h1>
+        <p>Manage student records, enrollment, and academic information</p>
+      </div>
+      <button class="btn btn-primary" (click)="openAddForm()">+ Add Student</button>
+    </div>
+
+    <!-- Search and Filter Bar -->
+    <div class="toolbar">
+      <div class="search-box">
+        <input 
+          type="text" 
+          placeholder="🔍 Search by name, email or reg no..." 
+          [(ngModel)]="searchQuery"
+          (input)="onSearchChange()"
+          class="search-input"
+        />
+      </div>
+      <select 
+        [(ngModel)]="filterDepartment"
+        (change)="onFilterChange()"
+        class="filter-select"
+      >
+        <option value="">All Departments</option>
+        <option *ngFor="let dept of departments" [value]="dept">{{ dept }}</option>
+      </select>
+      <select 
+        [(ngModel)]="filterSemester"
+        (change)="onFilterChange()"
+        class="filter-select"
+      >
+        <option value="">All Semesters</option>
+        <option *ngFor="let sem of semesters" [value]="sem">{{ sem }}</option>
+      </select>
+    </div>
+
+    <!-- Add/Edit Form Modal -->
+    <div class="modal" *ngIf="showForm" [@fadeInOut]>
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2>{{ isEditMode ? 'Edit Student' : 'Add New Student' }}</h2>
+          <button class="close-btn" (click)="closeForm()">✕</button>
+        </div>
+
+        <form (ngSubmit)="saveStudent()" class="student-form">
+          <div class="form-group">
+            <label>Register Number *</label>
+            <input 
+              type="text" 
+              [(ngModel)]="formData.regNo" 
+              name="regNo"
+              placeholder="Enter registration number"
+              required
+            />
+          </div>
+
+          <div class="form-group">
+            <label>Name *</label>
+            <input 
+              type="text" 
+              [(ngModel)]="formData.name" 
+              name="name"
+              placeholder="Enter student name"
+              required
+            />
+          </div>
+
+          <div class="form-group">
+            <label>Email *</label>
+            <input 
+              type="email" 
+              [(ngModel)]="formData.email" 
+              name="email"
+              placeholder="Enter email address"
+              required
+            />
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label>Department *</label>
+              <select [(ngModel)]="formData.department" name="department" required>
+                <option value="">Select Department</option>
+                <option *ngFor="let dept of departments" [value]="dept">{{ dept }}</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label>Semester *</label>
+              <select [(ngModel)]="formData.semester" name="semester" required>
+                <option value="">Select Semester</option>
+                <option *ngFor="let sem of semesters" [value]="sem">{{ sem }}</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-actions">
+            <button type="button" class="btn btn-secondary" (click)="closeForm()">Cancel</button>
+            <button type="submit" class="btn btn-primary">{{ isEditMode ? 'Update' : 'Add' }} Student</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Table Section -->
+    <div class="table-section">
+      <div class="table-header">
+        <h3>Student List ({{ filteredStudentList.length }})</h3>
+      </div>
+
+      <div *ngIf="filteredStudentList.length === 0" class="empty-state">
+        <p>📭 No students found. Start by adding your first student.</p>
+        <button class="btn btn-primary" (click)="openAddForm()">+ Add Student</button>
+      </div>
+
+      <div *ngIf="filteredStudentList.length > 0" class="table-wrapper">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Reg No</th>
+              <th>Name</th>
+              <th>Semester</th>
+              <th>Department</th>
+              <th>Email</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let student of filteredStudentList">
+              <td class="student-regno">{{ student.regNo }}</td>
+              <td class="student-name">{{ student.name }}</td>
+              <td><span class="badge badge-semester">{{ student.semester }}</span></td>
+              <td><span class="badge badge-dept">{{ student.department }}</span></td>
+              <td class="student-email">{{ student.email }}</td>
+              <td class="actions-cell">
+                <button class="btn-icon btn-edit" (click)="openEditForm(student)" title="Edit">✎</button>
+                <button class="btn-icon btn-delete" (click)="deleteStudent(student.id)" title="Delete">🗑️</button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
+
+</div>
+
+<app-footer></app-footer>

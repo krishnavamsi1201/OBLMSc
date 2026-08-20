@@ -1,0 +1,148 @@
+<app-navbar></app-navbar>
+
+<div class="container">
+	<app-sidebar></app-sidebar>
+	<div class="content">
+		<div class="page-header">
+			<h1>🧠 Question Bank</h1>
+			<p>View, create, and manage outcomes-aligned questions for assessments.</p>
+		</div>
+
+		<div *ngIf="isLoading" class="loading-spinner">
+			<p>Loading question bank...</p>
+		</div>
+
+		<div *ngIf="!isLoading">
+			<!-- Actions Bar -->
+			<div class="actions-bar" *ngIf="role === 'admin' || role === 'faculty'">
+				<button class="btn btn-primary" (click)="openQuestionForm()">➕ Create Question</button>
+			</div>
+
+			<!-- Add/Edit Question Form -->
+			<div class="form-card" *ngIf="showQuestionForm">
+				<h2>{{ editIndex >= 0 ? 'Edit Question Details' : 'Add New Question to Bank' }}</h2>
+				<form (ngSubmit)="saveQuestion()">
+					<div class="grid-row">
+						<label>
+							Subject / Course Name
+							<input type="text" name="subject" [(ngModel)]="currentQuestion.subject" placeholder="e.g. Database Management Systems" required />
+						</label>
+						<label>
+							Mapped Course Outcome (CO)
+							<select name="coMapped" [(ngModel)]="currentQuestion.coMapped" required>
+								<option value="CO1">CO1 - Remember & Understand</option>
+								<option value="CO2">CO2 - Apply</option>
+								<option value="CO3">CO3 - Analyze</option>
+								<option value="CO4">CO4 - Evaluate</option>
+								<option value="CO5">CO5 - Create</option>
+							</select>
+						</label>
+					</div>
+					<div class="grid-row">
+						<label>
+							Question Type
+							<select name="type" [(ngModel)]="currentQuestion.type" required>
+								<option value="MCQ">Multiple Choice Question (MCQ)</option>
+								<option value="Short Answer">Short Answer</option>
+								<option value="Essay">Essay</option>
+							</select>
+						</label>
+						<label>
+							Difficulty Level
+							<select name="difficulty" [(ngModel)]="currentQuestion.difficulty" required>
+								<option value="Easy">Easy</option>
+								<option value="Medium">Medium</option>
+								<option value="Hard">Hard</option>
+							</select>
+						</label>
+						<label>
+							Marks Allocation
+							<input type="number" name="marks" [(ngModel)]="currentQuestion.marks" min="1" required />
+						</label>
+					</div>
+					<div class="grid-row">
+						<label style="grid-column: span 3;">
+							Question Text
+							<textarea name="questionText" [(ngModel)]="currentQuestion.questionText" placeholder="Enter the complete question here..." rows="3" required></textarea>
+						</label>
+					</div>
+					<div class="form-actions">
+						<button type="submit" class="btn btn-success">{{ editIndex >= 0 ? 'Save Edits' : 'Add to Bank' }}</button>
+						<button type="button" class="btn btn-secondary" (click)="closeQuestionForm()">Cancel</button>
+					</div>
+				</form>
+			</div>
+
+			<!-- Filters Card -->
+			<div class="filter-card">
+				<div class="filters-container">
+					<label class="filter-input">
+						Search Questions:
+						<input type="text" [(ngModel)]="searchTerm" (input)="applyFilters()" placeholder="Search text or mapped CO..." />
+					</label>
+					<label class="filter-select">
+						Filter by Subject:
+						<select [(ngModel)]="subjectFilter" (change)="applyFilters()">
+							<option value="">All Subjects</option>
+							<option *ngFor="let sub of subjectsList" [value]="sub">{{ sub }}</option>
+						</select>
+					</label>
+					<label class="filter-select">
+						Filter by Difficulty:
+						<select [(ngModel)]="difficultyFilter" (change)="applyFilters()">
+							<option value="">All Difficulties</option>
+							<option value="Easy">Easy</option>
+							<option value="Medium">Medium</option>
+							<option value="Hard">Hard</option>
+						</select>
+					</label>
+					<label class="filter-select">
+						Filter by Type:
+						<select [(ngModel)]="typeFilter" (change)="applyFilters()">
+							<option value="">All Types</option>
+							<option value="MCQ">MCQ</option>
+							<option value="Short Answer">Short Answer</option>
+							<option value="Essay">Essay</option>
+						</select>
+					</label>
+				</div>
+			</div>
+
+			<!-- Questions Grid -->
+			<div class="qb-container">
+				<div class="questions-grid" *ngIf="filteredQuestions.length > 0">
+					<div class="question-card" *ngFor="let q of filteredQuestions">
+						<div class="card-badges">
+							<span class="badge diff-badge" [class.easy]="q.difficulty === 'Easy'" [class.medium]="q.difficulty === 'Medium'" [class.hard]="q.difficulty === 'Hard'">
+								{{ q.difficulty }}
+							</span>
+							<span class="badge type-badge">{{ q.type }}</span>
+							<span class="badge marks-badge">{{ q.marks }} Marks</span>
+						</div>
+						
+						<div class="card-body">
+							<p class="question-text">{{ q.questionText }}</p>
+							<div class="metadata-footer">
+								<span><strong>Subject:</strong> {{ q.subject }}</span>
+								<span class="co-badge">{{ q.coMapped }}</span>
+							</div>
+						</div>
+						
+						<div class="card-footer" *ngIf="role === 'admin' || role === 'faculty'">
+							<button class="btn btn-edit" (click)="editQuestion(q)">Edit</button>
+							<button class="btn btn-delete" (click)="deleteQuestion(q)">Delete</button>
+						</div>
+					</div>
+				</div>
+
+				<div class="empty-state" *ngIf="filteredQuestions.length === 0">
+					<h3>No questions found</h3>
+					<p>Create a new question or modify the search filters.</p>
+				</div>
+			</div>
+
+		</div>
+	</div>
+</div>
+
+<app-footer></app-footer>

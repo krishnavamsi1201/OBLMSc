@@ -1,0 +1,148 @@
+<app-navbar></app-navbar>
+
+<div class="container">
+  <app-sidebar></app-sidebar>
+
+  <div class="content">
+    <div class="page-header">
+      <div class="header-title">
+        <h1>👨‍🏫 Faculty Course Allocation</h1>
+        <p>Assign faculty to courses and subjects</p>
+      </div>
+      <button class="btn btn-primary" (click)="openAddForm()">+ Allocate Faculty</button>
+    </div>
+
+    <!-- Search and Filter Bar -->
+    <div class="toolbar">
+      <div class="search-box">
+        <input 
+          type="text" 
+          placeholder="🔍 Search by faculty, course or subject..." 
+          [(ngModel)]="searchQuery"
+          (input)="onSearchChange()"
+          class="search-input"
+        />
+      </div>
+      <select 
+        [(ngModel)]="filterCourse"
+        (change)="onFilterChange()"
+        class="filter-select"
+      >
+        <option value="">All Courses</option>
+        <option *ngFor="let course of courseList" [value]="course.id">{{ course.name }}</option>
+      </select>
+      <select 
+        [(ngModel)]="filterFaculty"
+        (change)="onFilterChange()"
+        class="filter-select"
+      >
+        <option value="">All Faculty</option>
+        <option *ngFor="let faculty of facultyList" [value]="faculty.id">{{ faculty.name }}</option>
+      </select>
+    </div>
+
+    <!-- Add/Edit Form Modal -->
+    <div class="modal" *ngIf="showForm" [@fadeInOut]>
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2>{{ isEditMode ? 'Edit Allocation' : 'Allocate Faculty to Course' }}</h2>
+          <button class="close-btn" (click)="closeForm()">✕</button>
+        </div>
+
+        <form (ngSubmit)="saveAllocation()" class="allocation-form">
+          <div class="form-group">
+            <label>Faculty *</label>
+            <select [(ngModel)]="formData.facultyId" name="facultyId" required>
+              <option value="">Select Faculty</option>
+              <option *ngFor="let faculty of facultyList" [value]="faculty.id">
+                {{ faculty.name }}
+              </option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label>Course *</label>
+            <select 
+              [(ngModel)]="formData.courseId" 
+              name="courseId"
+              (change)="onCourseChange()"
+              required
+            >
+              <option value="">Select Course</option>
+              <option *ngFor="let course of courseList" [value]="course.id">
+                {{ course.name }} ({{ course.code }})
+              </option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label>Subject *</label>
+            <select [(ngModel)]="formData.subjectId" name="subjectId" required>
+              <option value="">Select Subject</option>
+              <option *ngFor="let subject of availableSubjects" [value]="subject.subjectId">
+                {{ subject.subjectName }} ({{ subject.subjectId }})
+              </option>
+            </select>
+            <small *ngIf="availableSubjects.length === 0" style="color: #e74c3c;">
+              Please select a course first to see available subjects
+            </small>
+          </div>
+
+          <div class="form-group">
+            <label>Semester</label>
+            <select [(ngModel)]="formData.semester" name="semester">
+              <option *ngFor="let sem of semesters" [value]="sem">{{ sem }}</option>
+            </select>
+          </div>
+
+          <div class="form-actions">
+            <button type="button" class="btn btn-secondary" (click)="closeForm()">Cancel</button>
+            <button type="submit" class="btn btn-primary">{{ isEditMode ? 'Update' : 'Allocate' }}</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Table Section -->
+    <div class="table-section">
+      <div class="table-header">
+        <h3>Faculty Allocations ({{ filteredAllocationList.length }})</h3>
+      </div>
+
+      <div *ngIf="filteredAllocationList.length === 0" class="empty-state">
+        <p>📭 No allocations found. Start by allocating faculty to courses and subjects.</p>
+        <button class="btn btn-primary" (click)="openAddForm()">+ Allocate Faculty</button>
+      </div>
+
+      <div *ngIf="filteredAllocationList.length > 0" class="table-wrapper">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Faculty</th>
+              <th>Course</th>
+              <th>Subject</th>
+              <th>Semester</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let allocation of filteredAllocationList">
+              <td class="faculty-name">{{ allocation.facultyName }}</td>
+              <td class="course-name">{{ allocation.courseName }}</td>
+              <td class="subject-name">{{ allocation.subjectName }}</td>
+              <td class="semester"><span class="badge badge-semester">{{ allocation.semester }}</span></td>
+              <td class="actions-cell">
+                <button class="btn-icon btn-edit" (click)="openEditForm(allocation)" title="Edit">✎</button>
+                <button class="btn-icon btn-delete" (click)="deleteAllocation(allocation.id)" title="Delete">🗑️</button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
+
+</div>
+
+<app-footer></app-footer>

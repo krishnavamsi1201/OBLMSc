@@ -1,0 +1,115 @@
+<div class="login-scene">
+  <div class="bg-glow glow-one"></div>
+  <div class="bg-glow glow-two"></div>
+  
+  <!-- Education Illustrations -->
+  <div class="login-scene-illustration illus-1">🎓</div>
+  <div class="login-scene-illustration illus-2">📚</div>
+  <div class="login-scene-illustration illus-3">👥</div>
+  <div class="login-scene-illustration illus-4">📊</div>
+  <div class="login-scene-illustration illus-5">✨</div>
+
+  <main class="login-shell">
+    <section class="login-panel glass-panel" aria-label="Login form">
+      <div class="logo-branding">
+        <div class="logo-icon">🎓</div>
+        <h2 class="logo-text">OBLMS Logo</h2>
+        <p class="logo-tagline">Outcome-Based Learning Management System</p>
+      </div>
+
+      <div class="panel-header-icon">
+        <span class="grad-cap"></span>
+      </div>
+
+      <h1>Welcome Back!</h1>
+      <p class="subtitle">Sign in to continue to your account</p>
+
+      <form (ngSubmit)="login()" #loginForm="ngForm" novalidate>
+        <label class="field">
+          <span class="field-icon email-icon"></span>
+          <input type="email" name="email" placeholder="Email Address" required [(ngModel)]="email" />
+        </label>
+
+        <label class="field password-field">
+          <span class="field-icon password-icon"></span>
+          <input 
+            [type]="showPassword ? 'text' : 'password'" 
+            name="password" 
+            placeholder="Password" 
+            required 
+            [(ngModel)]="password" 
+          />
+          <button 
+            type="button" 
+            class="password-toggle" 
+            (click)="togglePasswordVisibility()"
+            [attr.aria-label]="showPassword ? 'Hide password' : 'Show password'"
+          >
+            {{ showPassword ? '👁️' : '👁️‍🗨️' }}
+          </button>
+        </label>
+
+        <label class="field select-field">
+          <span class="field-icon user-icon"></span>
+          <select name="role" required [(ngModel)]="role">
+            <option value="" disabled selected>Select Role</option>
+            <option value="admin">Admin</option>
+            <option value="faculty">Faculty</option>
+            <option value="student">Student</option>
+          </select>
+        </label>
+
+        <div class="meta-row">
+          <label class="check-wrap">
+            <input type="checkbox" checked />
+            <span>Remember me</span>
+          </label>
+          <a href="#">Forgot Password?</a>
+        </div>
+
+        <button type="submit" class="primary-button" [disabled]="!loginForm.form.valid">
+          <span>Sign In</span>
+          <span class="arrow">→</span>
+        </button>
+      </form>
+    </section>
+
+    <!-- Statistics Section -->
+    <section class="stats-panel glass-panel">
+      <div class="stat-item">
+        <span class="stat-icon">✓</span>
+        <div class="stat-content">
+          <span class="stat-label">Courses</span>
+          <span class="stat-value">25</span>
+        </div>
+      </div>
+      <div class="stat-item">
+        <span class="stat-icon">✓</span>
+        <div class="stat-content">
+          <span class="stat-label">Faculty</span>
+          <span class="stat-value">18</span>
+        </div>
+      </div>
+      <div class="stat-item">
+        <span class="stat-icon">✓</span>
+        <div class="stat-content">
+          <span class="stat-label">Students</span>
+          <span class="stat-value">350</span>
+        </div>
+      </div>
+      <div class="stat-item">
+        <span class="stat-icon">✓</span>
+        <div class="stat-content">
+          <span class="stat-label">Outcomes</span>
+          <span class="stat-value">120</span>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Footer -->
+  <footer class="login-footer">
+    <p>© 2026 Outcome-Based Learning Management System</p>
+    <p>Department of CSE</p>
+  </footer>
+</div>

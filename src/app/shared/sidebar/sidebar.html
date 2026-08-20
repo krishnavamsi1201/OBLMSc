@@ -1,0 +1,20 @@
+<div class="sidebar" [class.collapsed]="collapsed" #sidebarRef (scroll)="saveScrollPosition()">
+
+    <div class="sidebar-top">
+        <div class="logo">
+            <h2>🎓</h2>
+            <p *ngIf="!collapsed">OBLMS</p>
+        </div>
+        <button type="button" class="collapse-toggle" (click)="toggleCollapse()" aria-label="Toggle navigation">
+            <span>{{ collapsed ? '»' : '«' }}</span>
+        </button>
+    </div>
+
+    <div class="nav-group">
+        <span class="group-title" *ngIf="!collapsed">Navigation</span>
+        <button mat-button *ngFor="let item of navItems" [routerLink]="item.path" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: item.exact === true }">
+            <span class="icon">{{ item.icon }}</span>
+            <span class="label" *ngIf="!collapsed">{{ item.label }}</span>
+        </button>
+    </div>
+</div>

@@ -1,0 +1,148 @@
+<app-navbar></app-navbar>
+
+<div class="container">
+	<app-sidebar></app-sidebar>
+	<div class="content">
+		<div class="page-header">
+			<h1>📩 Grievance Desk</h1>
+			<p>Submit complaints, track resolve tickets, and manage student feedback.</p>
+		</div>
+
+		<div *ngIf="isLoading" class="loading-spinner">
+			<p>Loading grievance records...</p>
+		</div>
+
+		<div *ngIf="!isLoading">
+			
+			<!-- Student form to file a grievance -->
+			<div class="form-card" *ngIf="role === 'student'">
+				<h2>Submit a Grievance</h2>
+				<form (ngSubmit)="submitGrievance()">
+					<div class="grid-row">
+						<label>
+							Category
+							<select name="category" [(ngModel)]="newGrievance.category" required>
+								<option value="Academics">Academics</option>
+								<option value="Attendance">Attendance</option>
+								<option value="Examinations">Examinations</option>
+								<option value="Infrastructure">Infrastructure</option>
+								<option value="Technical Support">Technical Support</option>
+								<option value="Other">Other</option>
+							</select>
+						</label>
+						<label>
+							Title / Subject
+							<input type="text" name="title" [(ngModel)]="newGrievance.title" placeholder="Brief subject of the complaint" required />
+						</label>
+					</div>
+					<div class="grid-row">
+						<label style="grid-column: span 2;">
+							Details
+							<textarea name="description" [(ngModel)]="newGrievance.description" placeholder="Explain the grievance details..." rows="4" required></textarea>
+						</label>
+					</div>
+					<div class="form-actions">
+						<button type="submit" class="btn btn-primary">Submit Ticket</button>
+					</div>
+				</form>
+			</div>
+
+			<!-- Faculty / Admin Update Action Card -->
+			<div class="form-card" *ngIf="selectedGrievance">
+				<h2>Resolve Grievance #{{ selectedGrievance.id }}</h2>
+				<p><strong>Student:</strong> {{ selectedGrievance.studentName }}</p>
+				<p><strong>Title:</strong> {{ selectedGrievance.title }}</p>
+				<p><strong>Description:</strong> {{ selectedGrievance.description }}</p>
+				<form (ngSubmit)="saveStatusUpdate()">
+					<div class="grid-row">
+						<label>
+							Update Status
+							<select name="status" [(ngModel)]="updateStatus" required>
+								<option value="Open">Open</option>
+								<option value="In Review">In Review</option>
+								<option value="Resolved">Resolved</option>
+							</select>
+						</label>
+						<label>
+							Resolution Comments
+							<input type="text" name="resolution" [(ngModel)]="resolutionText" placeholder="Action taken..." />
+						</label>
+					</div>
+					<div class="form-actions">
+						<button type="submit" class="btn btn-success">Save Update</button>
+						<button type="button" class="btn btn-secondary" (click)="closeUpdateModal()">Cancel</button>
+					</div>
+				</form>
+			</div>
+
+			<!-- Filters Bar -->
+			<div class="filter-card">
+				<div class="filters-container">
+					<label class="filter-select">
+						Filter by Status:
+						<select [(ngModel)]="statusFilter" (change)="applyFilters()">
+							<option value="">All Statuses</option>
+							<option value="Open">Open</option>
+							<option value="In Review">In Review</option>
+							<option value="Resolved">Resolved</option>
+						</select>
+					</label>
+					<label class="filter-select">
+						Filter by Category:
+						<select [(ngModel)]="categoryFilter" (change)="applyFilters()">
+							<option value="">All Categories</option>
+							<option value="Academics">Academics</option>
+							<option value="Attendance">Attendance</option>
+							<option value="Examinations">Examinations</option>
+							<option value="Infrastructure">Infrastructure</option>
+							<option value="Technical Support">Technical Support</option>
+							<option value="Other">Other</option>
+						</select>
+					</label>
+				</div>
+			</div>
+
+			<!-- Grievances List Container -->
+			<div class="grievance-container">
+				<h2 class="section-title">{{ role === 'student' ? 'My Submitted Tickets' : 'Student Grievance Tickets' }}</h2>
+				
+				<div class="grievance-list" *ngIf="filteredGrievances.length > 0">
+					<div class="grievance-card" *ngFor="let item of filteredGrievances">
+						<div class="grievance-header">
+							<div>
+								<span class="category-badge">{{ item.category }}</span>
+								<h3>{{ item.title }}</h3>
+							</div>
+							<span class="status-badge" [class.open]="item.status === 'Open'" [class.review]="item.status === 'In Review'" [class.resolved]="item.status === 'Resolved'">
+								{{ item.status }}
+							</span>
+						</div>
+						
+						<div class="grievance-body">
+							<p class="description">{{ item.description }}</p>
+							<div class="meta">
+								<span *ngIf="role !== 'student'"><strong>Submitted by:</strong> {{ item.studentName }} | </span>
+								<span><strong>Date:</strong> {{ item.date | date:'medium' }}</span>
+							</div>
+							<div class="resolution-box" *ngIf="item.resolution">
+								<strong>Resolution Remarks:</strong> {{ item.resolution }}
+							</div>
+						</div>
+						
+						<div class="grievance-footer" *ngIf="role === 'admin' || role === 'faculty'">
+							<button class="btn btn-edit" (click)="openUpdateModal(item)">Resolve Ticket</button>
+						</div>
+					</div>
+				</div>
+
+				<div class="empty-state" *ngIf="filteredGrievances.length === 0">
+					<h3>No grievances found</h3>
+					<p>There are no grievances registered matching the filters.</p>
+				</div>
+			</div>
+
+		</div>
+	</div>
+</div>
+
+<app-footer></app-footer>

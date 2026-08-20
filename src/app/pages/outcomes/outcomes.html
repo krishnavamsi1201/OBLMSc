@@ -1,0 +1,120 @@
+<app-navbar></app-navbar>
+
+<div class="container">
+
+    <app-sidebar></app-sidebar>
+
+    <div class="content">
+
+        <div class="page-header">
+            <h1>🎯 Outcomes</h1>
+            <p>Manage Course Outcomes and align them to program objectives.</p>
+        </div>
+
+        <div class="summary-grid">
+            <div class="section-card">
+                <h3>Active COs</h3>
+                <strong>{{ activeCount }}</strong>
+                <p>Course outcomes currently tracked for this semester.</p>
+            </div>
+            <div class="section-card">
+                <h3>COs under review</h3>
+                <strong>{{ reviewCount }}</strong>
+                <p>Outcomes requiring updates or approval.</p>
+            </div>
+            <div class="section-card">
+                <h3>Available Courses</h3>
+                <strong>{{ courses.length }}</strong>
+                <p>Courses with outcome mappings configured.</p>
+            </div>
+        </div>
+
+        <div style="display:flex; justify-content:space-between; align-items:center; gap:16px; flex-wrap:wrap; margin-bottom:18px;">
+            <div>
+                <button mat-raised-button color="primary" (click)="startAdd('CO')">Create CO</button>
+                <button mat-raised-button color="accent" (click)="startAdd('PO')">Create PO</button>
+                <button mat-stroked-button color="accent" (click)="toggleList()">View Outcome List</button>
+            </div>
+            <span style="color:var(--text-secondary);">Admin and faculty can create and edit outcomes.</span>
+        </div>
+
+        <div class="table-card">
+            <h2>Outcome Management</h2>
+            <form *ngIf="role === 'faculty' || role === 'admin'" style="display:grid; gap:18px; margin-bottom:24px; max-width:840px;">
+                <div style="display:grid; gap:12px; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));">
+                    <mat-form-field appearance="outline">
+                        <mat-label>Outcome Type</mat-label>
+                        <mat-select [(ngModel)]="currentOutcome.type" name="type">
+                            <mat-option value="CO">CO</mat-option>
+                            <mat-option value="PO">PO</mat-option>
+                        </mat-select>
+                    </mat-form-field>
+                    <mat-form-field appearance="outline">
+                        <mat-label>Outcome Code</mat-label>
+                        <input matInput [(ngModel)]="currentOutcome.code" name="code">
+                    </mat-form-field>
+                    <mat-form-field appearance="outline">
+                        <mat-label>Bloom's Level</mat-label>
+                        <mat-select [(ngModel)]="currentOutcome.bloomsLevel" name="bloomsLevel">
+                            <mat-option *ngFor="let level of bloomLevels" [value]="level">{{ level }}</mat-option>
+                        </mat-select>
+                    </mat-form-field>
+                    <mat-form-field appearance="outline">
+                        <mat-label>Course</mat-label>
+                        <mat-select [(ngModel)]="currentOutcome.course" name="course" [disabled]="currentOutcome.type === 'PO'">
+                            <mat-option *ngIf="courses.length === 0" disabled>No courses available</mat-option>
+                            <mat-option *ngFor="let course of courses" [value]="course">{{ course }}</mat-option>
+                        </mat-select>
+                    </mat-form-field>
+                </div>
+                <mat-form-field appearance="outline" class="full-width">
+                    <mat-label>Outcome Description</mat-label>
+                    <textarea matInput rows="4" [(ngModel)]="currentOutcome.description" name="description"></textarea>
+                </mat-form-field>
+                <div style="display:flex; gap:12px; flex-wrap:wrap; align-items:center;">
+                    <button mat-raised-button color="primary" (click)="saveOutcome()">{{ editing ? 'Edit Outcome' : 'Save Outcome' }}</button>
+                    <button mat-stroked-button (click)="resetForm()">Reset Form</button>
+                </div>
+            </form>
+
+            <div *ngIf="showList" class="table-card">
+                <h2>Outcome List</h2>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Type</th>
+                            <th>Code</th>
+                            <th>Description</th>
+                            <th>Bloom's Level</th>
+                            <th>Course</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr *ngFor="let outcome of outcomes">
+                            <td>{{ outcome.type }}</td>
+                            <td>{{ outcome.code }}</td>
+                            <td>{{ outcome.description }}</td>
+                            <td>{{ outcome.bloomsLevel }}</td>
+                            <td>{{ outcome.course }}</td>
+                            <td>{{ outcome.status }}</td>
+                            <td style="display:flex; gap:8px; flex-wrap:wrap;">
+                                <button mat-button color="primary" (click)="startEdit(outcome)">Edit</button>
+                                <button mat-button color="warn" (click)="deleteOutcome(outcome.id)">Delete</button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div *ngIf="role !== 'faculty' && role !== 'admin'" style="color:var(--text-secondary); margin-top:12px;">
+                Faculty access required to add, edit, or delete COs.
+            </div>
+        </div>
+
+    </div>
+
+</div>
+
+<app-footer></app-footer>

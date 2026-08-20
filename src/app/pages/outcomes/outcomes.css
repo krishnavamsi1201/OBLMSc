@@ -1,0 +1,72 @@
+/* Styles for the Outcomes page */
+
+.container {
+  display: flex;
+}
+
+.content {
+  flex: 1;
+  padding: 1rem;
+  background: rgba(255,255,255,0.14);
+  border: 1px solid rgba(255,255,255,0.20);
+  border-radius: 24px;
+  backdrop-filter: blur(18px);
+}
+
+.page-header {
+  margin-bottom: 1.5rem;
+}
+
+.page-header h1 {
+  margin: 0;
+  font-size: 2rem;
+  color: var(--text-light);
+}
+
+.page-header p {
+  margin: 0.5rem 0 0;
+  color: var(--text-secondary);
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 16px;
+}
+
+table th,
+table td {
+  padding: 14px 12px;
+  border-bottom: 1px solid rgba(74, 140, 234, 0.12);
+  text-align: left;
+}
+
+table th {
+  color: #3d69ad;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-size: 0.82rem;
+}
+
+.table-card {
+  background: rgba(255, 255, 255, 0.94);
+  border: 1px solid rgba(74, 140, 234, 0.16);
+  border-radius: 24px;
+  padding: 24px;
+  box-shadow: 0 18px 30px rgba(74, 140, 234, 0.08);
+}
+
+.full-width {
+  width: 100%;
+}
+
+mat-form-field {
+  width: 100%;
+}
+
+@media (max-width: 960px) {
+  .container {
+    flex-direction: column;
+  }
+}
+

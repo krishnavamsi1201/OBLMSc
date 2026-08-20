@@ -1,0 +1,78 @@
+<app-navbar></app-navbar>
+
+<div class="container">
+
+    <app-sidebar></app-sidebar>
+
+    <div class="content">
+
+        <div class="page-header">
+            <h1>📚 Courses</h1>
+            <p>Admin can create, edit, delete, and assign faculty for courses.</p>
+        </div>
+
+        <div class="course-actions" *ngIf="role === 'admin' || role === 'faculty'">
+            <button mat-raised-button color="primary" (click)="openCourseForm()">Create Course</button>
+        </div>
+
+        <div class="course-form-card" *ngIf="showCourseForm">
+            <h2>{{ editingIndex >= 0 ? 'Edit Course' : 'Create Course' }}</h2>
+            <form (ngSubmit)="saveCourse()" class="course-form">
+                <label>
+                    Course Code
+                    <input type="text" [(ngModel)]="currentCourse.code" name="code" required />
+                </label>
+                <label>
+                    Course Name
+                    <input type="text" [(ngModel)]="currentCourse.title" name="title" required />
+                </label>
+                <label>
+                    Faculty
+                    <input type="text" [(ngModel)]="currentCourse.faculty" name="faculty" />
+                </label>
+                <label>
+                    Semester
+                    <input type="text" [(ngModel)]="currentCourse.semester" name="semester" required />
+                </label>
+                <div class="form-actions">
+                    <button mat-raised-button color="primary" type="submit">{{ editingIndex >= 0 ? 'Save Changes' : 'Save Course' }}</button>
+                    <button mat-button type="button" (click)="resetCourseForm()">Cancel</button>
+                </div>
+            </form>
+        </div>
+
+        <div class="courses-table-card">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Course Code</th>
+                        <th>Course Name</th>
+                        <th>Faculty</th>
+                        <th>Semester</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr *ngIf="courses.length === 0">
+                        <td colspan="5">No courses created yet. Use the Create Course button above.</td>
+                    </tr>
+                    <tr *ngFor="let course of courses; index as i">
+                        <td>{{ course.code }}</td>
+                        <td>{{ course.title }}</td>
+                        <td>{{ course.faculty }}</td>
+                        <td>{{ course.semester }}</td>
+                        <td class="actions-cell">
+                            <button mat-button color="primary" (click)="editCourse(course, i)">Edit</button>
+                            <button mat-button color="warn" (click)="deleteCourse(course)">Delete</button>
+                            <button mat-button (click)="assignFaculty(course)">Assign Faculty</button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+    </div>
+
+</div>
+
+<app-footer></app-footer>

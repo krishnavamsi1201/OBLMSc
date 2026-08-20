@@ -1,0 +1,165 @@
+<app-navbar></app-navbar>
+
+<div *ngIf="role === 'student'; else fullApp" class="student-shell">
+
+  <div class="student-sidebar">
+    <div class="logo">
+      <h2>🎓 OBLMS</h2>
+      <p>Outcome Based LMS</p>
+    </div>
+
+    <div class="student-links">
+      <button mat-button *ngFor="let item of studentItems" (click)="navigate(item.path)" [class.active]="item.path === '/students'">
+        <span class="icon">{{ item.icon }}</span>
+        <span>{{ item.label }}</span>
+      </button>
+    </div>
+  </div>
+
+  <div class="student-content">
+    <div class="student-header">
+      <h1>👋 Welcome back, {{ studentName }}!</h1>
+      <p class="subtitle">{{ studentEmail }} | Student Dashboard</p>
+    </div>
+
+    <!-- Student Stats Grid -->
+    <div class="student-stats-grid">
+      <div class="stat-card" (click)="navigate('/courses')">
+        <div class="stat-icon">📚</div>
+        <div class="stat-info">
+          <h3>Enrolled Courses</h3>
+          <p class="stat-val">{{ stats.enrolledCourses }}</p>
+        </div>
+      </div>
+      <div class="stat-card" (click)="navigate('/attendance')">
+        <div class="stat-icon">📅</div>
+        <div class="stat-info">
+          <h3>Attendance %</h3>
+          <p class="stat-val" [class.warning]="stats.attendancePercentage < 75">{{ stats.attendancePercentage }}%</p>
+        </div>
+      </div>
+      <div class="stat-card" (click)="navigate('/performance')">
+        <div class="stat-icon">📈</div>
+        <div class="stat-info">
+          <h3>Current CGPA</h3>
+          <p class="stat-val">{{ stats.cgpa | number: '1.2-2' }}</p>
+        </div>
+      </div>
+      <div class="stat-card" (click)="navigate('/assessments')">
+        <div class="stat-icon">📝</div>
+        <div class="stat-info">
+          <h3>Pending Exams</h3>
+          <p class="stat-val">{{ stats.pendingExams }}</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Dashboard Content Details -->
+    <div class="student-details-grid">
+      
+      <!-- Left Column: Timetable & Grades -->
+      <div class="details-left">
+        
+        <!-- Today's Schedule Card -->
+        <div class="dashboard-card">
+          <div class="card-header">
+            <h2>📆 Today's Schedule</h2>
+            <button mat-button color="primary" (click)="navigate('/timetable')">Full Timetable</button>
+          </div>
+          <div class="classes-list">
+            <div class="class-item" *ngFor="let cls of todaySchedule">
+              <div class="class-time">{{ cls.period }}</div>
+              <div class="class-details">
+                <strong>{{ cls.subject }}</strong>
+                <span class="class-room">Room: {{ cls.room }}</span>
+              </div>
+            </div>
+            <div class="empty-list" *ngIf="todaySchedule.length === 0">
+              No classes scheduled for today.
+            </div>
+          </div>
+        </div>
+
+        <!-- Recent Grades Card -->
+        <div class="dashboard-card">
+          <div class="card-header">
+            <h2>📈 Recent Assessment Marks</h2>
+            <button mat-button color="primary" (click)="navigate('/performance')">View Performance</button>
+          </div>
+          <table class="marks-table">
+            <thead>
+              <tr>
+                <th>Assessment</th>
+                <th>Score</th>
+                <th>Grade</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let g of recentGrades">
+                <td>{{ g.courseName }}</td>
+                <td>{{ g.score }}%</td>
+                <td><span class="grade-badge" [class.excellent]="g.grade === 'O' || g.grade === 'A+'">{{ g.grade }}</span></td>
+              </tr>
+              <tr *ngIf="recentGrades.length === 0">
+                <td colspan="3">No assessment scores available yet.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+      </div>
+
+      <!-- Right Column: Notifications & Actions -->
+      <div class="details-right">
+        
+        <!-- Notifications Card -->
+        <div class="dashboard-card">
+          <div class="card-header">
+            <h2>🔔 Recent Notifications</h2>
+            <button mat-button color="primary" (click)="navigate('/notifications')">See All</button>
+          </div>
+          <div class="notif-list">
+            <div class="notif-item" *ngFor="let n of notifications">
+              <h4>{{ n.title }}</h4>
+              <p>{{ n.message }}</p>
+              <small>{{ n.date | date: 'short' }}</small>
+            </div>
+          </div>
+        </div>
+
+        <!-- Quick Actions Card -->
+        <div class="dashboard-card">
+          <div class="card-header">
+            <h2>⚡ Quick Actions</h2>
+          </div>
+          <div class="quick-actions-list">
+            <button class="action-btn" (click)="navigate('/grievance')">📩 File a Grievance</button>
+            <button class="action-btn" (click)="navigate('/feedback')">💬 Submit Feedback</button>
+            <button class="action-btn" (click)="navigate('/profile')">👤 Update Profile</button>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+
+  </div>
+
+</div>
+
+<ng-template #fullApp>
+  <div class="container">
+      <app-sidebar></app-sidebar>
+      <div class="content">
+          <div class="page-header">
+              <h1>👨‍🎓 Student Management</h1>
+              <p>Search, filter, and view student lists and details.</p>
+          </div>
+          <div class="empty-state">
+              <h3>Admin View</h3>
+              <p>Navigate to Admin > Student Management to manage students.</p>
+          </div>
+      </div>
+  </div>
+  <app-footer></app-footer>
+</ng-template>

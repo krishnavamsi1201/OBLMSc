@@ -1,0 +1,73 @@
+<!-- Floating Button -->
+<button class="chat-float-btn" (click)="toggleChat()">
+  💬
+</button>
+
+<!-- Chat Window -->
+<div class="chat-popup" *ngIf="isOpen">
+
+  <mat-card class="chatbot-card">
+
+    <div class="chat-header">
+      <h3>OBLMS Chatbot</h3>
+      <button class="close-btn" (click)="toggleChat()">✖</button>
+    </div>
+
+    <mat-card-content>
+
+      <div class="messages">
+        <div
+          *ngFor="let message of messages"
+          [ngClass]="{
+            'message-user': message.from === 'user',
+            'message-bot': message.from === 'bot'
+          }">
+
+          <div class="message-label">
+            {{ message.from === 'user' ? 'You' : 'Bot' }}
+          </div>
+
+          <div class="message-text">
+            {{ message.text }}
+          </div>
+
+        </div>
+      </div>
+
+      <div class="chat-actions">
+
+        <form class="chat-form" (ngSubmit)="sendMessage()">
+
+          <mat-form-field appearance="outline" class="chat-input">
+            <input
+              matInput
+              [(ngModel)]="userMessage"
+              name="message"
+              placeholder="Type message..." />
+          </mat-form-field>
+
+          <button mat-raised-button color="primary" type="submit">
+            Send
+          </button>
+
+        </form>
+
+        <div class="voice-controls">
+          <button
+            mat-stroked-button
+            type="button"
+            (click)="toggleVoice()">
+
+            {{ isListening ? 'Stop Mic' : 'Mic On' }}
+          </button>
+
+          <span>{{ voiceStatus }}</span>
+        </div>
+
+      </div>
+
+    </mat-card-content>
+
+  </mat-card>
+
+</div>

@@ -1,0 +1,222 @@
+<app-navbar></app-navbar>
+
+<div class="container">
+
+    <app-sidebar></app-sidebar>
+
+    <div class="content">
+
+        <div class="page-header">
+            <h1>🔗 CO-PO Mapping</h1>
+            <p>View POs, map COs to POs, and set contribution percentages for faculty planning.</p>
+        </div>
+
+        <div class="summary-grid">
+            <div class="section-card">
+                <h3>POs Defined</h3>
+                <strong>{{ programOutcomes.length }}</strong>
+                <p>Program outcomes available for mapping.</p>
+            </div>
+            <div class="section-card">
+                <h3>CO-PO Maps</h3>
+                <strong>{{ mappings.length }}</strong>
+                <p>Course outcome mappings currently tracked.</p>
+            </div>
+            <div class="section-card">
+                <h3>Approved Mappings</h3>
+                <strong>{{ mappings.filter(m => m.status === 'Approved').length }}</strong>
+                <p>Mappings approved by admin.</p>
+            </div>
+        </div>
+
+        <div class="table-card">
+            <h2>View PO List</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>PO Number</th>
+                        <th>Description</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr *ngIf="programOutcomes.length === 0">
+                        <td colspan="2">No program outcomes available. Add PO records to begin mapping.</td>
+                    </tr>
+                    <tr *ngFor="let po of programOutcomes">
+                        <td>{{ po.poNumber }}</td>
+                        <td>{{ po.description }}</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="form-card">
+            <h2>Add Program Outcome</h2>
+            <form (ngSubmit)="addProgramOutcome()" class="small-form">
+                <div class="grid-row">
+                    <label>
+                        PO Number
+                        <input type="text" name="poNumber" [(ngModel)]="newPoNumber" placeholder="PO1" />
+                    </label>
+                </div>
+                <div class="grid-row">
+                    <label>
+                        Description
+                        <textarea name="poDescription" [(ngModel)]="newPoDescription" rows="3" placeholder="Enter PO description"></textarea>
+                    </label>
+                </div>
+                <div class="form-actions">
+                    <button type="submit">Add PO</button>
+                </div>
+            </form>
+        </div>
+
+        <div class="form-card">
+            <h2>Add Course Outcome</h2>
+            <form (ngSubmit)="addCourseOutcome()" class="small-form">
+                <div class="grid-row">
+                    <label>
+                        Course
+                        <ng-container *ngIf="courses.length > 0; else manualCourseField">
+                            <select name="coCourse" [(ngModel)]="newCoCourse" required>
+                                <option value="" disabled>Select course</option>
+                                <option *ngFor="let course of courses" [value]="course">{{ course }}</option>
+                            </select>
+                        </ng-container>
+                        <ng-template #manualCourseField>
+                            <input type="text" name="coCourse" [(ngModel)]="newCoCourse" placeholder="Course name or code" required />
+                        </ng-template>
+                    </label>
+                    <label>
+                        CO Code
+                        <input type="text" name="coCode" [(ngModel)]="newCoCode" placeholder="CO1" />
+                    </label>
+                </div>
+                <div class="form-actions">
+                    <button type="submit">Add CO</button>
+                </div>
+            </form>
+        </div>
+
+        <div class="form-card">
+            <h2>{{ editIndex >= 0 ? 'Edit Mapping' : 'Map CO with PO' }}</h2>
+            <form (ngSubmit)="saveMapping()">
+                <div class="grid-row">
+                    <label>
+                        Course Outcome
+                        <select [(ngModel)]="selectedCourseOutcomeKey" (ngModelChange)="onCoChange($event)" name="co" required [disabled]="courseOutcomes.length === 0">
+                            <option *ngIf="courseOutcomes.length === 0" disabled value="">No course outcomes available</option>
+                            <option *ngFor="let item of courseOutcomes" [value]="item.course + '::' + item.co">
+                                {{ item.course }} - {{ item.co }}{{ item.description ? ' (' + item.description + ')' : '' }}
+                            </option>
+                        </select>
+                        <p *ngIf="currentMapping.course && currentMapping.co && getCourseOutcomeDescription(currentMapping.course, currentMapping.co)" class="field-note">
+                            Description: {{ getCourseOutcomeDescription(currentMapping.course, currentMapping.co) }}
+                        </p>
+                    </label>
+                    <label>
+                        Program Outcome
+                        <select [(ngModel)]="currentMapping.po" name="po" required [disabled]="programOutcomes.length === 0">
+                            <option *ngIf="programOutcomes.length === 0" disabled value="">No program outcomes available</option>
+                            <option *ngFor="let po of programOutcomes" [value]="po.poNumber">
+                                {{ po.poNumber }}{{ po.description ? ' — ' + po.description : '' }}
+                            </option>
+                        </select>
+                    </label>
+                </div>
+                <div class="grid-row">
+                    <label>
+                        Contribution %
+                        <input type="number" name="contribution" [(ngModel)]="currentMapping.contribution" min="1" max="100" required />
+                    </label>
+                    <label>
+                        Mapping Level
+                        <select [(ngModel)]="currentMapping.mappingLevel" name="mappingLevel" required>
+                            <option *ngFor="let level of mappingLevels" [value]="level.value">{{ level.label }}</option>
+                        </select>
+                    </label>
+                </div>
+                <div class="form-actions">
+                    <button type="submit">{{ editIndex >= 0 ? 'Update Mapping' : 'Save Mapping' }}</button>
+                    <button type="button" class="secondary" (click)="resetMapping()">Clear</button>
+                </div>
+            </form>
+        </div>
+
+        <div class="table-card">
+            <h2>Mapped COs to POs</h2>
+            <p style="color: var(--text-secondary); margin-bottom: 16px;">Admins can approve pending mappings here.</p>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Course</th>
+                        <th>CO</th>
+                        <th>CO Description</th>
+                        <th>Mapped PO</th>
+                        <th>PO Description</th>
+                        <th>Contribution %</th>
+                        <th>Mapping Level</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr *ngIf="mappings.length === 0">
+                        <td colspan="7">No CO-PO mappings created yet.</td>
+                    </tr>
+                    <tr *ngFor="let mapping of mappings; index as i">
+                        <td>{{ mapping.course }}</td>
+                        <td>{{ mapping.co }}</td>
+                        <td>{{ getCourseOutcomeDescription(mapping.course, mapping.co) || '—' }}</td>
+                        <td>{{ mapping.po }}</td>
+                        <td>{{ getProgramOutcomeDescription(mapping.po) || '—' }}</td>
+                        <td>{{ mapping.contribution }}%</td>
+                        <td>{{ getMappingLevelLabel(mapping.mappingLevel) }}</td>
+                        <td>{{ mapping.status }}</td>
+                        <td>
+                            <button type="button" (click)="editMapping(i)">Edit</button>
+                            <button type="button" (click)="approveMapping(i)" [disabled]="mapping.status === 'Approved'">Approve</button>
+                            <button type="button" class="danger" (click)="deleteMapping(i)">Delete</button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="table-card">
+            <div style="display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap;">
+                <h2>View Mapping Matrix</h2>
+                <button type="button" (click)="toggleMappingView()">{{ showMatrix ? 'Hide Matrix' : 'View Mapping Matrix' }}</button>
+            </div>
+            <div *ngIf="showMatrix">
+                <ng-container *ngIf="programOutcomes.length && courseOutcomes.length; else noMatrixContent">
+                    <table class="matrix-table">
+                        <thead>
+                            <tr>
+                                <th>CO \ PO</th>
+                                <th *ngFor="let po of programOutcomes">{{ po.poNumber }}</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr *ngFor="let outcome of courseOutcomes">
+                                <td>{{ outcome.course }} - {{ outcome.co }}</td>
+                                <td *ngFor="let po of programOutcomes">
+                                    <span *ngIf="getMatrixLevel(outcome.co, po.poNumber) as level">
+                                        {{ getMappingLevelLabel(level) }}
+                                    </span>
+                                    <span *ngIf="!getMatrixLevel(outcome.co, po.poNumber)">—</span>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </ng-container>
+                <ng-template #noMatrixContent>
+                    <p style="color: var(--text-secondary);">Add course outcomes and program outcomes to view the mapping matrix.</p>
+                </ng-template>
+            </div>
+
+    </div>
+
+</div>
+
+<app-footer></app-footer>

@@ -1,0 +1,125 @@
+<app-navbar></app-navbar>
+
+<div class="container">
+  <app-sidebar></app-sidebar>
+
+  <div class="content">
+    <div class="page-header">
+      <div class="header-title">
+        <h1>✅ Approval Workflow</h1>
+        <p>Review and approve pending mappings and configurations</p>
+      </div>
+    </div>
+
+    <!-- Approval Stats -->
+    <div class="stats-grid">
+      <div class="stat-card pending">
+        <div class="stat-number">{{ getPendingCount() }}</div>
+        <div class="stat-label">Pending</div>
+      </div>
+      <div class="stat-card approved">
+        <div class="stat-number">{{ getApprovedCount() }}</div>
+        <div class="stat-label">Approved</div>
+      </div>
+      <div class="stat-card rejected">
+        <div class="stat-number">{{ getRejectedCount() }}</div>
+        <div class="stat-label">Rejected</div>
+      </div>
+    </div>
+
+    <!-- Search and Filter -->
+    <div class="toolbar">
+      <div class="search-box">
+        <input 
+          type="text" 
+          placeholder="🔍 Search approvals..."
+          [(ngModel)]="searchQuery"
+          (input)="onSearchChange()"
+          class="search-input"
+        />
+      </div>
+      <select 
+        [(ngModel)]="filterStatus"
+        (change)="onFilterChange()"
+        class="filter-select"
+      >
+        <option value="">All Status</option>
+        <option value="Pending">Pending</option>
+        <option value="Approved">Approved</option>
+        <option value="Rejected">Rejected</option>
+      </select>
+      <select 
+        [(ngModel)]="filterType"
+        (change)="onFilterChange()"
+        class="filter-select"
+      >
+        <option *ngFor="let type of approvalTypes" [value]="type.value">{{ type.label }}</option>
+      </select>
+    </div>
+
+    <!-- Approval Items -->
+    <div class="approvals-container">
+      <div *ngIf="filteredItems.length === 0" class="empty-state">
+        <p>📭 No approval items found</p>
+      </div>
+
+      <div *ngFor="let item of filteredItems" class="approval-card" [style.borderLeftColor]="getStatusColor(item.status)">
+        <div class="card-header">
+          <div class="item-info">
+            <h3>{{ item.title }}</h3>
+            <p class="item-type">{{ item.type | titlecase }}</p>
+          </div>
+          <div class="status-badge" [style.backgroundColor]="getStatusBgColor(item.status)" [style.color]="getStatusColor(item.status)">
+            {{ item.status }}
+          </div>
+        </div>
+
+        <div class="card-body">
+          <p class="description">{{ item.description }}</p>
+          <div class="meta-info">
+            <span class="meta-item">📅 {{ item.createdDate }}</span>
+            <span class="meta-item">👤 {{ item.createdBy }}</span>
+          </div>
+        </div>
+
+        <div class="card-footer" *ngIf="item.status === 'Pending'">
+          <button class="btn btn-approve" (click)="approveItem(item)">✓ Approve</button>
+          <button class="btn btn-reject" (click)="rejectItem(item)">✕ Reject</button>
+        </div>
+        <div class="card-footer" *ngIf="item.status !== 'Pending'">
+          <span class="status-info">
+            <strong>{{ item.status }}</strong>
+            <span *ngIf="item.status === 'Rejected' && item.details.rejectionReason">
+              - Reason: {{ item.details.rejectionReason }}
+            </span>
+          </span>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- Reject Reason Modal -->
+<div class="modal" *ngIf="showRejectReason">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h2>Reject Approval</h2>
+      <button class="close-btn" (click)="cancelReject()">✕</button>
+    </div>
+    <div class="modal-body">
+      <p>Please provide a reason for rejection:</p>
+      <textarea 
+        [(ngModel)]="rejectionReasonText" 
+        placeholder="Enter rejection reason..."
+        class="reason-input"
+      ></textarea>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" (click)="cancelReject()">Cancel</button>
+      <button class="btn btn-reject" (click)="confirmReject()">Reject</button>
+    </div>
+  </div>
+</div>
+
+<app-footer></app-footer>

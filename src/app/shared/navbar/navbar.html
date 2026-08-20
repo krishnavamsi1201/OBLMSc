@@ -1,0 +1,26 @@
+<ng-container *ngIf="role !== 'student'; else studentBar">
+    <mat-toolbar color="primary">
+
+            <span class="title">Outcome-Based Learning Management System</span>
+
+            <span class="spacer"></span>
+
+            <button mat-button>
+                    {{ role || 'User' }}
+            </button>
+
+            <button mat-raised-button color="accent" (click)="logout()">Logout</button>
+
+    </mat-toolbar>
+</ng-container>
+
+<ng-template #studentBar>
+    <mat-toolbar color="primary" class="student-toolbar">
+        <span class="title">Outcome-Based Learning Management System</span>
+        <span class="spacer"></span>
+        <div class="student-actions">
+            <span class="student-name">{{ userName ? (userName | uppercase) : role || 'Student' }}</span>
+            <button mat-button (click)="logout()">Logout</button>
+        </div>
+    </mat-toolbar>
+</ng-template>

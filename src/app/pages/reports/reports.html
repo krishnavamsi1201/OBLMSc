@@ -1,0 +1,98 @@
+<app-navbar></app-navbar>
+
+<div class="container">
+  <app-sidebar></app-sidebar>
+
+  <div class="content">
+    <div class="page-header">
+      <div class="header-title">
+        <h1>📊 Reports Generator</h1>
+        <p>Generate and export comprehensive OBE reports in CSV and JSON formats</p>
+      </div>
+    </div>
+
+    <!-- Report Selection Grid -->
+    <div *ngIf="!selectedReportId" class="reports-grid">
+      <div *ngFor="let report of reportTypes" 
+        class="report-card"
+        (click)="selectReport(report.id)">
+        <div class="card-header">
+          <span class="icon">{{ report.icon }}</span>
+          <h3>{{ report.title }}</h3>
+        </div>
+        <p class="description">{{ report.description }}</p>
+        <div class="card-stats">
+          <div class="stat">
+            <span class="stat-value">{{ report.recordCount || 0 }}</span>
+            <span class="stat-label">Records</span>
+          </div>
+        </div>
+        <button class="btn-select">📋 Select</button>
+      </div>
+    </div>
+
+    <!-- Report Generator -->
+    <div *ngIf="selectedReportId && getCurrentReport()" class="report-generator">
+      <button class="btn-back" (click)="selectedReportId = ''">← Back to Reports</button>
+
+      <div class="generator-card">
+        <h2>{{ getCurrentReport()?.title }}</h2>
+        <p>{{ getCurrentReport()?.description }}</p>
+
+        <!-- Filters -->
+        <div class="filters-section">
+          <h3>Report Filters</h3>
+          <div class="filters-grid">
+            <div *ngFor="let filter of getCurrentReport()?.filters || []" class="filter-group">
+              <label>{{ filter }}</label>
+              <select [(ngModel)]="selectedFilters[filter]" class="filter-input">
+                <option value="">All {{ filter }}</option>
+                <option *ngFor="let opt of getFilterOptions(filter)" [value]="opt">{{ opt }}</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- Generate Button -->
+        <div class="actions">
+          <button class="btn btn-primary" (click)="generateReport()">🔄 Generate Report</button>
+        </div>
+      </div>
+
+      <!-- Report Results -->
+      <div *ngIf="reportGenerated" class="report-results">
+        <div class="results-header">
+          <h3>Report Results ({{ reportData.length }} records)</h3>
+          <div class="export-buttons">
+            <button class="btn btn-secondary" (click)="exportToCSV()" title="Download as CSV file">📥 CSV</button>
+            <button class="btn btn-secondary" (click)="exportToJSON()" title="Download as JSON file">📥 JSON</button>
+            <button class="btn btn-secondary" (click)="exportToPDF()" title="Download as HTML/PDF printable">📄 PDF</button>
+          </div>
+        </div>
+
+        <div *ngIf="reportData.length === 0" class="empty-results">
+          <p>📭 No data found for the selected filters</p>
+        </div>
+
+        <div *ngIf="reportData.length > 0" class="table-wrapper">
+          <table class="results-table">
+            <thead>
+              <tr>
+                <th *ngFor="let key of getTableHeaders()">{{ formatHeader(key) }}</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let row of reportData" [class.status-pass]="row.status === 'Pass'" [class.status-fail]="row.status === 'Fail'">
+                <td *ngFor="let key of getTableHeaders()" [class.numeric]="isNumeric(row[key])">
+                  {{ row[key] }}
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<app-footer></app-footer>

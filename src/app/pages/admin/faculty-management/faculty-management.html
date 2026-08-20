@@ -1,0 +1,152 @@
+<app-navbar></app-navbar>
+
+<div class="container">
+  <app-sidebar></app-sidebar>
+
+  <div class="content">
+    <div class="page-header">
+      <div class="header-title">
+        <h1>👥 Faculty Management</h1>
+        <p>Manage faculty members, departments, and course assignments</p>
+      </div>
+      <button class="btn btn-primary" (click)="openAddForm()">+ Add Faculty</button>
+    </div>
+
+    <!-- Search and Filter Bar -->
+    <div class="toolbar">
+      <div class="search-box">
+        <input 
+          type="text" 
+          placeholder="🔍 Search by name or email..." 
+          [(ngModel)]="searchQuery"
+          (input)="onSearchChange()"
+          class="search-input"
+        />
+      </div>
+      <select 
+        [(ngModel)]="filterDepartment"
+        (change)="onFilterChange()"
+        class="filter-select"
+      >
+        <option value="">All Departments</option>
+        <option *ngFor="let dept of departments" [value]="dept">{{ dept }}</option>
+      </select>
+    </div>
+
+    <!-- Add/Edit Form Modal -->
+    <div class="modal" *ngIf="showForm" [@fadeInOut]>
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2>{{ isEditMode ? 'Edit Faculty' : 'Add New Faculty' }}</h2>
+          <button class="close-btn" (click)="closeForm()">✕</button>
+        </div>
+
+        <form (ngSubmit)="saveFaculty()" class="faculty-form">
+          <div class="form-group">
+            <label>Name *</label>
+            <input 
+              type="text" 
+              [(ngModel)]="formData.name" 
+              name="name"
+              placeholder="Enter faculty name"
+              required
+            />
+          </div>
+
+          <div class="form-group">
+            <label>Email *</label>
+            <input 
+              type="email" 
+              [(ngModel)]="formData.email" 
+              name="email"
+              placeholder="Enter email address"
+              required
+            />
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label>Department *</label>
+              <select [(ngModel)]="formData.department" name="department" required>
+                <option value="">Select Department</option>
+                <option *ngFor="let dept of departments" [value]="dept">{{ dept }}</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label>Designation *</label>
+              <select [(ngModel)]="formData.designation" name="designation" required>
+                <option value="">Select Designation</option>
+                <option *ngFor="let des of designations" [value]="des">{{ des }}</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label>Assigned Courses</label>
+            <input 
+              type="text" 
+              [(ngModel)]="formData.courses" 
+              name="courses"
+              placeholder="Enter courses (comma-separated)"
+            />
+            <small>Example: Web Development, Database Systems, Mobile Apps</small>
+          </div>
+
+          <div class="form-actions">
+            <button type="button" class="btn btn-secondary" (click)="closeForm()">Cancel</button>
+            <button type="submit" class="btn btn-primary">{{ isEditMode ? 'Update' : 'Add' }} Faculty</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Table Section -->
+    <div class="table-section">
+      <div class="table-header">
+        <h3>Faculty List ({{ filteredFacultyList.length }})</h3>
+      </div>
+
+      <div *ngIf="filteredFacultyList.length === 0" class="empty-state">
+        <p>📭 No faculty members found. Start by adding your first faculty member.</p>
+        <button class="btn btn-primary" (click)="openAddForm()">+ Add Faculty</button>
+      </div>
+
+      <div *ngIf="filteredFacultyList.length > 0" class="table-wrapper">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Faculty ID</th>
+              <th>Name</th>
+              <th>Department</th>
+              <th>Designation</th>
+              <th>Email</th>
+              <th>Courses</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let faculty of filteredFacultyList">
+              <td class="faculty-id">{{ faculty.id }}</td>
+              <td class="faculty-name">{{ faculty.name }}</td>
+              <td><span class="badge badge-dept">{{ faculty.department }}</span></td>
+              <td>{{ faculty.designation }}</td>
+              <td class="faculty-email">{{ faculty.email }}</td>
+              <td class="courses-cell">
+                <span class="courses-badge">{{ getCoursesDisplay(faculty.courses) }}</span>
+              </td>
+              <td class="actions-cell">
+                <button class="btn-icon btn-edit" (click)="openEditForm(faculty)" title="Edit">✎</button>
+                <button class="btn-icon btn-delete" (click)="deleteFaculty(faculty.id)" title="Delete">🗑️</button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
+
+</div>
+
+<app-footer></app-footer>

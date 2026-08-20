@@ -1,0 +1,123 @@
+.header{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin-bottom:35px;
+}
+
+.search-box{
+    display:flex;
+    flex-direction:column;
+    width:100%;
+    max-width:420px;
+    gap:10px;
+}
+
+.search-input-group {
+    display:flex;
+    width:100%;
+    gap:10px;
+}
+
+.search-box input{
+    flex:1;
+    padding:14px 18px;
+    border:none;
+    outline:none;
+    border-radius:20px;
+    background:rgba(255,255,255,0.70);
+    backdrop-filter:blur(20px);
+    color: var(--text-light);
+    font-size:15px;
+}
+
+.search-autocomplete {
+  display:flex;
+  flex-direction:column;
+  gap:6px;
+  background: rgba(255,255,255,0.82);
+  border: 1px solid rgba(183, 201, 217, 0.6);
+  border-radius: 15px;
+  padding: 8px;
+  max-height: 220px;
+  overflow-y: auto;
+}
+
+.suggestion-item {
+  width: 100%;
+  text-align: left;
+  border: none;
+  background: transparent;
+  color: var(--text-light);
+  padding: 10px 12px;
+  border-radius: 12px;
+  cursor: pointer;
+}
+
+.suggestion-item:hover {
+  background: rgba(232, 244, 252, 0.60);
+}
+
+.search-button {
+  padding:0 18px;
+  height:46px;
+  border:none;
+  border-radius:18px;
+  background: rgba(74, 140, 234, 0.18);
+  color: var(--text-light);
+  cursor:pointer;
+  font-size:14px;
+  box-shadow: 0 12px 24px rgba(74, 140, 234, 0.14);
+}
+
+.search-button:hover {
+  background: rgba(74, 140, 234, 0.28);
+}
+
+.search-box input::placeholder{
+    color: rgba(77, 104, 141, 0.84);
+}
+
+.header-right{
+    display:flex;
+    align-items:center;
+    gap:20px;
+}
+
+.icon-btn{
+    width:45px;
+    height:45px;
+    border:none;
+    border-radius:50%;
+    cursor:pointer;
+    font-size:18px;
+    background:rgba(255,255,255,0.70);
+    backdrop-filter:blur(22px);
+    color: var(--text-light);
+    box-shadow: 0 12px 22px rgba(74, 140, 234, .12);
+}
+
+.profile{
+    display:flex;
+    align-items:center;
+    gap:12px;
+    padding:8px 15px;
+    border-radius:18px;
+    background:rgba(255,255,255,0.80);
+    backdrop-filter:blur(20px);
+}
+
+.profile img{
+    width:45px;
+    height:45px;
+    border-radius:50%;
+}
+
+.profile h4{
+    color: var(--text-light);
+    margin:0;
+}
+
+.profile small{
+    color: var(--text-secondary);
+}

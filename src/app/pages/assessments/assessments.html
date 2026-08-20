@@ -1,0 +1,178 @@
+<app-navbar></app-navbar>
+
+<div class="container">
+
+    <app-sidebar></app-sidebar>
+
+    <div class="content">
+
+        <div class="page-header">
+            <h1>📝 Assessments</h1>
+            <p>Faculty tools for assignment, quiz, midterm, and lab exam creation, plus mark entry and tracking.</p>
+        </div>
+
+        <div class="summary-grid">
+            <div class="section-card">
+                <h3>Assignment Creation</h3>
+                <strong>{{ assessments.filter(a => a.type === 'Assignment').length }}</strong>
+                <p>Active assignments in the current course load.</p>
+            </div>
+            <div class="section-card">
+                <h3>Quiz Creation</h3>
+                <strong>{{ assessments.filter(a => a.type === 'Quiz').length }}</strong>
+                <p>Quizzes scheduled for assessment cycles.</p>
+            </div>
+            <div class="section-card">
+                <h3>Mid Exams</h3>
+                <strong>{{ assessments.filter(a => a.type === 'Mid Exam').length }}</strong>
+                <p>Midterm exams in preparation.</p>
+            </div>
+            <div class="section-card">
+                <h3>Lab Exams</h3>
+                <strong>{{ assessments.filter(a => a.type === 'Lab Exam').length }}</strong>
+                <p>Lab evaluation items scheduled.</p>
+            </div>
+        </div>
+
+        <div class="form-card">
+            <h2>Add / Edit Assessment</h2>
+            <form (ngSubmit)="saveAssessment()">
+                <div class="grid-row">
+                    <label>
+                        Course
+                        <input type="text" name="course" [(ngModel)]="currentAssessment.course" required />
+                    </label>
+                    <label>
+                        Assessment Type
+                        <select name="type" [(ngModel)]="currentAssessment.type" required>
+                            <option *ngFor="let type of assessmentTypes" [value]="type">{{ type }}</option>
+                        </select>
+                    </label>
+                </div>
+                <div class="grid-row">
+                    <label>
+                        Questions
+                        <input type="number" name="questions" [(ngModel)]="currentAssessment.questions" min="1" required />
+                    </label>
+                    <label>
+                        Max Marks
+                        <input type="number" name="maxMarks" [(ngModel)]="currentAssessment.maxMarks" min="1" required />
+                    </label>
+                </div>
+                <div class="grid-row">
+                    <label>
+                        Due Date
+                        <input type="date" name="dueDate" [(ngModel)]="currentAssessment.dueDate" required />
+                    </label>
+                    <label>
+                        Status
+                        <select name="status" [(ngModel)]="currentAssessment.status">
+                            <option>Planned</option>
+                            <option>Pending</option>
+                            <option>Completed</option>
+                        </select>
+                    </label>
+                </div>
+                <div class="form-actions">
+                    <button type="submit">{{ editAssessmentIndex >= 0 ? 'Update Assessment' : 'Create Assessment' }}</button>
+                    <button type="button" class="secondary" (click)="resetAssessmentForm()">Clear</button>
+                </div>
+            </form>
+        </div>
+
+        <div class="form-card">
+            <h2>Enter / Update Marks</h2>
+            <form (ngSubmit)="saveMarks()">
+                <div class="grid-row">
+                    <label>
+                        Student Name
+                        <input type="text" name="student" [(ngModel)]="currentMark.student" required />
+                    </label>
+                    <label>
+                        Assessment
+                        <select name="assessment" [(ngModel)]="currentMark.assessment" required>
+                            <option *ngFor="let type of assessmentTypes" [value]="type">{{ type }}</option>
+                        </select>
+                    </label>
+                </div>
+                <div class="grid-row">
+                    <label>
+                        Obtained Marks
+                        <input type="number" name="obtained" [(ngModel)]="currentMark.obtained" min="0" required />
+                    </label>
+                    <label>
+                        Max Marks
+                        <input type="number" name="maxMarks" [(ngModel)]="currentMark.maxMarks" min="1" required />
+                    </label>
+                </div>
+                <div class="form-actions">
+                    <button type="submit">Enter Marks</button>
+                    <button type="button" class="secondary" (click)="resetMarksForm()">Reset</button>
+                </div>
+            </form>
+        </div>
+
+        <div class="table-card">
+            <h2>View Assessment List</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Course</th>
+                        <th>Type</th>
+                        <th>Questions</th>
+                        <th>Max Marks</th>
+                        <th>Due Date</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr *ngIf="assessments.length === 0">
+                        <td colspan="7">No assessments created yet.</td>
+                    </tr>
+                    <tr *ngFor="let assessment of assessments; index as i">
+                        <td>{{ assessment.course }}</td>
+                        <td>{{ assessment.type }}</td>
+                        <td>{{ assessment.questions }}</td>
+                        <td>{{ assessment.maxMarks }}</td>
+                        <td>{{ assessment.dueDate }}</td>
+                        <td>{{ assessment.status }}</td>
+                        <td>
+                            <button type="button" (click)="editAssessment(i)">Edit</button>
+                            <button type="button" class="danger" (click)="deleteAssessment(i)">Delete</button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="table-card">
+            <h2>Marks Entered</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Student</th>
+                        <th>Assessment</th>
+                        <th>Obtained</th>
+                        <th>Max Marks</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr *ngIf="markEntries.length === 0">
+                        <td colspan="4">No marks have been entered yet.</td>
+                    </tr>
+                    <tr *ngFor="let mark of markEntries">
+                        <td>{{ mark.student }}</td>
+                        <td>{{ mark.assessment }}</td>
+                        <td>{{ mark.obtained }}</td>
+                        <td>{{ mark.maxMarks }}</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+    </div>
+
+</div>
+
+<app-footer></app-footer>

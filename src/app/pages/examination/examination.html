@@ -1,0 +1,117 @@
+<app-navbar></app-navbar>
+
+<div class="container">
+	<app-sidebar></app-sidebar>
+	<div class="content">
+		<div class="page-header">
+			<h1>📝 Examinations</h1>
+			<p>Manage and view examination schedules, results, and related information.</p>
+		</div>
+
+		<div *ngIf="isLoading" class="loading-spinner">
+			<p>Loading examination data...</p>
+		</div>
+
+		<div *ngIf="!isLoading">
+			<!-- Actions Bar -->
+			<div class="actions-bar" *ngIf="role === 'admin' || role === 'faculty'">
+				<button class="btn btn-primary" (click)="openExamForm()">➕ Schedule New Exam</button>
+			</div>
+
+			<!-- Add/Edit Exam Form -->
+			<div class="form-card" *ngIf="showExamForm">
+				<h2>{{ editIndex >= 0 ? 'Edit Exam Schedule' : 'Schedule New Examination' }}</h2>
+				<form (ngSubmit)="saveExam()">
+					<div class="grid-row">
+						<label>
+							Exam Title
+							<input type="text" name="title" [(ngModel)]="currentExam.title" placeholder="e.g. End Semester Theory" required />
+						</label>
+						<label>
+							Course / Subject
+							<input type="text" name="course" [(ngModel)]="currentExam.course" placeholder="e.g. Computer Networks" required />
+						</label>
+					</div>
+					<div class="grid-row">
+						<label>
+							Date & Time
+							<input type="datetime-local" name="date" [(ngModel)]="currentExam.date" required />
+						</label>
+						<label>
+							Room / Venue
+							<input type="text" name="room" [(ngModel)]="currentExam.room" placeholder="e.g. LH-205 or Online" required />
+						</label>
+					</div>
+					<div class="grid-row">
+						<label>
+							Max Marks
+							<input type="number" name="marks" [(ngModel)]="currentExam.marks" required />
+						</label>
+						<label>
+							Status
+							<select name="status" [(ngModel)]="currentExam.status" required>
+								<option value="Scheduled">Scheduled</option>
+								<option value="Ongoing">Ongoing</option>
+								<option value="Completed">Completed</option>
+							</select>
+						</label>
+					</div>
+					<div class="form-actions">
+						<button type="submit" class="btn btn-success">{{ editIndex >= 0 ? 'Update Exam' : 'Publish Exam' }}</button>
+						<button type="button" class="btn btn-secondary" (click)="closeExamForm()">Cancel</button>
+					</div>
+				</form>
+			</div>
+
+			<!-- Filters Bar -->
+			<div class="filter-card">
+				<div class="filters-container">
+					<label class="filter-input">
+						Search Exams:
+						<input type="text" [(ngModel)]="searchTerm" (input)="applyFilters()" placeholder="Search title, course, room..." />
+					</label>
+					<label class="filter-select">
+						Filter by Status:
+						<select [(ngModel)]="statusFilter" (change)="applyFilters()">
+							<option value="">All Statuses</option>
+							<option value="Scheduled">Scheduled</option>
+							<option value="Ongoing">Ongoing</option>
+							<option value="Completed">Completed</option>
+						</select>
+					</label>
+				</div>
+			</div>
+
+			<!-- Exams List Container -->
+			<div class="exam-container">
+				<div class="exams-grid" *ngIf="filteredExams.length > 0">
+					<div class="exam-card" *ngFor="let exam of filteredExams">
+						<div class="exam-card-header">
+							<h3>{{ exam.title }}</h3>
+							<span class="status-badge" [class.scheduled]="exam.status === 'Scheduled'" [class.ongoing]="exam.status === 'Ongoing'" [class.completed]="exam.status === 'Completed'">
+								{{ exam.status }}
+							</span>
+						</div>
+						<div class="exam-card-body">
+							<p><strong>Course:</strong> {{ exam.course }}</p>
+							<p><strong>Date & Time:</strong> {{ exam.date | date: 'medium' }}</p>
+							<p><strong>Venue:</strong> <span class="venue-pill">{{ exam.room }}</span></p>
+							<p><strong>Max Marks:</strong> {{ exam.marks }}</p>
+						</div>
+						<div class="exam-card-footer" *ngIf="role === 'admin' || role === 'faculty'">
+							<button class="btn btn-edit" (click)="editExam(exam)">Edit</button>
+							<button class="btn btn-delete" (click)="deleteExam(exam)">Delete</button>
+						</div>
+					</div>
+				</div>
+
+				<div class="empty-state" *ngIf="filteredExams.length === 0">
+					<h3>No examinations match your filters</h3>
+					<p>Check spelling, change the status filter, or schedule a new exam.</p>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+
+<app-footer></app-footer>

@@ -1,0 +1,39 @@
+<div class="header">
+
+    <form class="search-box" (submit)="search($event)">
+        <div class="search-input-group">
+          <input type="text" [(ngModel)]="searchQuery" name="search" placeholder="🔍 Search anything..." (input)="onSearchChange()" />
+          <button type="submit" class="search-button">Search</button>
+        </div>
+        <div class="search-autocomplete" *ngIf="filteredSuggestions.length">
+          <button type="button" class="suggestion-item" *ngFor="let suggestion of filteredSuggestions" (click)="selectSuggestion(suggestion)">
+            {{ suggestion }}
+          </button>
+        </div>
+    </form>
+
+    <div class="header-right">
+
+        <button class="icon-btn">
+            🔔
+        </button>
+
+        <div class="profile">
+
+            <img
+                src="https://i.pravatar.cc/100?img=12"
+                alt="Faculty Profile">
+
+            <div>
+
+                <h4>Faculty Member</h4>
+
+                <small>Faculty</small>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>

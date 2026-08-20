@@ -1,0 +1,253 @@
+<app-navbar></app-navbar>
+
+<div class="container">
+
+	<app-sidebar></app-sidebar>
+
+	<div class="content">
+
+		<div class="page-header">
+			<h1>👩‍🏫 Faculty Dashboard</h1>
+			<p>Welcome, Faculty. See your teaching schedule, student progress, and assessment tasks in one place.</p>
+		</div>
+
+		<!-- Loading State -->
+		<div *ngIf="isLoading" class="loading-spinner">
+			<p>Loading dashboard data...</p>
+		</div>
+
+		<!-- Error State -->
+		<div *ngIf="error" class="error-message">
+			<p>{{ error }}</p>
+			<button (click)="ngOnInit()" class="retry-btn">Retry</button>
+		</div>
+
+		<!-- Main Dashboard Content -->
+		<ng-container *ngIf="!isLoading && !error">
+
+			<!-- Quick Stats -->
+			<div class="quick-stats">
+				<div class="stat-card">
+					<div class="stat-icon">📚</div>
+					<div class="stat-content">
+						<span class="stat-label">My Classes</span>
+						<h3 class="stat-value">{{ totalCourses }}</h3>
+					</div>
+				</div>
+				<div class="stat-card">
+					<div class="stat-icon">👥</div>
+					<div class="stat-content">
+						<span class="stat-label">Total Students</span>
+						<h3 class="stat-value">{{ totalStudents }}</h3>
+					</div>
+				</div>
+				<div class="stat-card">
+					<div class="stat-icon">📝</div>
+					<div class="stat-content">
+						<span class="stat-label">Active Assessments</span>
+						<h3 class="stat-value">{{ activeAssessmentsCount }}</h3>
+					</div>
+				</div>
+				<div class="stat-card">
+					<div class="stat-icon">🔔</div>
+					<div class="stat-content">
+						<span class="stat-label">Pending Notifications</span>
+						<h3 class="stat-value">{{ pendingNotificationsCount }}</h3>
+					</div>
+				</div>
+			</div>
+
+			<!-- My Classes Section -->
+			<section class="dashboard-section">
+				<div class="section-header">
+					<h2>📚 My Classes</h2>
+					<button class="view-all-btn" (click)="goToCourses()">View All →</button>
+				</div>
+				<div class="classes-grid">
+					<div *ngFor="let course of courses" class="class-card" (click)="goToCourses()">
+						<div class="class-header">
+							<h3>{{ course.name }}</h3>
+							<span class="course-code">{{ course.code }}</span>
+						</div>
+						<div class="class-details">
+							<p><strong>Semester:</strong> {{ course.semester }}</p>
+							<p><strong>Students:</strong> <span class="student-count">{{ course.studentCount }}</span></p>
+						</div>
+						<button class="class-action-btn">View Course →</button>
+					</div>
+				</div>
+				<p *ngIf="courses.length === 0" class="empty-state">No courses found for this semester.</p>
+			</section>
+
+			<!-- Active Assessments Section -->
+			<section class="dashboard-section">
+				<div class="section-header">
+					<h2>📝 Active Assessments</h2>
+					<button class="view-all-btn" (click)="goToAssessments()">View All →</button>
+				</div>
+				<div class="assessments-list">
+					<div *ngFor="let assessment of activeAssessments" class="assessment-card">
+						<div class="assessment-header">
+							<h3>{{ assessment.title }}</h3>
+							<span class="assessment-type" [style.background-color]="getStatusColor(assessment.status)">
+								{{ assessment.status }}
+							</span>
+						</div>
+						<div class="assessment-meta">
+							<p><strong>Course:</strong> {{ assessment.courseName }}</p>
+							<p><strong>Type:</strong> {{ assessment.type }}</p>
+							<p><strong>Due:</strong> {{ assessment.dueDate | date: 'short' }}</p>
+						</div>
+						<div class="submission-progress">
+							<div class="progress-label">
+								<span>Submissions: {{ assessment.submittedCount }}/{{ assessment.totalCount }}</span>
+								<span class="percentage">{{ getSubmissionPercentage(assessment) | number: '1.0-0' }}%</span>
+							</div>
+							<div class="progress-bar">
+								<div class="progress-fill" [style.width.%]="getSubmissionPercentage(assessment)"></div>
+							</div>
+						</div>
+						<button class="assessment-action-btn" (click)="goToAssessments()">Grade Submissions →</button>
+					</div>
+				</div>
+				<p *ngIf="activeAssessments.length === 0" class="empty-state">No active assessments.</p>
+			</section>
+
+			<!-- Student Progress Section -->
+			<section class="dashboard-section">
+				<div class="section-header">
+					<h2>📊 Student Progress</h2>
+					<button class="view-all-btn" (click)="goToStudentProgress()">View All →</button>
+				</div>
+				<div class="progress-table">
+					<table *ngIf="studentProgressList.length > 0" class="data-table">
+						<thead>
+							<tr>
+								<th>Student Name</th>
+								<th>Course</th>
+								<th>Attendance</th>
+								<th>CO Attainment</th>
+								<th>Last Update</th>
+							</tr>
+						</thead>
+						<tbody>
+							<tr *ngFor="let progress of studentProgressList">
+								<td>{{ progress.studentName }}</td>
+								<td>{{ progress.courseName }}</td>
+								<td>
+									<span class="attendance-badge" [class.good]="progress.attendance >= 80" 
+										[class.fair]="progress.attendance >= 60 && progress.attendance < 80"
+										[class.poor]="progress.attendance < 60">
+										{{ progress.attendance }}%
+									</span>
+								</td>
+								<td>
+									<span class="attainment-badge">{{ progress.coAttainment }}%</span>
+								</td>
+								<td>{{ progress.lastUpdate | date: 'short' }}</td>
+							</tr>
+						</tbody>
+					</table>
+					<p *ngIf="studentProgressList.length === 0" class="empty-state">No student progress data available.</p>
+				</div>
+			</section>
+
+			<!-- Faculty Management Widgets -->
+			<section class="dashboard-section">
+				<div class="section-header">
+					<h2>📋 Faculty Workbench</h2>
+				</div>
+				<div class="faculty-widget-grid">
+
+					<div class="widget-card">
+						<div class="widget-header">
+							<h3>📝 Examination</h3>
+						</div>
+						<ul class="widget-list">
+							<li *ngFor="let item of examinationItems">
+								<div class="list-main">
+									<strong>{{ item.title }}</strong>
+									<span>{{ item.course }}</span>
+								</div>
+								<div class="list-meta">
+									<span>{{ item.date }}</span>
+									<span>{{ item.room }}</span>
+								</div>
+								<span class="status-pill" [class.scheduled]="item.status === 'Scheduled'" [class.ongoing]="item.status === 'Ongoing'" [class.completed]="item.status === 'Completed'">{{ item.status }}</span>
+							</li>
+						</ul>
+						<p *ngIf="examinationItems.length === 0" class="empty-state">No examination scheduled yet.</p>
+					</div>
+
+					<div class="widget-card">
+						<div class="widget-header">
+							<h3>📩 Grievance</h3>
+						</div>
+						<ul class="widget-list">
+							<li *ngFor="let item of grievanceItems">
+								<div class="list-main">
+									<strong>{{ item.title }}</strong>
+									<span>{{ item.student }} • {{ item.type }}</span>
+								</div>
+								<div class="widget-row">
+									<span class="status-pill" [class.open]="item.status === 'Open'" [class.review]="item.status === 'In Review'" [class.resolved]="item.status === 'Resolved'">{{ item.status }}</span>
+									<small>{{ item.lastUpdated }}</small>
+								</div>
+							</li>
+						</ul>
+						<p *ngIf="grievanceItems.length === 0" class="empty-state">No grievances filed yet.</p>
+					</div>
+
+					<div class="widget-card">
+						<div class="widget-header">
+							<h3>🧠 Question Bank</h3>
+						</div>
+						<ul class="widget-list">
+							<li *ngFor="let item of questionBankItems">
+								<div class="list-main">
+									<strong>{{ item.title }}</strong>
+									<span>{{ item.type }}</span>
+								</div>
+								<div class="widget-row">
+									<span class="difficulty-badge" [class.easy]="item.difficulty === 'Easy'" [class.medium]="item.difficulty === 'Medium'" [class.hard]="item.difficulty === 'Hard'">{{ item.difficulty }}</span>
+									<small>{{ item.marks }} Marks</small>
+								</div>
+							</li>
+						</ul>
+						<p *ngIf="questionBankItems.length === 0" class="empty-state">No questions added yet.</p>
+					</div>
+
+				</div>
+			</section>
+
+			<!-- Notifications Section -->
+			<section class="dashboard-section">
+				<div class="section-header">
+					<h2>🔔 Recent Notifications</h2>
+					<button class="view-all-btn" (click)="goToNotifications()">View All →</button>
+				</div>
+				<div class="notifications-list">
+					<div *ngFor="let notification of notifications" class="notification-card" 
+						[class.unread]="!notification.read">
+						<div class="notification-icon">
+							<span *ngIf="notification.type === 'alert'">⚠️</span>
+							<span *ngIf="notification.type === 'announcement'">📢</span>
+							<span *ngIf="notification.type === 'update'">ℹ️</span>
+						</div>
+						<div class="notification-content">
+							<h3>{{ notification.title }}</h3>
+							<p>{{ notification.message }}</p>
+							<small>{{ notification.date | date: 'short' }}</small>
+						</div>
+					</div>
+				</div>
+				<p *ngIf="notifications.length === 0" class="empty-state">No notifications.</p>
+			</section>
+
+		</ng-container>
+
+	</div>
+
+</div>
+
+<app-footer></app-footer>

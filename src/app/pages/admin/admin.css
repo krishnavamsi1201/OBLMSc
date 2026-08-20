@@ -1,0 +1,86 @@
+.dashboard-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 24px;
+    margin-top: 30px;
+}
+
+.dashboard-card {
+    padding: 28px;
+    border-radius: 22px;
+    background: rgba(255, 255, 255, 0.96);
+    border: 1px solid rgba(174, 202, 241, 0.34);
+    box-shadow: 0 18px 40px rgba(47, 101, 195, 0.10);
+}
+
+.dashboard-card h3 {
+    margin: 0 0 14px;
+    color: #1f3d7a;
+    font-size: 20px;
+    font-weight: 700;
+}
+
+.metric-card .metric-value {
+    margin: 16px 0 12px;
+    font-size: 44px;
+    font-weight: 800;
+    color: #0d3b8e;
+}
+
+.dashboard-card p {
+    margin: 0;
+    color: #4b5f84;
+    line-height: 1.7;
+}
+
+.metric-action {
+    display: inline-block;
+    margin-top: 14px;
+    color: #2563eb;
+    font-weight: 600;
+    text-decoration: none;
+}
+
+.metric-action:hover {
+    text-decoration: underline;
+}
+
+/* Feature Cards for OBE Management */
+.feature-card {
+    background: linear-gradient(135deg, rgba(249, 158, 11, 0.08) 0%, rgba(59, 130, 246, 0.08) 100%);
+    border: 1px solid rgba(249, 158, 11, 0.2);
+}
+
+.feature-card h3 {
+    color: #d97706;
+    font-size: 18px;
+}
+
+.feature-card p {
+    color: #6b7280;
+    font-size: 0.95rem;
+}
+
+.feature-card .metric-action {
+    color: #d97706;
+    font-weight: 700;
+}
+
+.feature-critical {
+    background: linear-gradient(135deg, rgba(245, 158, 11, 0.12) 0%, rgba(220, 38, 38, 0.08) 100%);
+    border: 1px solid rgba(245, 158, 11, 0.3);
+    box-shadow: 0 18px 40px rgba(220, 38, 38, 0.08);
+}
+
+.feature-critical h3 {
+    color: #f59e0b;
+}
+
+.feature-critical p {
+    color: #555;
+    font-weight: 500;
+}
+
+.feature-critical .metric-action {
+    color: #f59e0b;
+}

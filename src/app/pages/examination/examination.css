@@ -1,0 +1,253 @@
+.container {
+    display: flex;
+    min-height: 100vh;
+}
+
+.content {
+    flex: 1;
+    padding: 30px;
+    background: linear-gradient(135deg, #f5f7fb 0%, #eef2f8 100%);
+}
+
+.page-header {
+    margin-bottom: 24px;
+}
+
+.page-header h1 {
+    font-size: 32px;
+    color: #1f3d7a;
+    margin: 0 0 10px;
+}
+
+.page-header p {
+    color: #4b5f84;
+    margin: 0;
+    font-size: 16px;
+}
+
+.actions-bar {
+    margin-bottom: 24px;
+    display: flex;
+    justify-content: flex-end;
+}
+
+/* Card layout for filters and form */
+.form-card, .filter-card, .exam-container {
+    background: white;
+    border-radius: 12px;
+    padding: 24px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+    margin-bottom: 24px;
+}
+
+.form-card h2 {
+    margin-top: 0;
+    font-size: 1.3rem;
+    color: #1f3d7a;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 10px;
+}
+
+.form-card form {
+    display: grid;
+    gap: 16px;
+}
+
+.grid-row {
+    display: grid;
+    gap: 16px;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+}
+
+label {
+    display: flex;
+    flex-direction: column;
+    font-weight: 600;
+    color: #333;
+    font-size: 0.95rem;
+}
+
+input[type=text], input[type=number], input[type=datetime-local], select {
+    margin-top: 6px;
+    padding: 10px 12px;
+    border: 1px solid #cfd8dc;
+    border-radius: 6px;
+    font-size: 14px;
+}
+
+.form-actions {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-top: 8px;
+}
+
+/* Filter container */
+.filters-container {
+    display: flex;
+    gap: 20px;
+    flex-wrap: wrap;
+}
+
+.filter-input {
+    flex: 2;
+    min-width: 250px;
+}
+
+.filter-select {
+    flex: 1;
+    min-width: 150px;
+}
+
+/* Exams Grid */
+.exams-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 20px;
+}
+
+.exam-card {
+    background: #f8f9fa;
+    border: 1px solid #e9ecef;
+    border-radius: 10px;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.02);
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.exam-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 15px rgba(0,0,0,0.06);
+}
+
+.exam-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 12px;
+    border-bottom: 1px solid #e9ecef;
+    padding-bottom: 8px;
+}
+
+.exam-card-header h3 {
+    margin: 0;
+    font-size: 1.1rem;
+    color: #1f3d7a;
+    line-height: 1.3;
+}
+
+.status-badge {
+    font-size: 0.75rem;
+    font-weight: 700;
+    padding: 4px 8px;
+    border-radius: 12px;
+    text-transform: uppercase;
+}
+
+.status-badge.scheduled {
+    background: #e3f2fd;
+    color: #0d47a1;
+}
+
+.status-badge.ongoing {
+    background: #e8f5e9;
+    color: #2e7d32;
+}
+
+.status-badge.completed {
+    background: #eceff1;
+    color: #455a64;
+}
+
+.exam-card-body {
+    flex: 1;
+}
+
+.exam-card-body p {
+    margin: 0 0 8px 0;
+    font-size: 0.9rem;
+    color: #555;
+}
+
+.venue-pill {
+    background: #ede7f6;
+    color: #4a148c;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 0.85rem;
+    font-weight: 600;
+}
+
+.exam-card-footer {
+    display: flex;
+    gap: 8px;
+    margin-top: 15px;
+    border-top: 1px solid #e9ecef;
+    padding-top: 12px;
+}
+
+/* Button styles */
+.btn {
+    padding: 8px 16px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 0.9rem;
+    transition: background-color 0.2s;
+}
+
+.btn-primary {
+    background: #1976d2;
+    color: white;
+}
+
+.btn-primary:hover {
+    background: #1565c0;
+}
+
+.btn-success {
+    background: #2e7d32;
+    color: white;
+}
+
+.btn-success:hover {
+    background: #1b5e20;
+}
+
+.btn-secondary {
+    background: #757575;
+    color: white;
+}
+
+.btn-secondary:hover {
+    background: #616161;
+}
+
+.btn-edit {
+    background: #4CAF50;
+    color: white;
+    font-size: 0.8rem;
+    padding: 6px 12px;
+}
+
+.btn-delete {
+    background: #f44336;
+    color: white;
+    font-size: 0.8rem;
+    padding: 6px 12px;
+}
+
+.empty-state {
+    text-align: center;
+    padding: 40px 20px;
+    color: #999;
+}
+
+.loading-spinner {
+    text-align: center;
+    padding: 60px 20px;
+    color: #4b5f84;
+}

@@ -1,0 +1,132 @@
+<app-navbar *ngIf="role !== 'student'"></app-navbar>
+
+<div class="container">
+
+    <app-sidebar></app-sidebar>
+
+    <div class="content">
+
+        <ng-container *ngIf="role !== 'student'">
+            <app-dashboard-header></app-dashboard-header>
+
+            <section class="dashboard-top">
+                <div class="dashboard-intro">
+                    <span class="eyebrow">Executive Dashboard</span>
+                    <h1>Welcome back, <strong>Faculty</strong></h1>
+                    <p>Monitor key outcomes, attendance, and course progress from a single command center.</p>
+                </div>
+                <div class="dashboard-metrics">
+                    <div class="metric-card">
+                        <span class="metric-label">Courses Enrolled</span>
+                        <strong class="metric-value">{{ enrolledCount }}</strong>
+                    </div>
+                    <div class="metric-card">
+                        <span class="metric-label">Attendance Rate</span>
+                        <strong class="metric-value">{{ attendance }}</strong>
+                    </div>
+                    <div class="metric-card">
+                        <span class="metric-label">Current CGPA</span>
+                        <strong class="metric-value">{{ cgpa }}</strong>
+                    </div>
+                    <div class="metric-card">
+                        <span class="metric-label">CO Attainment</span>
+                        <strong class="metric-value">{{ coAttainment }}</strong>
+                    </div>
+                </div>
+            </section>
+        </ng-container>
+
+        <div class="cards-container">
+            <ng-container *ngIf="role === 'student'; else general">
+                <div class="dashboard-card action-card">
+                    <div class="card-header">
+                        <span>📚</span>
+                        <h3>My Courses</h3>
+                    </div>
+                    <p class="card-value">{{ enrolledCount }}</p>
+                    <button mat-button color="primary" (click)="goToCourses()">View Courses</button>
+                </div>
+
+                <div class="dashboard-card action-card">
+                    <div class="card-header">
+                        <span>📊</span>
+                        <h3>Attendance</h3>
+                    </div>
+                    <p class="card-value">{{ attendance }}</p>
+                    <button mat-button (click)="viewAttendance()">View Details</button>
+                </div>
+
+                <div class="dashboard-card action-card">
+                    <div class="card-header">
+                        <span>📈</span>
+                        <h3>Performance</h3>
+                    </div>
+                    <p class="card-value">{{ cgpa }} CGPA</p>
+                    <button mat-button (click)="viewPerformance()">View Insights</button>
+                </div>
+
+                <div class="dashboard-card action-card">
+                    <div class="card-header">
+                        <span>🗓️</span>
+                        <h3>Timetable</h3>
+                    </div>
+                    <p class="card-value">Upcoming classes at a glance</p>
+                    <button mat-button (click)="viewTimetable()">Open Timetable</button>
+                </div>
+
+                <div class="dashboard-card action-card">
+                    <div class="card-header">
+                        <span>💳</span>
+                        <h3>Fees</h3>
+                    </div>
+                    <p class="card-value">View balance and pay securely</p>
+                    <button mat-button (click)="viewFees()">Manage Fee</button>
+                </div>
+
+                <div class="dashboard-card action-card">
+                    <div class="card-header">
+                        <span>🎫</span>
+                        <h3>Admit Card</h3>
+                    </div>
+                    <p class="card-value">Download exam admission pass</p>
+                    <button mat-button (click)="viewAdmitCard()">Download</button>
+                </div>
+
+                <div class="dashboard-card action-card">
+                    <div class="card-header">
+                        <span>📝</span>
+                        <h3>Feedback</h3>
+                    </div>
+                    <p class="card-value">Share your experience with faculty</p>
+                    <button mat-button (click)="giveFeedback()">Give Feedback</button>
+                </div>
+            </ng-container>
+
+            <ng-template #general>
+                <div class="dashboard-card stat-card">
+                    <h3>📚 Courses</h3>
+                    <p>{{ enrolledCount }} active courses</p>
+                </div>
+
+                <div class="dashboard-card stat-card">
+                    <h3>📊 Attendance</h3>
+                    <p>{{ attendance }} average participation</p>
+                </div>
+
+                <div class="dashboard-card stat-card">
+                    <h3>🎯 CO Attainment</h3>
+                    <p>{{ coAttainment }} target completion</p>
+                </div>
+
+                <div class="dashboard-card stat-card">
+                    <h3>📈 Performance</h3>
+                    <p>{{ cgpa }} CGPA projection</p>
+                </div>
+            </ng-template>
+        </div>
+
+    </div>
+
+</div>
+
+<app-footer *ngIf="role !== 'student'"></app-footer>
