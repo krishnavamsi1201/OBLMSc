@@ -8,7 +8,7 @@
 
         <div class="page-header">
             <h1>📚 Courses</h1>
-            <p>Admin can create, edit, delete, and assign faculty for courses.</p>
+            <p>{{ role === 'student' ? 'View your active course catalog and track Course Outcomes (CO) syllabus progress.' : 'Admin and Faculty dashboard to create, edit, delete, and manage course allocation.' }}</p>
         </div>
 
         <div class="course-actions" *ngIf="role === 'admin' || role === 'faculty'">
@@ -41,6 +41,29 @@
             </form>
         </div>
 
+        <!-- Student Syllabus CO Checklist -->
+        <div class="course-form-card" *ngIf="selectedSyllabusCourse" style="border: 2px solid #10b981; margin-top: 20px; background: #fafdfb;">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+                <h2 style="color: #065f46; margin: 0; border-bottom: none; padding-bottom: 0;">📋 Syllabus Tracker (COs) - {{ selectedSyllabusCourse.title }}</h2>
+                <button mat-button type="button" (click)="selectedSyllabusCourse = null" style="color: #64748b; border: 1px solid #cbd5e1; padding: 4px 10px; border-radius: 6px; cursor: pointer; background: #fff;">Close</button>
+            </div>
+            <p style="color: #4b5f84; font-size: 0.9rem; margin-top: 6px; margin-bottom: 16px;">Tick the Course Outcomes (COs) you have mastered to track your study progress.</p>
+            
+            <div class="syllabus-list" style="display: grid; gap: 12px;">
+                <div class="syllabus-item" *ngFor="let co of getCourseCOs()" 
+                     style="display: flex; gap: 14px; align-items: flex-start; padding: 12px; background: #ffffff; border: 1px solid #d1fae5; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.02);">
+                    <input type="checkbox" 
+                           [checked]="isCompleted(selectedSyllabusCourse.code, co.code)" 
+                           (change)="toggleCompletion(selectedSyllabusCourse.code, co.code)"
+                           style="width: 18px; height: 18px; cursor: pointer; margin-top: 2px;" />
+                    <div>
+                        <strong style="color: #065f46; font-size: 0.95rem;">{{ co.code }} - {{ co.title }}</strong>
+                        <p style="margin: 4px 0 0 0; color: #374151; font-size: 0.9rem; line-height: 1.4;">{{ co.desc }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <div class="courses-table-card">
             <table>
                 <thead>
@@ -57,14 +80,29 @@
                         <td colspan="5">No courses created yet. Use the Create Course button above.</td>
                     </tr>
                     <tr *ngFor="let course of courses; index as i">
-                        <td>{{ course.code }}</td>
+                        <td><strong>{{ course.code }}</strong></td>
                         <td>{{ course.title }}</td>
-                        <td>{{ course.faculty }}</td>
+                        <td>{{ course.faculty || '—' }}</td>
                         <td>{{ course.semester }}</td>
                         <td class="actions-cell">
-                            <button mat-button color="primary" (click)="editCourse(course, i)">Edit</button>
-                            <button mat-button color="warn" (click)="deleteCourse(course)">Delete</button>
-                            <button mat-button (click)="assignFaculty(course)">Assign Faculty</button>
+                            <!-- Show Admin specific actions -->
+                            <ng-container *ngIf="role === 'admin'">
+                                <button mat-button color="primary" (click)="editCourse(course, i)">Edit</button>
+                                <button mat-button color="warn" (click)="deleteCourse(course)" style="margin-left: 8px;">Delete</button>
+                                <button mat-button (click)="assignFaculty(course)" style="margin-left: 8px;">Assign Faculty</button>
+                            </ng-container>
+                            
+                            <!-- Show Faculty specific actions -->
+                            <ng-container *ngIf="role === 'faculty'">
+                                <button mat-button (click)="assignFaculty(course)">Reassign Faculty</button>
+                            </ng-container>
+                            
+                            <!-- Show Student specific actions -->
+                            <ng-container *ngIf="role === 'student'">
+                                <button mat-raised-button (click)="trackSyllabus(course)" style="background: #10b981; color: white; border: none; border-radius: 6px; padding: 6px 12px; font-weight: 600; cursor: pointer;">
+                                    📋 Track Syllabus
+                                </button>
+                            </ng-container>
                         </td>
                     </tr>
                 </tbody>

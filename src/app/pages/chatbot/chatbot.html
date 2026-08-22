@@ -34,6 +34,23 @@
         </div>
       </div>
 
+      <!-- Suggestions Panel -->
+      <div class="suggestions-panel" *ngIf="suggestions.length > 0">
+        <button *ngFor="let s of suggestions" type="button" class="suggestion-btn" (click)="clickSuggestion(s.route)">
+          {{ s.label }}
+        </button>
+      </div>
+
+      <!-- Quick Prompts Panel -->
+      <div class="quick-prompts-panel">
+        <p class="quick-prompts-title">💡 Ask quick questions:</p>
+        <div class="quick-prompts-list">
+          <button *ngFor="let prompt of getQuickPrompts()" type="button" class="quick-prompt-btn" (click)="sendQuickPrompt(prompt)">
+            {{ prompt }}
+          </button>
+        </div>
+      </div>
+
       <div class="chat-actions">
 
         <form class="chat-form" (ngSubmit)="sendMessage()">

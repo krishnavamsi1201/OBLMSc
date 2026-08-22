@@ -1,4 +1,4 @@
-﻿import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Navbar } from '../../shared/navbar/navbar';
@@ -35,11 +35,10 @@ interface CoMapping {
   templateUrl: './copo-mapping.html',
   styleUrls: ['./copo-mapping.css']
 })
-export class CopoMapping {
+export class CopoMapping implements OnInit {
   role: string | null = null;
 
   programOutcomes: ProgramOutcome[] = [];
-
   courseOutcomes: CourseOutcome[] = [];
   courses: string[] = [];
   selectedCourseOutcomeKey = '';
@@ -56,17 +55,24 @@ export class CopoMapping {
   ];
 
   showMatrix = true;
-
   mappings: CoMapping[] = [];
 
   currentMapping: CoMapping = { id: 0, course: '', co: '', po: '', contribution: 0, mappingLevel: 0, status: 'Pending' };
   editIndex = -1;
 
   constructor() {
-    this.role = localStorage.getItem('userRole')?.toLowerCase() || null;
+    try {
+      this.role = localStorage.getItem('userRole')?.toLowerCase() || null;
+    } catch {
+      this.role = null;
+    }
     this.loadData();
     this.loadCourses();
     this.resetMapping();
+  }
+
+  ngOnInit(): void {
+    // Standard initialization if needed
   }
 
   loadData() {
@@ -123,6 +129,11 @@ export class CopoMapping {
   }
 
   saveMapping() {
+    if (this.role === 'student') {
+      alert('Only admins and faculty can manage CO-PO mappings.');
+      return;
+    }
+
     if (!this.currentMapping.co || !this.currentMapping.po || this.currentMapping.contribution <= 0 || this.currentMapping.mappingLevel <= 0) {
       alert('Please select both CO and PO and enter valid mapping details.');
       return;
@@ -142,6 +153,10 @@ export class CopoMapping {
   }
 
   editMapping(index: number) {
+    if (this.role === 'student') {
+      alert('Only admins and faculty can manage CO-PO mappings.');
+      return;
+    }
     this.editIndex = index;
     this.currentMapping = { ...this.mappings[index] };
     this.selectedCourseOutcomeKey = `${this.currentMapping.course}::${this.currentMapping.co}`;
@@ -161,6 +176,10 @@ export class CopoMapping {
   }
 
   deleteMapping(index: number) {
+    if (this.role === 'student') {
+      alert('Only admins and faculty can manage CO-PO mappings.');
+      return;
+    }
     this.mappings = this.mappings.filter((_, i) => i !== index);
     this.saveMappings();
     if (this.editIndex === index) {
@@ -183,6 +202,11 @@ export class CopoMapping {
   }
 
   addProgramOutcome() {
+    if (this.role === 'student') {
+      alert('Only admins and faculty can manage Program Outcomes.');
+      return;
+    }
+
     if (!this.newPoDescription.trim()) {
       alert('Enter a PO description.');
       return;
@@ -203,6 +227,11 @@ export class CopoMapping {
   }
 
   addCourseOutcome() {
+    if (this.role === 'student') {
+      alert('Only admins and faculty can manage Course Outcomes.');
+      return;
+    }
+
     if (!this.newCoCourse.trim()) {
       alert('Enter the course for this CO.');
       return;
@@ -278,4 +307,3 @@ export class CopoMapping {
     };
   }
 }
-

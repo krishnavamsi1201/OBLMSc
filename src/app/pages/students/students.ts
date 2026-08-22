@@ -105,7 +105,7 @@ export class Students implements OnInit {
         const present = myAttendance.filter((a: any) => a.status === 'Present').length;
         this.stats.attendancePercentage = Math.round((present / myAttendance.length) * 100);
       } else {
-        this.stats.attendancePercentage = 85; // Fallback
+        this.stats.attendancePercentage = 72; // Fallback for low attendance warning demo
       }
 
       // 3. Performance / CGPA

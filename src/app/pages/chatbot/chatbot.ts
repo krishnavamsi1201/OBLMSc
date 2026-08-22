@@ -71,6 +71,28 @@ export class Chatbot {
     this.suggestions = [];
   }
 
+  getQuickPrompts(): string[] {
+    const role = localStorage.getItem('userRole')?.toLowerCase() || 'student';
+    if (role === 'student') {
+      return [
+        'What is my current CGPA?',
+        'Do I have any exams scheduled this week?',
+        'Show my attendance summary'
+      ];
+    } else {
+      return [
+        'How many pending grievances are there?',
+        'What is the class average grades?',
+        'Show this week’s timetable slots'
+      ];
+    }
+  }
+
+  sendQuickPrompt(prompt: string): void {
+    this.userMessage = prompt;
+    this.sendMessage();
+  }
+
   private defaultSuggestions(): Array<{ label: string; route: string }> {
     return [
       { label: 'Courses', route: '/courses' },
@@ -135,7 +157,70 @@ export class Chatbot {
 
   private processCommand(input: string): { text: string; navigateTo?: string; suggestions?: Array<{ label: string; route: string }> } {
     const lower = input.toLowerCase();
+    const userName = localStorage.getItem('userName') || 'User';
 
+    // 1. Student / General dynamic queries
+    if (lower.includes('cgpa') || lower.includes('gpa')) {
+      const marks = this.getSafeJson('obslmsMarkEntries');
+      const myMarks = marks.filter(m => m.student.toLowerCase() === userName.toLowerCase());
+      if (myMarks.length > 0) {
+        const totalObtained = myMarks.reduce((sum, m) => sum + (Number(m.obtained) || 0), 0);
+        const totalMax = myMarks.reduce((sum, m) => sum + (Number(m.maxMarks) || 100), 0);
+        const avg = totalMax > 0 ? (totalObtained / totalMax) * 100 : 0;
+        const cgpa = (avg / 10).toFixed(2);
+        return { text: `Hello ${userName}, your current calculated CGPA is ${cgpa} based on your assessment records.` };
+      }
+      return { text: `Hello ${userName}, your current CGPA is 8.25 (based on fallback metrics).` };
+    }
+
+    if (lower.includes('exam')) {
+      const exams = this.getSafeJson('obslmsExams');
+      if (exams.length > 0) {
+        const scheduledExams = exams.filter(e => e.status === 'Scheduled' || e.status === 'Ongoing');
+        if (scheduledExams.length > 0) {
+          const list = scheduledExams.map(e => `${e.title || e.course} (${e.date} at ${e.time || 'TBD'})`).join(', ');
+          return { text: `Yes, you have ${scheduledExams.length} upcoming exam(s) scheduled: ${list}.`, navigateTo: '/examination' };
+        }
+      }
+      return { text: 'You do not have any exams scheduled this week.', navigateTo: '/examination' };
+    }
+
+    if (lower.includes('attendance')) {
+      const attendance = this.getSafeJson('obslmsAttendance');
+      const myAttendance = attendance.filter((a: any) => a.student.toLowerCase() === userName.toLowerCase());
+      let percentage = 72; // Fallback matches student dashboard fallback
+      if (myAttendance.length > 0) {
+        const present = myAttendance.filter((a: any) => a.status === 'Present').length;
+        percentage = Math.round((present / myAttendance.length) * 100);
+      }
+      const warning = percentage < 75 ? ` ⚠️ Warning: This is below the required 75% threshold.` : '';
+      return { text: `Your overall attendance is ${percentage}%.${warning}` };
+    }
+
+    // 2. Faculty / Admin dynamic queries
+    if (lower.includes('pending grievance') || lower.includes('grievance ticket')) {
+      const grievances = this.getSafeJson('obslmsGrievances');
+      const pending = grievances.filter(g => g.status === 'Open' || g.status === 'In Review').length;
+      return { text: `There are currently ${pending} pending grievance ticket(s) in the system.`, navigateTo: '/grievance' };
+    }
+
+    if (lower.includes('class average') || lower.includes('average grade') || lower.includes('average score')) {
+      const marks = this.getSafeJson('obslmsMarkEntries');
+      if (marks.length > 0) {
+        const totalObtained = marks.reduce((sum, m) => sum + (Number(m.obtained) || 0), 0);
+        const totalMax = marks.reduce((sum, m) => sum + (Number(m.maxMarks) || 100), 0);
+        const avg = totalMax > 0 ? Math.round((totalObtained / totalMax) * 100) : 80;
+        return { text: `The class overall average score is ${avg}%.` };
+      }
+      return { text: 'The class overall average grade is 83% (based on standard fallback records).' };
+    }
+
+    if (lower.includes('timetable') || lower.includes('class slot') || lower.includes('weekly timetable')) {
+      const slots = this.getSafeJson('obslmsTimetable');
+      return { text: `There are currently ${slots.length} class slot(s) scheduled in the weekly timetable roster.`, navigateTo: '/timetable' };
+    }
+
+    // Navigations
     if (lower.includes('open') || lower.includes('go to') || lower.includes('show')) {
       if (lower.includes('assign') || lower.includes('assessment')) {
         return { text: 'Opening Assessments page for you now.', navigateTo: '/assessments' };
@@ -185,9 +270,6 @@ export class Chatbot {
     if (lower.includes('report')) {
       return { text: 'Reports show performance data. You can open the Reports page.' };
     }
-    if (lower.includes('attendance')) {
-      return { text: 'Attendance metrics are shown on the Dashboard and course pages.' };
-    }
     if (lower.includes('settings')) {
       return { text: 'Settings lets you adjust preferences.' };
     }
@@ -210,5 +292,14 @@ export class Chatbot {
         { label: 'Dashboard', route: '/dashboard' }
       ]
     };
+  }
+
+  private getSafeJson(key: string): any[] {
+    try {
+      const stored = localStorage.getItem(key);
+      return stored ? JSON.parse(stored) : [];
+    } catch {
+      return [];
+    }
   }
 }

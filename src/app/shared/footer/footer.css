@@ -1,11 +1,11 @@
 footer {
-  background: linear-gradient(135deg, rgba(57, 83, 112, 0.76) 0%, rgba(65, 94, 128, 0.72) 100%);
+  background: linear-gradient(135deg, rgba(40, 60, 90, 0.95) 0%, rgba(50, 75, 110, 0.95) 100%);
   color: #edf4ff;
   text-align: center;
-  padding: 10px 14px 8px;
+  padding: 6px 14px;
   border-top: 1px solid rgba(255, 255, 255, 0.06);
   backdrop-filter: blur(4px);
-  margin-top: 10px;
+  height: 60px;
 }
 
 .footer-content {
@@ -13,14 +13,17 @@ footer {
   margin: 0 auto;
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 2px;
   align-items: center;
+  justify-content: center;
+  height: 100%;
 }
 
 .footer-main {
   display: flex;
-  flex-direction: column;
-  gap: 6px;
+  flex-direction: row;
+  gap: 8px;
+  align-items: center;
 }
 
 .footer-copyright {

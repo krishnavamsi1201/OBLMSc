@@ -87,8 +87,42 @@ interface ScheduleEntry {
             </form>
         </div>
 
+        <!-- Weekly Visual Grid Calendar (New Matrix View) -->
+        <div class="table-card" style="overflow-x: auto;">
+            <h2>📅 Weekly Timetable Matrix</h2>
+            <p style="color: #64748b; font-size: 0.9rem; margin-bottom: 16px;">Visual calendar representation of weekly lectures and classroom distribution.</p>
+            
+            <table class="timetable-grid" style="width: 100%; border-collapse: collapse; min-width: 800px; border: 1px solid #cbd5e1;">
+                <thead>
+                    <tr style="background: #f1f5f9;">
+                        <th style="border: 1px solid #cbd5e1; padding: 12px; text-align: center; color: #1f3d7a; font-weight: 700;">Day</th>
+                        <th *ngFor="let p of periods" style="border: 1px solid #cbd5e1; padding: 12px; text-align: center; color: #1f3d7a; font-weight: 700; font-size: 0.85rem;">
+                            {{ p }}
+                        </th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr *ngFor="let d of days">
+                        <td style="border: 1px solid #cbd5e1; padding: 12px; text-align: center; font-weight: 700; background: #f8fafc; color: #334155; width: 100px;">
+                            {{ d }}
+                        </td>
+                        <td *ngFor="let p of periods" style="border: 1px solid #cbd5e1; padding: 8px; text-align: center; width: 150px; height: 75px; vertical-align: middle;">
+                            <div *ngIf="getSlot(d, p) as slot" class="grid-class-card" 
+                                 style="background: #e0f2fe; border: 1px solid #7dd3fc; padding: 8px; border-radius: 6px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); display: flex; flex-direction: column; gap: 4px; height: 100%; justify-content: center; text-align: center;">
+                                <span style="font-size: 0.82rem; font-weight: 700; color: #0369a1; line-height: 1.2;">{{ slot.subject }}</span>
+                                <span style="font-size: 0.72rem; font-weight: 600; color: #0284c7; background: #bae6fd; padding: 2px 6px; border-radius: 4px; width: fit-content; margin: 0 auto; white-space: nowrap;">
+                                    🚪 {{ slot.room }}
+                                </span>
+                            </div>
+                            <span *ngIf="!getSlot(d, p)" style="color: #cbd5e1; font-size: 0.85rem;">—</span>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
         <div class="table-card">
-            <h2>Weekly Timetable ({{ filteredSchedule.length }})</h2>
+            <h2>Weekly Timetable List ({{ filteredSchedule.length }})</h2>
             
             <div class="filter-row">
                 <label>
@@ -127,7 +161,7 @@ interface ScheduleEntry {
                         <td><span class="room-badge">{{ entry.room }}</span></td>
                         <td *ngIf="role === 'admin' || role === 'faculty'" class="actions-cell">
                             <button type="button" class="edit-btn" (click)="editEntry(entry)">Edit</button>
-                            <button type="button" class="delete-btn" (click)="deleteEntry(entry)">Delete</button>
+                            <button type="button" class="danger" (click)="deleteEntry(entry)" style="margin-left: 8px;">Delete</button>
                         </td>
                     </tr>
                 </tbody>
@@ -183,7 +217,7 @@ interface ScheduleEntry {
     
     .actions-cell { display: flex; gap: 8px; }
     .edit-btn { background: #4CAF50; color: white; padding: 6px 12px; font-size: 12px; border: none; border-radius: 4px; cursor: pointer; }
-    .delete-btn { background: #f44336; color: white; padding: 6px 12px; font-size: 12px; border: none; border-radius: 4px; cursor: pointer; }
+    button.danger { background: #d32f2f; color: white; padding: 6px 12px; font-size: 12px; border: none; border-radius: 4px; cursor: pointer; }
     
     .filter-row { display: flex; gap: 20px; flex-wrap: wrap; margin-bottom: 16px; background: #fdfdfd; padding: 12px; border-radius: 8px; border: 1px solid #eee; }
     .filter-row label { flex: 1; min-width: 180px; }
@@ -197,6 +231,16 @@ export class Timetable implements OnInit {
   currentDay = new Date().toLocaleDateString('en-US', { weekday: 'long' });
   weeklySchedule: ScheduleEntry[] = [];
   filteredSchedule: ScheduleEntry[] = [];
+
+  // Visual grid variables
+  days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+  periods = [
+    '09:00 AM - 10:00 AM',
+    '10:15 AM - 11:15 AM',
+    '11:30 AM - 12:30 PM',
+    '02:00 PM - 03:00 PM',
+    '03:15 PM - 04:15 PM'
+  ];
 
   // Form bindings
   currentEntry: ScheduleEntry = this.createEmptyEntry();
@@ -220,7 +264,7 @@ export class Timetable implements OnInit {
   }
 
   createEmptyEntry(): ScheduleEntry {
-    return { id: 0, day: 'Monday', period: '', subject: '', room: '' };
+    return { id: 0, day: 'Monday', period: '09:00 AM - 10:00 AM', subject: '', room: '' };
   }
 
   private loadTimetable(): void {
@@ -232,11 +276,11 @@ export class Timetable implements OnInit {
         // Seed default schedules
         this.weeklySchedule = [
           { id: 1, day: 'Monday', period: '09:00 AM - 10:00 AM', subject: 'Outcome-Based Education', room: 'LH-301' },
-          { id: 2, day: 'Monday', period: '11:15 AM - 12:15 PM', subject: 'Database Management Systems', room: 'LH-302' },
-          { id: 3, day: 'Tuesday', period: '10:00 AM - 11:00 AM', subject: 'Machine Learning', room: 'Lab-4' },
+          { id: 2, day: 'Monday', period: '11:30 AM - 12:30 PM', subject: 'Database Management Systems', room: 'LH-302' },
+          { id: 3, day: 'Tuesday', period: '10:15 AM - 11:15 AM', subject: 'Machine Learning', room: 'Lab-4' },
           { id: 4, day: 'Wednesday', period: '09:00 AM - 10:00 AM', subject: 'Outcome-Based Education', room: 'LH-301' },
           { id: 5, day: 'Thursday', period: '02:00 PM - 03:00 PM', subject: 'Cloud Computing', room: 'LH-101' },
-          { id: 6, day: 'Friday', period: '11:15 AM - 12:15 PM', subject: 'Database Management Systems', room: 'LH-302' }
+          { id: 6, day: 'Friday', period: '11:30 AM - 12:30 PM', subject: 'Database Management Systems', room: 'LH-302' }
         ];
         this.saveTimetable();
       }
@@ -249,6 +293,14 @@ export class Timetable implements OnInit {
     try {
       localStorage.setItem('obslmsTimetable', JSON.stringify(this.weeklySchedule));
     } catch {}
+  }
+
+  getSlot(day: string, period: string): ScheduleEntry | null {
+    const pHour = period.split(':')[0]; // E.g., '09', '10', '11', '02', '03'
+    return this.weeklySchedule.find(s => 
+      s.day.toLowerCase() === day.toLowerCase() && 
+      s.period.toLowerCase().includes(pHour.toLowerCase())
+    ) || null;
   }
 
   get todayClasses(): ScheduleEntry[] {

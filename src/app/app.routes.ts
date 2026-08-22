@@ -199,13 +199,13 @@ export const routes: Routes = [
     path: 'settings/security',
     component: SettingsSecurity,
     canActivate: [RoleGuard],
-    data: { roles: ['admin', 'faculty'] }
+    data: { roles: ['admin', 'faculty', 'student'] }
   },
   {
     path: 'settings/appearance',
     component: SettingsAppearance,
     canActivate: [RoleGuard],
-    data: { roles: ['admin', 'faculty'] }
+    data: { roles: ['admin', 'faculty', 'student'] }
   },
   {
     path: 'settings/teaching-preferences',

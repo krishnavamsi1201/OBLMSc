@@ -81,10 +81,18 @@ interface StudentResult {
 
         <div class="action-row">
             <button type="button" (click)="downloadResults()">Download Report</button>
+            <button type="button" class="btn-print" (click)="printTranscript()" *ngIf="role === 'student'">🖨️ Export Marksheet PDF</button>
             <span class="status-message" *ngIf="downloadMessage">{{ downloadMessage }}</span>
         </div>
 
         <div class="table-card">
+            <!-- Print Only Header Details -->
+            <div class="print-header-details">
+                <h3 style="margin: 0; color: #1e3a8a; font-size: 1.4rem;">Student Name: {{ userName }}</h3>
+                <p style="margin: 4px 0 0; color: #475569; font-size: 0.95rem;">Academic Program: Bachelor of Technology (CSE)</p>
+                <p style="margin: 2px 0 0; color: #475569; font-size: 0.95rem;">Academic Session: 2025-2026</p>
+            </div>
+            
             <h2>{{ role === 'student' ? 'My Academic Transcript' : 'Class Result Analysis' }}</h2>
             <table *ngIf="filteredResults.length > 0">
                 <thead>
@@ -124,6 +132,7 @@ interface StudentResult {
     .pass-standing { color: #2e7d32 !important; }
     .action-row { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; margin-bottom: 20px; }
     .action-row button { padding: 10px 18px; border: none; border-radius: 8px; background: #1976d2; color: #fff; cursor: pointer; font-weight: 600; }
+    .btn-print { background: #10b981 !important; margin-left: 10px; }
     .status-message { color: #2e7d32; font-weight: 600; }
     .table-card table { width: 100%; border-collapse: collapse; margin-top: 16px; }
     .table-card th, .table-card td { padding: 12px 10px; border-bottom: 1px solid #e8e8e8; text-align: left; }
@@ -137,6 +146,44 @@ interface StudentResult {
     .status-pill.pass { background: #e8f5e9; color: #2e7d32; }
     .status-pill.fail { background: #ffebee; color: #c62828; }
     .empty-state { text-align: center; color: #999; padding: 40px 20px; }
+    .print-header-details { display: none; margin-bottom: 20px; border-bottom: 2px solid #e2e8f0; padding-bottom: 12px; }
+    
+    @media print {
+      body * {
+        visibility: hidden;
+      }
+      .table-card, .table-card * {
+        visibility: visible;
+      }
+      .table-card {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100%;
+        box-shadow: none !important;
+        border: 2px solid #1e3a8a !important;
+        padding: 30px !important;
+        border-radius: 12px !important;
+        margin: 0 !important;
+        background: #ffffff !important;
+      }
+      .table-card::before {
+        content: "OUTCOME-BASED LEARNING MANAGEMENT SYSTEM\\A OFFICIAL ACADEMIC TRANSCRIPT\\A";
+        display: block;
+        text-align: center;
+        font-size: 20px;
+        font-weight: bold;
+        margin-bottom: 25px;
+        white-space: pre-wrap;
+        color: #1e3a8a;
+      }
+      .print-header-details {
+        display: block !important;
+      }
+      app-navbar, app-sidebar, app-footer, .page-header, .summary-grid, .action-row, .empty-state {
+        display: none !important;
+      }
+    }
     `
   ]
 })
@@ -185,10 +232,10 @@ export class Results implements OnInit {
         ];
         localStorage.setItem('obslmsMarkEntries', JSON.stringify(mockMarkEntries));
       } else {
-        // Group marks by student and course (assessment type is treated as course context if it contains subject name)
+        // Group marks by student and course
         const grouped = new Map<string, any>();
 
-        marks.forEach((mark: any, idx: number) => {
+        marks.forEach((mark: any) => {
           if (!mark.student) return;
           const key = `${mark.student}_${mark.assessment || 'General Course'}`;
 
@@ -301,5 +348,9 @@ export class Results implements OnInit {
       ? 'Preparing academic report transcript PDF download...' 
       : 'Exporting complete student results spreadsheet...';
     setTimeout(() => this.downloadMessage = '', 3500);
+  }
+
+  printTranscript(): void {
+    window.print();
   }
 }

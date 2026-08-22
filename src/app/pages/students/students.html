@@ -21,6 +21,11 @@
       <h1>👋 Welcome back, {{ studentName }}!</h1>
       <p class="subtitle">{{ studentEmail }} | Student Dashboard</p>
     </div>
+    
+    <!-- Attendance Warning Alert -->
+    <div *ngIf="stats.attendancePercentage < 75" class="attendance-warning-alert">
+      ⚠️ <strong>Attendance Warning:</strong> Your current attendance is <strong>{{ stats.attendancePercentage }}%</strong>, which is below the required 75% threshold. You may be barred from appearing in semester examinations if this is not improved.
+    </div>
 
     <!-- Student Stats Grid -->
     <div class="student-stats-grid">

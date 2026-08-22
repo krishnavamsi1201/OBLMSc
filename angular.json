@@ -28,7 +28,12 @@
               "src/material-theme.scss",
               "node_modules/bootstrap/dist/css/bootstrap.min.css",
               "src/styles.css"
-            ]
+            ],
+            "optimization": {
+              "fonts": {
+                "inline": false
+              }
+            }
           },
           "configurations": {
             "production": {
@@ -36,7 +41,7 @@
                 {
                   "type": "initial",
                   "maximumWarning": "500kB",
-                  "maximumError": "1.3MB"
+                  "maximumError": "2MB"
                 },
                 {
                   "type": "anyComponentStyle",

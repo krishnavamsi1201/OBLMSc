@@ -214,6 +214,58 @@ interface CoAttainmentStatus {
                 </div>
             </div>
 
+            <!-- Grade Trend Card -->
+            <div class="chart-card" *ngIf="myMarkEntries.length > 0">
+                <h2>📈 Grade Progression Trend</h2>
+                <p class="subtitle">Visual representation of your scores across recent assessments.</p>
+                <div style="text-align: center; margin-top: 20px; max-width: 600px; margin-left: auto; margin-right: auto;">
+                    <svg width="100%" height="180" viewBox="0 0 500 180" style="background: #f8fafc; border-radius: 8px; border: 1px solid #e2e8f0; padding: 10px;">
+                        <!-- Grid lines -->
+                        <line x1="40" y1="20" x2="480" y2="20" stroke="#f1f5f9" stroke-width="1"></line>
+                        <line x1="40" y1="52.5" x2="480" y2="52.5" stroke="#f1f5f9" stroke-width="1"></line>
+                        <line x1="40" y1="85" x2="480" y2="85" stroke="#f1f5f9" stroke-width="1"></line>
+                        <line x1="40" y1="117.5" x2="480" y2="117.5" stroke="#f1f5f9" stroke-width="1"></line>
+                        <line x1="40" y1="150" x2="480" y2="150" stroke="#e2e8f0" stroke-width="1"></line>
+                        
+                        <!-- Axis Labels -->
+                        <text x="20" y="24" fill="#94a3b8" font-size="9" text-anchor="middle">100%</text>
+                        <text x="20" y="89" fill="#94a3b8" font-size="9" text-anchor="middle">50%</text>
+                        <text x="20" y="154" fill="#94a3b8" font-size="9" text-anchor="middle">0%</text>
+                        
+                        <!-- Trend Line -->
+                        <polyline
+                            fill="none"
+                            stroke="#1976d2"
+                            stroke-width="3"
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            [attr.points]="svgPoints">
+                        </polyline>
+                        
+                        <!-- Points circles -->
+                        <circle *ngFor="let pt of getSvgCircles()" 
+                                [attr.cx]="pt.x" 
+                                [attr.cy]="pt.y" 
+                                r="5" 
+                                fill="#fff" 
+                                stroke="#1976d2" 
+                                stroke-width="3">
+                        </circle>
+
+                        <!-- Tooltip-style labels above points -->
+                        <text *ngFor="let pt of getSvgCircles()"
+                              [attr.x]="pt.x"
+                              [attr.y]="pt.y - 10"
+                              fill="#1e293b"
+                              font-size="9"
+                              font-weight="bold"
+                              text-anchor="middle">
+                            {{ pt.score }}%
+                        </text>
+                    </svg>
+                </div>
+            </div>
+
             <!-- Detailed Assessments Table -->
             <div class="table-card">
                 <h2>📋 Grade Book</h2>
@@ -257,12 +309,11 @@ interface CoAttainmentStatus {
     tbody tr:hover { background: #fafafa; }
     .chart-list { display: grid; gap: 18px; margin-top: 16px; }
     .chart-row { display: grid; gap: 8px; }
-    .chart-label { font-weight: 600; color: #333; }
-    .co-info-row { display: flex; justify-content: space-between; font-size: 0.9rem; }
     .chart-bar-background { height: 16px; width: 100%; background: #e0e0e0; border-radius: 999px; overflow: hidden; }
     .chart-bar { height: 100%; background: linear-gradient(90deg, #1976d2, #42a5f5); border-radius: 999px; }
     .page-header p { margin: 8px 0 0; color: #555; }
     .subtitle { color: #666; font-size: 0.9rem; margin-top: 4px; }
+    .co-info-row { display: flex; justify-content: space-between; font-size: 0.9rem; }
     .empty-state { padding: 40px; text-align: center; color: #999; background: #f9f9f9; border-radius: 8px; }
     `
   ]
@@ -352,7 +403,7 @@ export class Performance implements OnInit {
 
       if (this.myMarkEntries.length > 0) {
         // Calculate category summaries
-        const internals = this.myMarkEntries.filter(m => m.assessment.toLowerCase().includes('mid') || m.assessment.toLowerCase().includes('test'));
+        const internals = this.myMarkEntries.filter(m => m.assessment.toLowerCase().includes('mid') || m.assessment.toLowerCase().includes('test') || m.assessment.toLowerCase().includes('exam'));
         const assignments = this.myMarkEntries.filter(m => m.assessment.toLowerCase().includes('assignment') || m.assessment.toLowerCase().includes('lab'));
         const quizzes = this.myMarkEntries.filter(m => m.assessment.toLowerCase().includes('quiz') || m.assessment.toLowerCase().includes('short'));
 
@@ -389,6 +440,57 @@ export class Performance implements OnInit {
     const obtained = entries.reduce((sum, e) => sum + (Number(e.obtained) || 0), 0);
     const max = entries.reduce((sum, e) => sum + (Number(e.maxMarks) || 100), 0);
     return max > 0 ? Math.round((obtained / max) * 100) : fallback;
+  }
+
+  // SVG Trend Line calculation
+  get svgPoints(): string {
+    const dataList = this.myMarkEntries.length > 0 ? this.myMarkEntries : [
+      { obtained: 75, maxMarks: 100 },
+      { obtained: 82, maxMarks: 100 },
+      { obtained: 90, maxMarks: 100 }
+    ];
+
+    const paddingX = 50;
+    const paddingY = 20;
+    const chartWidth = 500 - paddingX - 20;
+    const chartHeight = 150 - paddingY * 2;
+
+    const count = dataList.length;
+    const xStep = count > 1 ? chartWidth / (count - 1) : chartWidth;
+
+    return dataList.map((mark, i) => {
+      const score = Math.round((Number(mark.obtained) / (Number(mark.maxMarks) || 100)) * 100);
+      const x = paddingX + i * xStep;
+      const y = paddingY + chartHeight * (1 - score / 100);
+      return `${Math.round(x)},${Math.round(y)}`;
+    }).join(' ');
+  }
+
+  getSvgCircles(): any[] {
+    const dataList = this.myMarkEntries.length > 0 ? this.myMarkEntries : [
+      { obtained: 75, maxMarks: 100 },
+      { obtained: 82, maxMarks: 100 },
+      { obtained: 90, maxMarks: 100 }
+    ];
+
+    const paddingX = 50;
+    const paddingY = 20;
+    const chartWidth = 500 - paddingX - 20;
+    const chartHeight = 150 - paddingY * 2;
+
+    const count = dataList.length;
+    const xStep = count > 1 ? chartWidth / (count - 1) : chartWidth;
+
+    return dataList.map((mark, i) => {
+      const score = Math.round((Number(mark.obtained) / (Number(mark.maxMarks) || 100)) * 100);
+      const x = paddingX + i * xStep;
+      const y = paddingY + chartHeight * (1 - score / 100);
+      return {
+        x: Math.round(x),
+        y: Math.round(y),
+        score: score
+      };
+    });
   }
 
   onSearch(): void {

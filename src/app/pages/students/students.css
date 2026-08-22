@@ -1,8 +1,13 @@
 .student-shell {
   display: flex;
-  margin-top: 64px;
-  min-height: calc(100vh - 64px);
+  position: absolute;
+  top: 64px;
+  bottom: 60px;
+  left: 0;
+  right: 0;
+  width: 100%;
   background: rgba(240, 249, 255, 0.92);
+  overflow: hidden;
 }
 
 .student-sidebar {
@@ -297,4 +302,16 @@
   .student-details-grid {
     grid-template-columns: 1fr;
   }
+}
+
+.attendance-warning-alert {
+  background-color: #ffebee;
+  color: #c62828;
+  border-left: 5px solid #d32f2f;
+  padding: 16px;
+  border-radius: 8px;
+  margin-bottom: 24px;
+  font-size: 0.95rem;
+  line-height: 1.5;
+  box-shadow: 0 2px 8px rgba(211, 47, 47, 0.08);
 }

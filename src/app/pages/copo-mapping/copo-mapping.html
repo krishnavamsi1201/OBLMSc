@@ -8,7 +8,7 @@
 
         <div class="page-header">
             <h1>🔗 CO-PO Mapping</h1>
-            <p>View POs, map COs to POs, and set contribution percentages for faculty planning.</p>
+            <p>{{ role === 'student' ? 'View the current mappings between Course Outcomes (CO) and Program Outcomes (PO).' : 'View POs, map COs to POs, and set contribution percentages for faculty planning.' }}</p>
         </div>
 
         <div class="summary-grid">
@@ -43,14 +43,15 @@
                         <td colspan="2">No program outcomes available. Add PO records to begin mapping.</td>
                     </tr>
                     <tr *ngFor="let po of programOutcomes">
-                        <td>{{ po.poNumber }}</td>
+                        <td><strong>{{ po.poNumber }}</strong></td>
                         <td>{{ po.description }}</td>
                     </tr>
                 </tbody>
             </table>
         </div>
 
-        <div class="form-card">
+        <!-- Add Program Outcome Form (Faculty/Admin only, hidden from students) -->
+        <div class="form-card" *ngIf="role !== 'student'">
             <h2>Add Program Outcome</h2>
             <form (ngSubmit)="addProgramOutcome()" class="small-form">
                 <div class="grid-row">
@@ -71,7 +72,8 @@
             </form>
         </div>
 
-        <div class="form-card">
+        <!-- Add Course Outcome Form (Faculty/Admin only, hidden from students) -->
+        <div class="form-card" *ngIf="role !== 'student'">
             <h2>Add Course Outcome</h2>
             <form (ngSubmit)="addCourseOutcome()" class="small-form">
                 <div class="grid-row">
@@ -98,7 +100,8 @@
             </form>
         </div>
 
-        <div class="form-card">
+        <!-- Map CO with PO Form (Faculty/Admin only, hidden from students) -->
+        <div class="form-card" *ngIf="role !== 'student'">
             <h2>{{ editIndex >= 0 ? 'Edit Mapping' : 'Map CO with PO' }}</h2>
             <form (ngSubmit)="saveMapping()">
                 <div class="grid-row">
@@ -145,7 +148,7 @@
 
         <div class="table-card">
             <h2>Mapped COs to POs</h2>
-            <p style="color: var(--text-secondary); margin-bottom: 16px;">Admins can approve pending mappings here.</p>
+            <p style="color: var(--text-secondary); margin-bottom: 16px;">Registered mappings and their contribution levels.</p>
             <table>
                 <thead>
                     <tr>
@@ -157,12 +160,12 @@
                         <th>Contribution %</th>
                         <th>Mapping Level</th>
                         <th>Status</th>
-                        <th>Actions</th>
+                        <th *ngIf="role !== 'student'">Actions</th>
                     </tr>
                 </thead>
                 <tbody>
                     <tr *ngIf="mappings.length === 0">
-                        <td colspan="7">No CO-PO mappings created yet.</td>
+                        <td [attr.colspan]="role !== 'student' ? 9 : 8">No CO-PO mappings created yet.</td>
                     </tr>
                     <tr *ngFor="let mapping of mappings; index as i">
                         <td>{{ mapping.course }}</td>
@@ -173,10 +176,10 @@
                         <td>{{ mapping.contribution }}%</td>
                         <td>{{ getMappingLevelLabel(mapping.mappingLevel) }}</td>
                         <td>{{ mapping.status }}</td>
-                        <td>
+                        <td *ngIf="role !== 'student'">
                             <button type="button" (click)="editMapping(i)">Edit</button>
-                            <button type="button" (click)="approveMapping(i)" [disabled]="mapping.status === 'Approved'">Approve</button>
-                            <button type="button" class="danger" (click)="deleteMapping(i)">Delete</button>
+                            <button type="button" (click)="approveMapping(i)" [disabled]="mapping.status === 'Approved'" style="margin-left: 8px;">Approve</button>
+                            <button type="button" class="danger" (click)="deleteMapping(i)" style="margin-left: 8px;">Delete</button>
                         </td>
                     </tr>
                 </tbody>
@@ -188,7 +191,7 @@
                 <h2>View Mapping Matrix</h2>
                 <button type="button" (click)="toggleMappingView()">{{ showMatrix ? 'Hide Matrix' : 'View Mapping Matrix' }}</button>
             </div>
-            <div *ngIf="showMatrix">
+            <div *ngIf="showMatrix" style="margin-top: 16px;">
                 <ng-container *ngIf="programOutcomes.length && courseOutcomes.length; else noMatrixContent">
                     <table class="matrix-table">
                         <thead>
@@ -199,12 +202,12 @@
                         </thead>
                         <tbody>
                             <tr *ngFor="let outcome of courseOutcomes">
-                                <td>{{ outcome.course }} - {{ outcome.co }}</td>
+                                <td><strong>{{ outcome.course }} - {{ outcome.co }}</strong></td>
                                 <td *ngFor="let po of programOutcomes">
                                     <span *ngIf="getMatrixLevel(outcome.co, po.poNumber) as level">
                                         {{ getMappingLevelLabel(level) }}
                                     </span>
-                                    <span *ngIf="!getMatrixLevel(outcome.co, po.poNumber)">—</span>
+                                    <span *ngIf="!getMatrixLevel(outcome.co, po.poNumber)" style="color: #cbd5e1;">—</span>
                                 </td>
                             </tr>
                         </tbody>
@@ -214,6 +217,7 @@
                     <p style="color: var(--text-secondary);">Add course outcomes and program outcomes to view the mapping matrix.</p>
                 </ng-template>
             </div>
+        </div>
 
     </div>
 
