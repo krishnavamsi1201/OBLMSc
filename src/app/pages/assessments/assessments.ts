@@ -1,4 +1,4 @@
-﻿import { Component } from '@angular/core';
+import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Navbar } from '../../shared/navbar/navbar';
@@ -31,17 +31,47 @@ interface MarkEntry {
   styleUrls: ['./assessments.css'],
 })
 export class Assessments {
+  Math = Math;
   assessmentTypes = ['Assignment', 'Quiz', 'Mid Exam', 'Final Exam'];
 
   role: string | null = null;
 
   assessments: Assessment[] = [];
-
   markEntries: MarkEntry[] = [];
+
+  // Search & Filters
+  searchAssessment = '';
+  typeFilter = '';
+  searchMarks = '';
 
   currentAssessment: Assessment = { id: 0, course: '', type: 'Assignment', questions: 0, maxMarks: 0, dueDate: '', status: 'Planned' };
   currentMark: MarkEntry = { id: 0, student: '', assessment: 'Assignment', obtained: 0, maxMarks: 0 };
   editAssessmentIndex = -1;
+
+  get filteredAssessments(): Assessment[] {
+    let list = this.assessments;
+    if (this.typeFilter) {
+      list = list.filter(a => a.type === this.typeFilter);
+    }
+    if (this.searchAssessment.trim()) {
+      const q = this.searchAssessment.toLowerCase();
+      list = list.filter(a => 
+        a.course.toLowerCase().includes(q) ||
+        a.type.toLowerCase().includes(q) ||
+        a.status.toLowerCase().includes(q)
+      );
+    }
+    return list;
+  }
+
+  get filteredMarkEntries(): MarkEntry[] {
+    if (!this.searchMarks.trim()) return this.markEntries;
+    const q = this.searchMarks.toLowerCase();
+    return this.markEntries.filter(m => 
+      m.student.toLowerCase().includes(q) ||
+      m.assessment.toLowerCase().includes(q)
+    );
+  }
 
   constructor() {
     this.role = localStorage.getItem('userRole')?.toLowerCase() || null;

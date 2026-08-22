@@ -72,11 +72,10 @@ interface FeedbackEntry {
             </ng-template>
         </div>
 
+        <app-footer></app-footer>
     </div>
 
-</div>
-
-<app-footer></app-footer>`,
+</div>`,
   styles: [`.page{padding:24px}.empty-state{padding:18px 14px;border:1px dashed #90a4ae;border-radius:10px;color:#546e7a;}`]
 })
 export class Feedback {

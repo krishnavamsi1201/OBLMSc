@@ -1,8 +1,9 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Navbar } from '../../shared/navbar/navbar';
 import { Sidebar } from '../../shared/sidebar/sidebar';
 import { Footer } from '../../shared/footer/footer';
+import { ToastService } from '../../shared/services/toast.service';
 
 interface CourseAttainment {
   course: string;
@@ -50,8 +51,8 @@ interface StudentAttainment {
 
     <div class="content">
         <div class="page-header">
-            <h1>📊 Attainment</h1>
-            <p>Faculty dashboard for CO attainment %, assessment tracking, target achievement, and charts.</p>
+            <h1>📈 Attainment</h1>
+            <p>Faculty dashboard for CO attainment %, assessment tracking, target achievement, and OBE analytics.</p>
         </div>
 
         <div class="metrics-grid">
@@ -78,13 +79,22 @@ interface StudentAttainment {
         </div>
 
         <div class="report-section">
-            <h2>🎯 Generate Report</h2>
-            <button (click)="generateReport()" class="generate-btn">Generate Attainment Report</button>
+            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
+                <div>
+                    <h2>🎯 Attainment Report</h2>
+                    <p style="margin:4px 0 0; color:#555; font-size:0.9rem;">Generate, print or export full attainment metrics.</p>
+                </div>
+                <div style="display:flex; gap:10px; flex-wrap:wrap;">
+                    <button (click)="generateReport()" class="generate-btn">🔄 Generate Report</button>
+                    <button (click)="exportAttainmentCsv()" class="generate-btn" style="background:#059669;">📥 Export CSV</button>
+                    <button (click)="printReport()" class="generate-btn" style="background:#4b5563;">🖨️ Print</button>
+                </div>
+            </div>
             <p *ngIf="reportGenerated" class="report-message">{{ reportMessage }}</p>
         </div>
 
         <div class="table-card" *ngIf="courseSummaries.length > 0">
-            <h2>Assessment Wise Attainment</h2>
+            <h2>Course-Wise Attainment Summary</h2>
             <table>
                 <thead>
                     <tr>
@@ -97,9 +107,9 @@ interface StudentAttainment {
                 </thead>
                 <tbody>
                     <tr *ngFor="let course of courseSummaries">
-                        <td>{{ course.course }}</td>
-                        <td><strong>{{ course.coAvg }}%</strong></td>
-                        <td><strong>{{ course.poAvg }}%</strong></td>
+                        <td><strong>{{ course.course }}</strong></td>
+                        <td><span class="obe-badge obe-badge-co">{{ course.coAvg }}%</span></td>
+                        <td><span class="obe-badge obe-badge-po">{{ course.poAvg }}%</span></td>
                         <td>{{ course.studentCount }}</td>
                         <td><span [class]="'status-' + getStatusClass(course.status)">{{ course.status }}</span></td>
                     </tr>
@@ -112,14 +122,14 @@ interface StudentAttainment {
             <table>
                 <thead>
                     <tr>
-                        <th>CO</th>
+                        <th>Course Outcome</th>
                         <th>Attainment %</th>
-                        <th>Students</th>
+                        <th>Students Count</th>
                     </tr>
                 </thead>
                 <tbody>
                     <tr *ngFor="let co of coWiseAttainment">
-                        <td>{{ co.co }}</td>
+                        <td><span class="obe-badge obe-badge-co">{{ co.co }}</span></td>
                         <td><strong>{{ co.attainment }}%</strong></td>
                         <td>{{ co.studentCount }}</td>
                     </tr>
@@ -142,7 +152,7 @@ interface StudentAttainment {
                 </thead>
                 <tbody>
                     <tr *ngFor="let student of studentAttainments">
-                        <td>{{ student.student }}</td>
+                        <td><strong>{{ student.student }}</strong></td>
                         <td>{{ student.regNo || '-' }}</td>
                         <td>{{ student.course }}</td>
                         <td><span [class.good]="student.coAttainment >= 80" [class.fair]="student.coAttainment >= 60 && student.coAttainment < 80" [class.poor]="student.coAttainment < 60">{{ student.coAttainment }}%</span></td>
@@ -156,10 +166,9 @@ interface StudentAttainment {
         <div *ngIf="studentAttainments.length === 0 && courseSummaries.length === 0" class="empty-state">
             <p>No attainment data available. Please ensure marks and assessment data are entered.</p>
         </div>
+        <app-footer></app-footer>
     </div>
-</div>
-
-<app-footer></app-footer>`,
+</div>`,
   styles: [
     `.metrics-grid { display: grid; gap: 16px; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); margin-bottom: 30px; }
     .metric-card { padding: 20px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border-radius: 12px; box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3); }
@@ -167,15 +176,15 @@ interface StudentAttainment {
     .metric-card strong { display: block; font-size: 2.5rem; margin: 10px 0; }
     .metric-card p { margin: 0; font-size: 12px; opacity: 0.8; }
     .report-section { padding: 20px; background: #fff; border-radius: 10px; box-shadow: 0 1px 12px rgba(0,0,0,.06); margin-bottom: 24px; }
-    .report-section h2 { margin-top: 0; }
-    .generate-btn { padding: 12px 30px; background: #2196F3; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 16px; }
-    .generate-btn:hover { background: #1976D2; }
+    .report-section h2 { margin: 0; font-size: 1.3rem; }
+    .generate-btn { padding: 10px 20px; background: #2196F3; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 14px; transition: all 0.2s ease; }
+    .generate-btn:hover { filter: brightness(1.1); transform: translateY(-1px); }
     .report-message { margin-top: 15px; padding: 12px; background: #e8f5e9; color: #2e7d32; border-left: 4px solid #4caf50; border-radius: 4px; }
     .table-card { padding: 20px; background: #fff; border-radius: 10px; box-shadow: 0 1px 12px rgba(0,0,0,.06); margin-bottom: 24px; }
-    .table-card h2 { margin-top: 0; }
+    .table-card h2 { margin-top: 0; font-size: 1.25rem; }
     table { width: 100%; border-collapse: collapse; margin-top: 16px; }
     th, td { padding: 12px 10px; border-bottom: 1px solid #e8e8e8; text-align: left; }
-    th { font-weight: 700; background: #f5f5f5; }
+    th { font-weight: 700; background: #f5f5f5; color: #1e293b; }
     tbody tr:hover { background: #fafafa; }
     .status-on-track { color: #4caf50; font-weight: 600; }
     .status-at-risk { color: #ff9800; font-weight: 600; }
@@ -189,6 +198,7 @@ interface StudentAttainment {
   ]
 })
 export class Attainment implements OnInit {
+  private toast = inject(ToastService);
   attainmentMetrics: MetricItem[] = [];
   courseSummaries: CourseAttainment[] = [];
   assessmentAttainment: AssessmentItem[] = [];
@@ -212,7 +222,6 @@ export class Attainment implements OnInit {
     try {
       const marks = this.getSafeJson('obslmsMarkEntries');
       const courses = this.getSafeJson('obslmsCourses');
-      const assessments = this.getSafeJson('obslmsAssessments');
 
       if (marks.length === 0) {
         return;
@@ -303,6 +312,34 @@ export class Attainment implements OnInit {
   generateReport(): void {
     this.reportGenerated = true;
     this.reportMessage = 'Attainment report generated for the current semester. Download or share with faculty stakeholders.';
+    this.toast.success('Attainment report generated successfully.');
+  }
+
+  exportAttainmentCsv(): void {
+    if (this.studentAttainments.length === 0 && this.courseSummaries.length === 0) {
+      this.toast.warning('No attainment data to export.');
+      return;
+    }
+
+    const headers = ['Student', 'Course', 'CO Attainment %', 'PO Attainment %', 'Assessment Score %'];
+    const rows = this.studentAttainments.map(s => 
+      [`"${s.student}"`, `"${s.course}"`, `"${s.coAttainment}%"`, `"${s.poAttainment}%"`, `"${s.assessmentScore}%"`].join(',')
+    );
+
+    const csvContent = [headers.join(','), ...rows].join('\n');
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.setAttribute('href', url);
+    link.setAttribute('download', `Attainment_Report_${Date.now()}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    this.toast.success('Attainment CSV exported.');
+  }
+
+  printReport(): void {
+    window.print();
   }
 
   private getSafeJson(key: string): any[] {

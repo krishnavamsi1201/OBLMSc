@@ -1,9 +1,10 @@
-﻿import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Navbar } from '../../shared/navbar/navbar';
 import { Sidebar } from '../../shared/sidebar/sidebar';
 import { Footer } from '../../shared/footer/footer';
+import { ToastService } from '../../shared/services/toast.service';
 
 interface ProgramOutcome {
   id: number;
@@ -36,6 +37,7 @@ interface CoMapping {
   styleUrls: ['./copo-mapping.css']
 })
 export class CopoMapping {
+  private toast = inject(ToastService);
   role: string | null = null;
 
   programOutcomes: ProgramOutcome[] = [];
@@ -50,9 +52,9 @@ export class CopoMapping {
   newCoCode = '';
 
   mappingLevels = [
-    { value: 1, label: '1 - Low' },
-    { value: 2, label: '2 - Medium' },
-    { value: 3, label: '3 - High' }
+    { value: 1, label: '1 - Low (Slight focus <30%)' },
+    { value: 2, label: '2 - Medium (Moderate focus 30-60%)' },
+    { value: 3, label: '3 - High (Substantial focus >60%)' }
   ];
 
   showMatrix = true;
@@ -124,17 +126,19 @@ export class CopoMapping {
 
   saveMapping() {
     if (!this.currentMapping.co || !this.currentMapping.po || this.currentMapping.contribution <= 0 || this.currentMapping.mappingLevel <= 0) {
-      alert('Please select both CO and PO and enter valid mapping details.');
+      this.toast.warning('Please select both CO and PO and enter valid mapping details.');
       return;
     }
 
     if (this.editIndex >= 0) {
       this.mappings[this.editIndex] = { ...this.currentMapping, id: this.mappings[this.editIndex].id };
+      this.toast.success(`Mapping ${this.currentMapping.co} → ${this.currentMapping.po} updated.`);
     } else {
       this.mappings = [
         ...this.mappings,
         { ...this.currentMapping, id: Date.now() }
       ];
+      this.toast.success(`Mapping ${this.currentMapping.co} → ${this.currentMapping.po} saved.`);
     }
 
     this.saveMappings();
@@ -149,11 +153,12 @@ export class CopoMapping {
 
   approveMapping(index: number) {
     if (this.role !== 'admin') {
-      alert('Only admins can approve mappings.');
+      this.toast.error('Only admins can approve mappings.');
       return;
     }
     this.mappings[index].status = 'Approved';
     this.saveMappings();
+    this.toast.success(`Mapping approved successfully.`);
   }
 
   toggleMappingView() {
@@ -163,6 +168,7 @@ export class CopoMapping {
   deleteMapping(index: number) {
     this.mappings = this.mappings.filter((_, i) => i !== index);
     this.saveMappings();
+    this.toast.info('Mapping removed.');
     if (this.editIndex === index) {
       this.resetMapping();
     }
@@ -184,7 +190,7 @@ export class CopoMapping {
 
   addProgramOutcome() {
     if (!this.newPoDescription.trim()) {
-      alert('Enter a PO description.');
+      this.toast.warning('Enter a PO description.');
       return;
     }
 
@@ -193,18 +199,19 @@ export class CopoMapping {
     const poNumber = this.newPoNumber.trim() || `PO${codeIndex}`;
 
     if (this.programOutcomes.some(po => po.poNumber === poNumber)) {
-      alert('This PO already exists.');
+      this.toast.error('This PO already exists.');
       return;
     }
 
     this.programOutcomes = [...this.programOutcomes, { id: nextId, poNumber, description: this.newPoDescription.trim() }];
     this.saveProgramOutcomes();
+    this.toast.success(`Program Outcome ${poNumber} added.`);
     this.resetPoForm();
   }
 
   addCourseOutcome() {
     if (!this.newCoCourse.trim()) {
-      alert('Enter the course for this CO.');
+      this.toast.warning('Enter the course for this CO.');
       return;
     }
 
@@ -212,13 +219,14 @@ export class CopoMapping {
     const coCode = this.newCoCode.trim() || `CO${nextCoIndex}`;
 
     if (this.courseOutcomes.some(item => item.course === this.newCoCourse.trim() && item.co === coCode)) {
-      alert('This course outcome already exists.');
+      this.toast.error('This course outcome already exists.');
       return;
     }
 
     const nextId = this.courseOutcomes.length ? Math.max(...this.courseOutcomes.map(item => item.id)) + 1 : 1;
     this.courseOutcomes = [...this.courseOutcomes, { id: nextId, course: this.newCoCourse.trim(), co: coCode, description: '' }];
     this.saveCourseOutcomes();
+    this.toast.success(`Course Outcome ${coCode} created.`);
     this.resetCoForm();
   }
 
@@ -262,6 +270,36 @@ export class CopoMapping {
 
   getMatrixLevel(co: string, po: string): number | undefined {
     return this.mappings.find(mapping => mapping.co === co && mapping.po === po)?.mappingLevel;
+  }
+
+  exportMatrixCsv(): void {
+    if (this.programOutcomes.length === 0 || this.courseOutcomes.length === 0) {
+      this.toast.warning('No matrix data available to export.');
+      return;
+    }
+    const headers = ['Course - CO', ...this.programOutcomes.map(po => po.poNumber)];
+    const rows = this.courseOutcomes.map(outcome => {
+      const row = [`"${outcome.course} - ${outcome.co}"`];
+      this.programOutcomes.forEach(po => {
+        const level = this.getMatrixLevel(outcome.co, po.poNumber);
+        row.push(level !== undefined ? `"${level}"` : '""');
+      });
+      return row.join(',');
+    });
+    const csvContent = [headers.join(','), ...rows].join('\n');
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.setAttribute('href', url);
+    link.setAttribute('download', `CO_PO_Mapping_Matrix_${Date.now()}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    this.toast.success('CO-PO Matrix exported to CSV.');
+  }
+
+  printMatrix(): void {
+    window.print();
   }
 
   resetMapping() {

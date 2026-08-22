@@ -1,10 +1,11 @@
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 import { Navbar } from '../../shared/navbar/navbar';
 import { Sidebar } from '../../shared/sidebar/sidebar';
 import { Footer } from '../../shared/footer/footer';
+import { ToastService } from '../../shared/services/toast.service';
 
 interface ProfileData {
   name: string;
@@ -25,7 +26,7 @@ interface ProfileData {
   <div class="content">
     <div class="page-header">
       <h1>👤 My Profile</h1>
-      <p>Review and update your user details.</p>
+      <p>Review and update your user credentials, profile photo, and contact details.</p>
     </div>
 
     <!-- Success Message -->
@@ -41,27 +42,42 @@ interface ProfileData {
     <form class="profile-form" (ngSubmit)="saveProfile(profileForm)" #profileForm="ngForm">
       <!-- Profile Picture Section -->
       <div class="profile-picture-section">
-        <div class="picture-container">
+        <div class="picture-container" (click)="fileInput.click()" title="Click to upload profile photo">
           <img *ngIf="profilePicturePreview" [src]="profilePicturePreview" alt="Profile Picture" class="profile-pic" />
           <div *ngIf="!profilePicturePreview" class="profile-pic-placeholder">
             📷
           </div>
+          <div class="pic-hover-overlay">
+            <span>📷 Change</span>
+          </div>
         </div>
         <div class="picture-controls">
-          <p class="picture-label">Profile Picture</p>
+          <p class="picture-label">Profile Photo</p>
+          <small class="picture-hint">Click the avatar or upload button (PNG, JPG, WebP supported)</small>
+          
           <input 
+            #fileInput
             type="file" 
             accept="image/*" 
             (change)="onProfilePictureSelected($event)"
             class="file-input"
-            hidden />
-          <button 
-            *ngIf="editing"
-            type="button" 
-            class="btn-upload"
-            (click)="triggerFileInput()">
-            📤 Upload Picture
-          </button>
+            style="display:none;" />
+            
+          <div class="pic-action-buttons">
+            <button 
+              type="button" 
+              class="btn-upload"
+              (click)="fileInput.click()">
+              📤 Upload Photo
+            </button>
+            <button 
+              *ngIf="profilePicturePreview"
+              type="button" 
+              class="btn-remove-pic"
+              (click)="removeProfilePicture()">
+              🗑️ Remove
+            </button>
+          </div>
         </div>
       </div>
 
@@ -158,10 +174,9 @@ interface ProfileData {
         </button>
       </div>
     </form>
+    <app-footer></app-footer>
   </div>
-</div>
-
-<app-footer></app-footer>`,
+</div>`,
   styles: [
     `.profile-form {
       max-width: 700px;
@@ -202,66 +217,122 @@ interface ProfileData {
 
     .profile-picture-section {
       display: flex;
-      gap: 20px;
+      gap: 22px;
       align-items: center;
       padding: 20px;
-      background: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%);
-      border-radius: 12px;
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      border-radius: 16px;
       margin-bottom: 10px;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.04);
     }
 
     .picture-container {
-      display: flex;
-      align-items: center;
-      justify-content: center;
+      position: relative;
+      width: 110px;
+      height: 110px;
+      border-radius: 50%;
+      overflow: hidden;
+      cursor: pointer;
+      flex-shrink: 0;
+      border: 3px solid #3b82f6;
+      box-shadow: 0 4px 12px rgba(59, 130, 246, 0.2);
     }
 
     .profile-pic {
-      width: 120px;
-      height: 120px;
-      border-radius: 50%;
+      width: 100%;
+      height: 100%;
       object-fit: cover;
-      border: 4px solid #fff;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      display: block;
     }
 
     .profile-pic-placeholder {
-      width: 120px;
-      height: 120px;
-      border-radius: 50%;
-      background: #e2e8f0;
+      width: 100%;
+      height: 100%;
+      background: #eff6ff;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 48px;
-      border: 4px solid #cbd5e1;
+      font-size: 42px;
+    }
+
+    .pic-hover-overlay {
+      position: absolute;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.55);
+      color: #ffffff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      transition: opacity 0.2s ease;
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    .picture-container:hover .pic-hover-overlay {
+      opacity: 1;
     }
 
     .picture-controls {
       display: flex;
       flex-direction: column;
-      gap: 8px;
+      gap: 6px;
     }
 
     .picture-label {
-      font-weight: 600;
-      color: #1f3051;
+      font-weight: 700;
+      color: #1e293b;
       margin: 0;
+      font-size: 15px;
+    }
+
+    .picture-hint {
+      color: #64748b;
+      font-size: 12px;
+      margin-bottom: 4px;
+    }
+
+    .pic-action-buttons {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
     }
 
     .btn-upload {
-      padding: 10px 16px;
-      background: #3b82f6;
+      padding: 8px 16px;
+      background: #2563eb;
       color: white;
       border: none;
       border-radius: 8px;
       cursor: pointer;
-      font-weight: 500;
-      transition: background 0.2s ease;
+      font-weight: 600;
+      font-size: 13px;
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      gap: 6px;
     }
 
     .btn-upload:hover {
-      background: #2563eb;
+      background: #1d4ed8;
+      transform: translateY(-1px);
+    }
+
+    .btn-remove-pic {
+      padding: 8px 14px;
+      background: #fee2e2;
+      color: #b91c1c;
+      border: 1px solid #fca5a5;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 13px;
+      transition: all 0.2s ease;
+    }
+
+    .btn-remove-pic:hover {
+      background: #fecaca;
     }
 
     .file-input {
@@ -283,7 +354,7 @@ interface ProfileData {
       border: 1px solid #cbd5e1;
       border-radius: 10px;
       padding: 12px 14px;
-      font-size: 16px;
+      font-size: 15px;
       width: 100%;
       box-sizing: border-box;
       background: #ffffff;
@@ -297,9 +368,9 @@ interface ProfileData {
     }
 
     .form-input:read-only {
-      background: #f9fafb;
-      color: #6b7280;
-      cursor: not-allowed;
+      background: #f8fafc;
+      color: #475569;
+      cursor: default;
     }
 
     .form-input.input-error {
@@ -377,6 +448,7 @@ interface ProfileData {
   `]
 })
 export class Profile {
+  private toast = inject(ToastService);
   editing = false;
   showSuccessMessage = false;
   profilePicturePreview: string | null = null;
@@ -391,7 +463,6 @@ export class Profile {
 
   private readonly storageKey = 'userProfile';
   private readonly profilePictureKey = 'userProfilePicture';
-  fileInputElement: any;
 
   constructor() {
     this.loadProfile();
@@ -414,11 +485,11 @@ export class Profile {
 
   private setDefaults(): void {
     this.profile = {
-      name: localStorage.getItem('userName') || 'User',
-      email: localStorage.getItem('userEmail') || 'user@example.com',
-      role: localStorage.getItem('userRole') || 'Faculty',
+      name: localStorage.getItem('userName') || 'Student',
+      email: localStorage.getItem('userEmail') || 'student@centurionuniv.edu.in',
+      role: localStorage.getItem('userRole') || 'student',
       department: localStorage.getItem('userDepartment') || 'Computer Science',
-      phone: localStorage.getItem('userPhone') || '+91-XXXXXXXXXX'
+      phone: localStorage.getItem('userPhone') || '998905954'
     };
   }
 
@@ -477,31 +548,66 @@ export class Profile {
       
       this.showSuccessMessage = true;
       this.editing = false;
+      this.toast.success('Profile updated successfully!');
       
       setTimeout(() => {
         this.showSuccessMessage = false;
       }, 5000);
     } catch (error) {
       this.validationErrors['general'] = 'Failed to save profile. Please try again.';
+      this.toast.error('Failed to save profile.');
     }
   }
 
-  triggerFileInput(): void {
-    const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement;
-    if (fileInput) {
-      fileInput.click();
-    }
+  removeProfilePicture(): void {
+    this.profilePicturePreview = null;
+    try {
+      localStorage.removeItem(this.profilePictureKey);
+    } catch {}
+    this.toast.info('Profile photo removed.');
   }
 
   onProfilePictureSelected(event: any): void {
-    const file = event.target.files[0];
+    const file = event.target?.files?.[0];
     if (file) {
+      if (!file.type.startsWith('image/')) {
+        this.toast.error('Please select an image file (PNG, JPG, WebP).');
+        return;
+      }
+
       const reader = new FileReader();
       reader.onload = (e: any) => {
-        this.profilePicturePreview = e.target.result;
-        try {
-          localStorage.setItem(this.profilePictureKey, e.target.result);
-        } catch {}
+        const img = new Image();
+        img.onload = () => {
+          // Compress via Canvas to optimize storage
+          const canvas = document.createElement('canvas');
+          const maxDim = 300;
+          let width = img.width;
+          let height = img.height;
+          if (width > height) {
+            if (width > maxDim) {
+              height = Math.round((height * maxDim) / width);
+              width = maxDim;
+            }
+          } else {
+            if (height > maxDim) {
+              width = Math.round((width * maxDim) / height);
+              height = maxDim;
+            }
+          }
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext('2d');
+          ctx?.drawImage(img, 0, 0, width, height);
+          const dataUrl = canvas.toDataURL('image/jpeg', 0.88);
+
+          this.profilePicturePreview = dataUrl;
+          try {
+            localStorage.setItem(this.profilePictureKey, dataUrl);
+          } catch {}
+          this.toast.success('Profile photo updated successfully!');
+        };
+        img.src = e.target.result;
       };
       reader.readAsDataURL(file);
     }

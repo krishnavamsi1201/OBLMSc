@@ -1,10 +1,11 @@
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { Navbar } from '../../shared/navbar/navbar';
 import { Sidebar } from '../../shared/sidebar/sidebar';
 import { Footer } from '../../shared/footer/footer';
+import { ToastService } from '../../shared/services/toast.service';
 
 interface SubjectRecord {
   id: number;
@@ -27,7 +28,7 @@ interface SubjectRecord {
     <div class="content">
 
         <div class="page-header">
-            <h1>Subjects</h1>
+            <h1>📖 Subjects</h1>
             <p>Manage subject definitions, credits, and curriculum links for your program.</p>
         </div>
 
@@ -62,6 +63,20 @@ interface SubjectRecord {
         </div>
 
         <div class="subjects-table-card">
+            <!-- Search & Filter Toolbar -->
+            <div class="table-filter-toolbar">
+                <div class="search-input-wrap">
+                    <span class="search-icon-badge">🔍</span>
+                    <input type="text" [(ngModel)]="searchQuery" placeholder="Search by subject code, name..." />
+                </div>
+                <div class="filter-controls" *ngIf="semesters.length > 0">
+                    <select [(ngModel)]="selectedSemester" class="filter-select">
+                        <option value="">All Semesters</option>
+                        <option *ngFor="let sem of semesters" [value]="sem">{{ sem }}</option>
+                    </select>
+                </div>
+            </div>
+
             <table>
                 <thead>
                     <tr>
@@ -73,12 +88,14 @@ interface SubjectRecord {
                     </tr>
                 </thead>
                 <tbody>
-                    <tr *ngIf="subjects.length === 0">
-                        <td [attr.colspan]="role === 'admin' ? 5 : 4">No subjects created yet.</td>
+                    <tr *ngIf="filteredSubjects.length === 0">
+                        <td [attr.colspan]="role === 'admin' ? 5 : 4">
+                            {{ subjects.length === 0 ? 'No subjects created yet.' : 'No subjects matching search/filter criteria.' }}
+                        </td>
                     </tr>
-                    <tr *ngFor="let subject of subjects; index as i">
-                        <td>{{ subject.code }}</td>
-                        <td>{{ subject.name }}</td>
+                    <tr *ngFor="let subject of filteredSubjects; index as i">
+                        <td><span class="obe-badge obe-badge-co">{{ subject.code }}</span></td>
+                        <td><strong>{{ subject.name }}</strong></td>
                         <td>{{ subject.credits }}</td>
                         <td>{{ subject.semester }}</td>
                         <td class="actions-cell" *ngIf="role === 'admin'">
@@ -90,11 +107,10 @@ interface SubjectRecord {
             </table>
         </div>
 
+        <app-footer></app-footer>
     </div>
 
-</div>
-
-<app-footer></app-footer>`,
+</div>`,
   styles: [
     `.page{padding:24px}`,
     `.subject-actions { display: flex; justify-content: flex-end; margin-bottom: 24px; }`,
@@ -111,12 +127,31 @@ interface SubjectRecord {
   ]
 })
 export class Subjects {
+  private toast = inject(ToastService);
   role: string | null = null;
 
   subjects: SubjectRecord[] = [];
   showSubjectForm = false;
   editingIndex = -1;
   currentSubject: SubjectRecord = this.createEmptySubject();
+
+  // Search & Filter
+  searchQuery = '';
+  selectedSemester = '';
+
+  get semesters(): string[] {
+    const sems = new Set(this.subjects.map(s => s.semester).filter(Boolean));
+    return Array.from(sems).sort();
+  }
+
+  get filteredSubjects(): SubjectRecord[] {
+    return this.subjects.filter(s => {
+      const q = this.searchQuery.toLowerCase().trim();
+      const matchesSearch = !q || s.code.toLowerCase().includes(q) || s.name.toLowerCase().includes(q);
+      const matchesSem = !this.selectedSemester || s.semester === this.selectedSemester;
+      return matchesSearch && matchesSem;
+    });
+  }
 
   constructor() {
     try {
@@ -148,7 +183,7 @@ export class Subjects {
 
   openSubjectForm(): void {
     if (this.role !== 'admin') {
-      alert('Only admins can add subjects.');
+      this.toast.error('Only admins can add subjects.');
       return;
     }
     this.showSubjectForm = true;
@@ -158,20 +193,22 @@ export class Subjects {
 
   saveSubject(): void {
     if (this.role !== 'admin') {
-      alert('Only admins can save subjects.');
+      this.toast.error('Only admins can save subjects.');
       return;
     }
 
     if (!this.currentSubject.code.trim() || !this.currentSubject.name.trim() || !this.currentSubject.semester.trim()) {
-      alert('Please fill all required subject fields.');
+      this.toast.warning('Please fill all required subject fields.');
       return;
     }
 
     if (this.editingIndex >= 0) {
       this.subjects[this.editingIndex] = { ...this.currentSubject };
+      this.toast.success(`Subject "${this.currentSubject.code}" updated successfully.`);
     } else {
       const nextId = this.subjects.length ? Math.max(...this.subjects.map(s => s.id)) + 1 : 1;
       this.subjects = [...this.subjects, { ...this.currentSubject, id: nextId }];
+      this.toast.success(`Subject "${this.currentSubject.code}" created successfully.`);
     }
 
     this.saveSubjects();
@@ -180,7 +217,7 @@ export class Subjects {
 
   editSubject(subject: SubjectRecord, index: number): void {
     if (this.role !== 'admin') {
-      alert('Only admins can edit subjects.');
+      this.toast.error('Only admins can edit subjects.');
       return;
     }
     this.currentSubject = { ...subject };
@@ -190,11 +227,12 @@ export class Subjects {
 
   deleteSubject(subject: SubjectRecord): void {
     if (this.role !== 'admin') {
-      alert('Only admins can delete subjects.');
+      this.toast.error('Only admins can delete subjects.');
       return;
     }
     this.subjects = this.subjects.filter(s => s.id !== subject.id);
     this.saveSubjects();
+    this.toast.info(`Subject "${subject.code}" removed.`);
   }
 
   resetSubjectForm(): void {

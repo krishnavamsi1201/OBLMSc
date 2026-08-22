@@ -1,9 +1,10 @@
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Navbar } from '../../shared/navbar/navbar';
 import { Sidebar } from '../../shared/sidebar/sidebar';
 import { Footer } from '../../shared/footer/footer';
+import { ToastService } from '../../shared/services/toast.service';
 
 interface CourseOutcome {
   id: number;
@@ -25,12 +26,12 @@ interface CourseOutcome {
     <div class="content">
 
         <div class="page-header">
-            <h1>Course Outcomes (CO)</h1>
-            <p>Define and manage course outcomes to align teaching and assessment.</p>
+            <h1>🎯 Course Outcomes (CO)</h1>
+            <p>Define and manage Course Outcomes (COs) specifying skills and competencies students acquire upon course completion.</p>
         </div>
 
-        <div class="page-actions" *ngIf="role === 'admin'">
-            <button type="button" class="primary-button" (click)="toggleForm()">{{ showForm ? 'Hide Form' : 'Add Course Outcome' }}</button>
+        <div class="page-actions" *ngIf="role === 'admin' || role === 'faculty'">
+            <button type="button" class="primary-button" (click)="toggleForm()">{{ showForm ? 'Hide Form' : '+ Add Course Outcome' }}</button>
         </div>
 
         <div class="form-card" *ngIf="showForm">
@@ -44,12 +45,12 @@ interface CourseOutcome {
                     </select>
                 </label>
                 <label>
-                    CO Code
-                    <input type="text" [(ngModel)]="currentOutcome.co" name="co" required />
+                    CO Code (e.g. CO1, CO2)
+                    <input type="text" [(ngModel)]="currentOutcome.co" name="co" placeholder="CO1" required />
                 </label>
                 <label>
-                    Description
-                    <textarea rows="4" [(ngModel)]="currentOutcome.description" name="description" required></textarea>
+                    Outcome Description
+                    <textarea rows="4" [(ngModel)]="currentOutcome.description" name="description" placeholder="Students will be able to apply fundamental principles of..." required></textarea>
                 </label>
                 <div class="form-actions">
                     <button type="submit" class="primary-button">{{ editingIndex >= 0 ? 'Save Changes' : 'Save Outcome' }}</button>
@@ -59,23 +60,23 @@ interface CourseOutcome {
         </div>
 
         <div class="table-card">
-            <h2>Course Outcome List</h2>
+            <h2>Course Outcome Directory</h2>
             <table>
                 <thead>
                     <tr>
                         <th>Course</th>
-                        <th>CO</th>
-                        <th>Description</th>
+                        <th>CO Code</th>
+                        <th>Outcome Description</th>
                         <th>Actions</th>
                     </tr>
                 </thead>
                 <tbody>
                     <tr *ngIf="courseOutcomes.length === 0">
-                        <td colspan="4">No course outcomes defined yet. Create a new outcome to get started.</td>
+                        <td colspan="4">No course outcomes defined yet. Click "Add Course Outcome" to get started.</td>
                     </tr>
                     <tr *ngFor="let outcome of courseOutcomes; index as i">
-                        <td>{{ outcome.course }}</td>
-                        <td>{{ outcome.co }}</td>
+                        <td><strong>{{ outcome.course }}</strong></td>
+                        <td><span class="obe-badge obe-badge-co">{{ outcome.co }}</span></td>
                         <td>{{ outcome.description }}</td>
                         <td class="actions-cell">
                             <button type="button" class="small-button" (click)="editOutcome(outcome, i)">Edit</button>
@@ -86,28 +87,32 @@ interface CourseOutcome {
             </table>
         </div>
 
+        <app-footer></app-footer>
     </div>
 
-</div>
-
-<app-footer></app-footer>`,
+</div>`,
   styles: [
     `.page { padding: 24px; }`,
     `.page-actions { margin-bottom: 24px; display: flex; justify-content: flex-end; }`,
     `.form-card, .table-card { background: #fff; border-radius: 18px; padding: 24px; box-shadow: 0 16px 40px rgba(23, 58, 113, 0.08); margin-bottom: 24px; }`,
-    `.form-card label, .form-card textarea, .form-card select, .form-card input { width: 100%; display: block; margin-bottom: 16px; }`,
-    `.form-card input, .form-card select, .form-card textarea { padding: 10px 12px; border: 1px solid #d8e3f1; border-radius: 10px; font-size: 14px; }`,
+    `.form-card label, .form-card textarea, .form-card select, .form-card input { width: 100%; display: block; margin-bottom: 16px; font-weight: 600; color: #1e293b; }`,
+    `.form-card input, .form-card select, .form-card textarea { padding: 10px 12px; border: 1px solid #d8e3f1; border-radius: 10px; font-size: 14px; margin-top: 6px; }`,
     `.form-actions { display: flex; flex-wrap: wrap; gap: 12px; }`,
-    `.primary-button { background: #1565c0; color: #fff; border: none; padding: 12px 24px; border-radius: 999px; cursor: pointer; }`,
-    `.secondary-button { background: #e3eaf7; color: #1d3f76; border: none; padding: 12px 24px; border-radius: 999px; cursor: pointer; }`,
-    `.danger-button { background: #d32f2f; color: #fff; border: none; padding: 10px 16px; border-radius: 10px; cursor: pointer; }`,
+    `.primary-button { background: #1565c0; color: #fff; border: none; padding: 10px 22px; border-radius: 8px; cursor: pointer; font-weight: 600; transition: all 0.2s ease; }`,
+    `.primary-button:hover { background: #0d47a1; transform: translateY(-1px); }`,
+    `.secondary-button { background: #e3eaf7; color: #1d3f76; border: none; padding: 10px 22px; border-radius: 8px; cursor: pointer; font-weight: 600; }`,
+    `.danger-button { background: #fee2e2; color: #b91c1c; border: 1px solid #fca5a5; padding: 6px 14px; border-radius: 8px; cursor: pointer; font-weight: 600; }`,
+    `.danger-button:hover { background: #fecaca; }`,
     `.table-card table { width: 100%; border-collapse: collapse; }`,
-    `.table-card th, .table-card td { padding: 16px 12px; border-bottom: 1px solid #eef2fb; text-align: left; }`,
+    `.table-card th, .table-card td { padding: 14px 12px; border-bottom: 1px solid #eef2fb; text-align: left; }`,
+    `.table-card th { color: #1f3d7a; font-weight: 700; background: #f8fafc; }`,
     `.actions-cell { display: flex; gap: 8px; flex-wrap: wrap; }`,
-    `.small-button { background: #e3eaf7; color: #1d3f76; border: none; padding: 8px 16px; border-radius: 10px; cursor: pointer; }`
+    `.small-button { background: #e3eaf7; color: #1d3f76; border: none; padding: 6px 14px; border-radius: 8px; cursor: pointer; font-weight: 600; }`,
+    `.small-button:hover { background: #d0def2; }`
   ]
 })
 export class CourseOutcomes {
+  private toast = inject(ToastService);
   role: string | null = null;
   showForm = false;
   editingIndex = -1;
@@ -162,15 +167,17 @@ export class CourseOutcomes {
 
   saveOutcome(): void {
     if (!this.currentOutcome.course || !this.currentOutcome.co.trim() || !this.currentOutcome.description.trim()) {
-      alert('Please fill all fields.');
+      this.toast.warning('Please fill in all outcome fields.');
       return;
     }
 
     if (this.editingIndex >= 0) {
       this.courseOutcomes[this.editingIndex] = { ...this.currentOutcome };
+      this.toast.success(`Course Outcome ${this.currentOutcome.co} updated.`);
     } else {
       const nextId = this.courseOutcomes.length ? Math.max(...this.courseOutcomes.map(o => o.id)) + 1 : 1;
       this.courseOutcomes = [...this.courseOutcomes, { ...this.currentOutcome, id: nextId }];
+      this.toast.success(`Course Outcome ${this.currentOutcome.co} created.`);
     }
 
     this.saveOutcomes();
@@ -185,8 +192,10 @@ export class CourseOutcomes {
   }
 
   deleteOutcome(id: number): void {
-    this.courseOutcomes = this.courseOutcomes.filter(outcome => outcome.id !== id);
+    const outcome = this.courseOutcomes.find(o => o.id === id);
+    this.courseOutcomes = this.courseOutcomes.filter(o => o.id !== id);
     this.saveOutcomes();
+    this.toast.info(`Course Outcome ${outcome ? outcome.co : ''} removed.`);
     if (this.editingIndex >= 0 && this.courseOutcomes[this.editingIndex]?.id !== id) {
       this.resetForm();
     }

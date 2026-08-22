@@ -184,9 +184,16 @@
         </div>
 
         <div class="table-card">
-            <div style="display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap;">
-                <h2>View Mapping Matrix</h2>
-                <button type="button" (click)="toggleMappingView()">{{ showMatrix ? 'Hide Matrix' : 'View Mapping Matrix' }}</button>
+            <div style="display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap; margin-bottom:14px;">
+                <div>
+                    <h2>View Mapping Matrix</h2>
+                    <small style="color: var(--text-secondary); display:block; margin-top:2px;">OBE Correlation Scale: 1 = Low (<30%), 2 = Medium (30-60%), 3 = High (>60%)</small>
+                </div>
+                <div style="display:flex; gap:8px; flex-wrap:wrap;">
+                    <button type="button" (click)="exportMatrixCsv()" title="Export CO-PO matrix as CSV spreadsheet">📥 Export CSV</button>
+                    <button type="button" (click)="printMatrix()" title="Print matrix document">🖨️ Print</button>
+                    <button type="button" (click)="toggleMappingView()">{{ showMatrix ? 'Hide Matrix' : 'View Mapping Matrix' }}</button>
+                </div>
             </div>
             <div *ngIf="showMatrix">
                 <ng-container *ngIf="programOutcomes.length && courseOutcomes.length; else noMatrixContent">
@@ -194,17 +201,22 @@
                         <thead>
                             <tr>
                                 <th>CO \ PO</th>
-                                <th *ngFor="let po of programOutcomes">{{ po.poNumber }}</th>
+                                <th *ngFor="let po of programOutcomes" [title]="po.description || po.poNumber">
+                                    <span class="obe-badge obe-badge-po">{{ po.poNumber }}</span>
+                                </th>
                             </tr>
                         </thead>
                         <tbody>
                             <tr *ngFor="let outcome of courseOutcomes">
-                                <td>{{ outcome.course }} - {{ outcome.co }}</td>
+                                <td>
+                                    <span class="obe-badge obe-badge-co">{{ outcome.co }}</span>
+                                    <small style="display:block; color:var(--text-secondary); margin-top:2px;">{{ outcome.course }}</small>
+                                </td>
                                 <td *ngFor="let po of programOutcomes">
-                                    <span *ngIf="getMatrixLevel(outcome.co, po.poNumber) as level">
+                                    <span *ngIf="getMatrixLevel(outcome.co, po.poNumber) as level" class="obe-badge" [ngClass]="level === 3 ? 'obe-badge-co' : 'obe-badge-po'">
                                         {{ getMappingLevelLabel(level) }}
                                     </span>
-                                    <span *ngIf="!getMatrixLevel(outcome.co, po.poNumber)">—</span>
+                                    <span *ngIf="!getMatrixLevel(outcome.co, po.poNumber)" style="color: #94a3b8;">—</span>
                                 </td>
                             </tr>
                         </tbody>
@@ -214,9 +226,9 @@
                     <p style="color: var(--text-secondary);">Add course outcomes and program outcomes to view the mapping matrix.</p>
                 </ng-template>
             </div>
+        </div>
 
+        <app-footer></app-footer>
     </div>
 
 </div>
-
-<app-footer></app-footer>

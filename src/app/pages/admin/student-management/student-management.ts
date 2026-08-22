@@ -1,9 +1,10 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Navbar } from '../../../shared/navbar/navbar';
 import { Sidebar } from '../../../shared/sidebar/sidebar';
 import { Footer } from '../../../shared/footer/footer';
+import { ToastService } from '../../../shared/services/toast.service';
 
 interface Student {
   id: string;
@@ -22,6 +23,7 @@ interface Student {
   styleUrls: ['./student-management.css'],
 })
 export class StudentManagement implements OnInit {
+  private toast = inject(ToastService);
   studentList: Student[] = [];
   filteredStudentList: Student[] = [];
   
@@ -117,7 +119,7 @@ export class StudentManagement implements OnInit {
 
   saveStudent(): void {
     if (!this.validateForm()) {
-      alert('Please fill all required fields');
+      this.toast.warning('Please fill all required fields');
       return;
     }
 
@@ -133,6 +135,7 @@ export class StudentManagement implements OnInit {
           department: this.formData.department,
           semester: this.formData.semester
         };
+        this.toast.success(`Student "${this.formData.name}" updated successfully.`);
       }
     } else {
       // Add new student
@@ -145,6 +148,7 @@ export class StudentManagement implements OnInit {
         semester: this.formData.semester
       };
       this.studentList.push(newStudent);
+      this.toast.success(`Student "${this.formData.name}" added successfully.`);
     }
 
     this.saveStudentToStorage();
@@ -153,8 +157,10 @@ export class StudentManagement implements OnInit {
 
   deleteStudent(id: string): void {
     if (confirm('Are you sure you want to delete this student?')) {
+      const student = this.studentList.find(s => s.id === id);
       this.studentList = this.studentList.filter(s => s.id !== id);
       this.saveStudentToStorage();
+      this.toast.info(`Student ${student ? student.name : ''} removed.`);
     }
   }
 
@@ -173,7 +179,7 @@ export class StudentManagement implements OnInit {
       localStorage.setItem('obslmsStudents', JSON.stringify(this.studentList));
       this.filterStudents();
     } catch {
-      alert('Error saving student data');
+      this.toast.error('Error saving student data');
     }
   }
 

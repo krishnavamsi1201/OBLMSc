@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { Navbar } from '../../shared/navbar/navbar';
 import { Sidebar } from '../../shared/sidebar/sidebar';
 import { Footer } from '../../shared/footer/footer';
@@ -17,7 +18,7 @@ interface StudentResult {
 @Component({
   selector: 'app-results',
   standalone: true,
-  imports: [CommonModule, Navbar, Sidebar, Footer],
+  imports: [CommonModule, FormsModule, Navbar, Sidebar, Footer],
   template: `<app-navbar></app-navbar>
 
 <div class="container">
@@ -85,7 +86,23 @@ interface StudentResult {
         </div>
 
         <div class="table-card">
-            <h2>{{ role === 'student' ? 'My Academic Transcript' : 'Class Result Analysis' }}</h2>
+            <div class="table-header-row">
+                <h2>{{ role === 'student' ? 'My Academic Transcript' : 'Class Result Analysis' }} ({{ filteredResults.length }})</h2>
+                <div class="table-filter-inputs">
+                    <input 
+                        type="text" 
+                        [(ngModel)]="searchTerm" 
+                        (input)="applyFilters()"
+                        placeholder="🔍 Search {{ role === 'student' ? 'course name' : 'student or course' }}..."
+                        class="table-search-input"
+                    />
+                    <select [(ngModel)]="statusFilter" (change)="applyFilters()" class="table-filter-select">
+                        <option value="">All Statuses</option>
+                        <option value="Pass">Pass</option>
+                        <option value="Fail">Fail</option>
+                    </select>
+                </div>
+            </div>
             <table *ngIf="filteredResults.length > 0">
                 <thead>
                     <tr>
@@ -108,14 +125,13 @@ interface StudentResult {
                     </tr>
                 </tbody>
             </table>
-            <p *ngIf="filteredResults.length === 0" class="empty-state">No academic results compiled yet. Marks need to be entered first.</p>
+            <p *ngIf="filteredResults.length === 0" class="empty-state">No academic results match your search.</p>
         </div>
 
+        <app-footer></app-footer>
     </div>
 
-</div>
-
-<app-footer></app-footer>`,
+</div>`,
   styles: [
     `.summary-grid { display: grid; gap: 16px; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); margin-bottom: 24px; }
     .section-card, .table-card { padding: 20px; background: #fff; border-radius: 10px; box-shadow: 0 1px 12px rgba(0,0,0,.06); margin-bottom: 24px; }
@@ -125,6 +141,11 @@ interface StudentResult {
     .action-row { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; margin-bottom: 20px; }
     .action-row button { padding: 10px 18px; border: none; border-radius: 8px; background: #1976d2; color: #fff; cursor: pointer; font-weight: 600; }
     .status-message { color: #2e7d32; font-weight: 600; }
+    .table-header-row { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; margin-bottom: 12px; }
+    .table-filter-inputs { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+    .table-search-input { padding: 8px 14px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 13.5px; min-width: 220px; outline: none; }
+    .table-search-input:focus { border-color: #1976d2; }
+    .table-filter-select { padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 13.5px; outline: none; }
     .table-card table { width: 100%; border-collapse: collapse; margin-top: 16px; }
     .table-card th, .table-card td { padding: 12px 10px; border-bottom: 1px solid #e8e8e8; text-align: left; }
     .table-card th { font-weight: 700; color: #1f3d7a; background: #f5f5f5; }
@@ -148,6 +169,9 @@ export class Results implements OnInit {
   filteredResults: StudentResult[] = [];
   downloadMessage = '';
 
+  searchTerm = '';
+  statusFilter = '';
+
   constructor() {
     try {
       this.role = localStorage.getItem('userRole')?.toLowerCase() || null;
@@ -159,6 +183,31 @@ export class Results implements OnInit {
 
   ngOnInit(): void {
     this.loadResultsData();
+  }
+
+  applyFilters(): void {
+    let list = this.studentResults;
+
+    if (this.role === 'student') {
+      list = list.filter(
+        r => r.student.toLowerCase() === this.userName.toLowerCase()
+      );
+    }
+
+    if (this.searchTerm.trim()) {
+      const q = this.searchTerm.toLowerCase();
+      list = list.filter(r => 
+        r.student.toLowerCase().includes(q) ||
+        r.course.toLowerCase().includes(q) ||
+        r.grade.toLowerCase().includes(q)
+      );
+    }
+
+    if (this.statusFilter) {
+      list = list.filter(r => r.status === this.statusFilter);
+    }
+
+    this.filteredResults = list;
   }
 
   private loadResultsData(): void {

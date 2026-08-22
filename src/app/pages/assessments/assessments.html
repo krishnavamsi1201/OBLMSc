@@ -113,7 +113,21 @@
         </div>
 
         <div class="table-card">
-            <h2>View Assessment List</h2>
+            <div class="table-header-row">
+                <h2>View Assessment List ({{ filteredAssessments.length }})</h2>
+                <div class="table-filter-inputs">
+                    <input 
+                        type="text" 
+                        [(ngModel)]="searchAssessment" 
+                        placeholder="🔍 Search course, type, status..."
+                        class="table-search-input"
+                    />
+                    <select [(ngModel)]="typeFilter" class="table-filter-select">
+                        <option value="">All Types</option>
+                        <option *ngFor="let t of assessmentTypes" [value]="t">{{ t }}</option>
+                    </select>
+                </div>
+            </div>
             <table>
                 <thead>
                     <tr>
@@ -127,16 +141,16 @@
                     </tr>
                 </thead>
                 <tbody>
-                    <tr *ngIf="assessments.length === 0">
-                        <td colspan="7">No assessments created yet.</td>
+                    <tr *ngIf="filteredAssessments.length === 0">
+                        <td colspan="7" style="text-align: center; color: #888; padding: 20px;">No assessments match your filter.</td>
                     </tr>
-                    <tr *ngFor="let assessment of assessments; index as i">
-                        <td>{{ assessment.course }}</td>
+                    <tr *ngFor="let assessment of filteredAssessments; index as i">
+                        <td><strong>{{ assessment.course }}</strong></td>
                         <td>{{ assessment.type }}</td>
                         <td>{{ assessment.questions }}</td>
                         <td>{{ assessment.maxMarks }}</td>
                         <td>{{ assessment.dueDate }}</td>
-                        <td>{{ assessment.status }}</td>
+                        <td><span class="status-badge" [class.completed]="assessment.status === 'Completed'">{{ assessment.status }}</span></td>
                         <td>
                             <button type="button" (click)="editAssessment(i)">Edit</button>
                             <button type="button" class="danger" (click)="deleteAssessment(i)">Delete</button>
@@ -147,7 +161,17 @@
         </div>
 
         <div class="table-card">
-            <h2>Marks Entered</h2>
+            <div class="table-header-row">
+                <h2>Marks Entered ({{ filteredMarkEntries.length }})</h2>
+                <div class="table-filter-inputs">
+                    <input 
+                        type="text" 
+                        [(ngModel)]="searchMarks" 
+                        placeholder="🔍 Search student or assessment..."
+                        class="table-search-input"
+                    />
+                </div>
+            </div>
             <table>
                 <thead>
                     <tr>
@@ -155,24 +179,25 @@
                         <th>Assessment</th>
                         <th>Obtained</th>
                         <th>Max Marks</th>
+                        <th>Percentage</th>
                     </tr>
                 </thead>
                 <tbody>
-                    <tr *ngIf="markEntries.length === 0">
-                        <td colspan="4">No marks have been entered yet.</td>
+                    <tr *ngIf="filteredMarkEntries.length === 0">
+                        <td colspan="5" style="text-align: center; color: #888; padding: 20px;">No mark records match your search.</td>
                     </tr>
-                    <tr *ngFor="let mark of markEntries">
-                        <td>{{ mark.student }}</td>
+                    <tr *ngFor="let mark of filteredMarkEntries">
+                        <td><strong>{{ mark.student }}</strong></td>
                         <td>{{ mark.assessment }}</td>
                         <td>{{ mark.obtained }}</td>
                         <td>{{ mark.maxMarks }}</td>
+                        <td><strong>{{ Math.round((mark.obtained / mark.maxMarks) * 100) }}%</strong></td>
                     </tr>
                 </tbody>
             </table>
         </div>
 
+        <app-footer></app-footer>
     </div>
 
 </div>
-
-<app-footer></app-footer>

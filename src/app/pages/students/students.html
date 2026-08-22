@@ -18,8 +18,49 @@
 
   <div class="student-content">
     <div class="student-header">
-      <h1>👋 Welcome back, {{ studentName }}!</h1>
-      <p class="subtitle">{{ studentEmail }} | Student Dashboard</p>
+      <div class="header-left">
+        <h1>👋 Welcome back, {{ studentName }}!</h1>
+        <p class="subtitle">{{ studentEmail }} | Outcome-Based Student Portal</p>
+      </div>
+      <div class="header-actions">
+        <button class="header-download-btn" (click)="downloadGradeReportCsv()" title="Download full academic transcript and grades">
+          📥 Grade Report
+        </button>
+        <button class="header-download-btn secondary-btn" (click)="downloadCoReportCsv()" title="Download personal CO attainment progress">
+          🎯 CO Mastery Report
+        </button>
+      </div>
+    </div>
+
+    <!-- Low Attendance Alert Banner -->
+    <div *ngIf="showAttendanceWarning" class="attendance-alert-banner">
+      <div class="alert-icon">⚠️</div>
+      <div class="alert-text">
+        <strong>Attendance Notice:</strong> {{ attendanceWarningMsg }}
+      </div>
+      <button class="alert-action-btn" (click)="navigate('/attendance')">View Logs</button>
+    </div>
+
+    <!-- Global Student Search Bar -->
+    <div class="student-search-container">
+      <div class="search-input-wrapper">
+        <span class="search-icon">🔍</span>
+        <input 
+          type="text" 
+          [(ngModel)]="searchQuery" 
+          placeholder="Search subjects, today's schedule, CO outcomes, marks, exams, or quick pages..."
+          class="student-search-input"
+        />
+        <button *ngIf="searchQuery" (click)="clearSearch()" class="search-clear-btn" title="Clear search">✕</button>
+      </div>
+      
+      <!-- Direct Shortcuts on search -->
+      <div *ngIf="quickPageMatches.length > 0" class="search-quick-matches">
+        <span class="match-label">⚡ Direct Shortcuts:</span>
+        <button *ngFor="let match of quickPageMatches" class="match-chip" (click)="navigate(match.path)">
+          {{ match.icon }} {{ match.label }} →
+        </button>
+      </div>
     </div>
 
     <!-- Student Stats Grid -->
@@ -54,28 +95,84 @@
       </div>
     </div>
 
+    <!-- Enrolled Courses Quick Summary -->
+    <div class="courses-preview-section">
+      <div class="section-title-row">
+        <h2>📚 My Enrolled Courses ({{ filteredCourses.length }})</h2>
+        <button class="link-btn" (click)="navigate('/courses')">View All Courses →</button>
+      </div>
+      <div class="courses-mini-grid" *ngIf="filteredCourses.length > 0">
+        <div *ngFor="let course of filteredCourses" class="course-mini-card" (click)="navigate('/courses')">
+          <div class="course-code-badge">{{ course.code }}</div>
+          <h4 class="course-title">{{ course.title }}</h4>
+          <p class="course-faculty">👨‍🏫 {{ course.faculty }}</p>
+          <div class="course-meta-row">
+            <span>{{ course.credits }} Credits</span>
+            <span class="course-score-pill">Avg: {{ course.currentAvg }}%</span>
+          </div>
+        </div>
+      </div>
+      <p *ngIf="filteredCourses.length === 0" class="empty-filter-notice">
+        No courses matching "{{ searchQuery }}".
+      </p>
+    </div>
+
     <!-- Dashboard Content Details -->
     <div class="student-details-grid">
       
-      <!-- Left Column: Timetable & Grades -->
+      <!-- Left Column: OBE CO Mastery, Timetable & Grades -->
       <div class="details-left">
+
+        <!-- OBE Course Outcomes Mastery Progress Card -->
+        <div class="dashboard-card obe-card">
+          <div class="card-header">
+            <div>
+              <h2>🎯 My Course Outcomes (CO) Mastery ({{ filteredCoProgress.length }})</h2>
+              <small class="header-sub">Track personal attainment against target thresholds (75%)</small>
+            </div>
+            <button mat-button color="primary" (click)="navigate('/co-attainment')">Full Analytics</button>
+          </div>
+          <div class="co-progress-list" *ngIf="filteredCoProgress.length > 0">
+            <div *ngFor="let co of filteredCoProgress" class="co-progress-item">
+              <div class="co-item-header">
+                <div>
+                  <span class="obe-badge obe-badge-co">{{ co.coCode }}</span>
+                  <strong style="margin-left: 8px; color: #1e293b;">{{ co.courseName }}</strong>
+                </div>
+                <div style="display: flex; gap: 8px; align-items: center;">
+                  <span class="blooms-tag">{{ co.bloomsLevel }}</span>
+                  <span class="co-attainment-val" [class.achieved]="co.attainmentPct >= co.targetPct">{{ co.attainmentPct }}%</span>
+                </div>
+              </div>
+              <div class="progress-bar-wrap">
+                <div class="progress-bar-fill" [style.width]="co.attainmentPct + '%'" [class.achieved-bar]="co.attainmentPct >= co.targetPct"></div>
+              </div>
+            </div>
+          </div>
+          <p *ngIf="filteredCoProgress.length === 0" class="empty-filter-notice">
+            No outcomes matching "{{ searchQuery }}".
+          </p>
+        </div>
         
         <!-- Today's Schedule Card -->
         <div class="dashboard-card">
           <div class="card-header">
-            <h2>📆 Today's Schedule</h2>
+            <h2>📆 Today's Schedule ({{ filteredSchedule.length }})</h2>
             <button mat-button color="primary" (click)="navigate('/timetable')">Full Timetable</button>
           </div>
           <div class="classes-list">
-            <div class="class-item" *ngFor="let cls of todaySchedule">
-              <div class="class-time">{{ cls.period }}</div>
+            <div class="class-item" *ngFor="let cls of filteredSchedule" [class.active-class]="cls.isCurrent">
+              <div class="class-time">
+                {{ cls.period }}
+                <span *ngIf="cls.isCurrent" class="live-pill">🟢 NEXT CLASS</span>
+              </div>
               <div class="class-details">
                 <strong>{{ cls.subject }}</strong>
                 <span class="class-room">Room: {{ cls.room }}</span>
               </div>
             </div>
-            <div class="empty-list" *ngIf="todaySchedule.length === 0">
-              No classes scheduled for today.
+            <div class="empty-list" *ngIf="filteredSchedule.length === 0">
+              No classes match your search.
             </div>
           </div>
         </div>
@@ -83,7 +180,7 @@
         <!-- Recent Grades Card -->
         <div class="dashboard-card">
           <div class="card-header">
-            <h2>📈 Recent Assessment Marks</h2>
+            <h2>📈 Recent Assessment Marks ({{ filteredGrades.length }})</h2>
             <button mat-button color="primary" (click)="navigate('/performance')">View Performance</button>
           </div>
           <table class="marks-table">
@@ -95,13 +192,13 @@
               </tr>
             </thead>
             <tbody>
-              <tr *ngFor="let g of recentGrades">
-                <td>{{ g.courseName }}</td>
+              <tr *ngFor="let g of filteredGrades">
+                <td><strong>{{ g.courseName }}</strong></td>
                 <td>{{ g.score }}%</td>
                 <td><span class="grade-badge" [class.excellent]="g.grade === 'O' || g.grade === 'A+'">{{ g.grade }}</span></td>
               </tr>
-              <tr *ngIf="recentGrades.length === 0">
-                <td colspan="3">No assessment scores available yet.</td>
+              <tr *ngIf="filteredGrades.length === 0">
+                <td colspan="3">No marks matching your query.</td>
               </tr>
             </tbody>
           </table>
@@ -109,8 +206,31 @@
 
       </div>
 
-      <!-- Right Column: Notifications & Actions -->
+      <!-- Right Column: Deadlines, Notifications & Actions -->
       <div class="details-right">
+
+        <!-- Upcoming Deadlines Card -->
+        <div class="dashboard-card deadlines-card">
+          <div class="card-header">
+            <h2>⏱️ Upcoming Deadlines ({{ filteredDeadlines.length }})</h2>
+            <button mat-button color="primary" (click)="navigate('/assessments')">All Exams</button>
+          </div>
+          <div class="deadlines-list" *ngIf="filteredDeadlines.length > 0">
+            <div *ngFor="let dl of filteredDeadlines" class="deadline-item">
+              <div class="deadline-left">
+                <h4>{{ dl.title }}</h4>
+                <p>{{ dl.course }} • {{ dl.type }}</p>
+                <small>Due: {{ dl.dueDate }} ({{ dl.marks }} marks)</small>
+              </div>
+              <span class="deadline-countdown" [class.urgent]="dl.daysLeft <= 7">
+                {{ dl.daysLeft }}d left
+              </span>
+            </div>
+          </div>
+          <p *ngIf="filteredDeadlines.length === 0" class="empty-filter-notice">
+            No deadlines matching "{{ searchQuery }}".
+          </p>
+        </div>
         
         <!-- Notifications Card -->
         <div class="dashboard-card">
@@ -130,9 +250,11 @@
         <!-- Quick Actions Card -->
         <div class="dashboard-card">
           <div class="card-header">
-            <h2>⚡ Quick Actions</h2>
+            <h2>⚡ Quick Actions & Tools</h2>
           </div>
           <div class="quick-actions-list">
+            <button class="action-btn" (click)="navigate('/co-attainment')">📊 Check CO Attainment</button>
+            <button class="action-btn" (click)="navigate('/timetable')">📆 View Full Timetable</button>
             <button class="action-btn" (click)="navigate('/grievance')">📩 File a Grievance</button>
             <button class="action-btn" (click)="navigate('/feedback')">💬 Submit Feedback</button>
             <button class="action-btn" (click)="navigate('/profile')">👤 Update Profile</button>
@@ -143,6 +265,7 @@
 
     </div>
 
+    <app-footer></app-footer>
   </div>
 
 </div>
@@ -159,7 +282,7 @@
               <h3>Admin View</h3>
               <p>Navigate to Admin > Student Management to manage students.</p>
           </div>
+          <app-footer></app-footer>
       </div>
   </div>
-  <app-footer></app-footer>
 </ng-template>

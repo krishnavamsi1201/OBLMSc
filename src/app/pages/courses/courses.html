@@ -42,6 +42,20 @@
         </div>
 
         <div class="courses-table-card">
+            <!-- Search & Filter Toolbar -->
+            <div class="table-filter-toolbar">
+                <div class="search-input-wrap">
+                    <span class="search-icon-badge">🔍</span>
+                    <input type="text" [(ngModel)]="searchQuery" placeholder="Search by code, title, faculty..." />
+                </div>
+                <div class="filter-controls" *ngIf="semesters.length > 0">
+                    <select [(ngModel)]="selectedSemester" class="filter-select">
+                        <option value="">All Semesters</option>
+                        <option *ngFor="let sem of semesters" [value]="sem">{{ sem }}</option>
+                    </select>
+                </div>
+            </div>
+
             <table>
                 <thead>
                     <tr>
@@ -53,13 +67,15 @@
                     </tr>
                 </thead>
                 <tbody>
-                    <tr *ngIf="courses.length === 0">
-                        <td colspan="5">No courses created yet. Use the Create Course button above.</td>
+                    <tr *ngIf="filteredCourses.length === 0">
+                        <td colspan="5">
+                            {{ courses.length === 0 ? 'No courses created yet. Use the Create Course button above.' : 'No courses matching search/filter criteria.' }}
+                        </td>
                     </tr>
-                    <tr *ngFor="let course of courses; index as i">
-                        <td>{{ course.code }}</td>
-                        <td>{{ course.title }}</td>
-                        <td>{{ course.faculty }}</td>
+                    <tr *ngFor="let course of filteredCourses; index as i">
+                        <td><span class="obe-badge obe-badge-co">{{ course.code }}</span></td>
+                        <td><strong>{{ course.title }}</strong></td>
+                        <td>{{ course.faculty || 'Unassigned' }}</td>
                         <td>{{ course.semester }}</td>
                         <td class="actions-cell">
                             <button mat-button color="primary" (click)="editCourse(course, i)">Edit</button>
@@ -71,8 +87,7 @@
             </table>
         </div>
 
+        <app-footer></app-footer>
     </div>
 
 </div>
-
-<app-footer></app-footer>
