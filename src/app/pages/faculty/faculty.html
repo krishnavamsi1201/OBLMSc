@@ -187,11 +187,11 @@
 							<li *ngFor="let item of grievanceItems">
 								<div class="list-main">
 									<strong>{{ item.title }}</strong>
-									<span>{{ item.student }} • {{ item.type }}</span>
+									<span>{{ item.studentName }} • {{ item.category }}</span>
 								</div>
 								<div class="widget-row">
 									<span class="status-pill" [class.open]="item.status === 'Open'" [class.review]="item.status === 'In Review'" [class.resolved]="item.status === 'Resolved'">{{ item.status }}</span>
-									<small>{{ item.lastUpdated }}</small>
+									<small>{{ item.date }}</small>
 								</div>
 							</li>
 						</ul>
@@ -205,7 +205,7 @@
 						<ul class="widget-list">
 							<li *ngFor="let item of questionBankItems">
 								<div class="list-main">
-									<strong>{{ item.title }}</strong>
+									<strong>{{ item.questionText }}</strong>
 									<span>{{ item.type }}</span>
 								</div>
 								<div class="widget-row">

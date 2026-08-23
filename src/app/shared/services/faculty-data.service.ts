@@ -218,7 +218,6 @@ export class FacultyDataService {
           (facultyName.toLowerCase().includes(a.facultyName ? a.facultyName.toLowerCase() : ''))
         );
 
-<<<<<<< HEAD
         if (matchingAllocations.length > 0) {
           filteredCourses = matchingAllocations.map(a => ({
             id: a.courseId || `ALLOC-${a.id}`,
@@ -232,29 +231,6 @@ export class FacultyDataService {
           const matchingCourses = allCourses.filter(c =>
             c.faculty && (c.faculty.toLowerCase().includes(facultyName.toLowerCase()) || facultyName.toLowerCase().includes(c.faculty.toLowerCase()))
           );
-=======
-  /**
-   * Estimate total student count for assessment
-   */
-  private getEstimatedStudentCount(courseId: string | number): number {
-    try {
-      const courses = this.getSafeJson('obslmsCourses') as StorageCourse[];
-      const course = courses.find(c => c.id.toString() === courseId.toString());
-      if (!course) return 0;
-      
-      // Get unique students from mark entries for this course
-      const marks = this.getSafeJson('obslmsMarkEntries');
-      const uniqueStudents = new Set(
-        marks
-          .filter((m: any) => m.assessment && m.assessment.includes(courseId.toString()))
-          .map((m: any) => m.student)
-      );
-      return uniqueStudents.size;
-    } catch {
-      return 0;
-    }
-  }
->>>>>>> 23702bc (feat: complete outcome-based LMS with student & admin modules, zero dummy data)
 
           if (matchingCourses.length > 0) {
             filteredCourses = matchingCourses.map(c => ({
@@ -360,7 +336,6 @@ export class FacultyDataService {
    */
   private getRealTimeAssessments(courses: Course[]): Assessment[] {
     try {
-<<<<<<< HEAD
       const storedAssessments = this.getSafeJson('obslmsAssessments');
       const marks = this.getSafeJson('obslmsMarkEntries');
       const allStudents = this.getSafeJson('obslmsStudents');
