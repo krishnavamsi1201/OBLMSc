@@ -92,6 +92,36 @@ export interface Notification {
   read: boolean;
 }
 
+export interface SyllabusUnit {
+  unitNumber: number;
+  title: string;
+  mappedCO: string;
+  plannedLectures: number;
+  completedLectures: number;
+  status: 'Completed' | 'In Progress' | 'Planned';
+}
+
+export interface LectureLog {
+  id: string;
+  courseName: string;
+  unitNumber: number;
+  topic: string;
+  mappedCO: string;
+  date: string;
+  durationMinutes: number;
+}
+
+export interface CourseFileDossier {
+  course: Course;
+  courseOutcomes: CourseCOAttainmentSummary[];
+  assessments: Assessment[];
+  studentCount: number;
+  overallAttainment: number;
+  averageAttendance: number;
+  gradeDistribution: GradeDistribution;
+  cqiActions: CqiAction[];
+}
+
 export interface FacultyDashboardData {
   courses: Course[];
   activeAssessments: Assessment[];
@@ -100,6 +130,7 @@ export interface FacultyDashboardData {
   courseCOAttainments: CourseCOAttainmentSummary[];
   gradeDistribution: GradeDistribution;
   notifications: Notification[];
+  syllabusUnits: SyllabusUnit[];
   totalCourses: number;
   totalStudents: number;
   overallAttainment: number;
@@ -138,6 +169,7 @@ export class FacultyDataService {
     const courseCOAttainments = this.calculateCourseCOAttainments(courses);
     const gradeDistribution = this.calculateGradeDistribution(courses);
     const notifications = this.generateRealTimeNotifications(courses, assessments, atRiskStudents, courseCOAttainments);
+    const syllabusUnits = this.getSyllabusUnitsForCourses(courses);
 
     // Compute unique total students across faculty courses
     const uniqueStudents = new Set<string>();
@@ -176,6 +208,7 @@ export class FacultyDataService {
       courseCOAttainments,
       gradeDistribution,
       notifications,
+      syllabusUnits,
       totalCourses: courses.length,
       totalStudents,
       overallAttainment,
@@ -680,6 +713,51 @@ export class FacultyDataService {
   }
 
   /**
+   * Syllabus units & lecture logs
+   */
+  private getSyllabusUnitsForCourses(courses: Course[]): SyllabusUnit[] {
+    const storedLogs = this.getSafeJson('obslmsLectureLogs') as LectureLog[];
+    
+    const defaultUnits: SyllabusUnit[] = [
+      { unitNumber: 1, title: 'Unit 1: Foundations & Architecture', mappedCO: 'CO1', plannedLectures: 9, completedLectures: 0, status: 'Planned' },
+      { unitNumber: 2, title: 'Unit 2: Relational Model & SQL Queries', mappedCO: 'CO2', plannedLectures: 10, completedLectures: 0, status: 'Planned' },
+      { unitNumber: 3, title: 'Unit 3: Normalization & Indexing', mappedCO: 'CO3', plannedLectures: 10, completedLectures: 0, status: 'Planned' },
+      { unitNumber: 4, title: 'Unit 4: Transaction & Concurrency Control', mappedCO: 'CO4', plannedLectures: 8, completedLectures: 0, status: 'Planned' },
+      { unitNumber: 5, title: 'Unit 5: Advanced & Distributed Systems', mappedCO: 'CO5', plannedLectures: 8, completedLectures: 0, status: 'Planned' },
+    ];
+
+    return defaultUnits.map(unit => {
+      const logsForUnit = storedLogs.filter(l => Number(l.unitNumber) === unit.unitNumber);
+      const completed = logsForUnit.length;
+      let status: 'Completed' | 'In Progress' | 'Planned' = 'Planned';
+      if (completed >= unit.plannedLectures) {
+        status = 'Completed';
+      } else if (completed > 0) {
+        status = 'In Progress';
+      }
+
+      return {
+        ...unit,
+        completedLectures: completed,
+        status
+      };
+    });
+  }
+
+  saveLectureLog(log: Omit<LectureLog, 'id'>): void {
+    try {
+      const logs = this.getSafeJson('obslmsLectureLogs');
+      logs.push({
+        ...log,
+        id: `LEC-${Date.now()}`
+      });
+      localStorage.setItem('obslmsLectureLogs', JSON.stringify(logs));
+    } catch (e) {
+      console.error('Error saving lecture log:', e);
+    }
+  }
+
+  /**
    * Generate real-time actionable notifications based on actual dates & thresholds
    */
   private generateRealTimeNotifications(
@@ -807,6 +885,34 @@ export class FacultyDataService {
       localStorage.setItem('obslmsMarkEntries', JSON.stringify(existing));
     } catch (e) {
       console.error('Error bulk saving marks:', e);
+    }
+  }
+
+  /**
+   * Bulk save attendance
+   */
+  saveBulkAttendance(records: Array<{ student: string; course: string; date: string; status: 'Present' | 'Absent' }>): void {
+    try {
+      const existing = this.getSafeJson('obslmsAttendance');
+      records.forEach(rec => {
+        const idx = existing.findIndex(
+          (a: any) => a.student.toLowerCase() === rec.student.toLowerCase() && a.course.toLowerCase() === rec.course.toLowerCase() && a.date === rec.date
+        );
+        if (idx >= 0) {
+          existing[idx].status = rec.status;
+        } else {
+          existing.push({
+            id: Date.now() + Math.floor(Math.random() * 1000),
+            student: rec.student.trim(),
+            course: rec.course.trim(),
+            date: rec.date,
+            status: rec.status
+          });
+        }
+      });
+      localStorage.setItem('obslmsAttendance', JSON.stringify(existing));
+    } catch (e) {
+      console.error('Error saving bulk attendance:', e);
     }
   }
 

@@ -6,185 +6,459 @@
 
 	<div class="content">
 
-		<div class="page-header">
-			<h1>👩‍🏫 Faculty Dashboard</h1>
-			<p>Welcome, Faculty. See your teaching schedule, student progress, and assessment tasks in one place.</p>
+		<!-- Page Header with Live Action Buttons -->
+		<div class="page-header-container">
+			<div class="page-header">
+				<h1>👩‍🏫 Faculty OBE Command Center</h1>
+				<p>Real-time outcome analytics, live attendance, quick grading, syllabus delivery, and NBA accreditation tools for <strong>{{ facultyName }}</strong>.</p>
+			</div>
+			<div class="header-actions">
+				<button class="action-btn secondary" (click)="openQuickAttendanceModal()">
+					📅 Quick Attendance
+				</button>
+				<button class="action-btn primary" (click)="openMarkEntryModal()">
+					📝 Quick Marks Entry
+				</button>
+				<button class="action-btn accent" (click)="openCourseFileModal()">
+					📁 NBA Course File
+				</button>
+				<button class="action-btn secondary" (click)="openQuestionPaperModal()">
+					⚙️ Question Paper
+				</button>
+			</div>
 		</div>
 
 		<!-- Loading State -->
 		<div *ngIf="isLoading" class="loading-spinner">
-			<p>Loading dashboard data...</p>
+			<div class="spinner-ring"></div>
+			<p>Computing real-time OBE analytics from active records...</p>
 		</div>
 
 		<!-- Error State -->
 		<div *ngIf="error" class="error-message">
 			<p>{{ error }}</p>
-			<button (click)="ngOnInit()" class="retry-btn">Retry</button>
+			<button (click)="loadDashboardData()" class="btn primary">Retry</button>
 		</div>
 
 		<!-- Main Dashboard Content -->
 		<ng-container *ngIf="!isLoading && !error">
 
-			<!-- Quick Stats -->
+			<!-- 1. Real-Time KPI Stats Bar -->
 			<div class="quick-stats">
-				<div class="stat-card">
+				<div class="stat-card stat-classes" (click)="goToCourses()">
 					<div class="stat-icon">📚</div>
 					<div class="stat-content">
-						<span class="stat-label">My Classes</span>
+						<span class="stat-label">Assigned Classes</span>
 						<h3 class="stat-value">{{ totalCourses }}</h3>
+						<small class="stat-hint">Active this semester</small>
 					</div>
 				</div>
-				<div class="stat-card">
+				<div class="stat-card stat-students" (click)="goToStudentProgress()">
 					<div class="stat-icon">👥</div>
 					<div class="stat-content">
-						<span class="stat-label">Total Students</span>
+						<span class="stat-label">Enrolled Students</span>
 						<h3 class="stat-value">{{ totalStudents }}</h3>
+						<small class="stat-hint">In your courses</small>
 					</div>
 				</div>
-				<div class="stat-card">
-					<div class="stat-icon">📝</div>
+				<div class="stat-card stat-attainment" (click)="goToCOAttainment()">
+					<div class="stat-icon">🎯</div>
 					<div class="stat-content">
-						<span class="stat-label">Active Assessments</span>
-						<h3 class="stat-value">{{ activeAssessmentsCount }}</h3>
+						<span class="stat-label">Avg CO Attainment</span>
+						<h3 class="stat-value">{{ overallAttainment }}%</h3>
+						<small class="stat-hint">Target threshold: 75%</small>
 					</div>
 				</div>
-				<div class="stat-card">
-					<div class="stat-icon">🔔</div>
+				<div class="stat-card stat-attendance" (click)="openQuickAttendanceModal()">
+					<div class="stat-icon">📈</div>
 					<div class="stat-content">
-						<span class="stat-label">Pending Notifications</span>
-						<h3 class="stat-value">{{ pendingNotificationsCount }}</h3>
+						<span class="stat-label">Avg Attendance</span>
+						<h3 class="stat-value">{{ averageAttendance }}%</h3>
+						<small class="stat-hint">Min threshold: 75%</small>
+					</div>
+				</div>
+				<div class="stat-card stat-atrisk" [class.has-risk]="atRiskCount > 0">
+					<div class="stat-icon">⚠️</div>
+					<div class="stat-content">
+						<span class="stat-label">At-Risk Students</span>
+						<h3 class="stat-value">{{ atRiskCount }}</h3>
+						<small class="stat-hint">{{ atRiskCount > 0 ? 'Intervention needed' : 'All students on track' }}</small>
 					</div>
 				</div>
 			</div>
 
-			<!-- My Classes Section -->
+			<!-- 2. At-Risk Student Alert Board -->
+			<section *ngIf="atRiskStudents.length > 0" class="dashboard-section at-risk-section">
+				<div class="section-header">
+					<div class="header-title-group">
+						<h2>⚠️ Academic Early Warning System ({{ atRiskStudents.length }} Students)</h2>
+						<p class="section-subtitle">Real-time alerts for students falling below minimum OBE attainment (60%) or attendance (75%) thresholds.</p>
+					</div>
+					<button class="view-all-btn" (click)="goToStudentProgress()">Full Matrix →</button>
+				</div>
+				<div class="at-risk-grid">
+					<div *ngFor="let student of atRiskStudents" class="at-risk-card" (click)="openAtRiskModal(student)">
+						<div class="at-risk-card-top">
+							<div>
+								<h4>{{ student.studentName }}</h4>
+								<span class="at-risk-course">{{ student.courseName }}</span>
+							</div>
+							<span class="severity-badge" [class.high]="student.severity === 'High'" [class.medium]="student.severity === 'Medium'">
+								{{ student.severity }} Priority
+							</span>
+						</div>
+						<div class="at-risk-metrics">
+							<div>
+								<span>CO Attainment:</span>
+								<strong [class.text-danger]="student.attainmentPercentage < 60">{{ student.attainmentPercentage }}%</strong>
+							</div>
+							<div>
+								<span>Attendance:</span>
+								<strong [class.text-danger]="student.attendancePercentage < 75">{{ student.attendancePercentage }}%</strong>
+							</div>
+						</div>
+						<ul class="risk-reasons">
+							<li *ngFor="let reason of student.riskReasons">⚠️ {{ reason }}</li>
+						</ul>
+						<button class="remedial-btn" (click)="$event.stopPropagation(); openAtRiskModal(student)">View Diagnostic & Remedial Plan →</button>
+					</div>
+				</div>
+			</section>
+
+			<!-- 3. Course Outcome (CO) Attainment Cards -->
 			<section class="dashboard-section">
 				<div class="section-header">
-					<h2>📚 My Classes</h2>
-					<button class="view-all-btn" (click)="goToCourses()">View All →</button>
+					<div class="header-title-group">
+						<h2>🎯 Course Outcome (CO) Attainment Monitor</h2>
+						<p class="section-subtitle">Live attainment calculated from actual evaluation marks vs target benchmark (75%).</p>
+					</div>
+					<div class="header-btn-group">
+						<button class="view-all-btn" (click)="openCqiModal()">+ Log CQI Plan</button>
+						<button class="view-all-btn" (click)="goToCOAttainment()">Detailed OBE Matrix →</button>
+					</div>
+				</div>
+				<div class="co-attainment-grid">
+					<div *ngFor="let co of courseCOAttainments" class="co-card">
+						<div class="co-card-header">
+							<div>
+								<span class="co-badge">{{ co.coCode }}</span>
+								<strong class="co-course">{{ co.courseName }}</strong>
+							</div>
+							<span class="status-pill" [class.achieved]="co.status === 'Achieved'" [class.partial]="co.status === 'Partial'" [class.not-achieved]="co.status === 'Not Achieved'">
+								{{ co.status }}
+							</span>
+						</div>
+						<p class="co-description">{{ co.description || 'Applies core concepts and analytical methodologies to engineering problems.' }}</p>
+						<div class="co-progress-block">
+							<div class="co-progress-labels">
+								<span>Live Attainment: <strong>{{ co.attainmentPercentage }}%</strong></span>
+								<span>Target: <strong>{{ co.targetPercentage }}%</strong></span>
+							</div>
+							<div class="co-progress-track">
+								<div class="co-progress-fill" [style.width.%]="co.attainmentPercentage"
+									[class.fill-achieved]="co.status === 'Achieved'"
+									[class.fill-partial]="co.status === 'Partial'"
+									[class.fill-failed]="co.status === 'Not Achieved'"></div>
+								<div class="co-target-marker" [style.left.%]="co.targetPercentage" title="Target Benchmark ({{co.targetPercentage}}%)"></div>
+							</div>
+						</div>
+						<div class="co-footer">
+							<small>{{ co.assessedStudentsCount }} Student Assessments Evaluated</small>
+							<button *ngIf="co.status !== 'Achieved'" class="cqi-mini-btn" (click)="openCqiModal(co)">Plan Remedial Action</button>
+						</div>
+					</div>
+				</div>
+				<p *ngIf="courseCOAttainments.length === 0" class="empty-state">No Course Outcome mappings configured yet.</p>
+			</section>
+
+			<!-- 4. Real-Time Grade & Performance Distribution -->
+			<section class="dashboard-section">
+				<div class="section-header">
+					<div class="header-title-group">
+						<h2>📊 Live Performance & Grade Distribution</h2>
+						<p class="section-subtitle">Real-time distribution of evaluated students across score brackets.</p>
+					</div>
+				</div>
+				<div class="grade-distribution-card">
+					<div class="distribution-bar-track" *ngIf="gradeDistribution.totalEvaluated > 0">
+						<div class="bar-segment dist" [style.width.%]="(gradeDistribution.distinction / gradeDistribution.totalEvaluated) * 100" title="Distinction (>=75%)"></div>
+						<div class="bar-segment first" [style.width.%]="(gradeDistribution.firstClass / gradeDistribution.totalEvaluated) * 100" title="First Class (60-74%)"></div>
+						<div class="bar-segment pass" [style.width.%]="(gradeDistribution.pass / gradeDistribution.totalEvaluated) * 100" title="Pass (40-59%)"></div>
+						<div class="bar-segment fail" [style.width.%]="(gradeDistribution.fail / gradeDistribution.totalEvaluated) * 100" title="Remedial / Fail (<40%)"></div>
+					</div>
+					<div class="distribution-legend">
+						<div class="legend-item">
+							<span class="legend-dot dist"></span>
+							<span>Distinction (≥75%): <strong>{{ gradeDistribution.distinction }}</strong></span>
+						</div>
+						<div class="legend-item">
+							<span class="legend-dot first"></span>
+							<span>First Class (60-74%): <strong>{{ gradeDistribution.firstClass }}</strong></span>
+						</div>
+						<div class="legend-item">
+							<span class="legend-dot pass"></span>
+							<span>Pass (40-59%): <strong>{{ gradeDistribution.pass }}</strong></span>
+						</div>
+						<div class="legend-item">
+							<span class="legend-dot fail"></span>
+							<span>Remedial (<40%): <strong>{{ gradeDistribution.fail }}</strong></span>
+						</div>
+					</div>
+				</div>
+			</section>
+
+			<!-- 5. Syllabus Coverage & Lesson Plan Tracker -->
+			<section class="dashboard-section">
+				<div class="section-header">
+					<div class="header-title-group">
+						<h2>📅 Syllabus Coverage & Lesson Plan Tracker</h2>
+						<p class="section-subtitle">Monitor unit-by-unit curriculum delivery mapped to Course Outcomes.</p>
+					</div>
+					<button class="action-btn secondary small" (click)="openAddLectureModal()">
+						+ Log Today's Lecture
+					</button>
+				</div>
+				<div class="co-attainment-grid">
+					<div *ngFor="let unit of syllabusUnits" class="co-card">
+						<div class="co-card-header">
+							<div>
+								<span class="co-badge">{{ unit.mappedCO }}</span>
+								<strong class="co-course">{{ unit.title }}</strong>
+							</div>
+							<span class="status-pill" [class.completed]="unit.status === 'Completed'" [class.ongoing]="unit.status === 'In Progress'" [class.scheduled]="unit.status === 'Planned'">
+								{{ unit.status }}
+							</span>
+						</div>
+						<div class="co-progress-block mt-3">
+							<div class="co-progress-labels">
+								<span>Lectures Delivered: <strong>{{ unit.completedLectures }} / {{ unit.plannedLectures }}</strong></span>
+								<span>Progress: <strong>{{ (unit.completedLectures / unit.plannedLectures) * 100 | number: '1.0-0' }}%</strong></span>
+							</div>
+							<div class="progress-bar">
+								<div class="progress-fill" [style.width.%]="(unit.completedLectures / unit.plannedLectures) * 100"></div>
+							</div>
+						</div>
+						<div class="co-footer mt-3">
+							<small>Planned: {{ unit.plannedLectures }} Hours</small>
+							<button class="action-btn secondary small" (click)="openAddLectureModal(unit)">+ Log Lecture</button>
+						</div>
+					</div>
+				</div>
+			</section>
+
+			<!-- 6. Assigned Classes Grid -->
+			<section class="dashboard-section">
+				<div class="section-header">
+					<div class="header-title-group">
+						<h2>📚 Assigned Courses ({{ courses.length }})</h2>
+						<p class="section-subtitle">Real-time enrollment, attainment, and attendance per course.</p>
+					</div>
+					<button class="view-all-btn" (click)="goToCourses()">Course Manager →</button>
 				</div>
 				<div class="classes-grid">
-					<div *ngFor="let course of courses" class="class-card" (click)="goToCourses()">
+					<div *ngFor="let course of courses" class="class-card" (click)="openCourseFileModal(course.name)">
 						<div class="class-header">
 							<h3>{{ course.name }}</h3>
 							<span class="course-code">{{ course.code }}</span>
 						</div>
 						<div class="class-details">
 							<p><strong>Semester:</strong> {{ course.semester }}</p>
-							<p><strong>Students:</strong> <span class="student-count">{{ course.studentCount }}</span></p>
+							<p><strong>Enrolled Students:</strong> {{ course.studentCount }}</p>
+							<div class="class-quick-metrics">
+								<span>Attainment: <strong>{{ course.averageAttainment }}%</strong></span>
+								<span>Attendance: <strong>{{ course.averageAttendance }}%</strong></span>
+							</div>
 						</div>
-						<button class="class-action-btn">View Course →</button>
+						<button class="class-action-btn" (click)="$event.stopPropagation(); openQuickAttendanceModal(course.name)">
+							📅 Take Attendance →
+						</button>
 					</div>
 				</div>
-				<p *ngIf="courses.length === 0" class="empty-state">No courses found for this semester.</p>
+				<p *ngIf="courses.length === 0" class="empty-state">No courses currently assigned to your faculty profile.</p>
 			</section>
 
-			<!-- Active Assessments Section -->
+			<!-- 7. Active Assessments Section with Quick Marks Entry -->
 			<section class="dashboard-section">
 				<div class="section-header">
-					<h2>📝 Active Assessments</h2>
-					<button class="view-all-btn" (click)="goToAssessments()">View All →</button>
+					<div class="header-title-group">
+						<h2>📝 Active Assessments & Grading ({{ activeAssessments.length }})</h2>
+						<p class="section-subtitle">Manage ongoing submissions and enter evaluation scores directly.</p>
+					</div>
+					<div class="header-btn-group">
+						<button class="action-btn primary small" (click)="openMarkEntryModal()">+ Quick Marks Sheet</button>
+						<button class="view-all-btn" (click)="goToAssessments()">View All →</button>
+					</div>
 				</div>
 				<div class="assessments-list">
 					<div *ngFor="let assessment of activeAssessments" class="assessment-card">
 						<div class="assessment-header">
-							<h3>{{ assessment.title }}</h3>
+							<div>
+								<h3>{{ assessment.title }}</h3>
+								<span class="course-tag">{{ assessment.courseName }}</span>
+							</div>
 							<span class="assessment-type" [style.background-color]="getStatusColor(assessment.status)">
 								{{ assessment.status }}
 							</span>
 						</div>
 						<div class="assessment-meta">
-							<p><strong>Course:</strong> {{ assessment.courseName }}</p>
-							<p><strong>Type:</strong> {{ assessment.type }}</p>
-							<p><strong>Due:</strong> {{ assessment.dueDate | date: 'short' }}</p>
+							<p><strong>Max Marks:</strong> {{ assessment.maxMarks }}</p>
+							<p><strong>Due Date:</strong> {{ assessment.dueDate ? (assessment.dueDate | date: 'mediumDate') : 'Open' }}</p>
+							<p><strong>Average Score:</strong> {{ assessment.averageScore }}%</p>
 						</div>
 						<div class="submission-progress">
 							<div class="progress-label">
-								<span>Submissions: {{ assessment.submittedCount }}/{{ assessment.totalCount }}</span>
-								<span class="percentage">{{ getSubmissionPercentage(assessment) | number: '1.0-0' }}%</span>
+								<span>Evaluated Submissions: {{ assessment.submittedCount }} / {{ assessment.totalCount }}</span>
+								<span class="percentage">{{ getSubmissionPercentage(assessment) }}%</span>
 							</div>
 							<div class="progress-bar">
 								<div class="progress-fill" [style.width.%]="getSubmissionPercentage(assessment)"></div>
 							</div>
 						</div>
-						<button class="assessment-action-btn" (click)="goToAssessments()">Grade Submissions →</button>
+						<div class="assessment-card-actions">
+							<button class="assessment-action-btn" (click)="openMarkEntryModal(assessment)">
+								📝 Enter / Edit Marks →
+							</button>
+						</div>
 					</div>
 				</div>
-				<p *ngIf="activeAssessments.length === 0" class="empty-state">No active assessments.</p>
+				<p *ngIf="activeAssessments.length === 0" class="empty-state">No active assessments found.</p>
 			</section>
 
-			<!-- Student Progress Section -->
+			<!-- 8. Student Progress Matrix with Course Filter & CSV Export -->
 			<section class="dashboard-section">
 				<div class="section-header">
-					<h2>📊 Student Progress</h2>
-					<button class="view-all-btn" (click)="goToStudentProgress()">View All →</button>
+					<div class="header-title-group">
+						<h2>📊 Real-Time Student Progress Matrix ({{ filteredProgressList.length }})</h2>
+						<p class="section-subtitle">Live breakdown of student attainment and attendance calculated across evaluation records.</p>
+					</div>
+					<div class="filter-group">
+						<select [(ngModel)]="selectedCourseFilter" (ngModelChange)="onCourseFilterChange()">
+							<option value="">All Courses</option>
+							<option *ngFor="let c of courses" [value]="c.name">{{ c.name }}</option>
+						</select>
+						<button class="action-btn secondary small" (click)="exportGradebookCsv()">
+							📥 Export CSV
+						</button>
+					</div>
 				</div>
 				<div class="progress-table">
-					<table *ngIf="studentProgressList.length > 0" class="data-table">
+					<table *ngIf="filteredProgressList.length > 0" class="data-table">
 						<thead>
 							<tr>
 								<th>Student Name</th>
 								<th>Course</th>
-								<th>Attendance</th>
 								<th>CO Attainment</th>
-								<th>Last Update</th>
+								<th>Attendance</th>
+								<th>Evaluations</th>
+								<th>Status</th>
 							</tr>
 						</thead>
 						<tbody>
-							<tr *ngFor="let progress of studentProgressList">
-								<td>{{ progress.studentName }}</td>
+							<tr *ngFor="let progress of filteredProgressList">
+								<td><strong>{{ progress.studentName }}</strong></td>
 								<td>{{ progress.courseName }}</td>
 								<td>
-									<span class="attendance-badge" [class.good]="progress.attendance >= 80" 
-										[class.fair]="progress.attendance >= 60 && progress.attendance < 80"
-										[class.poor]="progress.attendance < 60">
-										{{ progress.attendance }}%
+									<span class="attainment-badge" [class.good]="progress.coAttainment >= 75"
+										[class.fair]="progress.coAttainment >= 60 && progress.coAttainment < 75"
+										[class.poor]="progress.coAttainment < 60">
+										{{ progress.coAttainment }}%
 									</span>
 								</td>
 								<td>
-									<span class="attainment-badge">{{ progress.coAttainment }}%</span>
+									<span class="attendance-badge" [class.good]="progress.attendance >= 80" 
+										[class.fair]="progress.attendance >= 75 && progress.attendance < 80"
+										[class.poor]="progress.attendance < 75">
+										{{ progress.attendance }}%
+									</span>
 								</td>
-								<td>{{ progress.lastUpdate | date: 'short' }}</td>
+								<td>{{ progress.totalAssessments }} assessments</td>
+								<td>
+									<span *ngIf="progress.coAttainment < 60 || progress.attendance < 75" class="status-pill open">
+										At-Risk
+									</span>
+									<span *ngIf="progress.coAttainment >= 60 && progress.attendance >= 75" class="status-pill completed">
+										On Track
+									</span>
+								</td>
 							</tr>
 						</tbody>
 					</table>
-					<p *ngIf="studentProgressList.length === 0" class="empty-state">No student progress data available.</p>
+					<p *ngIf="filteredProgressList.length === 0" class="empty-state">No student progress data found for the selected filter.</p>
 				</div>
 			</section>
 
-			<!-- Faculty Management Widgets -->
+			<!-- 9. CQI Continuous Quality Improvement Actions Log -->
+			<section *ngIf="cqiActionsList.length > 0" class="dashboard-section">
+				<div class="section-header">
+					<div class="header-title-group">
+						<h2>🎯 Continuous Quality Improvement (CQI) Action Log ({{ cqiActionsList.length }})</h2>
+						<p class="section-subtitle">Documented remedial actions and outcome improvement milestones for NBA accreditation.</p>
+					</div>
+					<button class="action-btn primary small" (click)="openCqiModal()">+ Log New Action</button>
+				</div>
+				<div class="cqi-table-card">
+					<table class="data-table">
+						<thead>
+							<tr>
+								<th>Course</th>
+								<th>CO Code</th>
+								<th>Identified Issue</th>
+								<th>Action Plan & Interventions</th>
+								<th>Target Review Date</th>
+								<th>Status</th>
+							</tr>
+						</thead>
+						<tbody>
+							<tr *ngFor="let cqi of cqiActionsList">
+								<td><strong>{{ cqi.courseName }}</strong></td>
+								<td><span class="co-badge">{{ cqi.coCode }}</span></td>
+								<td>{{ cqi.issueDescription }}</td>
+								<td>{{ cqi.actionPlan }}</td>
+								<td>{{ cqi.targetDate }}</td>
+								<td><span class="status-pill scheduled">{{ cqi.status }}</span></td>
+							</tr>
+						</tbody>
+					</table>
+				</div>
+			</section>
+
+			<!-- 10. Faculty Workbench Widgets -->
 			<section class="dashboard-section">
 				<div class="section-header">
-					<h2>📋 Faculty Workbench</h2>
+					<h2>📋 Academic Delivery Workbench</h2>
 				</div>
 				<div class="faculty-widget-grid">
 
+					<!-- Examination Schedule Widget -->
 					<div class="widget-card">
 						<div class="widget-header">
-							<h3>📝 Examination</h3>
+							<h3>📝 Exam Schedule</h3>
+							<button class="widget-link-btn" (click)="goToExamination()">View →</button>
 						</div>
 						<ul class="widget-list">
-							<li *ngFor="let item of examinationItems">
+							<li *ngFor="let item of examinationItems.slice(0, 3)">
 								<div class="list-main">
 									<strong>{{ item.title }}</strong>
 									<span>{{ item.course }}</span>
 								</div>
 								<div class="list-meta">
-									<span>{{ item.date }}</span>
-									<span>{{ item.room }}</span>
+									<span>📅 {{ item.date }}</span>
+									<span>🏛️ {{ item.room }}</span>
 								</div>
 								<span class="status-pill" [class.scheduled]="item.status === 'Scheduled'" [class.ongoing]="item.status === 'Ongoing'" [class.completed]="item.status === 'Completed'">{{ item.status }}</span>
 							</li>
 						</ul>
-						<p *ngIf="examinationItems.length === 0" class="empty-state">No examination scheduled yet.</p>
+						<p *ngIf="examinationItems.length === 0" class="empty-state">No examinations scheduled.</p>
 					</div>
 
+					<!-- Grievance & Student Feedback Widget -->
 					<div class="widget-card">
 						<div class="widget-header">
-							<h3>📩 Grievance</h3>
+							<h3>📩 Student Feedback & Grievance</h3>
+							<button class="widget-link-btn" (click)="goToGrievance()">View →</button>
 						</div>
 						<ul class="widget-list">
-							<li *ngFor="let item of grievanceItems">
+							<li *ngFor="let item of grievanceItems.slice(0, 3)">
 								<div class="list-main">
 									<strong>{{ item.title }}</strong>
 									<span>{{ item.studentName }} • {{ item.category }}</span>
@@ -195,18 +469,20 @@
 								</div>
 							</li>
 						</ul>
-						<p *ngIf="grievanceItems.length === 0" class="empty-state">No grievances filed yet.</p>
+						<p *ngIf="grievanceItems.length === 0" class="empty-state">No pending student grievances.</p>
 					</div>
 
+					<!-- Question Bank & Generator Widget -->
 					<div class="widget-card">
 						<div class="widget-header">
-							<h3>🧠 Question Bank</h3>
+							<h3>🧠 OBE Question Bank</h3>
+							<button class="widget-link-btn" (click)="goToQuestionBank()">View →</button>
 						</div>
 						<ul class="widget-list">
-							<li *ngFor="let item of questionBankItems">
+							<li *ngFor="let item of questionBankItems.slice(0, 3)">
 								<div class="list-main">
 									<strong>{{ item.questionText }}</strong>
-									<span>{{ item.type }}</span>
+									<span>{{ item.subject }} • CO: {{ item.coMapped }}</span>
 								</div>
 								<div class="widget-row">
 									<span class="difficulty-badge" [class.easy]="item.difficulty === 'Easy'" [class.medium]="item.difficulty === 'Medium'" [class.hard]="item.difficulty === 'Hard'">{{ item.difficulty }}</span>
@@ -214,17 +490,19 @@
 								</div>
 							</li>
 						</ul>
-						<p *ngIf="questionBankItems.length === 0" class="empty-state">No questions added yet.</p>
+						<div class="widget-footer-action">
+							<button class="generate-paper-btn" (click)="openQuestionPaperModal()">⚙️ Generate Question Paper</button>
+						</div>
 					</div>
 
 				</div>
 			</section>
 
-			<!-- Notifications Section -->
+			<!-- 11. Dynamic Notifications Section -->
 			<section class="dashboard-section">
 				<div class="section-header">
-					<h2>🔔 Recent Notifications</h2>
-					<button class="view-all-btn" (click)="goToNotifications()">View All →</button>
+					<h2>🔔 Real-Time Action Alerts ({{ notifications.length }})</h2>
+					<button class="view-all-btn" (click)="goToNotifications()">All Alerts →</button>
 				</div>
 				<div class="notifications-list">
 					<div *ngFor="let notification of notifications" class="notification-card" 
@@ -237,14 +515,445 @@
 						<div class="notification-content">
 							<h3>{{ notification.title }}</h3>
 							<p>{{ notification.message }}</p>
-							<small>{{ notification.date | date: 'short' }}</small>
+							<small>{{ notification.date | date: 'medium' }}</small>
 						</div>
 					</div>
 				</div>
-				<p *ngIf="notifications.length === 0" class="empty-state">No notifications.</p>
+				<p *ngIf="notifications.length === 0" class="empty-state">All academic tasks and thresholds are currently satisfied.</p>
 			</section>
 
 		</ng-container>
+
+		<!-- ================================================================= -->
+		<!-- MODAL 1: Quick Marks Entry Sheet & CSV Tools                      -->
+		<!-- ================================================================= -->
+		<div *ngIf="showMarkEntryModal" class="modal-backdrop" (click)="closeMarkEntryModal()">
+			<div class="modal-card modal-large" (click)="$event.stopPropagation()">
+				<div class="modal-header">
+					<h2>📝 Quick Assessment Mark Entry Sheet</h2>
+					<button class="close-btn" (click)="closeMarkEntryModal()">✖</button>
+				</div>
+				<div class="modal-body">
+					<div class="modal-form-grid">
+						<div class="form-field">
+							<label>Course Name</label>
+							<select [(ngModel)]="markEntryCourse">
+								<option *ngFor="let c of courses" [value]="c.name">{{ c.name }}</option>
+							</select>
+						</div>
+						<div class="form-field">
+							<label>Assessment Title</label>
+							<input type="text" [(ngModel)]="markEntryAssessmentTitle" placeholder="e.g. Midterm 1, Quiz 2" />
+						</div>
+						<div class="form-field">
+							<label>Maximum Marks</label>
+							<input type="number" [(ngModel)]="markEntryMaxMarks" />
+						</div>
+					</div>
+
+					<!-- CSV Batch Tools -->
+					<div class="csv-tools-bar mt-3">
+						<button class="action-btn secondary small" (click)="downloadCsvTemplate()">
+							📥 Download CSV Template
+						</button>
+						<label class="action-btn accent small" style="cursor: pointer; margin: 0;">
+							📤 Import from CSV
+							<input type="file" accept=".csv" (change)="onCsvFileSelected($event)" style="display: none;" />
+						</label>
+					</div>
+
+					<div class="marks-table-header">
+						<h3>Student Scores ({{ markEntryRows.length }} Students)</h3>
+						<button class="add-row-btn" (click)="addMarkRow()">+ Add Student Row</button>
+					</div>
+
+					<div class="marks-sheet-container">
+						<table class="marks-entry-table">
+							<thead>
+								<tr>
+									<th>Student Name</th>
+									<th>Marks Obtained (Max: {{ markEntryMaxMarks }})</th>
+									<th>Action</th>
+								</tr>
+							</thead>
+							<tbody>
+								<tr *ngFor="let row of markEntryRows; let i = index">
+									<td>
+										<input type="text" [(ngModel)]="row.studentName" placeholder="Student Full Name" />
+									</td>
+									<td>
+										<input type="number" [(ngModel)]="row.obtained" min="0" [max]="markEntryMaxMarks" />
+									</td>
+									<td>
+										<button class="delete-row-btn" (click)="removeMarkRow(i)">🗑️</button>
+									</td>
+								</tr>
+							</tbody>
+						</table>
+					</div>
+				</div>
+				<div class="modal-footer">
+					<button class="btn secondary" (click)="closeMarkEntryModal()">Cancel</button>
+					<button class="btn primary" (click)="saveAllMarks()">Save & Recalculate Attainment</button>
+				</div>
+			</div>
+		</div>
+
+		<!-- ================================================================= -->
+		<!-- MODAL 2: One-Click Quick Attendance Sheet                         -->
+		<!-- ================================================================= -->
+		<div *ngIf="showQuickAttendanceModal" class="modal-backdrop" (click)="closeQuickAttendanceModal()">
+			<div class="modal-card" (click)="$event.stopPropagation()">
+				<div class="modal-header">
+					<h2>📅 Quick Attendance Marker</h2>
+					<button class="close-btn" (click)="closeQuickAttendanceModal()">✖</button>
+				</div>
+				<div class="modal-body">
+					<div class="modal-form-grid">
+						<div class="form-field">
+							<label>Select Course</label>
+							<select [(ngModel)]="attendanceCourse">
+								<option *ngFor="let c of courses" [value]="c.name">{{ c.name }}</option>
+							</select>
+						</div>
+						<div class="form-field">
+							<label>Attendance Date</label>
+							<input type="date" [(ngModel)]="attendanceDate" />
+						</div>
+					</div>
+
+					<div class="attendance-toolbar mt-3">
+						<button class="btn secondary small" (click)="markAllAttendance('Present')">✅ Mark All Present</button>
+						<button class="btn secondary small" (click)="markAllAttendance('Absent')">❌ Mark All Absent</button>
+					</div>
+
+					<div class="attendance-grid-container mt-3">
+						<div *ngFor="let student of attendanceStudentList; let i = index" 
+							class="attendance-chip" 
+							[class.present]="student.status === 'Present'"
+							[class.absent]="student.status === 'Absent'"
+							(click)="toggleAttendance(i)">
+							<span class="chip-name">{{ student.studentName }}</span>
+							<span class="chip-status">{{ student.status }}</span>
+						</div>
+					</div>
+				</div>
+				<div class="modal-footer">
+					<button class="btn secondary" (click)="closeQuickAttendanceModal()">Cancel</button>
+					<button class="btn primary" (click)="saveQuickAttendance()">Save Attendance</button>
+				</div>
+			</div>
+		</div>
+
+		<!-- ================================================================= -->
+		<!-- MODAL 3: Log Today's Lecture Form                                 -->
+		<!-- ================================================================= -->
+		<div *ngIf="showAddLectureModal" class="modal-backdrop" (click)="closeAddLectureModal()">
+			<div class="modal-card" (click)="$event.stopPropagation()">
+				<div class="modal-header">
+					<h2>📅 Log Completed Lecture Topic</h2>
+					<button class="close-btn" (click)="closeAddLectureModal()">✖</button>
+				</div>
+				<div class="modal-body">
+					<div class="modal-form-grid">
+						<div class="form-field">
+							<label>Course</label>
+							<select [(ngModel)]="lectureCourse">
+								<option *ngFor="let c of courses" [value]="c.name">{{ c.name }}</option>
+							</select>
+						</div>
+						<div class="form-field">
+							<label>Unit / Module</label>
+							<select [(ngModel)]="lectureUnit">
+								<option [value]="1">Unit 1</option>
+								<option [value]="2">Unit 2</option>
+								<option [value]="3">Unit 3</option>
+								<option [value]="4">Unit 4</option>
+								<option [value]="5">Unit 5</option>
+							</select>
+						</div>
+						<div class="form-field">
+							<label>Course Outcome Mapped</label>
+							<select [(ngModel)]="lectureCO">
+								<option value="CO1">CO1</option>
+								<option value="CO2">CO2</option>
+								<option value="CO3">CO3</option>
+								<option value="CO4">CO4</option>
+								<option value="CO5">CO5</option>
+							</select>
+						</div>
+						<div class="form-field">
+							<label>Delivery Date</label>
+							<input type="date" [(ngModel)]="lectureDate" />
+						</div>
+					</div>
+					<div class="form-field mt-3">
+						<label>Lecture Topic & Concepts Taught</label>
+						<textarea [(ngModel)]="lectureTopic" rows="3" placeholder="e.g. Relational Calculus and Complex SQL Subqueries"></textarea>
+					</div>
+				</div>
+				<div class="modal-footer">
+					<button class="btn secondary" (click)="closeAddLectureModal()">Cancel</button>
+					<button class="btn primary" (click)="saveLecture()">Log Lecture</button>
+				</div>
+			</div>
+		</div>
+
+		<!-- ================================================================= -->
+		<!-- MODAL 4: Question Paper Generator                                 -->
+		<!-- ================================================================= -->
+		<div *ngIf="showQuestionPaperModal" class="modal-backdrop" (click)="closeQuestionPaperModal()">
+			<div class="modal-card modal-large" (click)="$event.stopPropagation()">
+				<div class="modal-header">
+					<h2>⚙️ Automated OBE Question Paper Generator</h2>
+					<button class="close-btn" (click)="closeQuestionPaperModal()">✖</button>
+				</div>
+				<div class="modal-body">
+					<div *ngIf="!isPaperGenerated" class="qp-config">
+						<div class="modal-form-grid">
+							<div class="form-field">
+								<label>Subject</label>
+								<select [(ngModel)]="qpSubject">
+									<option *ngFor="let sub of allSubjectsList" [value]="sub">{{ sub }}</option>
+								</select>
+							</div>
+							<div class="form-field">
+								<label>Total Exam Marks</label>
+								<select [(ngModel)]="qpTotalMarks">
+									<option [value]="25">25 Marks (Midterm / Quiz)</option>
+									<option [value]="50">50 Marks (Internal Exam)</option>
+									<option [value]="100">100 Marks (End Semester Exam)</option>
+								</select>
+							</div>
+						</div>
+
+						<div class="form-field mt-3">
+							<label>Target Course Outcomes (COs) to Cover:</label>
+							<div class="co-checkbox-group">
+								<label><input type="checkbox" [(ngModel)]="qpCOs['CO1']" /> CO1</label>
+								<label><input type="checkbox" [(ngModel)]="qpCOs['CO2']" /> CO2</label>
+								<label><input type="checkbox" [(ngModel)]="qpCOs['CO3']" /> CO3</label>
+								<label><input type="checkbox" [(ngModel)]="qpCOs['CO4']" /> CO4</label>
+								<label><input type="checkbox" [(ngModel)]="qpCOs['CO5']" /> CO5</label>
+							</div>
+						</div>
+
+						<div class="generator-action mt-4">
+							<button class="btn primary" (click)="generateQuestionPaper()">
+								⚙️ Generate Paper from Question Bank
+							</button>
+						</div>
+					</div>
+
+					<!-- Generated Paper View -->
+					<div *ngIf="isPaperGenerated" class="printable-paper">
+						<div class="paper-header">
+							<h3>NATIONAL INSTITUTE OF TECHNOLOGY / UNIVERSITY</h3>
+							<h4>DEPARTMENT OF COMPUTER SCIENCE & ENGINEERING</h4>
+							<p><strong>Subject:</strong> {{ qpSubject }} | <strong>Max Marks:</strong> {{ qpTotalMarks }} | <strong>Duration:</strong> 2 Hours</p>
+						</div>
+						<div class="paper-meta-row">
+							<span>Faculty: {{ facultyName }}</span>
+							<span>OBE Evaluation Matrix</span>
+						</div>
+						<hr />
+						<div class="paper-questions-list">
+							<div *ngFor="let q of generatedPaperQuestions; let i = index" class="paper-question-item">
+								<div class="q-left">
+									<span class="q-num">Q{{ i + 1 }}.</span>
+									<p class="q-text">{{ q.questionText }}</p>
+								</div>
+								<div class="q-right">
+									<span class="q-co">[{{ q.coMapped }}]</span>
+									<span class="q-marks">({{ q.marks }}M)</span>
+								</div>
+							</div>
+						</div>
+						<div class="preview-actions">
+							<button class="btn secondary" (click)="isPaperGenerated = false">← Reconfigure</button>
+							<button class="btn primary" (click)="printQuestionPaper()">🖨️ Print / Save PDF</button>
+						</div>
+					</div>
+				</div>
+				<div class="modal-footer" *ngIf="!isPaperGenerated">
+					<button class="btn secondary" (click)="closeQuestionPaperModal()">Close</button>
+				</div>
+			</div>
+		</div>
+
+		<!-- ================================================================= -->
+		<!-- MODAL 5: NBA / NAAC Course File Dossier Exporter                   -->
+		<!-- ================================================================= -->
+		<div *ngIf="showCourseFileModal" class="modal-backdrop" (click)="closeCourseFileModal()">
+			<div class="modal-card modal-large" (click)="$event.stopPropagation()">
+				<div class="modal-header">
+					<h2>📁 NBA / NAAC Course File Dossier</h2>
+					<button class="close-btn" (click)="closeCourseFileModal()">✖</button>
+				</div>
+				<div class="modal-body">
+					<div class="printable-paper">
+						<div class="paper-header">
+							<h3>ACCREDITATION COMPLIANCE DOSSIER (NBA / NAAC)</h3>
+							<h4>COURSE FILE & OUTCOME ATTAINMENT REPORT</h4>
+							<p><strong>Course:</strong> {{ selectedDossierCourse }} | <strong>Faculty In-Charge:</strong> {{ facultyName }}</p>
+						</div>
+						<hr />
+
+						<h4>1. Course Outcomes (CO) Attainment Summary</h4>
+						<table class="data-table">
+							<thead>
+								<tr>
+									<th>CO Code</th>
+									<th>Target %</th>
+									<th>Attainment %</th>
+									<th>Attainment Status</th>
+								</tr>
+							</thead>
+							<tbody>
+								<tr *ngFor="let co of dossierCOs">
+									<td><span class="co-badge">{{ co.coCode }}</span></td>
+									<td>{{ co.targetPercentage }}%</td>
+									<td><strong>{{ co.attainmentPercentage }}%</strong></td>
+									<td><span class="status-pill" [class.achieved]="co.status === 'Achieved'" [class.partial]="co.status === 'Partial'" [class.not-achieved]="co.status === 'Not Achieved'">{{ co.status }}</span></td>
+								</tr>
+							</tbody>
+						</table>
+
+						<h4 class="mt-4">2. Class Performance & Evaluation Summary</h4>
+						<div class="risk-metric-cards">
+							<div class="risk-card-mini">
+								<span>Overall Attainment</span>
+								<strong>{{ overallAttainment }}%</strong>
+							</div>
+							<div class="risk-card-mini">
+								<span>Average Attendance</span>
+								<strong>{{ averageAttendance }}%</strong>
+							</div>
+						</div>
+
+						<h4 class="mt-4">3. Continuous Quality Improvement (CQI) Action Log</h4>
+						<table class="data-table">
+							<thead>
+								<tr>
+									<th>CO</th>
+									<th>Identified Deficiency</th>
+									<th>Corrective Remedial Action</th>
+								</tr>
+							</thead>
+							<tbody>
+								<tr *ngFor="let cqi of cqiActionsList">
+									<td><span class="co-badge">{{ cqi.coCode }}</span></td>
+									<td>{{ cqi.issueDescription }}</td>
+									<td>{{ cqi.actionPlan }}</td>
+								</tr>
+								<tr *ngIf="cqiActionsList.length === 0">
+									<td colspan="3" class="empty-state">No deficiencies logged. All benchmarks achieved.</td>
+								</tr>
+							</tbody>
+						</table>
+					</div>
+				</div>
+				<div class="modal-footer">
+					<button class="btn secondary" (click)="closeCourseFileModal()">Close</button>
+					<button class="btn primary" (click)="printCourseFile()">🖨️ Print / Save Dossier PDF</button>
+				</div>
+			</div>
+		</div>
+
+		<!-- ================================================================= -->
+		<!-- MODAL 6: Continuous Quality Improvement (CQI) Log Modal           -->
+		<!-- ================================================================= -->
+		<div *ngIf="showCqiModal" class="modal-backdrop" (click)="closeCqiModal()">
+			<div class="modal-card" (click)="$event.stopPropagation()">
+				<div class="modal-header">
+					<h2>🎯 Continuous Quality Improvement (CQI) Action Plan</h2>
+					<button class="close-btn" (click)="closeCqiModal()">✖</button>
+				</div>
+				<div class="modal-body">
+					<div class="modal-form-grid">
+						<div class="form-field">
+							<label>Course Name</label>
+							<select [(ngModel)]="cqiCourse">
+								<option *ngFor="let c of courses" [value]="c.name">{{ c.name }}</option>
+							</select>
+						</div>
+						<div class="form-field">
+							<label>Course Outcome (CO)</label>
+							<select [(ngModel)]="cqiCoCode">
+								<option value="CO1">CO1</option>
+								<option value="CO2">CO2</option>
+								<option value="CO3">CO3</option>
+								<option value="CO4">CO4</option>
+								<option value="CO5">CO5</option>
+							</select>
+						</div>
+					</div>
+					<div class="form-field mt-3">
+						<label>Identified Issue / Deficiency</label>
+						<textarea [(ngModel)]="cqiIssueDescription" rows="2" placeholder="e.g. Attainment below 75% on normalization problem solving"></textarea>
+					</div>
+					<div class="form-field mt-3">
+						<label>Corrective Remedial Action Plan</label>
+						<textarea [(ngModel)]="cqiActionPlan" rows="3" placeholder="e.g. Conduct 2 supplementary tutorial sessions and problem solving workshops"></textarea>
+					</div>
+					<div class="form-field mt-3">
+						<label>Target Review Date</label>
+						<input type="date" [(ngModel)]="cqiTargetDate" />
+					</div>
+				</div>
+				<div class="modal-footer">
+					<button class="btn secondary" (click)="closeCqiModal()">Cancel</button>
+					<button class="btn primary" (click)="saveCqiAction()">Record CQI Action</button>
+				</div>
+			</div>
+		</div>
+
+		<!-- ================================================================= -->
+		<!-- MODAL 7: At-Risk Student Diagnostic Modal                         -->
+		<!-- ================================================================= -->
+		<div *ngIf="showAtRiskModal && selectedAtRiskStudent" class="modal-backdrop" (click)="closeAtRiskModal()">
+			<div class="modal-card" (click)="$event.stopPropagation()">
+				<div class="modal-header">
+					<h2>⚠️ Student Academic Diagnostic Profile</h2>
+					<button class="close-btn" (click)="closeAtRiskModal()">✖</button>
+				</div>
+				<div class="modal-body">
+					<div class="student-profile-head">
+						<div>
+							<h3>{{ selectedAtRiskStudent.studentName }}</h3>
+							<span>Course: {{ selectedAtRiskStudent.courseName }}</span>
+						</div>
+						<span class="severity-badge" [class.high]="selectedAtRiskStudent.severity === 'High'" [class.medium]="selectedAtRiskStudent.severity === 'Medium'">
+							{{ selectedAtRiskStudent.severity }} Priority
+						</span>
+					</div>
+
+					<div class="risk-metric-cards">
+						<div class="risk-card-mini">
+							<span>CO Attainment</span>
+							<strong [class.text-danger]="selectedAtRiskStudent.attainmentPercentage < 60">{{ selectedAtRiskStudent.attainmentPercentage }}%</strong>
+							<small>Threshold: 60%</small>
+						</div>
+						<div class="risk-card-mini">
+							<span>Attendance</span>
+							<strong [class.text-danger]="selectedAtRiskStudent.attendancePercentage < 75">{{ selectedAtRiskStudent.attendancePercentage }}%</strong>
+							<small>Threshold: 75%</small>
+						</div>
+					</div>
+
+					<div class="risk-causes-box">
+						<h4>Triggered Diagnostic Factors:</h4>
+						<ul>
+							<li *ngFor="let r of selectedAtRiskStudent.riskReasons">{{ r }}</li>
+						</ul>
+					</div>
+				</div>
+				<div class="modal-footer">
+					<button class="btn secondary" (click)="closeAtRiskModal()">Close</button>
+					<button class="btn primary" (click)="closeAtRiskModal(); openCqiModal()">Plan Remedial Mentoring</button>
+				</div>
+			</div>
+		</div>
 
 		<app-footer></app-footer>
 	</div>
