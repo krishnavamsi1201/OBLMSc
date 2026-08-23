@@ -14,6 +14,7 @@ import {
   CourseCOAttainmentSummary,
   GradeDistribution,
   Notification,
+  SyllabusUnit,
   CqiAction
 } from '../../shared/services/faculty-data.service';
 
@@ -53,6 +54,11 @@ interface MarkEntryRow {
   obtained: number;
 }
 
+interface AttendanceStudentRow {
+  studentName: string;
+  status: 'Present' | 'Absent';
+}
+
 @Component({
   selector: 'app-faculty',
   standalone: true,
@@ -72,6 +78,7 @@ export class Faculty implements OnInit {
   courseCOAttainments: CourseCOAttainmentSummary[] = [];
   gradeDistribution: GradeDistribution = { distinction: 0, firstClass: 0, pass: 0, fail: 0, totalEvaluated: 0 };
   notifications: Notification[] = [];
+  syllabusUnits: SyllabusUnit[] = [];
   cqiActionsList: CqiAction[] = [];
 
   // Summary statistics
@@ -96,7 +103,7 @@ export class Faculty implements OnInit {
   error: string | null = null;
 
   // ==========================================
-  // MODAL 1: Quick Mark Entry Sheet
+  // MODAL 1: Quick Mark Entry Sheet & CSV Import/Export
   // ==========================================
   showMarkEntryModal = false;
   markEntryCourse = '';
@@ -112,7 +119,7 @@ export class Faculty implements OnInit {
   qpSubject = '';
   qpCOs: { [key: string]: boolean } = { CO1: true, CO2: true, CO3: true, CO4: false, CO5: false };
   qpTotalMarks = 50;
-  qpDifficulty = 'Balanced'; // 'Easy', 'Balanced', 'Challenging'
+  qpDifficulty = 'Balanced';
   generatedPaperQuestions: QuestionBankItem[] = [];
   isPaperGenerated = false;
   allSubjectsList: string[] = [];
@@ -133,6 +140,34 @@ export class Faculty implements OnInit {
   showAtRiskModal = false;
   selectedAtRiskStudent: AtRiskStudent | null = null;
 
+  // ==========================================
+  // MODAL 5: One-Click Quick Attendance Sheet
+  // ==========================================
+  showQuickAttendanceModal = false;
+  attendanceCourse = '';
+  attendanceDate = '';
+  attendanceStudentList: AttendanceStudentRow[] = [];
+
+  // ==========================================
+  // MODAL 6: Syllabus & Lecture Log
+  // ==========================================
+  showAddLectureModal = false;
+  lectureCourse = '';
+  lectureUnit = 1;
+  lectureTopic = '';
+  lectureCO = 'CO1';
+  lectureDate = '';
+
+  // ==========================================
+  // MODAL 7: NBA / NAAC Course File Dossier Exporter
+  // ==========================================
+  showCourseFileModal = false;
+  selectedDossierCourse = '';
+  dossierCourseData: Course | null = null;
+  dossierCOs: CourseCOAttainmentSummary[] = [];
+  dossierAssessments: Assessment[] = [];
+  dossierStudents: StudentProgress[] = [];
+
   constructor(
     private facultyDataService: FacultyDataService,
     private router: Router
@@ -140,6 +175,8 @@ export class Faculty implements OnInit {
 
   ngOnInit(): void {
     this.facultyName = this.facultyDataService.getCurrentFacultyName() || 'Faculty Member';
+    this.attendanceDate = new Date().toISOString().split('T')[0];
+    this.lectureDate = new Date().toISOString().split('T')[0];
     this.loadDashboardData();
   }
 
@@ -160,6 +197,7 @@ export class Faculty implements OnInit {
         this.courseCOAttainments = data.courseCOAttainments;
         this.gradeDistribution = data.gradeDistribution;
         this.notifications = data.notifications;
+        this.syllabusUnits = data.syllabusUnits;
 
         // Statistics
         this.totalCourses = data.totalCourses;
@@ -218,7 +256,7 @@ export class Faculty implements OnInit {
   }
 
   // ==========================================
-  // QUICK MARKS ENTRY ACTIONS
+  // 1. QUICK MARKS ENTRY & CSV BATCH ACTIONS
   // ==========================================
   openMarkEntryModal(assessment?: Assessment): void {
     this.storedAssessmentsList = this.getSafeJson('obslmsAssessments');
@@ -239,7 +277,6 @@ export class Faculty implements OnInit {
       this.markEntryMaxMarks = 100;
     }
 
-    // Populate existing marks for this assessment or list of known students
     const assessmentMarks = existingMarks.filter((m: any) =>
       m.assessment && m.assessment.toLowerCase() === this.markEntryAssessmentTitle.toLowerCase()
     );
@@ -260,7 +297,6 @@ export class Faculty implements OnInit {
         obtained: 0
       }));
     } else {
-      // Default 3 rows for entry
       this.markEntryRows = [
         { studentName: 'Aditya Sharma', obtained: 85 },
         { studentName: 'Pooja Reddy', obtained: 78 },
@@ -309,8 +345,188 @@ export class Faculty implements OnInit {
     this.loadDashboardData();
   }
 
+  downloadCsvTemplate(): void {
+    let csvContent = 'Student Name,Marks Obtained,Max Marks\n';
+    if (this.markEntryRows.length > 0) {
+      this.markEntryRows.forEach(r => {
+        csvContent += `"${r.studentName}",${r.obtained || 0},${this.markEntryMaxMarks}\n`;
+      });
+    } else {
+      csvContent += '"Student A",80,100\n"Student B",75,100\n"Student C",60,100\n';
+    }
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.setAttribute('href', url);
+    link.setAttribute('download', `${this.markEntryAssessmentTitle.replace(/\s+/g, '_')}_Marks_Template.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  }
+
+  onCsvFileSelected(event: any): void {
+    const file = event.target?.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (e: any) => {
+      const text = e.target?.result as string;
+      if (!text) return;
+
+      const lines = text.split(/\r?\n/).map(l => l.trim()).filter(l => l.length > 0);
+      if (lines.length <= 1) {
+        alert('CSV file is empty or missing data rows.');
+        return;
+      }
+
+      // Skip header line
+      const parsedRows: MarkEntryRow[] = [];
+      for (let i = 1; i < lines.length; i++) {
+        const parts = lines[i].split(',').map(p => p.replace(/^"|"$/g, '').trim());
+        if (parts[0]) {
+          parsedRows.push({
+            studentName: parts[0],
+            obtained: Number(parts[1]) || 0
+          });
+        }
+      }
+
+      if (parsedRows.length > 0) {
+        this.markEntryRows = parsedRows;
+        alert(`Successfully imported ${parsedRows.length} student scores from CSV!`);
+      }
+    };
+    reader.readAsText(file);
+  }
+
+  exportGradebookCsv(): void {
+    let csvContent = 'Student Name,Course,CO Attainment %,Attendance %,Assessments\n';
+    this.filteredProgressList.forEach(sp => {
+      csvContent += `"${sp.studentName}","${sp.courseName}",${sp.coAttainment}%,${sp.attendance}%,${sp.totalAssessments}\n`;
+    });
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.setAttribute('href', url);
+    link.setAttribute('download', `OBE_Gradebook_Report_${new Date().toISOString().split('T')[0]}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  }
+
   // ==========================================
-  // QUESTION PAPER GENERATOR ACTIONS
+  // 2. ONE-CLICK QUICK ATTENDANCE SHEET
+  // ==========================================
+  openQuickAttendanceModal(courseName?: string): void {
+    this.attendanceCourse = courseName || this.courses[0]?.name || 'Course';
+    this.attendanceDate = new Date().toISOString().split('T')[0];
+
+    const allStudents = this.getSafeJson('obslmsStudents');
+    const existingAttendance = this.getSafeJson('obslmsAttendance');
+
+    // Get unique student names
+    const studentsSet = new Set<string>();
+    allStudents.forEach((s: any) => {
+      if (s.name || s.studentName) studentsSet.add(s.name || s.studentName);
+    });
+    this.studentProgressList.forEach(s => studentsSet.add(s.studentName));
+
+    if (studentsSet.size === 0) {
+      studentsSet.add('Aditya Sharma');
+      studentsSet.add('Pooja Reddy');
+      studentsSet.add('Rahul Verma');
+      studentsSet.add('Sneha Rao');
+      studentsSet.add('Vikas Gupta');
+    }
+
+    // Check if attendance already recorded today for this course
+    this.attendanceStudentList = Array.from(studentsSet).map(sName => {
+      const existing = existingAttendance.find(
+        (a: any) => a.student && a.student.toLowerCase() === sName.toLowerCase() && a.course && a.course.toLowerCase().includes(this.attendanceCourse.toLowerCase()) && a.date === this.attendanceDate
+      );
+      return {
+        studentName: sName,
+        status: existing ? (existing.status as 'Present' | 'Absent') : 'Present'
+      };
+    });
+
+    this.showQuickAttendanceModal = true;
+  }
+
+  closeQuickAttendanceModal(): void {
+    this.showQuickAttendanceModal = false;
+    this.attendanceStudentList = [];
+  }
+
+  markAllAttendance(status: 'Present' | 'Absent'): void {
+    this.attendanceStudentList.forEach(s => s.status = status);
+  }
+
+  toggleAttendance(index: number): void {
+    if (this.attendanceStudentList[index]) {
+      this.attendanceStudentList[index].status = this.attendanceStudentList[index].status === 'Present' ? 'Absent' : 'Present';
+    }
+  }
+
+  saveQuickAttendance(): void {
+    if (!this.attendanceCourse || this.attendanceStudentList.length === 0) {
+      alert('No attendance records to save.');
+      return;
+    }
+
+    const records = this.attendanceStudentList.map(s => ({
+      student: s.studentName,
+      course: this.attendanceCourse,
+      date: this.attendanceDate,
+      status: s.status
+    }));
+
+    this.facultyDataService.saveBulkAttendance(records);
+    this.closeQuickAttendanceModal();
+    alert(`Attendance for ${records.length} students recorded on ${this.attendanceDate}! Updating live analytics...`);
+    this.loadDashboardData();
+  }
+
+  // ==========================================
+  // 3. SYLLABUS & LESSON PLAN LOGGER
+  // ==========================================
+  openAddLectureModal(unit?: SyllabusUnit): void {
+    this.lectureCourse = this.courses[0]?.name || '';
+    this.lectureUnit = unit ? unit.unitNumber : 1;
+    this.lectureCO = unit ? unit.mappedCO : 'CO1';
+    this.lectureTopic = '';
+    this.lectureDate = new Date().toISOString().split('T')[0];
+    this.showAddLectureModal = true;
+  }
+
+  closeAddLectureModal(): void {
+    this.showAddLectureModal = false;
+  }
+
+  saveLecture(): void {
+    if (!this.lectureTopic.trim()) {
+      alert('Please enter a lecture topic.');
+      return;
+    }
+
+    this.facultyDataService.saveLectureLog({
+      courseName: this.lectureCourse,
+      unitNumber: this.lectureUnit,
+      topic: this.lectureTopic.trim(),
+      mappedCO: this.lectureCO,
+      date: this.lectureDate,
+      durationMinutes: 50
+    });
+
+    this.closeAddLectureModal();
+    alert('Lecture delivery logged successfully! Updating syllabus coverage...');
+    this.loadDashboardData();
+  }
+
+  // ==========================================
+  // 4. QUESTION PAPER GENERATOR ACTIONS
   // ==========================================
   openQuestionPaperModal(): void {
     if (this.courses.length > 0) {
@@ -333,34 +549,28 @@ export class Faculty implements OnInit {
       return;
     }
 
-    // Selected CO codes
     const selectedCOs = Object.keys(this.qpCOs).filter(k => this.qpCOs[k]);
     if (selectedCOs.length === 0) {
       alert('Please select at least one Course Outcome (CO).');
       return;
     }
 
-    // Filter questions matching subject and COs
     let pool = storedQB.filter(q => {
       const matchSubject = !this.qpSubject || q.subject.toLowerCase().includes(this.qpSubject.toLowerCase()) || this.qpSubject.toLowerCase().includes(q.subject.toLowerCase());
       const matchCO = selectedCOs.includes(q.coMapped);
       return matchSubject && matchCO;
     });
 
-    // If pool is too small, fallback to matching COs across subjects
     if (pool.length === 0) {
       pool = storedQB.filter(q => selectedCOs.includes(q.coMapped));
     }
 
     if (pool.length === 0) {
-      pool = storedQB; // Use all available questions
+      pool = storedQB;
     }
 
-    // Pick questions to reach target marks
     let accumulatedMarks = 0;
     const selected: QuestionBankItem[] = [];
-
-    // Shuffle pool
     const shuffled = [...pool].sort(() => 0.5 - Math.random());
 
     for (const q of shuffled) {
@@ -384,7 +594,28 @@ export class Faculty implements OnInit {
   }
 
   // ==========================================
-  // CQI (CONTINUOUS QUALITY IMPROVEMENT) ACTIONS
+  // 5. NBA / NAAC COURSE FILE DOSSIER EXPORTER
+  // ==========================================
+  openCourseFileModal(courseName?: string): void {
+    const targetCourse = courseName || this.courses[0]?.name || '';
+    this.selectedDossierCourse = targetCourse;
+    this.dossierCourseData = this.courses.find(c => c.name === targetCourse) || this.courses[0] || null;
+    this.dossierCOs = this.courseCOAttainments.filter(co => !targetCourse || co.courseName.toLowerCase().includes(targetCourse.toLowerCase()));
+    this.dossierAssessments = this.activeAssessments.filter(a => !targetCourse || a.courseName.toLowerCase().includes(targetCourse.toLowerCase()));
+    this.dossierStudents = this.studentProgressList.filter(sp => !targetCourse || sp.courseName.toLowerCase().includes(targetCourse.toLowerCase()));
+    this.showCourseFileModal = true;
+  }
+
+  closeCourseFileModal(): void {
+    this.showCourseFileModal = false;
+  }
+
+  printCourseFile(): void {
+    window.print();
+  }
+
+  // ==========================================
+  // 6. CQI ACTIONS
   // ==========================================
   openCqiModal(co?: CourseCOAttainmentSummary): void {
     if (co) {
@@ -426,7 +657,7 @@ export class Faculty implements OnInit {
   }
 
   // ==========================================
-  // AT-RISK STUDENT MODAL
+  // 7. AT-RISK STUDENT MODAL
   // ==========================================
   openAtRiskModal(student?: AtRiskStudent): void {
     if (student) {
@@ -441,43 +672,17 @@ export class Faculty implements OnInit {
   }
 
   // ==========================================
-  // NAVIGATION ROUTING
+  // ROUTING & HELPERS
   // ==========================================
-  goToCourses(): void {
-    this.router.navigate(['/courses']);
-  }
-
-  goToStudentProgress(): void {
-    this.router.navigate(['/performance']);
-  }
-
-  goToAssessments(): void {
-    this.router.navigate(['/assessments']);
-  }
-
-  goToAttendance(): void {
-    this.router.navigate(['/attendance']);
-  }
-
-  goToQuestionBank(): void {
-    this.router.navigate(['/question-bank']);
-  }
-
-  goToExamination(): void {
-    this.router.navigate(['/examination']);
-  }
-
-  goToGrievance(): void {
-    this.router.navigate(['/grievance']);
-  }
-
-  goToCOAttainment(): void {
-    this.router.navigate(['/co-attainment']);
-  }
-
-  goToNotifications(): void {
-    this.router.navigate(['/notifications']);
-  }
+  goToCourses(): void { this.router.navigate(['/courses']); }
+  goToStudentProgress(): void { this.router.navigate(['/performance']); }
+  goToAssessments(): void { this.router.navigate(['/assessments']); }
+  goToAttendance(): void { this.router.navigate(['/attendance']); }
+  goToQuestionBank(): void { this.router.navigate(['/question-bank']); }
+  goToExamination(): void { this.router.navigate(['/examination']); }
+  goToGrievance(): void { this.router.navigate(['/grievance']); }
+  goToCOAttainment(): void { this.router.navigate(['/co-attainment']); }
+  goToNotifications(): void { this.router.navigate(['/notifications']); }
 
   getSubmissionPercentage(assessment: Assessment): number {
     if (!assessment.totalCount || assessment.totalCount === 0) return 0;
