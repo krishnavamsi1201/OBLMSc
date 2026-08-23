@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { Navbar } from '../../shared/navbar/navbar';
 import { Sidebar } from '../../shared/sidebar/sidebar';
 import { Footer } from '../../shared/footer/footer';
+import { HttpClient } from '@angular/common/http';
 
 interface CourseOutcome {
   id: string;
@@ -70,9 +71,16 @@ export class CoAttainment implements OnInit {
   role: string | null = null;
   studentHeatmap: StudentHeatmapRow[] = [];
 
-  constructor() {
+  constructor(private http: HttpClient) {
     try {
       this.role = localStorage.getItem('userRole')?.toLowerCase() || null;
+      const savedSettings = localStorage.getItem('systemSettings');
+      if (savedSettings) {
+        const parsed = JSON.parse(savedSettings);
+        if (parsed.obeTarget !== undefined) {
+          this.targetPercentage = Number(parsed.obeTarget);
+        }
+      }
     } catch {
       this.role = null;
     }
@@ -95,97 +103,21 @@ export class CoAttainment implements OnInit {
   }
 
   calculateCOAttainment(): void {
-    try {
-      const courseOutcomesData = JSON.parse(localStorage.getItem('obslmsCourseOutcomes') || '[]');
-      const mappingsData = JSON.parse(localStorage.getItem('obslmsAssessmentCOMappings') || '[]') as AssessmentCOMapping[];
-      const marksData = JSON.parse(localStorage.getItem('obslmsMarkEntries') || '[]') as StudentMark[];
-
-      const coMap = new Map<string, CourseOutcome>();
-      courseOutcomesData.forEach((co: any) => {
-        coMap.set(co.code, {
-          id: co.id,
-          code: co.code,
-          description: co.description,
-          targetPercentage: 75
-        });
-      });
-
-      const coAttainmentMap = new Map<string, {
-        scores: number[];
-        maxMarks: number;
-        assessments: string[];
-        students: Set<string>;
-      }>();
-
-      coMap.forEach((co, code) => {
-        coAttainmentMap.set(code, {
-          scores: [],
-          maxMarks: 0,
-          assessments: [],
-          students: new Set()
-        });
-      });
-
-      mappingsData.forEach((mapping: AssessmentCOMapping) => {
-        const assessmentMarks = marksData.filter(m => 
-          m.assessment.toLowerCase().includes(mapping.assessmentName.toLowerCase())
-        );
-
-        mapping.courseOutcomes.forEach((coCode: string) => {
-          const coData = coAttainmentMap.get(coCode);
-          if (coData) {
-            assessmentMarks.forEach(mark => {
-              const percentage = (mark.obtained / mark.maxMarks) * 100;
-              coData.scores.push(percentage);
-              coData.students.add(mark.student);
-            });
-
-            if (!coData.assessments.includes(mapping.assessmentName)) {
-              coData.assessments.push(mapping.assessmentName);
-            }
-            coData.maxMarks = mapping.maxMarks;
-          }
-        });
-      });
-
-      this.coAttainments = Array.from(coAttainmentMap.entries()).map(([code, data]) => {
-        let avgAchievement = data.scores.length > 0
-          ? data.scores.reduce((a, b) => a + b, 0) / data.scores.length
-          : 0;
-
-        // Fallbacks for demo if no database marks exist yet
-        if (data.scores.length === 0) {
-          avgAchievement = code === 'CO1' ? 78 : code === 'CO2' ? 82 : code === 'CO3' ? 68 : code === 'CO4' ? 74 : 55;
+    this.http.get<COAttainment[]>('http://localhost:8080/api/obe/co-attainment?target=' + this.targetPercentage).subscribe({
+      next: (data) => {
+        this.coAttainments = data;
+        if (data.length > 0) {
+          this.overallAchievement = Math.round(
+            data.reduce((sum, co) => sum + co.achievement, 0) / data.length
+          );
         }
-
-        const status = avgAchievement >= this.targetPercentage
-          ? 'Achieved'
-          : avgAchievement >= 50
-          ? 'Partial'
-          : 'Not Achieved';
-
-        const coDetails = coMap.get(code);
-        return {
-          code,
-          description: coDetails?.description || 'Course Outcome Description',
-          achievement: Math.round(avgAchievement),
-          targetPercentage: this.targetPercentage,
-          status,
-          assessmentCount: data.assessments.length,
-          studentCount: data.students.size || (avgAchievement > 0 ? 5 : 0)
-        };
-      });
-
-      if (this.coAttainments.length > 0) {
-        this.overallAchievement = Math.round(
-          this.coAttainments.reduce((sum, co) => sum + co.achievement, 0) / this.coAttainments.length
-        );
+        this.filterAttainments();
+      },
+      error: () => {
+        this.coAttainments = [];
+        this.filterAttainments();
       }
-
-    } catch (error) {
-      console.error('Error calculating CO attainment:', error);
-      this.coAttainments = [];
-    }
+    });
   }
 
   buildHeatmapData(): void {

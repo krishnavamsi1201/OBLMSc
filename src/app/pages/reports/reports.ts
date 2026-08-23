@@ -1,4 +1,4 @@
-﻿import { Component, OnInit } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Navbar } from '../../shared/navbar/navbar';
@@ -202,11 +202,11 @@ export class Reports implements OnInit {
 
       return courses.map((course: any) => {
         const subjects = courseSubjects.filter((cs: any) => cs.courseId === course.id);
-        const courseAssessments = assessments.filter((a: any) => a.course === course.name);
+        const courseAssessments = assessments.filter((a: any) => a.course === (course.title || course.name));
 
         return {
           courseId: course.id,
-          courseName: course.name,
+          courseName: course.title || course.name,
           code: course.code,
           credits: course.credits || 0,
           subjectCount: subjects.length,
@@ -450,7 +450,7 @@ export class Reports implements OnInit {
     switch (filter) {
       case 'Department': return this.departments;
       case 'Semester': return this.semesters;
-      case 'Course': return this.courses.map(c => c.name);
+      case 'Course': return this.courses.map(c => c.title || c.name);
       case 'Assessment Type': return this.assessmentTypes;
       case 'Program': return ['B.Tech CSE', 'B.Tech ECE', 'B.Tech ME'];
       case 'Faculty': return [];

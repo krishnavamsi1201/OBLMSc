@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { Navbar } from '../../shared/navbar/navbar';
 import { Sidebar } from '../../shared/sidebar/sidebar';
 import { Footer } from '../../shared/footer/footer';
@@ -17,10 +18,10 @@ interface StudentResult {
 @Component({
   selector: 'app-results',
   standalone: true,
-  imports: [CommonModule, Navbar, Sidebar, Footer],
+  imports: [CommonModule, FormsModule, Navbar, Sidebar, Footer],
   template: `<app-navbar></app-navbar>
 
-<div class="container">
+<div class="container print-single-card">
 
     <app-sidebar></app-sidebar>
 
@@ -49,9 +50,9 @@ interface StudentResult {
                 <p>Class pass percentage based on final results.</p>
             </div>
             <div class="section-card">
-                <h3>Grades Active</h3>
-                <strong>{{ gradeDistribution }}</strong>
-                <p>Grades obtained by students.</p>
+                <h3>OBE Weights Configured</h3>
+                <strong style="font-size: 1.4rem; margin-top: 14px;">{{ getObeWeights().internal }}% Int / {{ getObeWeights().external }}% Ext</strong>
+                <p>Configured grading ratios.</p>
             </div>
         </div>
 
@@ -82,11 +83,14 @@ interface StudentResult {
         <div class="action-row">
             <button type="button" (click)="downloadResults()">Download Report</button>
             <button type="button" class="btn-print" (click)="printTranscript()" *ngIf="role === 'student'">🖨️ Export Marksheet PDF</button>
+            <button type="button" class="btn-print" (click)="triggerBatchPrint()" *ngIf="role !== 'student'" style="background: #10b981;">
+                🖨️ Export Batch Transcripts (Selected: {{ getSelectedCount() }})
+            </button>
             <span class="status-message" *ngIf="downloadMessage">{{ downloadMessage }}</span>
         </div>
 
         <div class="table-card">
-            <!-- Print Only Header Details -->
+            <!-- Print Only Header Details (Single student view) -->
             <div class="print-header-details">
                 <h3 style="margin: 0; color: #1e3a8a; font-size: 1.4rem;">Student Name: {{ userName }}</h3>
                 <p style="margin: 4px 0 0; color: #475569; font-size: 0.95rem;">Academic Program: Bachelor of Technology (CSE)</p>
@@ -94,19 +98,26 @@ interface StudentResult {
             </div>
             
             <h2>{{ role === 'student' ? 'My Academic Transcript' : 'Class Result Analysis' }}</h2>
+            
             <table *ngIf="filteredResults.length > 0">
                 <thead>
                     <tr>
+                        <th *ngIf="role !== 'student'" style="width: 40px; text-align: center;">
+                            <input type="checkbox" (change)="selectAllStudents($event)" [checked]="isAllSelected()" />
+                        </th>
                         <th *ngIf="role !== 'student'">Student</th>
                         <th>Course</th>
-                        <th>Internal (40%)</th>
-                        <th>External (60%)</th>
+                        <th>Internal ({{ getObeWeights().internal }}%)</th>
+                        <th>External ({{ getObeWeights().external }}%)</th>
                         <th>Final Grade</th>
                         <th>Status</th>
                     </tr>
                 </thead>
                 <tbody>
                     <tr *ngFor="let result of filteredResults">
+                        <td *ngIf="role !== 'student'" style="text-align: center;">
+                            <input type="checkbox" [(ngModel)]="selectedStudentsForPrint[result.student]" />
+                        </td>
                         <td *ngIf="role !== 'student'"><strong>{{ result.student }}</strong></td>
                         <td>{{ result.course }}</td>
                         <td>{{ result.internal }}%</td>
@@ -121,6 +132,75 @@ interface StudentResult {
 
     </div>
 
+</div>
+
+<!-- Batch printing layout (visible ONLY in print mode when batch printing is triggered) -->
+<div class="batch-print-container" *ngIf="selectedBatchStudents.length > 0">
+    <div class="batch-print-page" *ngFor="let sName of selectedBatchStudents" style="page-break-after: always; border: 2px solid #1e3a8a; padding: 40px; border-radius: 12px; margin-bottom: 30px; background: white; box-sizing: border-box; width: 100%;">
+        <h2 style="text-align: center; color: #1e3a8a; font-size: 1.8rem; margin-top: 0; text-transform: uppercase; letter-spacing: 0.5px;">Outcome-Based Learning Management System</h2>
+        <h3 style="text-align: center; color: #475569; font-size: 1.25rem; margin-top: 4px; margin-bottom: 24px; text-transform: uppercase; border-bottom: 2px solid #1e3a8a; padding-bottom: 8px;">Official Academic Transcript</h3>
+        
+        <div style="display: flex; justify-content: space-between; margin-bottom: 20px;">
+            <div>
+                <h3 style="margin: 0; color: #1e3a8a; font-size: 1.4rem;">Student Name: {{ sName }}</h3>
+                <p style="margin: 4px 0 0; color: #475569; font-size: 0.95rem;">Academic Program: Bachelor of Technology (CSE)</p>
+                <p style="margin: 2px 0 0; color: #475569; font-size: 0.95rem;">Academic Session: 2025-2026</p>
+            </div>
+            <div style="text-align: right;">
+                <p style="margin: 0; color: #64748b; font-size: 0.9rem;">Date Issued: {{ currentDate | date:'mediumDate' }}</p>
+                <p style="margin: 2px 0 0; color: #64748b; font-size: 0.9rem;">Status: OFFICIAL TRANSCRIPT</p>
+            </div>
+        </div>
+        
+        <table style="width: 100%; border-collapse: collapse; margin-top: 20px; border: 1px solid #cbd5e1;">
+            <thead>
+                <tr style="background: #f8fafc; border-bottom: 2px solid #cbd5e1;">
+                    <th style="padding: 12px; text-align: left; font-weight: 700; color: #1f3d7a; border: 1px solid #cbd5e1;">Course Title</th>
+                    <th style="padding: 12px; text-align: center; font-weight: 700; color: #1f3d7a; border: 1px solid #cbd5e1; width: 130px;">Internal ({{ getObeWeights().internal }}%)</th>
+                    <th style="padding: 12px; text-align: center; font-weight: 700; color: #1f3d7a; border: 1px solid #cbd5e1; width: 130px;">External ({{ getObeWeights().external }}%)</th>
+                    <th style="padding: 12px; text-align: center; font-weight: 700; color: #1f3d7a; border: 1px solid #cbd5e1; width: 110px;">Final Grade</th>
+                    <th style="padding: 12px; text-align: center; font-weight: 700; color: #1f3d7a; border: 1px solid #cbd5e1; width: 100px;">Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr *ngFor="let result of getStudentResultsList(sName)" style="border-bottom: 1px solid #cbd5e1;">
+                    <td style="padding: 12px; border: 1px solid #cbd5e1; font-weight: 600;">{{ result.course }}</td>
+                    <td style="padding: 12px; border: 1px solid #cbd5e1; text-align: center;">{{ result.internal }}%</td>
+                    <td style="padding: 12px; border: 1px solid #cbd5e1; text-align: center;">{{ result.external }}%</td>
+                    <td style="padding: 12px; border: 1px solid #cbd5e1; text-align: center;">
+                        <span style="font-weight: 700; font-size: 0.9rem; padding: 2px 8px; border-radius: 4px; background: #f1f5f9;">{{ result.grade }}</span>
+                    </td>
+                    <td style="padding: 12px; border: 1px solid #cbd5e1; text-align: center; font-weight: 700;" 
+                        [style.color]="result.status === 'Pass' ? '#166534' : '#991b1b'">
+                        {{ result.status }}
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+        
+        <div style="margin-top: 35px; display: flex; justify-content: space-between; align-items: center; border-top: 2px dashed #cbd5e1; padding-top: 20px;">
+            <div style="font-size: 1.1rem;">
+                <strong>Calculated CGPA:</strong> <span style="font-size: 1.25rem; font-weight: bold; color: #1e3a8a;">{{ getStudentCGPA(sName) }}</span>
+            </div>
+            <div style="font-size: 1.1rem;">
+                <strong>Academic Standing:</strong> 
+                <span style="font-weight: bold; font-size: 1.2rem; text-transform: uppercase; padding: 4px 14px; border-radius: 8px;"
+                      [style.background]="getStudentStanding(sName) === 'PASS' ? '#dcfce7' : '#fee2e2'"
+                      [style.color]="getStudentStanding(sName) === 'PASS' ? '#15803d' : '#b91c1c'">
+                    {{ getStudentStanding(sName) }}
+                </span>
+            </div>
+        </div>
+
+        <div style="margin-top: 60px; display: flex; justify-content: space-between;">
+            <div style="text-align: center; width: 200px; border-top: 1px solid #475569; padding-top: 6px; font-size: 0.85rem; color: #475569;">
+                Prepared By: Registrar Office
+            </div>
+            <div style="text-align: center; width: 200px; border-top: 1px solid #475569; padding-top: 6px; font-size: 0.85rem; color: #475569;">
+                Authorized Controller of Exams
+            </div>
+        </div>
+    </div>
 </div>
 
 <app-footer></app-footer>`,
@@ -147,27 +227,40 @@ interface StudentResult {
     .status-pill.fail { background: #ffebee; color: #c62828; }
     .empty-state { text-align: center; color: #999; padding: 40px 20px; }
     .print-header-details { display: none; margin-bottom: 20px; border-bottom: 2px solid #e2e8f0; padding-bottom: 12px; }
+    .batch-print-container { display: none; }
     
     @media print {
       body * {
         visibility: hidden;
       }
-      .table-card, .table-card * {
+      /* If batch printing is active */
+      body.batch-mode .batch-print-container,
+      body.batch-mode .batch-print-container * {
+        visibility: visible;
+        display: block !important;
+      }
+      body.batch-mode .print-single-card {
+        display: none !important;
+      }
+      
+      /* Single transcript print */
+      body:not(.batch-mode) .table-card, 
+      body:not(.batch-mode) .table-card * {
         visibility: visible;
       }
-      .table-card {
+      body:not(.batch-mode) .table-card {
         position: absolute;
         left: 0;
         top: 0;
         width: 100%;
         box-shadow: none !important;
         border: 2px solid #1e3a8a !important;
-        padding: 30px !important;
+        padding: 35px !important;
         border-radius: 12px !important;
         margin: 0 !important;
         background: #ffffff !important;
       }
-      .table-card::before {
+      body:not(.batch-mode) .table-card::before {
         content: "OUTCOME-BASED LEARNING MANAGEMENT SYSTEM\\A OFFICIAL ACADEMIC TRANSCRIPT\\A";
         display: block;
         text-align: center;
@@ -177,7 +270,7 @@ interface StudentResult {
         white-space: pre-wrap;
         color: #1e3a8a;
       }
-      .print-header-details {
+      body:not(.batch-mode) .print-header-details {
         display: block !important;
       }
       app-navbar, app-sidebar, app-footer, .page-header, .summary-grid, .action-row, .empty-state {
@@ -190,10 +283,15 @@ interface StudentResult {
 export class Results implements OnInit {
   role: string | null = null;
   userName = 'User';
+  currentDate = new Date();
   
   studentResults: StudentResult[] = [];
   filteredResults: StudentResult[] = [];
   downloadMessage = '';
+
+  // Batch Printing bindings
+  selectedStudentsForPrint: { [name: string]: boolean } = {};
+  selectedBatchStudents: string[] = [];
 
   constructor() {
     try {
@@ -208,10 +306,33 @@ export class Results implements OnInit {
     this.loadResultsData();
   }
 
+  getObeWeights(): { internal: number; external: number } {
+    let internal = 40;
+    let external = 60;
+    try {
+      const saved = localStorage.getItem('systemSettings');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (parsed.internalWeight !== undefined) internal = Number(parsed.internalWeight);
+        if (parsed.externalWeight !== undefined) external = Number(parsed.externalWeight);
+      }
+    } catch {}
+    return { internal, external };
+  }
+
+  calculateFinalScore(internal: number, external: number): number {
+    const weights = this.getObeWeights();
+    return Math.round(internal * (weights.internal / 100) + external * (weights.external / 100));
+  }
+
   private loadResultsData(): void {
     try {
       const storedMarks = localStorage.getItem('obslmsMarkEntries');
       const marks = storedMarks ? JSON.parse(storedMarks) : [];
+
+      const weights = this.getObeWeights();
+      const intRatio = weights.internal / 100;
+      const extRatio = weights.external / 100;
 
       if (marks.length === 0) {
         // Seed default results if empty
@@ -221,7 +342,19 @@ export class Results implements OnInit {
           { id: 3, student: 'Sneha Patel', course: 'Database Management Systems', internal: 75, external: 72, grade: 'B+', status: 'Pass' },
           { id: 4, student: 'Amit Shah', course: 'Cloud Computing', internal: 45, external: 48, grade: 'F', status: 'Fail' }
         ];
-        this.studentResults = defaultResults;
+        
+        // Recalculate based on current dynamic weights
+        this.studentResults = defaultResults.map(r => {
+          const finalScore = Math.round(r.internal * intRatio + r.external * extRatio);
+          let grade = 'F';
+          let status = 'Fail';
+          if (finalScore >= 90) { grade = 'O'; status = 'Pass'; }
+          else if (finalScore >= 80) { grade = 'A+'; status = 'Pass'; }
+          else if (finalScore >= 70) { grade = 'A'; status = 'Pass'; }
+          else if (finalScore >= 60) { grade = 'B+'; status = 'Pass'; }
+          else if (finalScore >= 50) { grade = 'B'; status = 'Pass'; }
+          return { ...r, grade, status };
+        });
         
         // Also map these to mark entries so everything connects
         const mockMarkEntries = [
@@ -257,7 +390,7 @@ export class Results implements OnInit {
           const internalScore = totalMax > 0 ? Math.round((totalObtained / totalMax) * 100) : 75;
           // Calculate realistic mock external score based on internal
           const externalScore = Math.min(100, Math.max(0, Math.round(internalScore - 5 + Math.random() * 10)));
-          const finalScore = Math.round(internalScore * 0.4 + externalScore * 0.6);
+          const finalScore = Math.round(internalScore * intRatio + externalScore * extRatio);
 
           let grade = 'F';
           let status = 'Fail';
@@ -290,7 +423,84 @@ export class Results implements OnInit {
       );
     } else {
       this.filteredResults = [...this.studentResults];
+      // Reset selections
+      this.filteredResults.forEach(r => {
+        if (this.selectedStudentsForPrint[r.student] === undefined) {
+          this.selectedStudentsForPrint[r.student] = false;
+        }
+      });
     }
+  }
+
+  // Selection helpers
+  selectAllStudents(event: any): void {
+    const checked = event.target.checked;
+    this.filteredResults.forEach(r => {
+      this.selectedStudentsForPrint[r.student] = checked;
+    });
+  }
+
+  isAllSelected(): boolean {
+    if (this.filteredResults.length === 0) return false;
+    return this.filteredResults.every(r => this.selectedStudentsForPrint[r.student]);
+  }
+
+  getSelectedCount(): number {
+    return Object.keys(this.selectedStudentsForPrint).filter(k => this.selectedStudentsForPrint[k]).length;
+  }
+
+  getStudentResultsList(name: string): StudentResult[] {
+    return this.studentResults.filter(r => r.student === name);
+  }
+
+  getStudentCGPA(name: string): number {
+    const list = this.getStudentResultsList(name);
+    if (!list.length) return 0;
+    const weights = this.getObeWeights();
+    const intRatio = weights.internal / 100;
+    const extRatio = weights.external / 100;
+    const averages = list.map(r => {
+      const finalScore = r.internal * intRatio + r.external * extRatio;
+      return (finalScore / 100) * 10;
+    });
+    const avg = averages.reduce((sum, val) => sum + val, 0) / averages.length;
+    return Number(avg.toFixed(2));
+  }
+
+  getStudentStanding(name: string): string {
+    const list = this.getStudentResultsList(name);
+    if (!list.length) return 'FAIL';
+    return list.every(r => r.status === 'Pass') ? 'PASS' : 'FAIL';
+  }
+
+  triggerBatchPrint(): void {
+    const selected = Object.keys(this.selectedStudentsForPrint).filter(k => this.selectedStudentsForPrint[k]);
+    if (selected.length === 0) {
+      alert('Please select at least one student to export batch transcripts.');
+      return;
+    }
+    
+    this.selectedBatchStudents = selected;
+    document.body.classList.add('batch-mode');
+    
+    // Log the print action
+    try {
+      const activeAdmin = localStorage.getItem('userName') || 'Admin';
+      const stored = localStorage.getItem('obslmsAuditLogs');
+      const logs = stored ? JSON.parse(stored) : [];
+      logs.unshift({
+        user: activeAdmin,
+        action: `Exported Batch Transcripts for: ${selected.join(', ')}`,
+        timestamp: new Date().toISOString()
+      });
+      localStorage.setItem('obslmsAuditLogs', JSON.stringify(logs));
+    } catch {}
+
+    setTimeout(() => {
+      window.print();
+      this.selectedBatchStudents = [];
+      document.body.classList.remove('batch-mode');
+    }, 100);
   }
 
   // Getters for Faculty View
@@ -330,8 +540,11 @@ export class Results implements OnInit {
 
   get myCgpa(): number {
     if (!this.filteredResults.length) return 0;
+    const weights = this.getObeWeights();
+    const intRatio = weights.internal / 100;
+    const extRatio = weights.external / 100;
     const averages = this.filteredResults.map(r => {
-      const finalScore = r.internal * 0.4 + r.external * 0.6;
+      const finalScore = r.internal * intRatio + r.external * extRatio;
       return (finalScore / 100) * 10;
     });
     const avgCgpa = averages.reduce((sum, val) => sum + val, 0) / averages.length;

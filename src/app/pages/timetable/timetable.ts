@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { Navbar } from '../../shared/navbar/navbar';
 import { Sidebar } from '../../shared/sidebar/sidebar';
 import { Footer } from '../../shared/footer/footer';
+import { HttpClient } from '@angular/common/http';
 
 interface ScheduleEntry {
   id: number;
@@ -250,7 +251,7 @@ export class Timetable implements OnInit {
   dayFilter = '';
   searchSubject = '';
 
-  constructor() {
+  constructor(private http: HttpClient) {
     try {
       this.role = localStorage.getItem('userRole')?.toLowerCase() || null;
     } catch {
@@ -260,7 +261,6 @@ export class Timetable implements OnInit {
 
   ngOnInit(): void {
     this.loadTimetable();
-    this.applyFilters();
   }
 
   createEmptyEntry(): ScheduleEntry {
@@ -268,32 +268,22 @@ export class Timetable implements OnInit {
   }
 
   private loadTimetable(): void {
-    try {
-      const stored = localStorage.getItem('obslmsTimetable');
-      if (stored) {
-        this.weeklySchedule = JSON.parse(stored) as ScheduleEntry[];
-      } else {
-        // Seed default schedules
-        this.weeklySchedule = [
-          { id: 1, day: 'Monday', period: '09:00 AM - 10:00 AM', subject: 'Outcome-Based Education', room: 'LH-301' },
-          { id: 2, day: 'Monday', period: '11:30 AM - 12:30 PM', subject: 'Database Management Systems', room: 'LH-302' },
-          { id: 3, day: 'Tuesday', period: '10:15 AM - 11:15 AM', subject: 'Machine Learning', room: 'Lab-4' },
-          { id: 4, day: 'Wednesday', period: '09:00 AM - 10:00 AM', subject: 'Outcome-Based Education', room: 'LH-301' },
-          { id: 5, day: 'Thursday', period: '02:00 PM - 03:00 PM', subject: 'Cloud Computing', room: 'LH-101' },
-          { id: 6, day: 'Friday', period: '11:30 AM - 12:30 PM', subject: 'Database Management Systems', room: 'LH-302' }
-        ];
-        this.saveTimetable();
+    this.http.get<ScheduleEntry[]>('http://localhost:8080/api/timetable').subscribe({
+      next: (data) => {
+        this.weeklySchedule = data;
+        try {
+          localStorage.setItem('obslmsTimetable', JSON.stringify(data));
+        } catch {}
+        this.applyFilters();
+      },
+      error: () => {
+        this.weeklySchedule = [];
+        this.applyFilters();
       }
-    } catch {
-      this.weeklySchedule = [];
-    }
+    });
   }
 
-  private saveTimetable(): void {
-    try {
-      localStorage.setItem('obslmsTimetable', JSON.stringify(this.weeklySchedule));
-    } catch {}
-  }
+  private saveTimetable(): void {}
 
   getSlot(day: string, period: string): ScheduleEntry | null {
     const pHour = period.split(':')[0]; // E.g., '09', '10', '11', '02', '03'
@@ -339,17 +329,23 @@ export class Timetable implements OnInit {
       return;
     }
 
-    if (this.editIndex >= 0) {
-      const targetId = this.weeklySchedule[this.editIndex].id;
-      this.weeklySchedule[this.editIndex] = { ...this.currentEntry, id: targetId };
-    } else {
-      const nextId = this.weeklySchedule.length ? Math.max(...this.weeklySchedule.map(e => e.id)) + 1 : 1;
-      this.weeklySchedule = [...this.weeklySchedule, { ...this.currentEntry, id: nextId }];
-    }
+    const payload = {
+      id: this.currentEntry.id > 0 ? this.currentEntry.id : null,
+      day: this.currentEntry.day,
+      period: this.currentEntry.period,
+      subject: this.currentEntry.subject,
+      room: this.currentEntry.room
+    };
 
-    this.saveTimetable();
-    this.resetForm();
-    this.applyFilters();
+    this.http.post<ScheduleEntry>('http://localhost:8080/api/timetable', payload).subscribe({
+      next: () => {
+        this.loadTimetable();
+        this.resetForm();
+      },
+      error: () => {
+        alert('Failed to save schedule slot.');
+      }
+    });
   }
 
   editEntry(entry: ScheduleEntry): void {
@@ -361,9 +357,14 @@ export class Timetable implements OnInit {
   }
 
   deleteEntry(entry: ScheduleEntry): void {
-    this.weeklySchedule = this.weeklySchedule.filter(e => e.id !== entry.id);
-    this.saveTimetable();
-    this.applyFilters();
+    this.http.delete('http://localhost:8080/api/timetable/' + entry.id).subscribe({
+      next: () => {
+        this.loadTimetable();
+      },
+      error: () => {
+        alert('Failed to delete schedule slot.');
+      }
+    });
   }
 
   resetForm(): void {

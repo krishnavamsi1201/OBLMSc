@@ -5,6 +5,7 @@ import { FormsModule } from '@angular/forms';
 import { Navbar } from '../../shared/navbar/navbar';
 import { Sidebar } from '../../shared/sidebar/sidebar';
 import { Footer } from '../../shared/footer/footer';
+import { HttpClient } from '@angular/common/http';
 
 interface GrievanceComment {
   sender: string;
@@ -56,7 +57,7 @@ export class Grievance implements OnInit {
   categoryFilter = '';
   statusFilter = '';
 
-  constructor() {
+  constructor(private http: HttpClient) {
     try {
       this.role = localStorage.getItem('userRole')?.toLowerCase() || null;
       this.userName = localStorage.getItem('userName') || 'User';
@@ -67,70 +68,27 @@ export class Grievance implements OnInit {
 
   ngOnInit(): void {
     this.loadData();
-    this.applyFilters();
   }
 
   private loadData(): void {
-    try {
-      const stored = localStorage.getItem('obslmsGrievances');
-      if (stored) {
-        this.grievanceItems = JSON.parse(stored) as GrievanceItem[];
-      } else {
-        // Seed default grievances
-        this.grievanceItems = [
-          { 
-            id: 1, 
-            title: 'Discrepancy in Midterm attendance record', 
-            description: 'I was marked absent on August 10th despite presenting my medical certificate.', 
-            category: 'Attendance', 
-            studentName: 'Raj Kumar', 
-            status: 'Open', 
-            date: '2026-08-11T10:00',
-            comments: [
-              { sender: 'System', role: 'System', text: 'Ticket submitted successfully.', timestamp: '2026-08-11T10:00:00Z' }
-            ]
-          },
-          { 
-            id: 2, 
-            title: 'LMS file upload error', 
-            description: 'When trying to submit the machine learning assignment, the upload button throws a 500 error.', 
-            category: 'Technical Support', 
-            studentName: 'Sneha Patel', 
-            status: 'In Review', 
-            date: '2026-08-12T14:30',
-            comments: [
-              { sender: 'Sneha Patel', role: 'student', text: 'Please resolve soon as deadline is tomorrow.', timestamp: '2026-08-12T14:32:00Z' },
-              { sender: 'System Administrator', role: 'admin', text: 'Taking a look at the server log. It seems like a file size restriction.', timestamp: '2026-08-12T16:00:00Z' }
-            ]
-          },
-          { 
-            id: 3, 
-            title: 'Incomplete Course outcome description', 
-            description: 'Course outcomes for cloud computing subject are missing CO5 details.', 
-            category: 'Academics', 
-            studentName: 'Amit Shah', 
-            status: 'Resolved', 
-            date: '2026-08-05T09:00', 
-            resolution: 'Added the missing CO5 description to the course outline.',
-            comments: [
-              { sender: 'Amit Shah', role: 'student', text: 'Cloud Computing CO5 is empty on performance grid.', timestamp: '2026-08-05T09:02:00Z' },
-              { sender: 'Faculty Board', role: 'faculty', text: 'CO5 added successfully: Compare and evaluate infrastructure metrics.', timestamp: '2026-08-05T11:45:00Z' }
-            ]
-          }
-        ];
-        this.saveGrievances();
+    this.http.get<GrievanceItem[]>('http://localhost:8080/api/grievances').subscribe({
+      next: (data) => {
+        this.grievanceItems = data;
+        try {
+          localStorage.setItem('obslmsGrievances', JSON.stringify(data));
+        } catch {}
+        this.applyFilters();
+        this.isLoading = false;
+      },
+      error: () => {
+        this.grievanceItems = [];
+        this.applyFilters();
+        this.isLoading = false;
       }
-    } catch {
-      this.grievanceItems = [];
-    }
-    this.isLoading = false;
+    });
   }
 
-  private saveGrievances(): void {
-    try {
-      localStorage.setItem('obslmsGrievances', JSON.stringify(this.grievanceItems));
-    } catch {}
-  }
+  private saveGrievances(): void {}
 
   applyFilters(): void {
     let results = this.grievanceItems;
@@ -157,32 +115,48 @@ export class Grievance implements OnInit {
       return;
     }
 
-    const nextId = this.grievanceItems.length ? Math.max(...this.grievanceItems.map(g => g.id)) + 1 : 1;
-    const newRecord: GrievanceItem = {
-      id: nextId,
+    const payload = {
       title: this.newGrievance.title.trim(),
       description: this.newGrievance.description.trim(),
       category: this.newGrievance.category,
       studentName: this.userName,
       status: 'Open',
-      date: new Date().toISOString(),
-      comments: [
-        { sender: this.userName, role: this.role || 'Student', text: `Submitted grievance: ${this.newGrievance.title.trim()}`, timestamp: new Date().toISOString() }
-      ]
+      date: new Date().toISOString()
     };
 
-    this.grievanceItems = [...this.grievanceItems, newRecord];
-    this.saveGrievances();
-    
-    // Reset form
-    this.newGrievance = {
-      title: '',
-      description: '',
-      category: 'Academics'
-    };
+    this.http.post<GrievanceItem>('http://localhost:8080/api/grievances', payload).subscribe({
+      next: (res) => {
+        const commentPayload = {
+          sender: this.userName,
+          role: this.role || 'Student',
+          text: `Submitted grievance: ${this.newGrievance.title.trim()}`,
+          timestamp: new Date().toISOString()
+        };
+        this.http.post('http://localhost:8080/api/grievances/' + res.id + '/comments', commentPayload).subscribe(() => {
+          this.loadData();
+          alert('Your grievance has been successfully submitted.');
+        });
 
-    alert('Your grievance has been successfully submitted.');
-    this.applyFilters();
+        this.newGrievance = {
+          title: '',
+          description: '',
+          category: 'Academics'
+        };
+      },
+      error: () => {
+        alert('Failed to submit grievance.');
+      }
+    });
+  }
+
+  loadComments(grievanceId: number): void {
+    this.http.get<GrievanceComment[]>('http://localhost:8080/api/grievances/' + grievanceId + '/comments').subscribe({
+      next: (data) => {
+        if (this.selectedGrievance && this.selectedGrievance.id === grievanceId) {
+          this.selectedGrievance.comments = data;
+        }
+      }
+    });
   }
 
   openUpdateModal(grievance: GrievanceItem): void {
@@ -190,6 +164,7 @@ export class Grievance implements OnInit {
     this.updateStatus = grievance.status;
     this.resolutionText = grievance.resolution || '';
     this.newCommentText = '';
+    this.loadComments(grievance.id);
   }
 
   closeUpdateModal(): void {
@@ -201,50 +176,55 @@ export class Grievance implements OnInit {
   saveStatusUpdate(): void {
     if (!this.selectedGrievance) return;
 
-    const idx = this.grievanceItems.findIndex(g => g.id === this.selectedGrievance!.id);
-    if (idx >= 0) {
-      this.grievanceItems[idx].status = this.updateStatus;
-      if (this.resolutionText.trim()) {
-        this.grievanceItems[idx].resolution = this.resolutionText.trim();
-        
-        // Log status change comment
-        if (!this.grievanceItems[idx].comments) {
-          this.grievanceItems[idx].comments = [];
+    const payload = {
+      status: this.updateStatus,
+      resolution: this.resolutionText.trim()
+    };
+
+    this.http.put<GrievanceItem>('http://localhost:8080/api/grievances/' + this.selectedGrievance.id + '/status', payload).subscribe({
+      next: () => {
+        if (this.resolutionText.trim()) {
+          const commentPayload = {
+            sender: this.userName,
+            role: this.role || 'Faculty',
+            text: `Status updated to ${this.updateStatus}. Remarks: ${this.resolutionText.trim()}`,
+            timestamp: new Date().toISOString()
+          };
+          this.http.post('http://localhost:8080/api/grievances/' + this.selectedGrievance!.id + '/comments', commentPayload).subscribe(() => {
+            this.loadData();
+            this.closeUpdateModal();
+            alert('Grievance status and resolution updated successfully.');
+          });
+        } else {
+          this.loadData();
+          this.closeUpdateModal();
+          alert('Grievance status and resolution updated successfully.');
         }
-        this.grievanceItems[idx].comments!.push({
-          sender: this.userName,
-          role: this.role || 'Faculty',
-          text: `Status updated to ${this.updateStatus}. Resolution Remarks: ${this.resolutionText.trim()}`,
-          timestamp: new Date().toISOString()
-        });
+      },
+      error: () => {
+        alert('Failed to update status.');
       }
-      this.saveGrievances();
-      alert('Grievance status and resolution updated successfully.');
-      this.closeUpdateModal();
-      this.applyFilters();
-    }
+    });
   }
 
   addComment(grievance: GrievanceItem): void {
     if (!this.newCommentText.trim()) return;
 
-    if (!grievance.comments) {
-      grievance.comments = [];
-    }
-
-    grievance.comments.push({
+    const payload = {
       sender: this.userName,
       role: this.role || 'Student',
       text: this.newCommentText.trim(),
       timestamp: new Date().toISOString()
+    };
+
+    this.http.post<GrievanceComment>('http://localhost:8080/api/grievances/' + grievance.id + '/comments', payload).subscribe({
+      next: () => {
+        this.loadComments(grievance.id);
+        this.newCommentText = '';
+      },
+      error: () => {
+        alert('Failed to send comment.');
+      }
     });
-
-    const idx = this.grievanceItems.findIndex(g => g.id === grievance.id);
-    if (idx >= 0) {
-      this.grievanceItems[idx].comments = grievance.comments;
-      this.saveGrievances();
-    }
-
-    this.newCommentText = '';
   }
 }

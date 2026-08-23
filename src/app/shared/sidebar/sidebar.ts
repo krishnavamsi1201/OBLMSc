@@ -39,7 +39,7 @@ export class Sidebar implements AfterViewInit {
     { icon: '📆', label: 'Timetable', path: '/timetable', exact: true },
     { icon: '📄', label: 'Results', path: '/results', exact: true },
     { icon: '💬', label: 'Feedback', path: '/feedback', exact: true },
-    { icon: '�', label: 'Notifications', path: '/notifications', exact: true },
+    { icon: '🔔', label: 'Notifications', path: '/notifications', exact: true },
     { icon: '👤', label: 'My Profile', path: '/profile', exact: true },
     { icon: '⚙️', label: 'Settings', path: '/settings', exact: true }
   ];
@@ -65,11 +65,12 @@ export class Sidebar implements AfterViewInit {
   ];
 
   adminNav: NavItem[] = [
-    { icon: '�', label: 'Dashboard', path: '/admin', exact: true },
+    { icon: '🏠', label: 'Dashboard', path: '/admin', exact: true },
     { icon: '📚', label: 'Courses', path: '/courses', exact: true },
     { icon: '📖', label: 'Subjects', path: '/subjects', exact: true },
     { icon: '🎯', label: 'Outcomes', path: '/outcomes', exact: true },
     { icon: '🔗', label: 'CO-PO Mapping', path: '/copo-mapping', exact: true },
+    { icon: '✔️', label: 'Approvals', path: '/admin/approval-management', exact: true },
     { icon: '📝', label: 'Assessments', path: '/assessments', exact: true },
     { icon: '📊', label: 'Reports', path: '/reports', exact: true },
     { icon: '🔔', label: 'Notifications', path: '/notifications', exact: true },

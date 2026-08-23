@@ -8,38 +8,106 @@
 
     <div class="page-header">
       <h1>👥 Users Management</h1>
-      <p>Manage faculty and student accounts, with add/edit/delete/search actions.</p>
+      <p>Configure faculty and student academic accounts, roles, and departments.</p>
     </div>
 
-    <div class="users-actions">
-      <button mat-button class="action-button" [class.active]="selectedTab === 'faculty'" (click)="toggleTab('faculty')">Faculty</button>
-      <button mat-button class="action-button" [class.active]="selectedTab === 'students'" (click)="toggleTab('students')">Students</button>
-      <button mat-button class="primary">Add {{ selectedTab === 'faculty' ? 'Faculty' : 'Student' }}</button>
-      <button mat-button>Search {{ selectedTab === 'faculty' ? 'Faculty' : 'Student' }}</button>
+    <!-- Toolbar actions and search -->
+    <div class="users-actions" style="display: flex; gap: 16px; margin-bottom: 24px; align-items: center; justify-content: space-between; flex-wrap: wrap;">
+      <div style="display: flex; gap: 10px;">
+        <button mat-button class="action-button" [class.active]="selectedTab === 'faculty'" (click)="toggleTab('faculty')" style="font-weight: bold; border-bottom: 2px solid #cbd5e1; border-radius: 0;">Faculty & Admins</button>
+        <button mat-button class="action-button" [class.active]="selectedTab === 'students'" (click)="toggleTab('students')" style="font-weight: bold; border-bottom: 2px solid #cbd5e1; border-radius: 0; margin-left: 10px;">Students</button>
+      </div>
+      
+      <div style="display: flex; gap: 12px; align-items: center;">
+        <input type="text" [(ngModel)]="searchQuery" placeholder="🔍 Search name or ID..." style="padding: 10px 14px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 14px; width: 220px;" />
+        <button mat-raised-button (click)="openAddForm()" style="background: #2563eb; color: white; border: none; border-radius: 8px; padding: 10px 18px; font-weight: 600; cursor: pointer;">
+          ➕ Add {{ selectedTab === 'faculty' ? 'Faculty / Admin' : 'Student' }}
+        </button>
+      </div>
     </div>
 
-    <div class="users-table-card">
-      <table>
+    <!-- Add/Edit User Card -->
+    <div class="users-table-card" *ngIf="showUserForm" style="border: 2px solid #2563eb; margin-bottom: 24px; padding: 20px; background: white; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.06);">
+      <h2 style="color: #1e3d7a; margin-top: 0; font-size: 1.25rem;">{{ editingUserIndex >= 0 ? '📝 Edit Profile' : '👤 Create New Profile' }}</h2>
+      <form (ngSubmit)="saveUser()" style="display: grid; gap: 16px; margin-top: 16px;">
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px;">
+          <label style="display:flex; flex-direction:column; font-weight: 600;">
+            User ID (Unique)
+            <input type="text" name="userId" [(ngModel)]="currentUser.id" placeholder="e.g. FAC003 or STU005" required [disabled]="editingUserIndex >= 0" style="padding: 10px; margin-top: 6px; border: 1px solid #cbd5e1; border-radius: 8px;" />
+          </label>
+          <label style="display:flex; flex-direction:column; font-weight: 600;">
+            Full Name
+            <input type="text" name="userName" [(ngModel)]="currentUser.name" placeholder="e.g. Ramesh Kumar" required style="padding: 10px; margin-top: 6px; border: 1px solid #cbd5e1; border-radius: 8px;" />
+          </label>
+        </div>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px;">
+          <label style="display:flex; flex-direction:column; font-weight: 600;">
+            Email Address
+            <input type="email" name="userEmail" [(ngModel)]="currentUser.email" placeholder="e.g. ramesh@oblms.edu" required style="padding: 10px; margin-top: 6px; border: 1px solid #cbd5e1; border-radius: 8px;" />
+          </label>
+          <label style="display:flex; flex-direction:column; font-weight: 600;">
+            Department / Stream
+            <input type="text" name="userDept" [(ngModel)]="currentUser.department" placeholder="e.g. Computer Science" style="padding: 10px; margin-top: 6px; border: 1px solid #cbd5e1; border-radius: 8px;" />
+          </label>
+        </div>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px;">
+          <label style="display:flex; flex-direction:column; font-weight: 600;">
+            System Access Role
+            <select name="userRole" [(ngModel)]="currentUser.role" style="padding: 10px; margin-top: 6px; border: 1px solid #cbd5e1; border-radius: 8px;">
+              <option value="Student">Student</option>
+              <option value="Faculty">Faculty</option>
+              <option value="Admin">Admin</option>
+            </select>
+          </label>
+          <div></div>
+        </div>
+        <div style="display: flex; gap: 10px; margin-top: 10px;">
+          <button type="submit" style="background: #16a34a; color: white; border: none; border-radius: 8px; padding: 10px 20px; font-weight: bold; cursor: pointer;">Save Profile</button>
+          <button type="button" (click)="resetUserForm()" style="background: #64748b; color: white; border: none; border-radius: 8px; padding: 10px 20px; font-weight: bold; cursor: pointer;">Cancel</button>
+        </div>
+      </form>
+    </div>
+
+    <!-- Users List Table -->
+    <div class="users-table-card" style="background: white; border-radius: 12px; padding: 24px; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05); margin-bottom: 24px;">
+      <h2 style="color: #1e3d7a; margin-top: 0; font-size: 1.25rem;">{{ selectedTab === 'faculty' ? 'Faculty & Admins List' : 'Students List' }}</h2>
+      <table style="width: 100%; border-collapse: collapse; margin-top: 16px;">
         <thead>
-          <tr>
-            <th>ID</th>
-            <th>Name</th>
-            <th>Email</th>
-            <th>Role</th>
-            <th>Department</th>
-            <th>Actions</th>
+          <tr style="background: #f8fafc; border-bottom: 2px solid #e2e8f0;">
+            <th style="padding: 12px 10px; text-align: left; font-weight: 700; color: #1e3d7a;">ID</th>
+            <th style="padding: 12px 10px; text-align: left; font-weight: 700; color: #1e3d7a;">Name</th>
+            <th style="padding: 12px 10px; text-align: left; font-weight: 700; color: #1e3d7a;">Email</th>
+            <th style="padding: 12px 10px; text-align: left; font-weight: 700; color: #1e3d7a;">Role</th>
+            <th style="padding: 12px 10px; text-align: left; font-weight: 700; color: #1e3d7a;">Department</th>
+            <th style="padding: 12px 10px; text-align: left; font-weight: 700; color: #1e3d7a; width: 280px;">Actions</th>
           </tr>
         </thead>
         <tbody>
-          <tr *ngFor="let user of currentUsers">
-            <td>{{ user.id }}</td>
-            <td>{{ user.name }}</td>
-            <td>{{ user.email }}</td>
-            <td>{{ user.role }}</td>
-            <td>{{ user.department }}</td>
-            <td>
-              <button mat-button>Edit</button>
-              <button mat-button color="warn">Delete</button>
+          <tr *ngIf="getFilteredUsers().length === 0">
+            <td colspan="6" style="padding: 24px; text-align: center; color: #94a3b8;">No matching profiles found in database.</td>
+          </tr>
+          <tr *ngFor="let user of getFilteredUsers(); index as i" style="border-bottom: 1px solid #e2e8f0;">
+            <td style="padding: 12px 10px;"><strong>{{ user.id }}</strong></td>
+            <td style="padding: 12px 10px;">{{ user.name }}</td>
+            <td style="padding: 12px 10px; color: #64748b;">{{ user.email }}</td>
+            <td style="padding: 12px 10px;">
+              <span style="font-weight: 700; font-size: 0.8rem; text-transform: uppercase; padding: 4px 10px; border-radius: 999px;"
+                    [style.background]="user.role === 'Admin' ? '#fee2e2' : user.role === 'Faculty' ? '#dbeafe' : '#f0fdf4'"
+                    [style.color]="user.role === 'Admin' ? '#991b1b' : user.role === 'Faculty' ? '#1e40af' : '#166534'">
+                {{ user.role }}
+              </span>
+            </td>
+            <td style="padding: 12px 10px;">{{ user.department }}</td>
+            <td style="padding: 12px 10px; display: flex; gap: 8px; align-items: center;">
+              <button (click)="editUser(user, i)" style="background: #e2e8f0; border: none; border-radius: 6px; padding: 6px 12px; font-weight: 600; cursor: pointer; color: #334155; font-size: 0.85rem;">Edit</button>
+              <button (click)="deleteUser(user)" style="background: #fee2e2; border: none; border-radius: 6px; padding: 6px 12px; font-weight: 600; cursor: pointer; color: #991b1b; font-size: 0.85rem;">Delete</button>
+              
+              <!-- Quick Role Editor Dropdown -->
+              <select [ngModel]="user.role" (ngModelChange)="changeRole(user, $event)" style="padding: 4px 6px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 0.85rem; background: #fff; font-weight: 600; cursor: pointer;">
+                <option value="Student">Student</option>
+                <option value="Faculty">Faculty</option>
+                <option value="Admin">Admin</option>
+              </select>
             </td>
           </tr>
         </tbody>

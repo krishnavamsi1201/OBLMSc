@@ -1,10 +1,11 @@
-import { Component } from '@angular/core';
+import { Component, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Navbar } from '../../shared/navbar/navbar';
 import { Sidebar } from '../../shared/sidebar/sidebar';
 import { Footer } from '../../shared/footer/footer';
 import { MatButtonModule } from '@angular/material/button';
+import { HttpClient } from '@angular/common/http';
 
 interface Course {
   id: number;
@@ -33,7 +34,7 @@ export class Courses {
   selectedSyllabusCourse: Course | null = null;
   completedUnits: string[] = [];
 
-  constructor() {
+  constructor(private http: HttpClient, private cdr: ChangeDetectorRef) {
     try {
       this.role = localStorage.getItem('userRole')?.toLowerCase() || null;
     } catch (e) {
@@ -48,29 +49,25 @@ export class Courses {
   }
 
   loadCourses(): void {
-    try {
-      const stored = localStorage.getItem('obslmsCourses');
-      this.courses = stored ? JSON.parse(stored) as Course[] : [];
-      
-      if (this.courses.length === 0) {
-        // Seed default courses for demo if empty
-        this.courses = [
-          { id: 1, code: 'CS101', title: 'Database Management Systems', faculty: 'Dr. Ramesh Babu', semester: 'Fall 2026' },
-          { id: 2, code: 'CS202', title: 'Machine Learning', faculty: 'Prof. Anitha Sen', semester: 'Fall 2026' },
-          { id: 3, code: 'CS303', title: 'Cloud Computing', faculty: 'Dr. Vikram Seth', semester: 'Fall 2026' }
-        ];
-        this.saveCourses();
+    console.log("Calling loadCourses API...");
+    this.http.get<Course[]>('http://localhost:8080/api/courses').subscribe({
+      next: (data) => {
+        console.log("Fetched courses successfully:", data);
+        this.courses = data;
+        try {
+          localStorage.setItem('obslmsCourses', JSON.stringify(data));
+        } catch {}
+        this.cdr.detectChanges();
+      },
+      error: (err) => {
+        console.error("Failed to fetch courses:", err);
+        this.courses = [];
+        this.cdr.detectChanges();
       }
-    } catch {
-      this.courses = [];
-    }
+    });
   }
 
-  saveCourses(): void {
-    try {
-      localStorage.setItem('obslmsCourses', JSON.stringify(this.courses));
-    } catch {}
-  }
+  saveCourses(): void {}
 
   // Syllabus tracker methods
   loadCompletion(): void {
@@ -133,15 +130,23 @@ export class Courses {
       return;
     }
 
-    if (this.editingIndex >= 0) {
-      this.courses[this.editingIndex] = { ...this.currentCourse };
-    } else {
-      const nextId = this.courses.length ? Math.max(...this.courses.map(c => c.id)) + 1 : 1;
-      this.courses = [...this.courses, { ...this.currentCourse, id: nextId }];
-    }
+    const payload = {
+      id: this.currentCourse.id > 0 ? this.currentCourse.id : null,
+      code: this.currentCourse.code,
+      title: this.currentCourse.title,
+      faculty: this.currentCourse.faculty,
+      semester: this.currentCourse.semester
+    };
 
-    this.saveCourses();
-    this.resetCourseForm();
+    this.http.post<Course>('http://localhost:8080/api/courses', payload).subscribe({
+      next: () => {
+        this.loadCourses();
+        this.resetCourseForm();
+      },
+      error: () => {
+        alert('Failed to save course.');
+      }
+    });
   }
 
   editCourse(course: Course, index: number): void {
@@ -159,8 +164,14 @@ export class Courses {
       alert('Only admins can delete courses.');
       return;
     }
-    this.courses = this.courses.filter(c => c.id !== course.id);
-    this.saveCourses();
+    this.http.delete('http://localhost:8080/api/courses/' + course.id).subscribe({
+      next: () => {
+        this.loadCourses();
+      },
+      error: () => {
+        alert('Failed to delete course.');
+      }
+    });
   }
 
   assignFaculty(course: Course): void {
@@ -171,7 +182,14 @@ export class Courses {
     const faculty = prompt('Enter faculty name for this course:', course.faculty || '');
     if (faculty !== null) {
       course.faculty = faculty.trim();
-      this.saveCourses();
+      this.http.post<Course>('http://localhost:8080/api/courses', course).subscribe({
+        next: () => {
+          this.loadCourses();
+        },
+        error: () => {
+          alert('Failed to assign faculty.');
+        }
+      });
     }
   }
 

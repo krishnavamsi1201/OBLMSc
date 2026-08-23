@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { Navbar } from '../../shared/navbar/navbar';
 import { Sidebar } from '../../shared/sidebar/sidebar';
 import { Footer } from '../../shared/footer/footer';
+import { HttpClient } from '@angular/common/http';
 
 interface ProgramOutcome {
   id: string;
@@ -52,7 +53,16 @@ export class PoAttainment implements OnInit {
   overallAchievement: number = 0;
   targetPercentage: number = 75;
 
-  constructor() {
+  constructor(private http: HttpClient) {
+    try {
+      const savedSettings = localStorage.getItem('systemSettings');
+      if (savedSettings) {
+        const parsed = JSON.parse(savedSettings);
+        if (parsed.obeTarget !== undefined) {
+          this.targetPercentage = Number(parsed.obeTarget);
+        }
+      }
+    } catch {}
     this.calculatePOAttainment();
   }
 
@@ -61,132 +71,21 @@ export class PoAttainment implements OnInit {
   }
 
   calculatePOAttainment(): void {
-    try {
-      // Load all data
-      const programOutcomesData = JSON.parse(localStorage.getItem('obslmsProgramOutcomes') || '[]');
-      
-      // Calculate CO attainments
-      const courseOutcomesData = JSON.parse(localStorage.getItem('obslmsCourseOutcomes') || '[]');
-      const assessmentMappingsData = JSON.parse(localStorage.getItem('obslmsAssessmentCOMappings') || '[]');
-      const marksData = JSON.parse(localStorage.getItem('obslmsMarkEntries') || '[]');
-
-      const coAttainmentMap = new Map<string, number>();
-      
-      // Calculate CO achievements
-      courseOutcomesData.forEach((co: any) => {
-        const mappings = assessmentMappingsData.filter((m: any) => m.courseOutcomes.includes(co.code));
-        let totalScore = 0;
-        let scoreCount = 0;
-
-        mappings.forEach((mapping: any) => {
-          const assessmentMarks = marksData.filter((m: any) => 
-            m.assessment.toLowerCase().includes(mapping.assessmentName.toLowerCase())
+    this.http.get<POAttainment[]>('http://localhost:8080/api/obe/po-attainment?target=' + this.targetPercentage).subscribe({
+      next: (data) => {
+        this.poAttainments = data;
+        if (data.length > 0) {
+          this.overallAchievement = Math.round(
+            data.reduce((sum, po) => sum + po.achievement, 0) / data.length
           );
-
-          assessmentMarks.forEach((mark: any) => {
-            const percentage = (mark.obtained / mark.maxMarks) * 100;
-            totalScore += percentage;
-            scoreCount++;
-          });
-        });
-
-        // Set dynamic achievement, or use a realistic mock if no marks yet
-        const avgScore = scoreCount > 0 ? totalScore / scoreCount : (co.code === 'CO1' ? 78 : co.code === 'CO2' ? 82 : co.code === 'CO3' ? 68 : 74);
-        coAttainmentMap.set(co.code, avgScore);
-      });
-
-      // Build PO map for easy access
-      const poMap = new Map<string, ProgramOutcome>();
-      programOutcomesData.forEach((po: any) => {
-        poMap.set(po.code, {
-          id: po.id,
-          code: po.code,
-          description: po.description,
-          targetPercentage: 75
-        });
-      });
-
-      // Calculate PO achievements
-      const poAttainmentMap = new Map<string, {
-        scores: number[];
-        weights: number[];
-        mappedCOs: string[];
-      }>();
-
-      // Initialize PO map
-      poMap.forEach((po, code) => {
-        poAttainmentMap.set(code, {
-          scores: [],
-          weights: [],
-          mappedCOs: []
-        });
-      });
-
-      // Process CO-PO mappings (support both obslmsCoMappings and obslmsCOPOMappings keys)
-      const coPOMappingsData = JSON.parse(
-        localStorage.getItem('obslmsCoMappings') || 
-        localStorage.getItem('obslmsCOPOMappings') || 
-        '[]'
-      );
-      
-      coPOMappingsData.forEach((mapping: any) => {
-        const coCode = mapping.coCode || mapping.co;
-        const poCode = mapping.poCode || mapping.po;
-        const mappingLevel = Number(mapping.mappingLevel) || Number(mapping.weight) || 1;
-        
-        const coAchievement = coAttainmentMap.get(coCode) || 0;
-        const poData = poAttainmentMap.get(poCode);
-        
-        if (poData) {
-          poData.scores.push(coAchievement * mappingLevel);
-          poData.weights.push(mappingLevel);
-          if (!poData.mappedCOs.includes(coCode)) {
-            poData.mappedCOs.push(coCode);
-          }
         }
-      });
-
-      // Calculate final PO attainment
-      this.poAttainments = Array.from(poAttainmentMap.entries()).map(([code, data]) => {
-        const totalWeight = data.weights.reduce((a, b) => a + b, 0);
-        let avgAchievement = totalWeight > 0
-          ? data.scores.reduce((a, b) => a + b, 0) / totalWeight
-          : 0;
-
-        // Fallback for demo display if no mappings exist yet
-        if (data.mappedCOs.length === 0) {
-          avgAchievement = code === 'PO1' ? 76 : code === 'PO2' ? 81 : code === 'PO3' ? 64 : 70;
-        }
-
-        const status = avgAchievement >= this.targetPercentage
-          ? 'Achieved'
-          : avgAchievement >= 50
-          ? 'Partial'
-          : 'Not Achieved';
-
-        const poDetails = poMap.get(code);
-        return {
-          code,
-          description: poDetails?.description || 'Program Outcome Description',
-          achievement: Math.round(avgAchievement),
-          targetPercentage: this.targetPercentage,
-          status,
-          mappedCOs: data.mappedCOs,
-          coCount: data.mappedCOs.length
-        };
-      });
-
-      // Calculate overall achievement
-      if (this.poAttainments.length > 0) {
-        this.overallAchievement = Math.round(
-          this.poAttainments.reduce((sum, po) => sum + po.achievement, 0) / this.poAttainments.length
-        );
+        this.filterAttainments();
+      },
+      error: () => {
+        this.poAttainments = [];
+        this.filterAttainments();
       }
-
-    } catch (error) {
-      console.error('Error calculating PO attainment:', error);
-      this.poAttainments = [];
-    }
+    });
   }
 
   filterAttainments(): void {

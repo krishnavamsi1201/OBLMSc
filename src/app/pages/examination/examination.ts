@@ -5,6 +5,7 @@ import { FormsModule } from '@angular/forms';
 import { Navbar } from '../../shared/navbar/navbar';
 import { Sidebar } from '../../shared/sidebar/sidebar';
 import { Footer } from '../../shared/footer/footer';
+import { HttpClient } from '@angular/common/http';
 
 interface ExamSchedule {
   id: number;
@@ -38,7 +39,7 @@ export class Examination implements OnInit {
   searchTerm = '';
   statusFilter = '';
 
-  constructor() {
+  constructor(private http: HttpClient) {
     try {
       this.role = localStorage.getItem('userRole')?.toLowerCase() || null;
     } catch {
@@ -48,7 +49,6 @@ export class Examination implements OnInit {
 
   ngOnInit(): void {
     this.loadData();
-    this.applyFilters();
   }
 
   createEmptyExam(): ExamSchedule {
@@ -56,30 +56,24 @@ export class Examination implements OnInit {
   }
 
   private loadData(): void {
-    try {
-      const stored = localStorage.getItem('obslmsExams');
-      if (stored) {
-        this.examinationItems = JSON.parse(stored) as ExamSchedule[];
-      } else {
-        // Seed default exams
-        this.examinationItems = [
-          { id: 1, title: 'Midterm Assessment 1', course: 'Database Management Systems', date: '2026-09-10T10:00', room: 'LH-302', status: 'Scheduled', marks: 50 },
-          { id: 2, title: 'Practical Lab Exam', course: 'Machine Learning Lab', date: '2026-09-15T14:00', room: 'Lab-4', status: 'Scheduled', marks: 100 },
-          { id: 3, title: 'Quiz 1', course: 'Outcome-Based Education', date: '2026-08-10T09:30', room: 'Online', status: 'Completed', marks: 20 }
-        ];
-        this.saveExams();
+    this.http.get<ExamSchedule[]>('http://localhost:8080/api/exams').subscribe({
+      next: (data) => {
+        this.examinationItems = data;
+        try {
+          localStorage.setItem('obslmsExams', JSON.stringify(data));
+        } catch {}
+        this.applyFilters();
+        this.isLoading = false;
+      },
+      error: () => {
+        this.examinationItems = [];
+        this.applyFilters();
+        this.isLoading = false;
       }
-    } catch {
-      this.examinationItems = [];
-    }
-    this.isLoading = false;
+    });
   }
 
-  private saveExams(): void {
-    try {
-      localStorage.setItem('obslmsExams', JSON.stringify(this.examinationItems));
-    } catch {}
-  }
+  private saveExams(): void {}
 
   applyFilters(): void {
     let results = this.examinationItems;
@@ -116,17 +110,25 @@ export class Examination implements OnInit {
       return;
     }
 
-    if (this.editIndex >= 0) {
-      const targetId = this.examinationItems[this.editIndex].id;
-      this.examinationItems[this.editIndex] = { ...this.currentExam, id: targetId };
-    } else {
-      const nextId = this.examinationItems.length ? Math.max(...this.examinationItems.map(e => e.id)) + 1 : 1;
-      this.examinationItems = [...this.examinationItems, { ...this.currentExam, id: nextId }];
-    }
+    const payload = {
+      id: this.currentExam.id > 0 ? this.currentExam.id : null,
+      title: this.currentExam.title,
+      course: this.currentExam.course,
+      date: this.currentExam.date,
+      room: this.currentExam.room,
+      status: this.currentExam.status,
+      marks: this.currentExam.marks
+    };
 
-    this.saveExams();
-    this.closeExamForm();
-    this.applyFilters();
+    this.http.post<ExamSchedule>('http://localhost:8080/api/exams', payload).subscribe({
+      next: () => {
+        this.loadData();
+        this.closeExamForm();
+      },
+      error: () => {
+        alert('Failed to save examination schedule.');
+      }
+    });
   }
 
   editExam(exam: ExamSchedule): void {
@@ -140,9 +142,14 @@ export class Examination implements OnInit {
 
   deleteExam(exam: ExamSchedule): void {
     if (confirm('Are you sure you want to delete this examination?')) {
-      this.examinationItems = this.examinationItems.filter(e => e.id !== exam.id);
-      this.saveExams();
-      this.applyFilters();
+      this.http.delete('http://localhost:8080/api/exams/' + exam.id).subscribe({
+        next: () => {
+          this.loadData();
+        },
+        error: () => {
+          alert('Failed to delete examination.');
+        }
+      });
     }
   }
 
