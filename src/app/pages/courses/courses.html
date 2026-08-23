@@ -63,13 +63,13 @@
                         <th>Course Name</th>
                         <th>Faculty</th>
                         <th>Semester</th>
-                        <th>Actions</th>
+                        <th *ngIf="role === 'admin' || role === 'faculty'">Actions</th>
                     </tr>
                 </thead>
                 <tbody>
                     <tr *ngIf="filteredCourses.length === 0">
-                        <td colspan="5">
-                            {{ courses.length === 0 ? 'No courses created yet. Use the Create Course button above.' : 'No courses matching search/filter criteria.' }}
+                        <td [attr.colspan]="(role === 'admin' || role === 'faculty') ? 5 : 4">
+                            {{ courses.length === 0 ? 'No courses created yet.' : 'No courses matching search/filter criteria.' }}
                         </td>
                     </tr>
                     <tr *ngFor="let course of filteredCourses; index as i">
@@ -77,7 +77,7 @@
                         <td><strong>{{ course.title }}</strong></td>
                         <td>{{ course.faculty || 'Unassigned' }}</td>
                         <td>{{ course.semester }}</td>
-                        <td class="actions-cell">
+                        <td class="actions-cell" *ngIf="role === 'admin' || role === 'faculty'">
                             <button mat-button color="primary" (click)="editCourse(course, i)">Edit</button>
                             <button mat-button color="warn" (click)="deleteCourse(course)">Delete</button>
                             <button mat-button (click)="assignFaculty(course)">Assign Faculty</button>

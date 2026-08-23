@@ -156,12 +156,38 @@ export class StudentManagement implements OnInit {
   }
 
   deleteStudent(id: string): void {
-    if (confirm('Are you sure you want to delete this student?')) {
-      const student = this.studentList.find(s => s.id === id);
-      this.studentList = this.studentList.filter(s => s.id !== id);
-      this.saveStudentToStorage();
-      this.toast.info(`Student ${student ? student.name : ''} removed.`);
+    const student = this.studentList.find(s => s.id === id);
+    this.studentList = this.studentList.filter(s => s.id !== id);
+    this.saveStudentToStorage();
+    this.toast.info(`Student ${student ? student.name : ''} removed.`);
+  }
+
+  downloadStudentListCsv(): void {
+    if (this.studentList.length === 0) {
+      this.toast.warning('No student records to export.');
+      return;
     }
+
+    const headers = ['Student ID', 'Register No', 'Full Name', 'Department', 'Semester', 'Email Address'];
+    const rows = this.studentList.map(s => [
+      `"${s.id}"`,
+      `"${s.regNo}"`,
+      `"${s.name}"`,
+      `"${s.department}"`,
+      `"${s.semester}"`,
+      `"${s.email}"`
+    ].join(','));
+
+    const csvContent = [headers.join(','), ...rows].join('\n');
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.setAttribute('href', url);
+    link.setAttribute('download', `Student_Roster_${new Date().toISOString().split('T')[0]}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    this.toast.success('Student roster CSV downloaded successfully.');
   }
 
   private validateForm(): boolean {

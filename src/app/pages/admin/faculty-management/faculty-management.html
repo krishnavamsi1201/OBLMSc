@@ -9,7 +9,10 @@
         <h1>👥 Faculty Management</h1>
         <p>Manage faculty members, departments, and course assignments</p>
       </div>
-      <button class="btn btn-primary" (click)="openAddForm()">+ Add Faculty</button>
+      <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+        <button class="btn btn-secondary" (click)="downloadFacultyCsv()" title="Export faculty roster">📥 Export CSV</button>
+        <button class="btn btn-primary" (click)="openAddForm()">+ Add Faculty</button>
+      </div>
     </div>
 
     <!-- Search and Filter Bar -->

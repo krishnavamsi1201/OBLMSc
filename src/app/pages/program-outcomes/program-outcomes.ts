@@ -29,7 +29,8 @@ interface ProgramOutcome {
             <p>Manage program-level graduate attributes, competencies, and engineering knowledge indicators for accreditation.</p>
         </div>
 
-        <div class="section-card form-card">
+        <!-- Add PO Form (Admin / Faculty Only) -->
+        <div class="section-card form-card" *ngIf="role === 'admin' || role === 'faculty'">
             <h2>{{ editIndex >= 0 ? 'Edit Program Outcome' : 'Add New Program Outcome' }}</h2>
             <form (ngSubmit)="savePo()">
                 <label>
@@ -54,17 +55,17 @@ interface ProgramOutcome {
                     <tr>
                         <th>PO Code</th>
                         <th>Outcome Description</th>
-                        <th>Actions</th>
+                        <th *ngIf="role === 'admin' || role === 'faculty'">Actions</th>
                     </tr>
                 </thead>
                 <tbody>
                     <tr *ngIf="programOutcomes.length === 0">
-                        <td colspan="3">No program outcomes defined yet. Add a new PO above.</td>
+                        <td [attr.colspan]="(role === 'admin' || role === 'faculty') ? 3 : 2">No program outcomes defined yet.</td>
                     </tr>
                     <tr *ngFor="let po of programOutcomes; index as i">
                         <td><span class="obe-badge obe-badge-po">{{ po.poNumber }}</span></td>
                         <td>{{ po.description }}</td>
-                        <td>
+                        <td *ngIf="role === 'admin' || role === 'faculty'">
                             <button type="button" (click)="editPo(i)">Edit</button>
                             <button type="button" class="danger" (click)="deletePo(i)">Delete</button>
                         </td>
@@ -98,12 +99,14 @@ interface ProgramOutcome {
 })
 export class ProgramOutcomes implements OnInit {
   private toast = inject(ToastService);
+  role: string | null = null;
   programOutcomes: ProgramOutcome[] = [];
 
   currentPo: ProgramOutcome = { id: 0, poNumber: '', description: '' };
   editIndex = -1;
 
   ngOnInit(): void {
+    this.role = localStorage.getItem('userRole')?.toLowerCase() || null;
     this.loadPos();
   }
 

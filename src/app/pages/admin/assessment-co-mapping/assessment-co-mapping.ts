@@ -1,9 +1,10 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Navbar } from '../../../shared/navbar/navbar';
 import { Sidebar } from '../../../shared/sidebar/sidebar';
 import { Footer } from '../../../shared/footer/footer';
+import { ToastService } from '../../../shared/services/toast.service';
 
 interface AssessmentCOMappingModel {
   id: string;
@@ -32,6 +33,7 @@ interface CourseOutcome {
   id: string;
   code: string;
   description: string;
+  course?: string;
 }
 
 @Component({
@@ -42,6 +44,7 @@ interface CourseOutcome {
   styleUrls: ['./assessment-co-mapping.css'],
 })
 export class AssessmentCOMapping implements OnInit {
+  private toast = inject(ToastService);
   mappingList: AssessmentCOMappingModel[] = [];
   filteredMappingList: AssessmentCOMappingModel[] = [];
   
@@ -79,7 +82,12 @@ export class AssessmentCOMapping implements OnInit {
   private loadAssessments(): void {
     try {
       const stored = localStorage.getItem('obslmsAssessments');
-      this.assessmentList = stored ? JSON.parse(stored) : [];
+      const assessments = stored ? JSON.parse(stored) : [];
+      this.assessmentList = assessments.map((a: any) => ({
+        id: (a.id || '').toString(),
+        name: a.name || a.title || `${a.type || 'Assessment'} - ${a.course || ''}`,
+        type: a.type || 'Exam'
+      }));
     } catch {
       this.assessmentList = [];
     }
@@ -88,7 +96,12 @@ export class AssessmentCOMapping implements OnInit {
   private loadCourses(): void {
     try {
       const stored = localStorage.getItem('obslmsCourses');
-      this.courseList = stored ? JSON.parse(stored) : [];
+      const courses = stored ? JSON.parse(stored) : [];
+      this.courseList = courses.map((c: any) => ({
+        id: (c.id || '').toString(),
+        name: c.title || c.name || c.code || 'Course',
+        code: c.code || ''
+      }));
     } catch {
       this.courseList = [];
     }
@@ -97,7 +110,13 @@ export class AssessmentCOMapping implements OnInit {
   private loadCourseOutcomes(): void {
     try {
       const stored = localStorage.getItem('obslmsCourseOutcomes');
-      this.courseOutcomeList = stored ? JSON.parse(stored) : [];
+      const outcomes = stored ? JSON.parse(stored) : [];
+      this.courseOutcomeList = outcomes.map((co: any) => ({
+        id: (co.id || '').toString(),
+        code: co.code || co.co || 'CO',
+        description: co.description || '',
+        course: co.course || ''
+      }));
     } catch {
       this.courseOutcomeList = [];
     }
@@ -117,7 +136,7 @@ export class AssessmentCOMapping implements OnInit {
     this.filteredMappingList = this.mappingList.filter(m => {
       const matchSearch = m.assessmentName.toLowerCase().includes(this.searchQuery.toLowerCase()) ||
                          m.courseName.toLowerCase().includes(this.searchQuery.toLowerCase()) ||
-                         m.courseOutcomes.join(',').includes(this.searchQuery.toUpperCase());
+                         (m.courseOutcomes || []).join(',').includes(this.searchQuery.toUpperCase());
       const matchCourse = this.filterCourse === '' || m.courseId === this.filterCourse;
       const matchType = this.filterAssessmentType === '' || m.assessmentType === this.filterAssessmentType;
       return matchSearch && matchCourse && matchType;
@@ -180,7 +199,7 @@ export class AssessmentCOMapping implements OnInit {
 
   saveMapping(): void {
     if (!this.validateForm()) {
-      alert('Please select assessment, course, and at least one course outcome');
+      this.toast.warning('Please select assessment, course, and at least one course outcome');
       return;
     }
 
@@ -190,7 +209,7 @@ export class AssessmentCOMapping implements OnInit {
         m => m.assessmentId === this.formData.assessmentId && m.courseId === this.formData.courseId
       );
       if (exists) {
-        alert('This assessment is already mapped to this course!');
+        this.toast.error('This assessment is already mapped to this course!');
         return;
       }
     }
@@ -199,7 +218,7 @@ export class AssessmentCOMapping implements OnInit {
     const course = this.courseList.find(c => c.id === this.formData.courseId);
 
     if (!assessment || !course) {
-      alert('Invalid assessment or course selection');
+      this.toast.error('Invalid assessment or course selection');
       return;
     }
 
@@ -216,6 +235,7 @@ export class AssessmentCOMapping implements OnInit {
           courseOutcomes: [...this.formData.courseOutcomes],
           maxMarks: this.formData.maxMarks
         };
+        this.toast.success(`Assessment-CO mapping updated for "${assessment.name}".`);
       }
     } else {
       const newMapping: AssessmentCOMappingModel = {
@@ -229,6 +249,7 @@ export class AssessmentCOMapping implements OnInit {
         maxMarks: this.formData.maxMarks
       };
       this.mappingList.push(newMapping);
+      this.toast.success(`Assessment "${assessment.name}" mapped to ${this.formData.courseOutcomes.join(', ')}.`);
     }
 
     this.saveMappingsToStorage();
@@ -236,10 +257,10 @@ export class AssessmentCOMapping implements OnInit {
   }
 
   deleteMapping(id: string): void {
-    if (confirm('Are you sure you want to remove this assessment-CO mapping?')) {
-      this.mappingList = this.mappingList.filter(m => m.id !== id);
-      this.saveMappingsToStorage();
-    }
+    const mapping = this.mappingList.find(m => m.id === id);
+    this.mappingList = this.mappingList.filter(m => m.id !== id);
+    this.saveMappingsToStorage();
+    this.toast.info(`Assessment mapping for "${mapping?.assessmentName || 'Assessment'}" removed.`);
   }
 
   private validateForm(): boolean {
@@ -255,7 +276,7 @@ export class AssessmentCOMapping implements OnInit {
       localStorage.setItem('obslmsAssessmentCOMappings', JSON.stringify(this.mappingList));
       this.filterMappings();
     } catch {
-      alert('Error saving mapping data');
+      this.toast.error('Error saving mapping data');
     }
   }
 
@@ -267,12 +288,15 @@ export class AssessmentCOMapping implements OnInit {
     const mappings = this.mappingList.filter(m => m.assessmentName === assessmentName);
     if (mappings.length === 0) return 'Not mapped';
     const cos = new Set<string>();
-    mappings.forEach(m => m.courseOutcomes.forEach(co => cos.add(co)));
+    mappings.forEach(m => (m.courseOutcomes || []).forEach(co => cos.add(co)));
     return Array.from(cos).join(', ');
   }
 
   getAvailableOutcomes(): CourseOutcome[] {
-    if (!this.formData.courseId) return [];
-    return this.courseOutcomeList.filter(co => co.code.startsWith('CO'));
+    if (!this.formData.courseId) return this.courseOutcomeList;
+    const course = this.courseList.find(c => c.id === this.formData.courseId);
+    return this.courseOutcomeList.filter(co => 
+      !co.course || !course || co.course.toLowerCase().includes(course.name.toLowerCase()) || co.course.toLowerCase().includes(course.code.toLowerCase())
+    );
   }
 }

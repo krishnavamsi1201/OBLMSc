@@ -43,7 +43,6 @@ export class Notifications implements OnInit {
 
   constructor() {
     this.loadNotifications();
-    this.generateNotifications();
   }
 
   ngOnInit(): void {
@@ -63,63 +62,6 @@ export class Notifications implements OnInit {
     try {
       localStorage.setItem('obslmsNotifications', JSON.stringify(this.allNotifications));
     } catch {}
-  }
-
-  generateNotifications(): void {
-    if (this.allNotifications.length === 0) {
-      const sampleNotifications: Notification[] = [
-        {
-          id: '1',
-          type: 'success',
-          title: 'Faculty Added',
-          message: 'Dr. Ramesh Kumar has been added as Faculty - CSE Department',
-          timestamp: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
-          isRead: false,
-          relatedData: { type: 'faculty', action: 'added', name: 'Dr. Ramesh Kumar' }
-        },
-        {
-          id: '2',
-          type: 'approval',
-          title: 'Mapping Pending Approval',
-          message: 'Assessment-CO Mapping for CSE-DBMS requires admin approval',
-          timestamp: new Date(Date.now() - 4 * 60 * 60 * 1000).toISOString(),
-          isRead: false,
-          actionUrl: '/admin/approval-management',
-          relatedData: { type: 'assessment-co-mapping', status: 'pending' }
-        },
-        {
-          id: '3',
-          type: 'info',
-          title: 'Assessment Created',
-          message: 'Mid Exam for CSE-Java programming assessment has been created',
-          timestamp: new Date(Date.now() - 6 * 60 * 60 * 1000).toISOString(),
-          isRead: true,
-          relatedData: { type: 'assessment', action: 'created' }
-        },
-        {
-          id: '4',
-          type: 'success',
-          title: 'Marks Entered',
-          message: 'Marks for Quiz-1 (CSE-DBMS) have been entered by Faculty',
-          timestamp: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(),
-          isRead: true,
-          relatedData: { type: 'marks', action: 'entered' }
-        },
-        {
-          id: '5',
-          type: 'warning',
-          title: 'CO Attainment Below Target',
-          message: 'CO1 achievement (62%) is below target (75%) for CSE Course',
-          timestamp: new Date(Date.now() - 48 * 60 * 60 * 1000).toISOString(),
-          isRead: true,
-          actionUrl: '/co-attainment',
-          relatedData: { type: 'co-attainment', coCode: 'CO1', achievement: 62 }
-        }
-      ];
-
-      this.allNotifications = sampleNotifications;
-      this.saveNotifications();
-    }
   }
 
   filterNotifications(): void {

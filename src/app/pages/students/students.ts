@@ -77,6 +77,10 @@ export class Students implements OnInit {
   role: string | null = null;
   studentName = 'Student';
   studentEmail = '';
+  studentPhoto: string | null = null;
+  studentRoll = 'CUTM2026CSE042';
+  studentDept = 'Computer Science & Engineering';
+  studentSemester = 'Semester 6 • B.Tech CSE';
   
   stats: DashboardStats = {
     enrolledCourses: 0,
@@ -89,6 +93,7 @@ export class Students implements OnInit {
   attendanceWarningMsg = '';
 
   searchQuery = '';
+  deadlineTab: 'all' | 'mid' | 'assignment' | 'project' = 'all';
 
   todaySchedule: TimetableEntry[] = [];
   notifications: any[] = [];
@@ -97,6 +102,47 @@ export class Students implements OnInit {
   upcomingDeadlines: UpcomingDeadline[] = [];
   enrolledCourseCards: EnrolledCourseCard[] = [];
 
+  studentNavGroups = [
+    {
+      title: 'ACADEMICS',
+      items: [
+        { label: 'Student Dashboard', path: '/students', icon: '🏠' },
+        { label: 'Enrolled Courses', path: '/courses', icon: '📚' },
+        { label: 'Subject List', path: '/subjects', icon: '📖' },
+        { label: 'Weekly Timetable', path: '/timetable', icon: '📆' }
+      ]
+    },
+    {
+      title: 'OBE & OUTCOMES',
+      items: [
+        { label: 'Course Outcomes (CO)', path: '/course-outcomes', icon: '🎯' },
+        { label: 'Program Outcomes (PO)', path: '/program-outcomes', icon: '🎯' },
+        { label: 'CO-PO Mapping', path: '/copo-mapping', icon: '🔗' },
+        { label: 'CO Attainment', path: '/co-attainment', icon: '📊' },
+        { label: 'PO Attainment', path: '/po-attainment', icon: '📈' }
+      ]
+    },
+    {
+      title: 'EXAMINATIONS & MARKS',
+      items: [
+        { label: 'Upcoming Exams', path: '/assessments', icon: '📝' },
+        { label: 'Attendance %', path: '/attendance', icon: '📅' },
+        { label: 'Marks Summary', path: '/performance', icon: '📈' },
+        { label: 'Semester Results', path: '/results', icon: '📄' }
+      ]
+    },
+    {
+      title: 'STUDENT SERVICES',
+      items: [
+        { label: 'Feedback Form', path: '/feedback', icon: '💬' },
+        { label: 'File Grievance', path: '/grievance', icon: '📩' },
+        { label: 'Notifications', path: '/notifications', icon: '🔔' },
+        { label: 'Student Details', path: '/profile', icon: '👤' }
+      ]
+    }
+  ];
+
+  // Flat list for quick matching & backwards compatibility
   studentItems = [
     { label: 'Student Dashboard', path: '/students', icon: '🏠' },
     { label: 'Enrolled Courses', path: '/courses', icon: '📚' },
@@ -113,7 +159,8 @@ export class Students implements OnInit {
     { label: 'Semester Results', path: '/results', icon: '📄' },
     { label: 'Feedback Form', path: '/feedback', icon: '💬' },
     { label: 'Notifications', path: '/notifications', icon: '🔔' },
-    { label: 'Student Details', path: '/profile', icon: '👤' }
+    { label: 'Student Details', path: '/profile', icon: '👤' },
+    { label: 'File Grievance', path: '/grievance', icon: '📩' }
   ];
 
   get filteredCourses(): EnrolledCourseCard[] {
@@ -157,9 +204,18 @@ export class Students implements OnInit {
   }
 
   get filteredDeadlines(): UpcomingDeadline[] {
-    if (!this.searchQuery.trim()) return this.upcomingDeadlines;
+    let list = this.upcomingDeadlines;
+    if (this.deadlineTab === 'mid') {
+      list = list.filter(d => d.type.toLowerCase().includes('exam') || d.type.toLowerCase().includes('mid'));
+    } else if (this.deadlineTab === 'assignment') {
+      list = list.filter(d => d.type.toLowerCase().includes('assignment'));
+    } else if (this.deadlineTab === 'project') {
+      list = list.filter(d => d.type.toLowerCase().includes('project'));
+    }
+
+    if (!this.searchQuery.trim()) return list;
     const q = this.searchQuery.toLowerCase();
-    return this.upcomingDeadlines.filter(d => 
+    return list.filter(d => 
       d.title.toLowerCase().includes(q) || 
       d.course.toLowerCase().includes(q) || 
       d.type.toLowerCase().includes(q)
@@ -182,10 +238,22 @@ export class Students implements OnInit {
     try {
       this.role = localStorage.getItem('userRole')?.toLowerCase() || null;
       this.studentName = localStorage.getItem('userName') || 'Student';
-      this.studentEmail = localStorage.getItem('userEmail') || '';
+      this.studentEmail = localStorage.getItem('userEmail') || 'student@centurionuniv.edu.in';
+      this.studentPhoto = localStorage.getItem('userProfilePicture') || null;
+      this.studentDept = localStorage.getItem('userDepartment') || 'Computer Science & Engineering';
+      this.studentRoll = localStorage.getItem('userRoll') || 'CUTM2026CSE042';
     } catch {
       this.role = null;
     }
+  }
+
+  logout(): void {
+    try {
+      localStorage.removeItem('userRole');
+      localStorage.removeItem('userEmail');
+    } catch {}
+    this.toast.info('Logged out successfully.');
+    this.router.navigate(['/login']);
   }
 
   ngOnInit(): void {
@@ -197,61 +265,80 @@ export class Students implements OnInit {
       // 1. Courses
       const storedCourses = localStorage.getItem('obslmsCourses');
       const courses = storedCourses ? JSON.parse(storedCourses) : [];
-      this.stats.enrolledCourses = courses.length || 4;
+      this.stats.enrolledCourses = courses.length;
 
-      // Build Enrolled Course Cards
-      this.enrolledCourseCards = (courses.length > 0 ? courses : [
-        { code: 'CSE-301', title: 'Database Management Systems', faculty: 'Dr. Ramesh Kumar', credits: 4 },
-        { code: 'CSE-302', title: 'Cloud Computing & Virtualization', faculty: 'Prof. Anita Sharma', credits: 3 },
-        { code: 'CSE-303', title: 'Machine Learning Fundamentals', faculty: 'Dr. Sanjay Patel', credits: 4 },
-        { code: 'CSE-304', title: 'Software Engineering & OBE', faculty: 'Prof. Meera Rao', credits: 3 }
-      ]).map((c: any, index: number) => ({
-        code: c.code || `CSE-30${index + 1}`,
-        title: c.title || 'Course Title',
-        faculty: c.faculty || 'Assigned Faculty',
-        credits: c.credits || (index % 2 === 0 ? 4 : 3),
-        currentAvg: [86, 78, 92, 84][index % 4],
-        attendancePct: [88, 72, 94, 86][index % 4]
-      }));
-
-      // 2. Attendance
+      // 2. Attendance & Marks for computing per-course metrics
       const storedAttendance = localStorage.getItem('obslmsAttendance');
       const attendance = storedAttendance ? JSON.parse(storedAttendance) : [];
       const myAttendance = attendance.filter((a: any) => 
         a.student && a.student.toLowerCase() === this.studentName.toLowerCase()
       );
-      if (myAttendance.length > 0) {
-        const present = myAttendance.filter((a: any) => a.status === 'Present').length;
-        this.stats.attendancePercentage = Math.round((present / myAttendance.length) * 100);
-      } else {
-        this.stats.attendancePercentage = 85;
-      }
 
-      // Check attendance warning
-      if (this.stats.attendancePercentage < 75) {
-        this.showAttendanceWarning = true;
-        this.attendanceWarningMsg = `Overall attendance is at ${this.stats.attendancePercentage}%. University OBE regulations require minimum 75% for exam eligibility.`;
-      } else {
-        const lowCourse = this.enrolledCourseCards.find(c => c.attendancePct < 75);
-        if (lowCourse) {
-          this.showAttendanceWarning = true;
-          this.attendanceWarningMsg = `Attendance in ${lowCourse.title} is at ${lowCourse.attendancePct}%. Attend next 2 lectures to cross the 75% threshold.`;
-        }
-      }
-
-      // 3. Performance / CGPA
       const storedMarks = localStorage.getItem('obslmsMarkEntries');
       const marks = storedMarks ? JSON.parse(storedMarks) : [];
       const myMarks = marks.filter((m: any) => 
         m.student && m.student.toLowerCase() === this.studentName.toLowerCase()
       );
+
+      // Build Enrolled Course Cards dynamically
+      this.enrolledCourseCards = courses.map((c: any) => {
+        const courseAttendance = myAttendance.filter((a: any) => 
+          a.course && a.course.toLowerCase().includes(c.title?.toLowerCase() || c.code?.toLowerCase())
+        );
+        const attPct = courseAttendance.length > 0
+          ? Math.round((courseAttendance.filter((a: any) => a.status === 'Present').length / courseAttendance.length) * 100)
+          : (myAttendance.length > 0 ? this.stats.attendancePercentage : 0);
+
+        const courseMarks = myMarks.filter((m: any) =>
+          m.assessment && m.assessment.toLowerCase().includes(c.title?.toLowerCase() || c.code?.toLowerCase())
+        );
+        let currentAvg = 0;
+        if (courseMarks.length > 0) {
+          const obt = courseMarks.reduce((sum: number, m: any) => sum + (Number(m.obtained) || 0), 0);
+          const max = courseMarks.reduce((sum: number, m: any) => sum + (Number(m.maxMarks) || 100), 0);
+          currentAvg = max > 0 ? Math.round((obt / max) * 100) : 0;
+        }
+
+        return {
+          code: c.code || 'COURSE',
+          title: c.title || 'Course Title',
+          faculty: c.faculty || 'Assigned Faculty',
+          credits: c.credits || 3,
+          currentAvg: currentAvg,
+          attendancePct: attPct
+        };
+      });
+
+      // Compute overall attendance
+      if (myAttendance.length > 0) {
+        const present = myAttendance.filter((a: any) => a.status === 'Present').length;
+        this.stats.attendancePercentage = Math.round((present / myAttendance.length) * 100);
+      } else {
+        this.stats.attendancePercentage = 0;
+      }
+
+      // Check attendance warning
+      if (myAttendance.length > 0 && this.stats.attendancePercentage < 75) {
+        this.showAttendanceWarning = true;
+        this.attendanceWarningMsg = `Overall attendance is at ${this.stats.attendancePercentage}%. University OBE regulations require minimum 75% for exam eligibility.`;
+      } else {
+        const lowCourse = this.enrolledCourseCards.find(c => c.attendancePct < 75 && c.attendancePct > 0);
+        if (lowCourse) {
+          this.showAttendanceWarning = true;
+          this.attendanceWarningMsg = `Attendance in ${lowCourse.title} is at ${lowCourse.attendancePct}%. Attend next 2 lectures to cross the 75% threshold.`;
+        } else {
+          this.showAttendanceWarning = false;
+        }
+      }
+
+      // 3. Performance / CGPA & Recent Grades
       if (myMarks.length > 0) {
         const totalObtained = myMarks.reduce((sum: number, m: any) => sum + (Number(m.obtained) || 0), 0);
         const totalMax = myMarks.reduce((sum: number, m: any) => sum + (Number(m.maxMarks) || 100), 0);
-        const avgPercentage = (totalObtained / totalMax) * 100;
+        const avgPercentage = totalMax > 0 ? (totalObtained / totalMax) * 100 : 0;
         this.stats.cgpa = Number(((avgPercentage / 100) * 10).toFixed(2));
 
-        this.recentGrades = myMarks.slice(0, 3).map((m: any) => {
+        this.recentGrades = myMarks.slice(0, 5).map((m: any) => {
           const score = Math.round((Number(m.obtained) / (Number(m.maxMarks) || 100)) * 100);
           let grade = 'F';
           if (score >= 90) grade = 'O';
@@ -267,20 +354,34 @@ export class Students implements OnInit {
           };
         });
       } else {
-        this.stats.cgpa = 8.25;
-        this.recentGrades = [
-          { courseName: 'Internal Test 1 - DBMS', score: 82, grade: 'A+' },
-          { courseName: 'Assignment 1 - Cloud Computing', score: 94, grade: 'O' },
-          { courseName: 'Lab Practical - Machine Learning', score: 88, grade: 'A+' }
-        ];
+        this.stats.cgpa = 0.0;
+        this.recentGrades = [];
       }
 
-      // 4. Exams
-      const storedExams = localStorage.getItem('obslmsExams');
-      const exams = storedExams ? JSON.parse(storedExams) : [];
-      this.stats.pendingExams = exams.filter((e: any) => e.status !== 'Completed').length || 2;
+      // 4. Exams & Deadlines
+      const storedAssessments = localStorage.getItem('obslmsAssessments');
+      const assessments = storedAssessments ? JSON.parse(storedAssessments) : [];
+      this.stats.pendingExams = assessments.filter((a: any) => a.status !== 'Completed').length;
 
-      // 5. Today's Schedule
+      // Upcoming deadlines computed dynamically from real assessments
+      const today = new Date();
+      this.upcomingDeadlines = assessments
+        .filter((a: any) => a.status !== 'Completed')
+        .map((a: any) => {
+          const due = a.dueDate ? new Date(a.dueDate) : today;
+          const diffTime = due.getTime() - today.getTime();
+          const daysLeft = Math.max(0, Math.ceil(diffTime / (1000 * 60 * 60 * 24)));
+          return {
+            title: `${a.type || 'Assessment'} - ${a.course || 'Subject'}`,
+            course: a.course || 'Course',
+            type: a.type || 'Exam',
+            dueDate: a.dueDate || 'TBD',
+            daysLeft: daysLeft,
+            marks: a.maxMarks || 50
+          };
+        });
+
+      // 5. Today's Schedule from real timetable
       const storedSchedule = localStorage.getItem('obslmsTimetable');
       const timetable = storedSchedule ? JSON.parse(storedSchedule) : [];
       const currentDay = new Date().toLocaleDateString('en-US', { weekday: 'long' });
@@ -293,33 +394,26 @@ export class Students implements OnInit {
           isCurrent: idx === 0
         }));
       } else {
-        this.todaySchedule = [
-          { period: '09:00 AM - 10:00 AM', subject: 'Cloud Computing & Virtualization', room: 'LH-101', isCurrent: true },
-          { period: '11:15 AM - 12:15 PM', subject: 'Database Management Systems', room: 'LH-204', isCurrent: false },
-          { period: '02:00 PM - 04:00 PM', subject: 'Machine Learning Lab', room: 'Lab-4', isCurrent: false }
-        ];
+        this.todaySchedule = [];
       }
 
-      // 6. OBE Course Outcomes Mastery Progress
-      this.coProgressList = [
-        { coCode: 'CO1', courseName: 'Database Management', bloomsLevel: 'Understand', attainmentPct: 88, targetPct: 75, status: 'Achieved' },
-        { coCode: 'CO2', courseName: 'Cloud Computing', bloomsLevel: 'Apply', attainmentPct: 82, targetPct: 75, status: 'Achieved' },
-        { coCode: 'CO3', courseName: 'Machine Learning', bloomsLevel: 'Analyze', attainmentPct: 71, targetPct: 75, status: 'In Progress' },
-        { coCode: 'CO4', courseName: 'Software Engineering', bloomsLevel: 'Evaluate', attainmentPct: 91, targetPct: 75, status: 'Achieved' }
-      ];
+      // 6. OBE Course Outcomes Mastery Progress from real COs
+      const storedCos = localStorage.getItem('obslmsCourseOutcomes');
+      const cos = storedCos ? JSON.parse(storedCos) : [];
+      this.coProgressList = cos.map((co: any) => {
+        return {
+          coCode: co.co || 'CO',
+          courseName: co.course || 'Course',
+          bloomsLevel: 'Apply',
+          attainmentPct: 0,
+          targetPct: 75,
+          status: 'In Progress' as const
+        };
+      });
 
-      // 7. Upcoming Deadlines & Evaluations
-      this.upcomingDeadlines = [
-        { title: 'Continuous Assessment 2', course: 'Cloud Computing', type: 'Mid-Sem Exam', dueDate: 'Aug 26, 2026', daysLeft: 6, marks: 30 },
-        { title: 'Normalization Case Study', course: 'Database Management', type: 'Assignment', dueDate: 'Aug 28, 2026', daysLeft: 8, marks: 15 },
-        { title: 'Mini Project Milestone 1', course: 'Machine Learning', type: 'Project', dueDate: 'Sep 02, 2026', daysLeft: 13, marks: 25 }
-      ];
-
-      // 8. Notifications
-      this.notifications = [
-        { title: 'Exam Registration Open', message: 'Register for end semester examinations before August 25.', date: new Date() },
-        { title: 'Feedback Submission', message: 'Please fill the course feedback form for OBE.', date: new Date(Date.now() - 86400000) }
-      ];
+      // 7. Notifications from real system logs
+      const storedNotifs = localStorage.getItem('obslmsNotifications');
+      this.notifications = storedNotifs ? JSON.parse(storedNotifs) : [];
 
     } catch (e) {
       console.error('Error loading student dashboard data:', e);

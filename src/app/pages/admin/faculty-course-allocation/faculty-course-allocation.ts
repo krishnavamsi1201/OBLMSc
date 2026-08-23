@@ -1,9 +1,10 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Navbar } from '../../../shared/navbar/navbar';
 import { Sidebar } from '../../../shared/sidebar/sidebar';
 import { Footer } from '../../../shared/footer/footer';
+import { ToastService } from '../../../shared/services/toast.service';
 
 interface FacultyAllocation {
   id: string;
@@ -49,6 +50,7 @@ interface CourseSubject {
   styleUrls: ['./faculty-course-allocation.css'],
 })
 export class FacultyCourseAllocation implements OnInit {
+  private toast = inject(ToastService);
   allocationList: FacultyAllocation[] = [];
   filteredAllocationList: FacultyAllocation[] = [];
   
@@ -99,7 +101,12 @@ export class FacultyCourseAllocation implements OnInit {
   private loadCourses(): void {
     try {
       const stored = localStorage.getItem('obslmsCourses');
-      this.courseList = stored ? JSON.parse(stored) : [];
+      const courses = stored ? JSON.parse(stored) : [];
+      this.courseList = courses.map((c: any) => ({
+        id: (c.id || '').toString(),
+        name: c.title || c.name || c.code || 'Course',
+        code: c.code || ''
+      }));
     } catch {
       this.courseList = [];
     }
@@ -192,7 +199,7 @@ export class FacultyCourseAllocation implements OnInit {
 
   saveAllocation(): void {
     if (!this.validateForm()) {
-      alert('Please fill all required fields');
+      this.toast.warning('Please fill all required fields');
       return;
     }
 
@@ -204,7 +211,7 @@ export class FacultyCourseAllocation implements OnInit {
              a.subjectId === this.formData.subjectId
       );
       if (exists) {
-        alert('This faculty is already allocated to this course-subject combination!');
+        this.toast.error('This faculty is already allocated to this course-subject combination!');
         return;
       }
     }
@@ -216,7 +223,7 @@ export class FacultyCourseAllocation implements OnInit {
     );
 
     if (!faculty || !course || !subject) {
-      alert('Invalid selection. Please check your choices.');
+      this.toast.error('Invalid selection. Please check your choices.');
       return;
     }
 
@@ -233,6 +240,7 @@ export class FacultyCourseAllocation implements OnInit {
           subjectName: subject.subjectName,
           semester: this.formData.semester
         };
+        this.toast.success(`Allocation for "${faculty.name}" updated successfully.`);
       }
     } else {
       const newAllocation: FacultyAllocation = {
@@ -246,6 +254,7 @@ export class FacultyCourseAllocation implements OnInit {
         semester: this.formData.semester
       };
       this.allocationList.push(newAllocation);
+      this.toast.success(`Faculty "${faculty.name}" allocated to "${subject.subjectName}" (${course.name}).`);
     }
 
     this.saveAllocationsToStorage();
@@ -253,10 +262,10 @@ export class FacultyCourseAllocation implements OnInit {
   }
 
   deleteAllocation(id: string): void {
-    if (confirm('Are you sure you want to revoke this faculty allocation?')) {
-      this.allocationList = this.allocationList.filter(a => a.id !== id);
-      this.saveAllocationsToStorage();
-    }
+    const allocation = this.allocationList.find(a => a.id === id);
+    this.allocationList = this.allocationList.filter(a => a.id !== id);
+    this.saveAllocationsToStorage();
+    this.toast.info(`Allocation for "${allocation?.facultyName || 'Faculty'}" revoked.`);
   }
 
   private validateForm(): boolean {
@@ -273,7 +282,7 @@ export class FacultyCourseAllocation implements OnInit {
       localStorage.setItem('obslmsFacultyAllocations', JSON.stringify(this.allocationList));
       this.filterAllocations();
     } catch {
-      alert('Error saving allocation data');
+      this.toast.error('Error saving allocation data');
     }
   }
 

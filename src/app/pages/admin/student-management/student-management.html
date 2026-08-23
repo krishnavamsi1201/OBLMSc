@@ -9,7 +9,10 @@
         <h1>🎓 Student Management</h1>
         <p>Manage student records, enrollment, and academic information</p>
       </div>
-      <button class="btn btn-primary" (click)="openAddForm()">+ Add Student</button>
+      <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+        <button class="btn btn-secondary" (click)="downloadStudentListCsv()" title="Export student roster">📥 Export CSV</button>
+        <button class="btn btn-primary" (click)="openAddForm()">+ Add Student</button>
+      </div>
     </div>
 
     <!-- Search and Filter Bar -->

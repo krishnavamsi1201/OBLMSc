@@ -64,17 +64,7 @@ export class Grievance implements OnInit {
   private loadData(): void {
     try {
       const stored = localStorage.getItem('obslmsGrievances');
-      if (stored) {
-        this.grievanceItems = JSON.parse(stored) as GrievanceItem[];
-      } else {
-        // Seed default grievances
-        this.grievanceItems = [
-          { id: 1, title: 'Discrepancy in Midterm attendance record', description: 'I was marked absent on August 10th despite presenting my medical certificate.', category: 'Attendance', studentName: 'Raj Kumar', status: 'Open', date: '2026-08-11T10:00' },
-          { id: 2, title: 'LMS file upload error', description: 'When trying to submit the machine learning assignment, the upload button throws a 500 error.', category: 'Technical Support', studentName: 'Sneha Patel', status: 'In Review', date: '2026-08-12T14:30' },
-          { id: 3, title: 'Incomplete Course outcome description', description: 'Course outcomes for cloud computing subject are missing CO5 details.', category: 'Academics', studentName: 'Amit Shah', status: 'Resolved', date: '2026-08-05T09:00', resolution: 'Added the missing CO5 description to the course outline.' }
-        ];
-        this.saveGrievances();
-      }
+      this.grievanceItems = stored ? JSON.parse(stored) as GrievanceItem[] : [];
     } catch {
       this.grievanceItems = [];
     }

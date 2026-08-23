@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { ToastService } from '../../shared/services/toast.service';
@@ -10,7 +10,7 @@ import { ToastService } from '../../shared/services/toast.service';
   templateUrl: './login.html',
   styleUrls: ['./login.css']
 })
-export class Login {
+export class Login implements OnInit {
   private router = inject(Router);
   private toast = inject(ToastService);
 
@@ -18,6 +18,33 @@ export class Login {
   password = '';
   role: 'admin' | 'faculty' | 'student' | '' = '';
   showPassword = false;
+
+  stats = {
+    courses: 0,
+    faculty: 0,
+    students: 0,
+    outcomes: 0
+  };
+
+  ngOnInit(): void {
+    this.loadStats();
+  }
+
+  private loadStats(): void {
+    this.stats.courses = this.getStorageCount('obslmsCourses');
+    this.stats.faculty = this.getStorageCount('obslmsFaculty');
+    this.stats.students = this.getStorageCount('obslmsStudents');
+    this.stats.outcomes = this.getStorageCount('obslmsCourseOutcomes');
+  }
+
+  private getStorageCount(key: string): number {
+    try {
+      const data = localStorage.getItem(key);
+      return data ? (JSON.parse(data) as any[]).length : 0;
+    } catch {
+      return 0;
+    }
+  }
 
   togglePasswordVisibility(): void {
     this.showPassword = !this.showPassword;

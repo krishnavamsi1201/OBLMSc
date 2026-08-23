@@ -67,18 +67,18 @@ interface CourseOutcome {
                         <th>Course</th>
                         <th>CO Code</th>
                         <th>Outcome Description</th>
-                        <th>Actions</th>
+                        <th *ngIf="role === 'admin' || role === 'faculty'">Actions</th>
                     </tr>
                 </thead>
                 <tbody>
                     <tr *ngIf="courseOutcomes.length === 0">
-                        <td colspan="4">No course outcomes defined yet. Click "Add Course Outcome" to get started.</td>
+                        <td [attr.colspan]="(role === 'admin' || role === 'faculty') ? 4 : 3">No course outcomes defined yet.</td>
                     </tr>
                     <tr *ngFor="let outcome of courseOutcomes; index as i">
                         <td><strong>{{ outcome.course }}</strong></td>
                         <td><span class="obe-badge obe-badge-co">{{ outcome.co }}</span></td>
                         <td>{{ outcome.description }}</td>
-                        <td class="actions-cell">
+                        <td class="actions-cell" *ngIf="role === 'admin' || role === 'faculty'">
                             <button type="button" class="small-button" (click)="editOutcome(outcome, i)">Edit</button>
                             <button type="button" class="danger-button" (click)="deleteOutcome(outcome.id)">Delete</button>
                         </td>

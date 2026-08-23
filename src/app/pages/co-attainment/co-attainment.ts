@@ -87,12 +87,15 @@ export class CoAttainment implements OnInit {
 
       const coMap = new Map<string, CourseOutcome>();
       courseOutcomesData.forEach((co: any) => {
-        coMap.set(co.code, {
-          id: co.id,
-          code: co.code,
-          description: co.description,
-          targetPercentage: 75
-        });
+        const code = co.code || co.co || '';
+        if (code) {
+          coMap.set(code, {
+            id: (co.id || '').toString(),
+            code: code,
+            description: co.description || '',
+            targetPercentage: 75
+          });
+        }
       });
 
       const coAttainmentMap = new Map<string, {
@@ -113,19 +116,22 @@ export class CoAttainment implements OnInit {
 
       mappingsData.forEach((mapping: AssessmentCOMapping) => {
         const assessmentMarks = marksData.filter(m => 
-          m.assessment.toLowerCase().includes(mapping.assessmentName.toLowerCase())
+          mapping.assessmentName && m.assessment && m.assessment.toLowerCase().includes(mapping.assessmentName.toLowerCase())
         );
 
-        mapping.courseOutcomes.forEach((coCode: string) => {
+        const cos = mapping.courseOutcomes || [];
+        cos.forEach((coCode: string) => {
           const coData = coAttainmentMap.get(coCode);
           if (coData) {
             assessmentMarks.forEach(mark => {
-              const percentage = (mark.obtained / mark.maxMarks) * 100;
-              coData.scores.push(percentage);
-              coData.students.add(mark.student);
+              if (mark.maxMarks > 0) {
+                const percentage = (mark.obtained / mark.maxMarks) * 100;
+                coData.scores.push(percentage);
+                coData.students.add(mark.student);
+              }
             });
 
-            if (!coData.assessments.includes(mapping.assessmentName)) {
+            if (mapping.assessmentName && !coData.assessments.includes(mapping.assessmentName)) {
               coData.assessments.push(mapping.assessmentName);
             }
             coData.maxMarks = mapping.maxMarks;

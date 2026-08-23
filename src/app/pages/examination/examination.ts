@@ -58,17 +58,7 @@ export class Examination implements OnInit {
   private loadData(): void {
     try {
       const stored = localStorage.getItem('obslmsExams');
-      if (stored) {
-        this.examinationItems = JSON.parse(stored) as ExamSchedule[];
-      } else {
-        // Seed default exams
-        this.examinationItems = [
-          { id: 1, title: 'Midterm Assessment 1', course: 'Database Management Systems', date: '2026-09-10T10:00', room: 'LH-302', status: 'Scheduled', marks: 50 },
-          { id: 2, title: 'Practical Lab Exam', course: 'Machine Learning Lab', date: '2026-09-15T14:00', room: 'Lab-4', status: 'Scheduled', marks: 100 },
-          { id: 3, title: 'Quiz 1', course: 'Outcome-Based Education', date: '2026-08-10T09:30', room: 'Online', status: 'Completed', marks: 20 }
-        ];
-        this.saveExams();
-      }
+      this.examinationItems = stored ? JSON.parse(stored) as ExamSchedule[] : [];
     } catch {
       this.examinationItems = [];
     }

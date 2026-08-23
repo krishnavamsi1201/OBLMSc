@@ -216,23 +216,7 @@ export class Results implements OnInit {
       const marks = storedMarks ? JSON.parse(storedMarks) : [];
 
       if (marks.length === 0) {
-        // Seed default results if empty
-        const defaultResults: StudentResult[] = [
-          { id: 1, student: 'Raj Kumar', course: 'Database Management Systems', internal: 82, external: 78, grade: 'A', status: 'Pass' },
-          { id: 2, student: 'Raj Kumar', course: 'Machine Learning', internal: 92, external: 88, grade: 'O', status: 'Pass' },
-          { id: 3, student: 'Sneha Patel', course: 'Database Management Systems', internal: 75, external: 72, grade: 'B+', status: 'Pass' },
-          { id: 4, student: 'Amit Shah', course: 'Cloud Computing', internal: 45, external: 48, grade: 'F', status: 'Fail' }
-        ];
-        this.studentResults = defaultResults;
-        
-        // Also map these to mark entries so everything connects
-        const mockMarkEntries = [
-          { id: 101, student: 'Raj Kumar', assessment: 'Database Management Systems', obtained: 41, maxMarks: 50 },
-          { id: 102, student: 'Raj Kumar', assessment: 'Machine Learning', obtained: 46, maxMarks: 50 },
-          { id: 103, student: 'Sneha Patel', assessment: 'Database Management Systems', obtained: 37, maxMarks: 50 },
-          { id: 104, student: 'Amit Shah', assessment: 'Cloud Computing', obtained: 22, maxMarks: 50 }
-        ];
-        localStorage.setItem('obslmsMarkEntries', JSON.stringify(mockMarkEntries));
+        this.studentResults = [];
       } else {
         // Group marks by student and course (assessment type is treated as course context if it contains subject name)
         const grouped = new Map<string, any>();

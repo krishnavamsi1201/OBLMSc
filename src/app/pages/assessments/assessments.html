@@ -7,34 +7,35 @@
     <div class="content">
 
         <div class="page-header">
-            <h1>📝 Assessments</h1>
-            <p>Faculty tools for assignment, quiz, midterm, and lab exam creation, plus mark entry and tracking.</p>
+            <h1>📝 {{ role === 'student' ? 'Upcoming & Active Assessments' : 'Assessments Management' }}</h1>
+            <p>{{ role === 'student' ? 'View scheduled examinations, assignment due dates, and your evaluation scorecards.' : 'Faculty tools for assignment, quiz, midterm, and lab exam creation, plus mark entry and tracking.' }}</p>
         </div>
 
         <div class="summary-grid">
             <div class="section-card">
-                <h3>Assignment Creation</h3>
+                <h3>Assignments</h3>
                 <strong>{{ assessments.filter(a => a.type === 'Assignment').length }}</strong>
-                <p>Active assignments in the current course load.</p>
+                <p>Active assignments in current courses.</p>
             </div>
             <div class="section-card">
-                <h3>Quiz Creation</h3>
+                <h3>Quizzes</h3>
                 <strong>{{ assessments.filter(a => a.type === 'Quiz').length }}</strong>
-                <p>Quizzes scheduled for assessment cycles.</p>
+                <p>Quizzes scheduled for evaluation.</p>
             </div>
             <div class="section-card">
                 <h3>Mid Exams</h3>
                 <strong>{{ assessments.filter(a => a.type === 'Mid Exam').length }}</strong>
-                <p>Midterm exams in preparation.</p>
+                <p>Midterm examinations scheduled.</p>
             </div>
             <div class="section-card">
                 <h3>Lab Exams</h3>
                 <strong>{{ assessments.filter(a => a.type === 'Lab Exam').length }}</strong>
-                <p>Lab evaluation items scheduled.</p>
+                <p>Lab practical evaluation items.</p>
             </div>
         </div>
 
-        <div class="form-card">
+        <!-- Add/Edit Assessment (Faculty / Admin Only) -->
+        <div class="form-card" *ngIf="role === 'admin' || role === 'faculty'">
             <h2>Add / Edit Assessment</h2>
             <form (ngSubmit)="saveAssessment()">
                 <div class="grid-row">
@@ -80,7 +81,8 @@
             </form>
         </div>
 
-        <div class="form-card">
+        <!-- Enter / Update Marks (Faculty / Admin Only) -->
+        <div class="form-card" *ngIf="role === 'admin' || role === 'faculty'">
             <h2>Enter / Update Marks</h2>
             <form (ngSubmit)="saveMarks()">
                 <div class="grid-row">
@@ -114,7 +116,7 @@
 
         <div class="table-card">
             <div class="table-header-row">
-                <h2>View Assessment List ({{ filteredAssessments.length }})</h2>
+                <h2>{{ role === 'student' ? 'Scheduled Assessments & Exams' : 'View Assessment List' }} ({{ filteredAssessments.length }})</h2>
                 <div class="table-filter-inputs">
                     <input 
                         type="text" 
@@ -137,12 +139,12 @@
                         <th>Max Marks</th>
                         <th>Due Date</th>
                         <th>Status</th>
-                        <th>Actions</th>
+                        <th *ngIf="role === 'admin' || role === 'faculty'">Actions</th>
                     </tr>
                 </thead>
                 <tbody>
                     <tr *ngIf="filteredAssessments.length === 0">
-                        <td colspan="7" style="text-align: center; color: #888; padding: 20px;">No assessments match your filter.</td>
+                        <td [attr.colspan]="(role === 'admin' || role === 'faculty') ? 7 : 6" style="text-align: center; color: #888; padding: 20px;">No assessments match your filter.</td>
                     </tr>
                     <tr *ngFor="let assessment of filteredAssessments; index as i">
                         <td><strong>{{ assessment.course }}</strong></td>
@@ -151,7 +153,7 @@
                         <td>{{ assessment.maxMarks }}</td>
                         <td>{{ assessment.dueDate }}</td>
                         <td><span class="status-badge" [class.completed]="assessment.status === 'Completed'">{{ assessment.status }}</span></td>
-                        <td>
+                        <td *ngIf="role === 'admin' || role === 'faculty'">
                             <button type="button" (click)="editAssessment(i)">Edit</button>
                             <button type="button" class="danger" (click)="deleteAssessment(i)">Delete</button>
                         </td>
@@ -162,12 +164,12 @@
 
         <div class="table-card">
             <div class="table-header-row">
-                <h2>Marks Entered ({{ filteredMarkEntries.length }})</h2>
+                <h2>{{ role === 'student' ? 'My Assessment Scorecard' : 'Marks Entered' }} ({{ filteredMarkEntries.length }})</h2>
                 <div class="table-filter-inputs">
                     <input 
                         type="text" 
                         [(ngModel)]="searchMarks" 
-                        placeholder="🔍 Search student or assessment..."
+                        placeholder="🔍 Search assessment or student..."
                         class="table-search-input"
                     />
                 </div>
@@ -175,7 +177,7 @@
             <table>
                 <thead>
                     <tr>
-                        <th>Student</th>
+                        <th *ngIf="role !== 'student'">Student</th>
                         <th>Assessment</th>
                         <th>Obtained</th>
                         <th>Max Marks</th>
@@ -184,11 +186,11 @@
                 </thead>
                 <tbody>
                     <tr *ngIf="filteredMarkEntries.length === 0">
-                        <td colspan="5" style="text-align: center; color: #888; padding: 20px;">No mark records match your search.</td>
+                        <td [attr.colspan]="role !== 'student' ? 5 : 4" style="text-align: center; color: #888; padding: 20px;">No mark records match your search.</td>
                     </tr>
                     <tr *ngFor="let mark of filteredMarkEntries">
-                        <td><strong>{{ mark.student }}</strong></td>
-                        <td>{{ mark.assessment }}</td>
+                        <td *ngIf="role !== 'student'"><strong>{{ mark.student }}</strong></td>
+                        <td><strong>{{ mark.assessment }}</strong></td>
                         <td>{{ mark.obtained }}</td>
                         <td>{{ mark.maxMarks }}</td>
                         <td><strong>{{ Math.round((mark.obtained / mark.maxMarks) * 100) }}%</strong></td>

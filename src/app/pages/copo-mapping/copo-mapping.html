@@ -50,7 +50,8 @@
             </table>
         </div>
 
-        <div class="form-card">
+        <!-- Add PO (Admin / Faculty Only) -->
+        <div class="form-card" *ngIf="role === 'admin' || role === 'faculty'">
             <h2>Add Program Outcome</h2>
             <form (ngSubmit)="addProgramOutcome()" class="small-form">
                 <div class="grid-row">
@@ -71,7 +72,8 @@
             </form>
         </div>
 
-        <div class="form-card">
+        <!-- Add CO (Admin / Faculty Only) -->
+        <div class="form-card" *ngIf="role === 'admin' || role === 'faculty'">
             <h2>Add Course Outcome</h2>
             <form (ngSubmit)="addCourseOutcome()" class="small-form">
                 <div class="grid-row">
@@ -98,7 +100,8 @@
             </form>
         </div>
 
-        <div class="form-card">
+        <!-- Map CO with PO (Admin / Faculty Only) -->
+        <div class="form-card" *ngIf="role === 'admin' || role === 'faculty'">
             <h2>{{ editIndex >= 0 ? 'Edit Mapping' : 'Map CO with PO' }}</h2>
             <form (ngSubmit)="saveMapping()">
                 <div class="grid-row">
@@ -145,7 +148,9 @@
 
         <div class="table-card">
             <h2>Mapped COs to POs</h2>
-            <p style="color: var(--text-secondary); margin-bottom: 16px;">Admins can approve pending mappings here.</p>
+            <p style="color: var(--text-secondary); margin-bottom: 16px;">
+                {{ role === 'student' ? 'Overview of curriculum outcome alignment and competency contribution.' : 'Admins and faculty can manage and approve pending mappings here.' }}
+            </p>
             <table>
                 <thead>
                     <tr>
@@ -157,23 +162,23 @@
                         <th>Contribution %</th>
                         <th>Mapping Level</th>
                         <th>Status</th>
-                        <th>Actions</th>
+                        <th *ngIf="role === 'admin' || role === 'faculty'">Actions</th>
                     </tr>
                 </thead>
                 <tbody>
                     <tr *ngIf="mappings.length === 0">
-                        <td colspan="7">No CO-PO mappings created yet.</td>
+                        <td [attr.colspan]="(role === 'admin' || role === 'faculty') ? 9 : 8">No CO-PO mappings created yet.</td>
                     </tr>
                     <tr *ngFor="let mapping of mappings; index as i">
-                        <td>{{ mapping.course }}</td>
-                        <td>{{ mapping.co }}</td>
+                        <td><strong>{{ mapping.course }}</strong></td>
+                        <td><span class="obe-badge obe-badge-co">{{ mapping.co }}</span></td>
                         <td>{{ getCourseOutcomeDescription(mapping.course, mapping.co) || '—' }}</td>
-                        <td>{{ mapping.po }}</td>
+                        <td><span class="obe-badge obe-badge-po">{{ mapping.po }}</span></td>
                         <td>{{ getProgramOutcomeDescription(mapping.po) || '—' }}</td>
                         <td>{{ mapping.contribution }}%</td>
                         <td>{{ getMappingLevelLabel(mapping.mappingLevel) }}</td>
-                        <td>{{ mapping.status }}</td>
-                        <td>
+                        <td><span class="obe-badge" [class.obe-badge-co]="mapping.status === 'Approved'">{{ mapping.status }}</span></td>
+                        <td *ngIf="role === 'admin' || role === 'faculty'">
                             <button type="button" (click)="editMapping(i)">Edit</button>
                             <button type="button" (click)="approveMapping(i)" [disabled]="mapping.status === 'Approved'">Approve</button>
                             <button type="button" class="danger" (click)="deleteMapping(i)">Delete</button>

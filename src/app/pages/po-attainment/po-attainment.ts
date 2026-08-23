@@ -75,35 +75,43 @@ export class PoAttainment implements OnInit {
       
       // Calculate CO achievements
       courseOutcomesData.forEach((co: any) => {
-        const mappings = assessmentMappingsData.filter((m: any) => m.courseOutcomes.includes(co.code));
+        const coKey = co.code || co.co || '';
+        if (!coKey) return;
+
+        const mappings = assessmentMappingsData.filter((m: any) => (m.courseOutcomes || []).includes(coKey));
         let totalScore = 0;
         let scoreCount = 0;
 
         mappings.forEach((mapping: any) => {
           const assessmentMarks = marksData.filter((m: any) => 
-            m.assessment.toLowerCase().includes(mapping.assessmentName.toLowerCase())
+            mapping.assessmentName && m.assessment && m.assessment.toLowerCase().includes(mapping.assessmentName.toLowerCase())
           );
 
           assessmentMarks.forEach((mark: any) => {
-            const percentage = (mark.obtained / mark.maxMarks) * 100;
-            totalScore += percentage;
-            scoreCount++;
+            if (mark.maxMarks > 0) {
+              const percentage = (mark.obtained / mark.maxMarks) * 100;
+              totalScore += percentage;
+              scoreCount++;
+            }
           });
         });
 
         const avgScore = scoreCount > 0 ? totalScore / scoreCount : 0;
-        coAttainmentMap.set(co.code, avgScore);
+        coAttainmentMap.set(coKey, avgScore);
       });
 
       // Build PO map for easy access
       const poMap = new Map<string, ProgramOutcome>();
       programOutcomesData.forEach((po: any) => {
-        poMap.set(po.code, {
-          id: po.id,
-          code: po.code,
-          description: po.description,
-          targetPercentage: 75
-        });
+        const poKey = po.code || po.poNumber || '';
+        if (poKey) {
+          poMap.set(poKey, {
+            id: (po.id || '').toString(),
+            code: poKey,
+            description: po.description || '',
+            targetPercentage: 75
+          });
+        }
       });
 
       // Calculate PO achievements
@@ -121,15 +129,17 @@ export class PoAttainment implements OnInit {
       });
 
       // Process CO-PO mappings
-      coPOMappingsData.forEach((mapping: COPOMapping) => {
-        const coAchievement = coAttainmentMap.get(mapping.coCode) || 0;
-        const poData = poAttainmentMap.get(mapping.poCode);
+      coPOMappingsData.forEach((mapping: any) => {
+        const coCode = mapping.coCode || mapping.co || '';
+        const poCode = mapping.poCode || mapping.po || '';
+        const coAchievement = coAttainmentMap.get(coCode) || 0;
+        const poData = poAttainmentMap.get(poCode);
         
         if (poData) {
-          const weight = mapping.weight || 1;
+          const weight = mapping.weight || (mapping.mappingLevel ? mapping.mappingLevel / 3 : 1);
           poData.scores.push(coAchievement * weight);
-          if (!poData.mappedCOs.includes(mapping.coCode)) {
-            poData.mappedCOs.push(mapping.coCode);
+          if (coCode && !poData.mappedCOs.includes(coCode)) {
+            poData.mappedCOs.push(coCode);
           }
         }
       });

@@ -278,12 +278,12 @@ form {
   color: rgba(236, 242, 255, 0.7);
 }
 
-/* Fix browser autofill white box */
+/* Fix browser autofill dark box and match password field */
 .field input:-webkit-autofill,
 .field input:-webkit-autofill:hover,
 .field input:-webkit-autofill:focus,
 .field input:-webkit-autofill:active {
-  -webkit-box-shadow: 0 0 0 1000px #473a88 inset !important;
+  -webkit-box-shadow: 0 0 0 1000px rgba(255, 255, 255, 0.08) inset !important;
   -webkit-text-fill-color: #edf5ff !important;
   caret-color: #edf5ff !important;
   transition: background-color 5000000s ease-in-out 0s !important;
@@ -293,7 +293,7 @@ form {
 }
 
 .field input:-moz-autofill {
-  box-shadow: 0 0 0 1000px #473a88 inset !important;
+  box-shadow: 0 0 0 1000px rgba(255, 255, 255, 0.08) inset !important;
   -moz-text-fill-color: #edf5ff !important;
   color: #edf5ff !important;
 }

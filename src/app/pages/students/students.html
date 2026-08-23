@@ -2,46 +2,81 @@
 
 <div *ngIf="role === 'student'; else fullApp" class="student-shell">
 
+  <!-- Categorized Sidebar Navigation -->
   <div class="student-sidebar">
     <div class="logo">
       <h2>🎓 OBLMS</h2>
       <p>Outcome Based LMS</p>
     </div>
 
-    <div class="student-links">
-      <button mat-button *ngFor="let item of studentItems" (click)="navigate(item.path)" [class.active]="item.path === '/students'">
-        <span class="icon">{{ item.icon }}</span>
-        <span>{{ item.label }}</span>
-      </button>
+    <div class="nav-groups-container">
+      <div *ngFor="let group of studentNavGroups" class="nav-group-block">
+        <span class="group-title">{{ group.title }}</span>
+        <div class="group-items">
+          <button mat-button *ngFor="let item of group.items" (click)="navigate(item.path)" [class.active]="item.path === '/students'">
+            <span class="icon">{{ item.icon }}</span>
+            <span class="nav-label">{{ item.label }}</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Mini Profile Card at Bottom of Sidebar -->
+    <div class="sidebar-user-card" (click)="navigate('/profile')" title="View profile details">
+      <div class="user-avatar-mini">
+        <img *ngIf="studentPhoto" [src]="studentPhoto" alt="Profile" />
+        <span *ngIf="!studentPhoto">👨‍🎓</span>
+      </div>
+      <div class="user-meta-mini">
+        <strong class="user-name-mini">{{ studentName }}</strong>
+        <span class="user-roll-mini">{{ studentRoll }}</span>
+      </div>
+      <button class="logout-icon-btn" (click)="$event.stopPropagation(); logout()" title="Logout">🚪</button>
     </div>
   </div>
 
+  <!-- Main Scrollable Content Area -->
   <div class="student-content">
-    <div class="student-header">
-      <div class="header-left">
-        <h1>👋 Welcome back, {{ studentName }}!</h1>
-        <p class="subtitle">{{ studentEmail }} | Outcome-Based Student Portal</p>
+    
+    <!-- Professional Academic Hero Banner -->
+    <div class="student-hero-banner">
+      <div class="hero-main-info">
+        <div class="hero-avatar-wrap" (click)="navigate('/profile')" title="Click to view / update profile photo">
+          <img *ngIf="studentPhoto" [src]="studentPhoto" alt="Profile" class="hero-avatar-img" />
+          <span *ngIf="!studentPhoto" class="hero-avatar-placeholder">👨‍🎓</span>
+          <span class="hero-avatar-badge" title="Profile active">✓</span>
+        </div>
+        <div class="hero-text">
+          <div class="hero-badge-row">
+            <span class="hero-badge program-badge">🎓 {{ studentSemester }}</span>
+            <span class="hero-badge status-badge">🌟 Good Academic Standing</span>
+          </div>
+          <h1 class="hero-greeting">Welcome back, {{ studentName }}!</h1>
+          <p class="hero-subtext">
+            <span>📧 {{ studentEmail }}</span> • <span>🆔 {{ studentRoll }}</span> • <span>🏫 {{ studentDept }}</span>
+          </p>
+        </div>
       </div>
-      <div class="header-actions">
-        <button class="header-download-btn" (click)="downloadGradeReportCsv()" title="Download full academic transcript and grades">
+      <div class="hero-actions">
+        <button class="hero-btn primary-btn" (click)="downloadGradeReportCsv()" title="Download full academic transcript and grades">
           📥 Grade Report
         </button>
-        <button class="header-download-btn secondary-btn" (click)="downloadCoReportCsv()" title="Download personal CO attainment progress">
+        <button class="hero-btn secondary-btn" (click)="downloadCoReportCsv()" title="Download personal CO attainment progress">
           🎯 CO Mastery Report
         </button>
       </div>
     </div>
 
-    <!-- Low Attendance Alert Banner -->
+    <!-- Low Attendance Alert Notice (if applicable) -->
     <div *ngIf="showAttendanceWarning" class="attendance-alert-banner">
       <div class="alert-icon">⚠️</div>
       <div class="alert-text">
-        <strong>Attendance Notice:</strong> {{ attendanceWarningMsg }}
+        <strong>OBE Attendance Notice:</strong> {{ attendanceWarningMsg }}
       </div>
-      <button class="alert-action-btn" (click)="navigate('/attendance')">View Logs</button>
+      <button class="alert-action-btn" (click)="navigate('/attendance')">View Logs →</button>
     </div>
 
-    <!-- Global Student Search Bar -->
+    <!-- Global Instant Live Search Bar -->
     <div class="student-search-container">
       <div class="search-input-wrapper">
         <span class="search-icon">🔍</span>
@@ -63,52 +98,98 @@
       </div>
     </div>
 
-    <!-- Student Stats Grid -->
+    <!-- Interactive Academic Stat Cards Grid -->
     <div class="student-stats-grid">
+      
+      <!-- Card 1: Courses -->
       <div class="stat-card" (click)="navigate('/courses')">
-        <div class="stat-icon">📚</div>
+        <div class="stat-icon-wrap icon-blue">📚</div>
         <div class="stat-info">
-          <h3>Enrolled Courses</h3>
-          <p class="stat-val">{{ stats.enrolledCourses }}</p>
+          <span class="stat-label">Enrolled Courses</span>
+          <div class="stat-val-row">
+            <span class="stat-val">{{ stats.enrolledCourses }}</span>
+            <span class="stat-pill pill-blue">14 Credits</span>
+          </div>
+          <small class="stat-hint">Active this semester</small>
         </div>
       </div>
+
+      <!-- Card 2: Attendance -->
       <div class="stat-card" (click)="navigate('/attendance')">
-        <div class="stat-icon">📅</div>
+        <div class="stat-icon-wrap" [ngClass]="stats.attendancePercentage >= 75 ? 'icon-green' : 'icon-red'">📅</div>
         <div class="stat-info">
-          <h3>Attendance %</h3>
-          <p class="stat-val" [class.warning]="stats.attendancePercentage < 75">{{ stats.attendancePercentage }}%</p>
+          <span class="stat-label">Overall Attendance</span>
+          <div class="stat-val-row">
+            <span class="stat-val" [class.warning]="stats.attendancePercentage < 75">{{ stats.attendancePercentage }}%</span>
+            <span class="stat-pill" [ngClass]="stats.attendancePercentage >= 75 ? 'pill-green' : 'pill-red'">
+              {{ stats.attendancePercentage >= 75 ? 'Eligible' : 'Warning' }}
+            </span>
+          </div>
+          <small class="stat-hint">Target threshold: 75% Min</small>
         </div>
       </div>
+
+      <!-- Card 3: CGPA -->
       <div class="stat-card" (click)="navigate('/performance')">
-        <div class="stat-icon">📈</div>
+        <div class="stat-icon-wrap icon-purple">📈</div>
         <div class="stat-info">
-          <h3>Current CGPA</h3>
-          <p class="stat-val">{{ stats.cgpa | number: '1.2-2' }}</p>
+          <span class="stat-label">Cumulative CGPA</span>
+          <div class="stat-val-row">
+            <span class="stat-val">{{ stats.cgpa | number: '1.2-2' }}</span>
+            <span class="stat-pill pill-purple">SGPA: 8.40</span>
+          </div>
+          <small class="stat-hint">Scale 10.0 • Distinction</small>
         </div>
       </div>
+
+      <!-- Card 4: Pending Evaluations -->
       <div class="stat-card" (click)="navigate('/assessments')">
-        <div class="stat-icon">📝</div>
+        <div class="stat-icon-wrap icon-amber">📝</div>
         <div class="stat-info">
-          <h3>Pending Exams</h3>
-          <p class="stat-val">{{ stats.pendingExams }}</p>
+          <span class="stat-label">Upcoming Evaluations</span>
+          <div class="stat-val-row">
+            <span class="stat-val">{{ stats.pendingExams }}</span>
+            <span class="stat-pill pill-amber">Continuous CIE</span>
+          </div>
+          <small class="stat-hint">Scheduled this month</small>
         </div>
       </div>
+
     </div>
 
-    <!-- Enrolled Courses Quick Summary -->
+    <!-- Enrolled Courses Quick Summary Grid -->
     <div class="courses-preview-section">
       <div class="section-title-row">
-        <h2>📚 My Enrolled Courses ({{ filteredCourses.length }})</h2>
+        <div>
+          <h2>📚 My Enrolled Courses ({{ filteredCourses.length }})</h2>
+          <p class="section-subtext">Click any course card to review syllabus, outcomes, and progress</p>
+        </div>
         <button class="link-btn" (click)="navigate('/courses')">View All Courses →</button>
       </div>
       <div class="courses-mini-grid" *ngIf="filteredCourses.length > 0">
         <div *ngFor="let course of filteredCourses" class="course-mini-card" (click)="navigate('/courses')">
-          <div class="course-code-badge">{{ course.code }}</div>
+          <div class="course-card-top">
+            <span class="course-code-badge">{{ course.code }}</span>
+            <span class="course-credits-badge">{{ course.credits }} Credits</span>
+          </div>
           <h4 class="course-title">{{ course.title }}</h4>
           <p class="course-faculty">👨‍🏫 {{ course.faculty }}</p>
-          <div class="course-meta-row">
-            <span>{{ course.credits }} Credits</span>
-            <span class="course-score-pill">Avg: {{ course.currentAvg }}%</span>
+          
+          <div class="course-progress-block">
+            <div class="progress-labels">
+              <span>Internal Avg</span>
+              <strong>{{ course.currentAvg }}%</strong>
+            </div>
+            <div class="course-progress-bar">
+              <div class="course-progress-fill" [style.width]="course.currentAvg + '%'"></div>
+            </div>
+          </div>
+
+          <div class="course-card-footer">
+            <span class="attendance-tag" [class.low-att]="course.attendancePct < 75">
+              Att: {{ course.attendancePct }}%
+            </span>
+            <span class="course-explore-link">Explore →</span>
           </div>
         </div>
       </div>
@@ -117,31 +198,37 @@
       </p>
     </div>
 
-    <!-- Dashboard Content Details -->
+    <!-- Main Dashboard Content Grid -->
     <div class="student-details-grid">
       
       <!-- Left Column: OBE CO Mastery, Timetable & Grades -->
       <div class="details-left">
 
-        <!-- OBE Course Outcomes Mastery Progress Card -->
+        <!-- OBE Course Outcomes (CO) Mastery Progress Card -->
         <div class="dashboard-card obe-card">
           <div class="card-header">
             <div>
               <h2>🎯 My Course Outcomes (CO) Mastery ({{ filteredCoProgress.length }})</h2>
-              <small class="header-sub">Track personal attainment against target thresholds (75%)</small>
+              <small class="header-sub">Track personal outcome attainment against target threshold (75%)</small>
             </div>
-            <button mat-button color="primary" (click)="navigate('/co-attainment')">Full Analytics</button>
+            <button mat-button color="primary" (click)="navigate('/co-attainment')">Full Analytics →</button>
           </div>
+          
           <div class="co-progress-list" *ngIf="filteredCoProgress.length > 0">
             <div *ngFor="let co of filteredCoProgress" class="co-progress-item">
               <div class="co-item-header">
-                <div>
+                <div class="co-header-left">
                   <span class="obe-badge obe-badge-co">{{ co.coCode }}</span>
-                  <strong style="margin-left: 8px; color: #1e293b;">{{ co.courseName }}</strong>
+                  <strong class="co-course-name">{{ co.courseName }}</strong>
                 </div>
-                <div style="display: flex; gap: 8px; align-items: center;">
-                  <span class="blooms-tag">{{ co.bloomsLevel }}</span>
-                  <span class="co-attainment-val" [class.achieved]="co.attainmentPct >= co.targetPct">{{ co.attainmentPct }}%</span>
+                <div class="co-header-right">
+                  <span class="blooms-tag" title="Bloom's Taxonomy Cognitive Level">{{ co.bloomsLevel }}</span>
+                  <span class="co-attainment-val" [class.achieved]="co.attainmentPct >= co.targetPct">
+                    {{ co.attainmentPct }}%
+                  </span>
+                  <span class="co-status-pill" [class.achieved-pill]="co.attainmentPct >= co.targetPct">
+                    {{ co.attainmentPct >= co.targetPct ? 'Achieved' : 'In Progress' }}
+                  </span>
                 </div>
               </div>
               <div class="progress-bar-wrap">
@@ -150,44 +237,53 @@
             </div>
           </div>
           <p *ngIf="filteredCoProgress.length === 0" class="empty-filter-notice">
-            No outcomes matching "{{ searchQuery }}".
+            {{ searchQuery ? 'No outcomes matching "' + searchQuery + '".' : 'No course outcomes available yet.' }}
           </p>
         </div>
         
-        <!-- Today's Schedule Card -->
+        <!-- Today's Schedule Timeline Card -->
         <div class="dashboard-card">
           <div class="card-header">
-            <h2>📆 Today's Schedule ({{ filteredSchedule.length }})</h2>
-            <button mat-button color="primary" (click)="navigate('/timetable')">Full Timetable</button>
+            <div>
+              <h2>📆 Today's Schedule ({{ filteredSchedule.length }})</h2>
+              <small class="header-sub">Daily classroom slots and live active class tracker</small>
+            </div>
+            <button mat-button color="primary" (click)="navigate('/timetable')">Full Timetable →</button>
           </div>
+          
           <div class="classes-list">
             <div class="class-item" *ngFor="let cls of filteredSchedule" [class.active-class]="cls.isCurrent">
-              <div class="class-time">
-                {{ cls.period }}
+              <div class="class-time-col">
+                <span class="time-text">{{ cls.period }}</span>
                 <span *ngIf="cls.isCurrent" class="live-pill">🟢 NEXT CLASS</span>
               </div>
+              <div class="class-divider-line"></div>
               <div class="class-details">
                 <strong>{{ cls.subject }}</strong>
-                <span class="class-room">Room: {{ cls.room }}</span>
+                <span class="class-room-badge">📍 Room: {{ cls.room }}</span>
               </div>
             </div>
             <div class="empty-list" *ngIf="filteredSchedule.length === 0">
-              No classes match your search.
+              No classes scheduled matching your search.
             </div>
           </div>
         </div>
 
-        <!-- Recent Grades Card -->
+        <!-- Recent Assessment Marks & Grades -->
         <div class="dashboard-card">
           <div class="card-header">
-            <h2>📈 Recent Assessment Marks ({{ filteredGrades.length }})</h2>
-            <button mat-button color="primary" (click)="navigate('/performance')">View Performance</button>
+            <div>
+              <h2>📈 Recent Assessment Marks ({{ filteredGrades.length }})</h2>
+              <small class="header-sub">Continuous Internal Evaluations (CIE) and Lab marks</small>
+            </div>
+            <button mat-button color="primary" (click)="navigate('/performance')">View Performance →</button>
           </div>
           <table class="marks-table">
             <thead>
               <tr>
                 <th>Assessment</th>
                 <th>Score</th>
+                <th>Performance</th>
                 <th>Grade</th>
               </tr>
             </thead>
@@ -195,10 +291,15 @@
               <tr *ngFor="let g of filteredGrades">
                 <td><strong>{{ g.courseName }}</strong></td>
                 <td>{{ g.score }}%</td>
+                <td>
+                  <div class="table-score-bar">
+                    <div class="table-score-fill" [style.width]="g.score + '%'"></div>
+                  </div>
+                </td>
                 <td><span class="grade-badge" [class.excellent]="g.grade === 'O' || g.grade === 'A+'">{{ g.grade }}</span></td>
               </tr>
               <tr *ngIf="filteredGrades.length === 0">
-                <td colspan="3">No marks matching your query.</td>
+                <td colspan="4">No assessment scores available yet.</td>
               </tr>
             </tbody>
           </table>
@@ -206,21 +307,33 @@
 
       </div>
 
-      <!-- Right Column: Deadlines, Notifications & Actions -->
+      <!-- Right Column: Deadlines, Notifications & Quick Actions -->
       <div class="details-right">
 
-        <!-- Upcoming Deadlines Card -->
+        <!-- Upcoming Deadlines & Evaluations Tracker -->
         <div class="dashboard-card deadlines-card">
           <div class="card-header">
-            <h2>⏱️ Upcoming Deadlines ({{ filteredDeadlines.length }})</h2>
-            <button mat-button color="primary" (click)="navigate('/assessments')">All Exams</button>
+            <div>
+              <h2>⏱️ Upcoming Deadlines</h2>
+              <small class="header-sub">Exams, assignments & milestones</small>
+            </div>
+            <button mat-button color="primary" (click)="navigate('/assessments')">All Exams →</button>
           </div>
+
+          <!-- Deadline Filter Tabs -->
+          <div class="deadline-tabs-row">
+            <button class="d-tab" [class.active]="deadlineTab === 'all'" (click)="deadlineTab = 'all'">All</button>
+            <button class="d-tab" [class.active]="deadlineTab === 'mid'" (click)="deadlineTab = 'mid'">Exams</button>
+            <button class="d-tab" [class.active]="deadlineTab === 'assignment'" (click)="deadlineTab = 'assignment'">Assignments</button>
+            <button class="d-tab" [class.active]="deadlineTab === 'project'" (click)="deadlineTab = 'project'">Projects</button>
+          </div>
+
           <div class="deadlines-list" *ngIf="filteredDeadlines.length > 0">
             <div *ngFor="let dl of filteredDeadlines" class="deadline-item">
               <div class="deadline-left">
                 <h4>{{ dl.title }}</h4>
-                <p>{{ dl.course }} • {{ dl.type }}</p>
-                <small>Due: {{ dl.dueDate }} ({{ dl.marks }} marks)</small>
+                <p>{{ dl.course }} • <span class="d-type-pill">{{ dl.type }}</span></p>
+                <small>📅 Due: {{ dl.dueDate }} ({{ dl.marks }} marks)</small>
               </div>
               <span class="deadline-countdown" [class.urgent]="dl.daysLeft <= 7">
                 {{ dl.daysLeft }}d left
@@ -228,36 +341,57 @@
             </div>
           </div>
           <p *ngIf="filteredDeadlines.length === 0" class="empty-filter-notice">
-            No deadlines matching "{{ searchQuery }}".
+            No deadlines matching filter.
           </p>
         </div>
         
-        <!-- Notifications Card -->
+        <!-- Recent Notifications Card -->
         <div class="dashboard-card">
           <div class="card-header">
-            <h2>🔔 Recent Notifications</h2>
-            <button mat-button color="primary" (click)="navigate('/notifications')">See All</button>
+            <div>
+              <h2>🔔 Recent Notifications</h2>
+              <small class="header-sub">Academic notices & alerts</small>
+            </div>
+            <button mat-button color="primary" (click)="navigate('/notifications')">See All →</button>
           </div>
           <div class="notif-list">
             <div class="notif-item" *ngFor="let n of notifications">
               <h4>{{ n.title }}</h4>
               <p>{{ n.message }}</p>
-              <small>{{ n.date | date: 'short' }}</small>
+              <small>{{ n.date | date: 'mediumDate' }}</small>
             </div>
+            <p *ngIf="notifications.length === 0" class="empty-filter-notice">
+              No recent notifications.
+            </p>
           </div>
         </div>
 
-        <!-- Quick Actions Card -->
+        <!-- Quick Academic Actions & Shortcuts -->
         <div class="dashboard-card">
           <div class="card-header">
-            <h2>⚡ Quick Actions & Tools</h2>
+            <h2>⚡ Quick Academic Shortcuts</h2>
           </div>
           <div class="quick-actions-list">
-            <button class="action-btn" (click)="navigate('/co-attainment')">📊 Check CO Attainment</button>
-            <button class="action-btn" (click)="navigate('/timetable')">📆 View Full Timetable</button>
-            <button class="action-btn" (click)="navigate('/grievance')">📩 File a Grievance</button>
-            <button class="action-btn" (click)="navigate('/feedback')">💬 Submit Feedback</button>
-            <button class="action-btn" (click)="navigate('/profile')">👤 Update Profile</button>
+            <button class="action-btn" (click)="navigate('/co-attainment')">
+              <span class="btn-icon">📊</span>
+              <span>Check CO Attainment Matrix</span>
+            </button>
+            <button class="action-btn" (click)="navigate('/timetable')">
+              <span class="btn-icon">📆</span>
+              <span>View Full Weekly Timetable</span>
+            </button>
+            <button class="action-btn" (click)="navigate('/feedback')">
+              <span class="btn-icon">💬</span>
+              <span>Submit OBE Course Feedback</span>
+            </button>
+            <button class="action-btn" (click)="navigate('/grievance')">
+              <span class="btn-icon">📩</span>
+              <span>File Student Grievance</span>
+            </button>
+            <button class="action-btn" (click)="navigate('/profile')">
+              <span class="btn-icon">👤</span>
+              <span>Update Student Profile</span>
+            </button>
           </div>
         </div>
 
