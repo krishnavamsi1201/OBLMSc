@@ -13,7 +13,7 @@
     <section class="login-panel glass-panel" aria-label="Login form">
       <div class="logo-branding">
         <div class="logo-icon">🎓</div>
-        <h2 class="logo-text">OBLMS Logo</h2>
+        <h2 class="logo-text">OBLMS</h2>
         <p class="logo-tagline">Outcome-Based Learning Management System</p>
       </div>
 
@@ -27,7 +27,13 @@
       <form (ngSubmit)="login()" #loginForm="ngForm" novalidate>
         <label class="field">
           <span class="field-icon email-icon"></span>
-          <input type="email" name="email" placeholder="Email Address" required [(ngModel)]="email" />
+          <input 
+            type="text" 
+            name="identifier" 
+            placeholder="Email Address or Phone Number" 
+            required 
+            [(ngModel)]="identifier" 
+          />
         </label>
 
         <label class="field password-field">
@@ -80,28 +86,28 @@
         <span class="stat-icon">✓</span>
         <div class="stat-content">
           <span class="stat-label">Courses</span>
-          <span class="stat-value">25</span>
+          <span class="stat-value">{{ stats.courses }}</span>
         </div>
       </div>
       <div class="stat-item">
         <span class="stat-icon">✓</span>
         <div class="stat-content">
           <span class="stat-label">Faculty</span>
-          <span class="stat-value">18</span>
+          <span class="stat-value">{{ stats.faculty }}</span>
         </div>
       </div>
       <div class="stat-item">
         <span class="stat-icon">✓</span>
         <div class="stat-content">
           <span class="stat-label">Students</span>
-          <span class="stat-value">350</span>
+          <span class="stat-value">{{ stats.students }}</span>
         </div>
       </div>
       <div class="stat-item">
         <span class="stat-icon">✓</span>
         <div class="stat-content">
           <span class="stat-label">Outcomes</span>
-          <span class="stat-value">120</span>
+          <span class="stat-value">{{ stats.outcomes }}</span>
         </div>
       </div>
     </section>

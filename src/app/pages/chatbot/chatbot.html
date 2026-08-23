@@ -1,19 +1,26 @@
 <!-- Floating Button -->
-<button class="chat-float-btn" (click)="toggleChat()">
-  💬
+<button class="chat-float-btn" (click)="toggleChat()" title="Chat with OBLMS Assistant">
+  <span class="float-icon">💬</span>
+  <span class="float-pulse"></span>
 </button>
 
 <!-- Chat Window -->
 <div class="chat-popup" *ngIf="isOpen">
 
-  <mat-card class="chatbot-card">
+  <div class="chatbot-card">
 
     <div class="chat-header">
-      <h3>OBLMS Chatbot</h3>
-      <button class="close-btn" (click)="toggleChat()">✖</button>
+      <div class="header-bot-info">
+        <div class="bot-avatar">🤖</div>
+        <div>
+          <h3>OBLMS AI Assistant</h3>
+          <span class="bot-status"><span class="status-dot"></span> Online • Outcome Learning AI</span>
+        </div>
+      </div>
+      <button class="close-btn" (click)="toggleChat()" title="Close chat">✕</button>
     </div>
 
-    <mat-card-content>
+    <div class="chat-body">
 
       <div class="messages">
         <div
@@ -21,16 +28,29 @@
           [ngClass]="{
             'message-user': message.from === 'user',
             'message-bot': message.from === 'bot'
-          }">
+          }"
+          class="message-row">
 
-          <div class="message-label">
-            {{ message.from === 'user' ? 'You' : 'Bot' }}
+          <div class="bubble-wrap">
+            <div class="message-label">
+              {{ message.from === 'user' ? '👤 You' : '🤖 Assistant' }}
+            </div>
+
+            <div class="message-text">
+              {{ message.text }}
+            </div>
           </div>
 
-          <div class="message-text">
-            {{ message.text }}
-          </div>
+        </div>
 
+        <!-- Quick Navigation Suggestions -->
+        <div class="suggestions-wrap" *ngIf="suggestions.length > 0">
+          <span class="suggestion-label">Quick Shortcuts:</span>
+          <div class="suggestion-chips">
+            <button *ngFor="let s of suggestions" type="button" class="chip-btn" (click)="clickSuggestion(s.route)">
+              {{ s.label }} →
+            </button>
+          </div>
         </div>
       </div>
 
@@ -54,37 +74,37 @@
       <div class="chat-actions">
 
         <form class="chat-form" (ngSubmit)="sendMessage()">
-
-          <mat-form-field appearance="outline" class="chat-input">
+          <div class="input-container">
             <input
-              matInput
+              type="text"
               [(ngModel)]="userMessage"
               name="message"
-              placeholder="Type message..." />
-          </mat-form-field>
-
-          <button mat-raised-button color="primary" type="submit">
-            Send
-          </button>
-
+              placeholder="Ask about courses, COs, exams, results..." 
+              class="custom-chat-input"
+              autocomplete="off"
+            />
+            <button type="submit" class="send-icon-btn" title="Send message" [disabled]="!userMessage.trim()">
+              ➤
+            </button>
+          </div>
         </form>
 
         <div class="voice-controls">
           <button
-            mat-stroked-button
             type="button"
+            class="mic-pill-btn"
+            [class.listening]="isListening"
             (click)="toggleVoice()">
-
-            {{ isListening ? 'Stop Mic' : 'Mic On' }}
+            {{ isListening ? '⏹️ Stop' : '🎙️ Mic On' }}
           </button>
 
-          <span>{{ voiceStatus }}</span>
+          <span class="voice-status-text">{{ voiceStatus }}</span>
         </div>
 
       </div>
 
-    </mat-card-content>
+    </div>
 
-  </mat-card>
+  </div>
 
 </div>

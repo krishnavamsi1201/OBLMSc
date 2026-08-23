@@ -180,12 +180,14 @@ select {
     margin-left: 250px;
     height: 100%;
     min-height: 0;
-    padding: 28px 28px 100px;
+    padding: 28px 28px 24px;
     overflow-y: auto;
     overflow-x: hidden;
     position: relative;
     background: linear-gradient(180deg, #f9fafb 0%, #eef3f7 100%);
     transition: margin-left 0.25s ease;
+    display: flex;
+    flex-direction: column;
 }
 
 body.sidebar-collapsed .content {
@@ -193,13 +195,11 @@ body.sidebar-collapsed .content {
 }
 
 app-footer {
-    position: fixed;
-    left: 0;
-    right: 0;
-    bottom: 0;
+    display: block;
     width: 100%;
-    height: 60px;
-    z-index: 5;
+    margin-top: auto;
+    position: static;
+    z-index: 1;
 }
 
 .page-header {
@@ -320,3 +320,238 @@ app-chatbot .chatbot-card {
 body, html {
     min-height: 100%;
 }
+
+/* ==========================================================================
+   Global Toast Notifications
+   ========================================================================== */
+.toast-container {
+    position: fixed;
+    top: 24px;
+    right: 24px;
+    z-index: 10000;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    max-width: 420px;
+    pointer-events: none;
+}
+
+.toast-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 18px;
+    border-radius: 12px;
+    font-size: 0.92rem;
+    font-weight: 500;
+    color: #ffffff;
+    background: #1e293b;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
+    pointer-events: auto;
+    animation: toastSlideIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    transition: all 0.25s ease;
+}
+
+.toast-success {
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    border-color: rgba(16, 185, 129, 0.3);
+}
+
+.toast-error {
+    background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+    border-color: rgba(239, 68, 68, 0.3);
+}
+
+.toast-warning {
+    background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+    border-color: rgba(245, 158, 11, 0.3);
+    color: #1f2937;
+}
+
+.toast-info {
+    background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+    border-color: rgba(59, 130, 246, 0.3);
+}
+
+.toast-icon {
+    font-size: 1.15rem;
+    flex-shrink: 0;
+}
+
+.toast-message {
+    flex: 1;
+    line-height: 1.4;
+}
+
+.toast-close {
+    background: transparent;
+    border: none;
+    color: inherit;
+    font-size: 1.3rem;
+    cursor: pointer;
+    opacity: 0.7;
+    padding: 0 4px;
+    line-height: 1;
+    transition: opacity 0.2s ease;
+}
+
+.toast-close:hover {
+    opacity: 1;
+}
+
+@keyframes toastSlideIn {
+    from {
+        opacity: 0;
+        transform: translateX(40px) scale(0.95);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0) scale(1);
+    }
+}
+
+/* ==========================================================================
+   Interactive Search & Filter Bar Common Classes
+   ========================================================================== */
+.table-filter-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+    margin-bottom: 18px;
+    flex-wrap: wrap;
+}
+
+.search-input-wrap {
+    position: relative;
+    flex: 1;
+    min-width: 220px;
+    max-width: 400px;
+}
+
+.search-input-wrap input {
+    width: 100%;
+    padding: 10px 14px 10px 36px;
+    border-radius: 10px;
+    border: 1px solid rgba(74, 140, 234, 0.25);
+    background: #ffffff;
+    font-size: 0.92rem;
+    color: #1f2d3d;
+    outline: none;
+    transition: all 0.2s ease;
+}
+
+.search-input-wrap input:focus {
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+}
+
+.search-icon-badge {
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 0.95rem;
+    color: #64748b;
+    pointer-events: none;
+}
+
+.filter-select {
+    padding: 10px 14px;
+    border-radius: 10px;
+    border: 1px solid rgba(74, 140, 234, 0.25);
+    background: #ffffff;
+    font-size: 0.92rem;
+    color: #1f2d3d;
+    outline: none;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.filter-select:focus {
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+}
+
+/* ==========================================================================
+   OBE Tooltips & Context Badges
+   ========================================================================== */
+.obe-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 3px 8px;
+    border-radius: 6px;
+    font-size: 0.78rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+.obe-badge-co {
+    background: rgba(59, 130, 246, 0.12);
+    color: #1d4ed8;
+    border: 1px solid rgba(59, 130, 246, 0.25);
+}
+
+.obe-badge-po {
+    background: rgba(139, 92, 246, 0.12);
+    color: #6d28d9;
+    border: 1px solid rgba(139, 92, 246, 0.25);
+}
+
+.obe-tooltip {
+    position: relative;
+    cursor: help;
+    border-bottom: 1px dotted rgba(0, 0, 0, 0.4);
+}
+
+.obe-tooltip:hover::after {
+    content: attr(data-tooltip);
+    position: absolute;
+    bottom: 125%;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #1e293b;
+    color: #f8fafc;
+    padding: 6px 10px;
+    border-radius: 6px;
+    font-size: 0.78rem;
+    font-weight: normal;
+    white-space: nowrap;
+    z-index: 100;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    pointer-events: none;
+}
+
+/* ==========================================================================
+   Smooth Hover Interactions on Cards and Tables
+   ========================================================================== */
+.section-card,
+.table-card,
+.dashboard-card,
+.report-card,
+.stat-card,
+.class-card {
+    transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.section-card:hover,
+.table-card:hover,
+.dashboard-card:hover,
+.report-card:hover,
+.stat-card:hover,
+.class-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 28px rgba(74, 140, 234, 0.14);
+}
+
+table tbody tr {
+    transition: background-color 0.15s ease;
+}
+
+table tbody tr:hover {
+    background-color: rgba(74, 140, 234, 0.05);
+}
+

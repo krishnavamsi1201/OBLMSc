@@ -61,18 +61,7 @@ export class QuestionBank implements OnInit {
   private loadData(): void {
     try {
       const stored = localStorage.getItem('obslmsQuestionBank');
-      if (stored) {
-        this.questions = JSON.parse(stored) as QuestionItem[];
-      } else {
-        // Seed default questions
-        this.questions = [
-          { id: 1, questionText: 'Explain the 3NF normal form with a clean schema example.', type: 'Essay', difficulty: 'Medium', marks: 10, subject: 'Database Management Systems', coMapped: 'CO2' },
-          { id: 2, questionText: 'What is the main difference between Supervised and Unsupervised learning?', type: 'Short Answer', difficulty: 'Easy', marks: 5, subject: 'Machine Learning', coMapped: 'CO1' },
-          { id: 3, questionText: 'Which of the following is an example of an AWS serverless service?', type: 'MCQ', difficulty: 'Easy', marks: 2, subject: 'Cloud Computing', coMapped: 'CO3' },
-          { id: 4, questionText: 'Define the mapping between Course Outcomes (CO) and Program Outcomes (PO) in OBE.', type: 'Essay', difficulty: 'Hard', marks: 15, subject: 'Outcome-Based Education', coMapped: 'CO4' }
-        ];
-        this.saveQuestions();
-      }
+      this.questions = stored ? JSON.parse(stored) as QuestionItem[] : [];
 
       // Gather list of unique subjects
       const subjects = this.questions.map(q => q.subject);

@@ -1,12 +1,22 @@
 import { Injectable } from '@angular/core';
 import { Observable, of } from 'rxjs';
 
-// Interfaces matching your localStorage structure
 export interface StorageCourse {
-  id: number;
+  id: number | string;
   code: string;
   title: string;
-  faculty: string;
+  faculty?: string;
+  semester?: string;
+}
+
+export interface FacultyAllocation {
+  id: string;
+  facultyId: string;
+  facultyName: string;
+  courseId: string;
+  courseName: string;
+  subjectId: string;
+  subjectName: string;
   semester: string;
 }
 
@@ -15,7 +25,10 @@ export interface Course {
   name: string;
   code: string;
   semester: string;
+  faculty: string;
   studentCount: number;
+  averageAttainment: number;
+  averageAttendance: number;
 }
 
 export interface StudentProgress {
@@ -25,6 +38,7 @@ export interface StudentProgress {
   courseName: string;
   attendance: number;
   coAttainment: number;
+  totalAssessments: number;
   lastUpdate: Date;
 }
 
@@ -33,11 +47,40 @@ export interface Assessment {
   courseId: string;
   courseName: string;
   title: string;
-  type: string; // 'assignment', 'quiz', 'exam', etc.
-  dueDate: Date;
+  type: string;
+  maxMarks: number;
+  dueDate: Date | null;
   submittedCount: number;
   totalCount: number;
   status: 'pending' | 'ongoing' | 'completed';
+  averageScore: number;
+}
+
+export interface AtRiskStudent {
+  studentName: string;
+  courseName: string;
+  attainmentPercentage: number;
+  attendancePercentage: number;
+  riskReasons: string[];
+  severity: 'High' | 'Medium';
+}
+
+export interface CourseCOAttainmentSummary {
+  courseName: string;
+  coCode: string;
+  description: string;
+  targetPercentage: number;
+  attainmentPercentage: number;
+  status: 'Achieved' | 'Partial' | 'Not Achieved';
+  assessedStudentsCount: number;
+}
+
+export interface GradeDistribution {
+  distinction: number; // >= 75%
+  firstClass: number;  // 60% - 74%
+  pass: number;        // 40% - 59%
+  fail: number;        // < 40%
+  totalEvaluated: number;
 }
 
 export interface Notification {
@@ -53,9 +96,27 @@ export interface FacultyDashboardData {
   courses: Course[];
   activeAssessments: Assessment[];
   studentProgressSummary: StudentProgress[];
+  atRiskStudents: AtRiskStudent[];
+  courseCOAttainments: CourseCOAttainmentSummary[];
+  gradeDistribution: GradeDistribution;
   notifications: Notification[];
+  totalCourses: number;
   totalStudents: number;
+  overallAttainment: number;
   averageAttendance: number;
+  activeAssessmentsCount: number;
+  atRiskCount: number;
+}
+
+export interface CqiAction {
+  id: string;
+  courseName: string;
+  coCode: string;
+  issueDescription: string;
+  actionPlan: string;
+  targetDate: string;
+  status: 'Planned' | 'In Progress' | 'Completed';
+  loggedAt: string;
 }
 
 @Injectable({
@@ -63,303 +124,712 @@ export interface FacultyDashboardData {
 })
 export class FacultyDataService {
 
-  constructor() { }
+  constructor() {}
 
   /**
-   * Fetch all faculty dashboard data from localStorage
+   * Fetch complete real-time dashboard analytics for currently logged in faculty
    */
   getFacultyDashboardData(): Observable<FacultyDashboardData> {
-    const courses = this.getCourseData();
-    const assessments = this.getAssessmentData();
-    const studentProgress = this.getStudentProgressData(courses);
-    const notifications = this.getNotificationData(courses, assessments);
-    
-    const totalStudents = courses.reduce((sum, course) => sum + course.studentCount, 0);
-    const avgAttendance = this.calculateAverageAttendance();
+    const facultyName = this.getCurrentFacultyName();
+    const courses = this.getRealTimeCourses(facultyName);
+    const assessments = this.getRealTimeAssessments(courses);
+    const studentProgressSummary = this.getRealTimeStudentProgress(courses);
+    const atRiskStudents = this.calculateAtRiskStudents(courses, studentProgressSummary);
+    const courseCOAttainments = this.calculateCourseCOAttainments(courses);
+    const gradeDistribution = this.calculateGradeDistribution(courses);
+    const notifications = this.generateRealTimeNotifications(courses, assessments, atRiskStudents, courseCOAttainments);
 
-    const dashboardData: FacultyDashboardData = {
+    // Compute unique total students across faculty courses
+    const uniqueStudents = new Set<string>();
+    studentProgressSummary.forEach(sp => uniqueStudents.add(sp.studentName.toLowerCase()));
+    
+    // Also include students enrolled in these courses
+    const allStudents = this.getSafeJson('obslmsStudents');
+    allStudents.forEach((st: any) => {
+      if (st.course && courses.some(c => c.name.toLowerCase().includes(st.course.toLowerCase()) || c.code.toLowerCase().includes(st.course.toLowerCase()))) {
+        uniqueStudents.add((st.name || st.studentName || '').toLowerCase());
+      }
+    });
+
+    const totalStudents = uniqueStudents.size || courses.reduce((sum, c) => sum + c.studentCount, 0);
+
+    // Calculate overall averages
+    const validAttainments = courseCOAttainments.filter(co => co.attainmentPercentage > 0);
+    const overallAttainment = validAttainments.length > 0
+      ? Math.round(validAttainments.reduce((sum, co) => sum + co.attainmentPercentage, 0) / validAttainments.length)
+      : (studentProgressSummary.length > 0
+          ? Math.round(studentProgressSummary.reduce((sum, sp) => sum + sp.coAttainment, 0) / studentProgressSummary.length)
+          : 0);
+
+    const validAttendances = studentProgressSummary.filter(sp => sp.attendance > 0);
+    const averageAttendance = validAttendances.length > 0
+      ? Math.round(validAttendances.reduce((sum, sp) => sum + sp.attendance, 0) / validAttendances.length)
+      : this.calculateOverallAttendanceForCourses(courses);
+
+    const activeAssessmentsCount = assessments.filter(a => a.status === 'ongoing' || a.status === 'pending').length;
+
+    const data: FacultyDashboardData = {
       courses,
       activeAssessments: assessments,
-      studentProgressSummary: studentProgress,
+      studentProgressSummary,
+      atRiskStudents,
+      courseCOAttainments,
+      gradeDistribution,
       notifications,
+      totalCourses: courses.length,
       totalStudents,
-      averageAttendance: avgAttendance
+      overallAttainment,
+      averageAttendance,
+      activeAssessmentsCount,
+      atRiskCount: atRiskStudents.length
     };
 
-    return of(dashboardData);
+    return of(data);
   }
 
   /**
-   * Get all courses for the current faculty from localStorage
+   * Get name of currently logged-in faculty
    */
-  getCourses(): Observable<Course[]> {
-    return of(this.getCourseData());
-  }
-
-  /**
-   * Get active assessments from localStorage
-   */
-  getActiveAssessments(): Observable<Assessment[]> {
-    return of(this.getAssessmentData());
-  }
-
-  /**
-   * Get student progress data from localStorage
-   */
-  getStudentProgress(): Observable<StudentProgress[]> {
-    const courses = this.getCourseData();
-    return of(this.getStudentProgressData(courses));
-  }
-
-  /**
-   * Get notifications from localStorage
-   */
-  getNotifications(): Observable<Notification[]> {
-    const courses = this.getCourseData();
-    const assessments = this.getAssessmentData();
-    return of(this.getNotificationData(courses, assessments));
-  }
-
-  /**
-   * ========== REAL DATA FETCHING METHODS ==========
-   */
-
-  /**
-   * Fetch courses from localStorage
-   */
-  private getCourseData(): Course[] {
+  getCurrentFacultyName(): string {
     try {
-      const stored = localStorage.getItem('obslmsCourses');
-      if (!stored) return [];
-      
-      const coursesData = JSON.parse(stored) as StorageCourse[];
-      
-      return coursesData.map(course => ({
-        id: course.id.toString(),
-        name: course.title,
-        code: course.code,
-        semester: course.semester,
-        studentCount: this.getStudentCountForCourse(course.id)
-      }));
-    } catch (error) {
-      console.error('Error loading courses:', error);
-      return [];
-    }
-  }
-
-  /**
-   * Get student count for a specific course (from mark entries)
-   */
-  private getStudentCountForCourse(courseId: number): number {
-    try {
-      const stored = localStorage.getItem('obslmsMarkEntries');
-      if (!stored) return 0;
-      
-      const marks = JSON.parse(stored) as any[];
-      const courseMarks = marks.filter(m => 
-        m.assessment && m.assessment.includes(courseId.toString())
-      );
-      
-      // Count unique students in this course
-      const uniqueStudents = new Set(courseMarks.map(m => m.student));
-      return uniqueStudents.size;
+      const name = localStorage.getItem('userName') || '';
+      return name.trim();
     } catch {
-      return 0;
+      return '';
     }
   }
 
   /**
-   * Fetch assessments from localStorage and calculate submission status
+   * Get real-time courses for faculty (allocated or all stored if no specific allocation)
    */
-  private getAssessmentData(): Assessment[] {
+  private getRealTimeCourses(facultyName: string): Course[] {
     try {
-      const stored = localStorage.getItem('obslmsAssessments');
-      if (!stored) return [];
-      
-      const assessmentsData = JSON.parse(stored) as any[];
+      const allCourses = this.getSafeJson('obslmsCourses') as StorageCourse[];
+      const allocations = this.getSafeJson('obslmsFacultyAllocations') as FacultyAllocation[];
       const marks = this.getSafeJson('obslmsMarkEntries');
-      const courses = this.getSafeJson('obslmsCourses');
-      
-      return assessmentsData.map(assessment => {
-        const courseInfo = courses.find((c: StorageCourse) => c.id.toString() === assessment.course);
-        const submittedMarks = marks.filter((m: any) => 
-          m.assessment && m.assessment.includes(assessment.type)
+      const attendance = this.getSafeJson('obslmsAttendance');
+
+      let filteredCourses: Array<{ id: string; name: string; code: string; semester: string; faculty: string }> = [];
+
+      // Check if this faculty has specific allocations
+      if (facultyName) {
+        const matchingAllocations = allocations.filter(a =>
+          (a.facultyName && a.facultyName.toLowerCase().includes(facultyName.toLowerCase())) ||
+          (facultyName.toLowerCase().includes(a.facultyName ? a.facultyName.toLowerCase() : ''))
         );
-        
-        // Determine status based on due date
-        const dueDate = new Date(assessment.dueDate);
-        const now = new Date();
-        let status: 'pending' | 'ongoing' | 'completed' = 'pending';
-        
-        if (dueDate < now) {
-          status = 'completed';
-        } else if (submittedMarks.length > 0) {
-          status = 'ongoing';
-        }
-        
-        return {
-          id: assessment.id?.toString() || `A-${Math.random()}`,
-          courseId: assessment.course?.toString() || '',
-          courseName: courseInfo?.title || 'Unknown Course',
-          title: assessment.type,
-          type: assessment.type.toLowerCase(),
-          dueDate: new Date(assessment.dueDate),
-          submittedCount: submittedMarks.length,
-          totalCount: this.getEstimatedStudentCount(assessment.course),
-          status
-        };
-      });
-    } catch (error) {
-      console.error('Error loading assessments:', error);
-      return [];
-    }
-  }
 
-  /**
-   * Estimate total student count for assessment
-   */
-  private getEstimatedStudentCount(courseId: string | number): number {
-    try {
-      const courses = this.getSafeJson('obslmsCourses') as StorageCourse[];
-      const course = courses.find(c => c.id.toString() === courseId.toString());
-      if (!course) return 0;
-      
-      // Get unique students from mark entries for this course
-      const marks = this.getSafeJson('obslmsMarkEntries');
-      const uniqueStudents = new Set(
-        marks
-          .filter((m: any) => m.assessment && m.assessment.includes(courseId.toString()))
-          .map((m: any) => m.student)
-      );
-      return uniqueStudents.size || 30; // Default estimate
-    } catch {
-      return 30;
-    }
-  }
+        if (matchingAllocations.length > 0) {
+          filteredCourses = matchingAllocations.map(a => ({
+            id: a.courseId || `ALLOC-${a.id}`,
+            name: a.subjectName ? `${a.courseName} - ${a.subjectName}` : a.courseName,
+            code: a.subjectId || a.courseId || 'CRS',
+            semester: a.semester || 'Semester 1',
+            faculty: a.facultyName
+          }));
+        } else {
+          // Check matching faculty field on course object
+          const matchingCourses = allCourses.filter(c =>
+            c.faculty && (c.faculty.toLowerCase().includes(facultyName.toLowerCase()) || facultyName.toLowerCase().includes(c.faculty.toLowerCase()))
+          );
 
-  /**
-   * Calculate student progress from stored marks
-   */
-  private getStudentProgressData(courses: Course[]): StudentProgress[] {
-    try {
-      const marks = this.getSafeJson('obslmsMarkEntries');
-      const attendance = this.getSafeJson('obslmsAttendance') || [];
-      
-      // Build student progress map
-      const progressMap = new Map<string, StudentProgress>();
-      
-      // Process marks to calculate attainment
-      marks.forEach((mark: any) => {
-        if (mark.student && mark.obtained !== undefined && mark.maxMarks) {
-          const attainment = (mark.obtained / mark.maxMarks) * 100;
-          
-          if (!progressMap.has(mark.student)) {
-            const course = courses[0]; // Default course
-            progressMap.set(mark.student, {
-              studentId: `S-${Math.random()}`,
-              studentName: mark.student,
-              courseId: course?.id || 'C001',
-              courseName: course?.name || 'Course',
-              attendance: this.getStudentAttendance(mark.student),
-              coAttainment: Math.round(attainment),
-              lastUpdate: new Date()
-            });
+          if (matchingCourses.length > 0) {
+            filteredCourses = matchingCourses.map(c => ({
+              id: c.id.toString(),
+              name: c.title,
+              code: c.code,
+              semester: c.semester || 'Semester 1',
+              faculty: c.faculty || facultyName
+            }));
           }
         }
+      }
+
+      // If no faculty-specific filtered courses found (or admin/general view), return all existing courses from storage
+      if (filteredCourses.length === 0) {
+        filteredCourses = allCourses.map(c => ({
+          id: c.id.toString(),
+          name: c.title,
+          code: c.code,
+          semester: c.semester || 'Semester 1',
+          faculty: c.faculty || 'Faculty'
+        }));
+      }
+
+      // Calculate real-time dynamic stats per course
+      return filteredCourses.map(course => {
+        // Find unique students with marks or attendance for this course
+        const courseStudentSet = new Set<string>();
+
+        marks.forEach((m: any) => {
+          if (m.student && m.assessment && (
+            m.assessment.toLowerCase().includes(course.name.toLowerCase()) ||
+            m.assessment.toLowerCase().includes(course.code.toLowerCase()) ||
+            m.assessment.toLowerCase().includes(course.id.toLowerCase())
+          )) {
+            courseStudentSet.add(m.student.toLowerCase());
+          }
+        });
+
+        attendance.forEach((a: any) => {
+          if (a.student && a.course && (
+            a.course.toLowerCase().includes(course.name.toLowerCase()) ||
+            a.course.toLowerCase().includes(course.code.toLowerCase()) ||
+            course.name.toLowerCase().includes(a.course.toLowerCase())
+          )) {
+            courseStudentSet.add(a.student.toLowerCase());
+          }
+        });
+
+        const studentCount = courseStudentSet.size;
+
+        // Calculate course average attainment from marks
+        const courseMarks = marks.filter((m: any) =>
+          m.assessment && (
+            m.assessment.toLowerCase().includes(course.name.toLowerCase()) ||
+            m.assessment.toLowerCase().includes(course.code.toLowerCase()) ||
+            m.assessment.toLowerCase().includes(course.id.toLowerCase())
+          )
+        );
+
+        let avgAttainment = 0;
+        if (courseMarks.length > 0) {
+          const totalObtained = courseMarks.reduce((sum: number, m: any) => sum + (Number(m.obtained) || 0), 0);
+          const totalMax = courseMarks.reduce((sum: number, m: any) => sum + (Number(m.maxMarks) || 100), 0);
+          avgAttainment = totalMax > 0 ? Math.round((totalObtained / totalMax) * 100) : 0;
+        }
+
+        // Calculate course average attendance
+        const courseAttendance = attendance.filter((a: any) =>
+          a.course && (
+            a.course.toLowerCase().includes(course.name.toLowerCase()) ||
+            a.course.toLowerCase().includes(course.code.toLowerCase()) ||
+            course.name.toLowerCase().includes(a.course.toLowerCase())
+          )
+        );
+
+        let avgAttendance = 0;
+        if (courseAttendance.length > 0) {
+          const present = courseAttendance.filter((a: any) => a.status === 'Present').length;
+          avgAttendance = Math.round((present / courseAttendance.length) * 100);
+        }
+
+        return {
+          id: course.id,
+          name: course.name,
+          code: course.code,
+          semester: course.semester,
+          faculty: course.faculty,
+          studentCount,
+          averageAttainment: avgAttainment,
+          averageAttendance: avgAttendance
+        };
       });
-      
-      return Array.from(progressMap.values()).slice(0, 10); // Return top 10 students
+
     } catch (error) {
-      console.error('Error calculating student progress:', error);
+      console.error('Error loading real-time courses:', error);
       return [];
     }
   }
 
   /**
-   * Calculate attendance percentage for a student
+   * Get real-time assessments calculated from stored assessments & marks
    */
-  private getStudentAttendance(studentName: string): number {
+  private getRealTimeAssessments(courses: Course[]): Assessment[] {
     try {
-      const attendance = this.getSafeJson('obslmsAttendance') || [];
-      const studentRecords = attendance.filter((a: any) => a.student === studentName);
-      
-      if (studentRecords.length === 0) return 0;
-      
-      const present = studentRecords.filter((a: any) => a.status === 'Present').length;
-      const percentage = (present / studentRecords.length) * 100;
-      return Math.round(percentage);
-    } catch {
-      return 75; // Default
+      const storedAssessments = this.getSafeJson('obslmsAssessments');
+      const marks = this.getSafeJson('obslmsMarkEntries');
+      const allStudents = this.getSafeJson('obslmsStudents');
+
+      if (storedAssessments.length === 0) {
+        return [];
+      }
+
+      return storedAssessments.map((a: any) => {
+        const courseMatch = courses.find(c =>
+          c.id.toString() === (a.course || '').toString() ||
+          c.name.toLowerCase() === (a.course || '').toLowerCase() ||
+          c.code.toLowerCase() === (a.course || '').toLowerCase()
+        );
+
+        const courseName = courseMatch ? courseMatch.name : (a.course || 'General Assessment');
+        const assessmentType = a.type || 'Assignment';
+        const maxMarks = Number(a.maxMarks) || 100;
+
+        // Count submitted marks for this assessment
+        const submittedMarks = marks.filter((m: any) =>
+          m.assessment && (
+            m.assessment.toLowerCase() === assessmentType.toLowerCase() ||
+            m.assessment.toLowerCase().includes(assessmentType.toLowerCase()) ||
+            (courseMatch && m.assessment.toLowerCase().includes(courseMatch.code.toLowerCase()))
+          )
+        );
+
+        const submittedCount = submittedMarks.length;
+
+        // Total count = enrolled students for this course or submittedCount if greater
+        const totalCount = courseMatch && courseMatch.studentCount > 0
+          ? Math.max(courseMatch.studentCount, submittedCount)
+          : (allStudents.length > 0 ? allStudents.length : Math.max(submittedCount, 0));
+
+        // Average score
+        let averageScore = 0;
+        if (submittedMarks.length > 0) {
+          const totalObt = submittedMarks.reduce((sum: number, m: any) => sum + (Number(m.obtained) || 0), 0);
+          const totalMax = submittedMarks.reduce((sum: number, m: any) => sum + (Number(m.maxMarks) || maxMarks), 0);
+          averageScore = totalMax > 0 ? Math.round((totalObt / totalMax) * 100) : 0;
+        }
+
+        // Real-time status based on due date and submissions
+        let dueDateObj: Date | null = null;
+        let status: 'pending' | 'ongoing' | 'completed' = 'pending';
+
+        if (a.dueDate) {
+          dueDateObj = new Date(a.dueDate);
+          const now = new Date();
+          if (dueDateObj < now && submittedCount > 0) {
+            status = 'completed';
+          } else if (submittedCount > 0) {
+            status = 'ongoing';
+          } else {
+            status = 'pending';
+          }
+        } else if (submittedCount > 0) {
+          status = 'ongoing';
+        }
+
+        return {
+          id: a.id ? a.id.toString() : `ASM-${Math.random()}`,
+          courseId: a.course || '',
+          courseName,
+          title: a.title || assessmentType,
+          type: assessmentType.toLowerCase(),
+          maxMarks,
+          dueDate: dueDateObj,
+          submittedCount,
+          totalCount,
+          status,
+          averageScore
+        };
+      });
+
+    } catch (error) {
+      console.error('Error loading real-time assessments:', error);
+      return [];
     }
   }
 
   /**
-   * Calculate average attendance across all students
+   * Calculate real student progress per student from actual marks and attendance
    */
-  private calculateAverageAttendance(): number {
+  private getRealTimeStudentProgress(courses: Course[]): StudentProgress[] {
     try {
-      const attendance = this.getSafeJson('obslmsAttendance') || [];
-      if (attendance.length === 0) return 0;
-      
-      const present = attendance.filter((a: any) => a.status === 'Present').length;
-      const percentage = (present / attendance.length) * 100;
-      return Math.round(percentage);
-    } catch {
-      return 75;
+      const marks = this.getSafeJson('obslmsMarkEntries');
+      const attendance = this.getSafeJson('obslmsAttendance');
+
+      if (marks.length === 0 && attendance.length === 0) {
+        return [];
+      }
+
+      const studentMap = new Map<string, {
+        studentName: string;
+        coursesSet: Set<string>;
+        obtainedTotal: number;
+        maxMarksTotal: number;
+        assessmentCount: number;
+        lastUpdate: Date;
+      }>();
+
+      // Aggregate marks
+      marks.forEach((mark: any) => {
+        if (!mark.student) return;
+        const sKey = mark.student.trim().toLowerCase();
+
+        if (!studentMap.has(sKey)) {
+          studentMap.set(sKey, {
+            studentName: mark.student.trim(),
+            coursesSet: new Set(),
+            obtainedTotal: 0,
+            maxMarksTotal: 0,
+            assessmentCount: 0,
+            lastUpdate: new Date()
+          });
+        }
+
+        const record = studentMap.get(sKey)!;
+        record.obtainedTotal += Number(mark.obtained) || 0;
+        record.maxMarksTotal += Number(mark.maxMarks) || 100;
+        record.assessmentCount += 1;
+
+        if (mark.assessment) {
+          courses.forEach(c => {
+            if (mark.assessment.toLowerCase().includes(c.name.toLowerCase()) || mark.assessment.toLowerCase().includes(c.code.toLowerCase())) {
+              record.coursesSet.add(c.name);
+            }
+          });
+        }
+      });
+
+      // Aggregate attendance into student map as well
+      attendance.forEach((att: any) => {
+        if (!att.student) return;
+        const sKey = att.student.trim().toLowerCase();
+        if (!studentMap.has(sKey)) {
+          studentMap.set(sKey, {
+            studentName: att.student.trim(),
+            coursesSet: new Set(att.course ? [att.course] : []),
+            obtainedTotal: 0,
+            maxMarksTotal: 0,
+            assessmentCount: 0,
+            lastUpdate: new Date()
+          });
+        } else if (att.course) {
+          studentMap.get(sKey)!.coursesSet.add(att.course);
+        }
+      });
+
+      return Array.from(studentMap.values()).map(s => {
+        // Calculate CO attainment %
+        const coAttainment = s.maxMarksTotal > 0
+          ? Math.round((s.obtainedTotal / s.maxMarksTotal) * 100)
+          : 0;
+
+        // Calculate student attendance %
+        const studentAtt = attendance.filter((a: any) => a.student && a.student.trim().toLowerCase() === s.studentName.toLowerCase());
+        let attendancePct = 0;
+        if (studentAtt.length > 0) {
+          const presentCount = studentAtt.filter((a: any) => a.status === 'Present').length;
+          attendancePct = Math.round((presentCount / studentAtt.length) * 100);
+        }
+
+        const courseName = Array.from(s.coursesSet).join(', ') || (courses.length > 0 ? courses[0].name : 'Course');
+
+        return {
+          studentId: `STU-${s.studentName.replace(/\s+/g, '-').toUpperCase()}`,
+          studentName: s.studentName,
+          courseId: courses[0]?.id || 'C1',
+          courseName,
+          attendance: attendancePct,
+          coAttainment,
+          totalAssessments: s.assessmentCount,
+          lastUpdate: s.lastUpdate
+        };
+      });
+
+    } catch (error) {
+      console.error('Error calculating real-time student progress:', error);
+      return [];
     }
   }
 
   /**
-   * Generate notifications based on system data
+   * Identify At-Risk students failing thresholds (Attainment < 60% or Attendance < 75%)
    */
-  private getNotificationData(courses: Course[], assessments: Assessment[]): Notification[] {
+  private calculateAtRiskStudents(courses: Course[], progressList: StudentProgress[]): AtRiskStudent[] {
+    const atRisk: AtRiskStudent[] = [];
+
+    progressList.forEach(sp => {
+      const riskReasons: string[] = [];
+
+      // Check attainment if assessments exist
+      if (sp.totalAssessments > 0 && sp.coAttainment < 60) {
+        riskReasons.push(`Low CO Attainment (${sp.coAttainment}% < 60%)`);
+      }
+
+      // Check attendance if attendance records exist
+      if (sp.attendance > 0 && sp.attendance < 75) {
+        riskReasons.push(`Low Attendance (${sp.attendance}% < 75%)`);
+      }
+
+      if (riskReasons.length > 0) {
+        atRisk.push({
+          studentName: sp.studentName,
+          courseName: sp.courseName,
+          attainmentPercentage: sp.coAttainment,
+          attendancePercentage: sp.attendance,
+          riskReasons,
+          severity: riskReasons.length > 1 || sp.coAttainment < 40 ? 'High' : 'Medium'
+        });
+      }
+    });
+
+    return atRisk;
+  }
+
+  /**
+   * Calculate real-time Course Outcome (CO) Attainments for courses
+   */
+  private calculateCourseCOAttainments(courses: Course[]): CourseCOAttainmentSummary[] {
+    try {
+      const coList = this.getSafeJson('obslmsCourseOutcomes');
+      const coMappings = this.getSafeJson('obslmsAssessmentCOMappings');
+      const marks = this.getSafeJson('obslmsMarkEntries');
+
+      if (coList.length === 0) {
+        return [];
+      }
+
+      return coList.map((co: any) => {
+        const coCode = co.code || co.co || 'CO1';
+        const description = co.description || '';
+        const targetPercentage = Number(co.targetPercentage) || 75;
+        const courseName = co.course || (courses.length > 0 ? courses[0].name : 'Course');
+
+        // Find assessment mappings linked to this CO
+        const linkedMappings = coMappings.filter((m: any) =>
+          m.courseOutcomes && Array.isArray(m.courseOutcomes) && m.courseOutcomes.includes(coCode)
+        );
+
+        let totalObtained = 0;
+        let totalMax = 0;
+        const studentSet = new Set<string>();
+
+        if (linkedMappings.length > 0) {
+          linkedMappings.forEach((mapping: any) => {
+            const mappedMarks = marks.filter((m: any) =>
+              m.assessment && m.assessment.toLowerCase().includes(mapping.assessmentName.toLowerCase())
+            );
+
+            mappedMarks.forEach((m: any) => {
+              totalObtained += Number(m.obtained) || 0;
+              totalMax += Number(m.maxMarks) || mapping.maxMarks || 100;
+              if (m.student) studentSet.add(m.student.toLowerCase());
+            });
+          });
+        } else {
+          // General mark calculation for this course if no explicit mapping
+          const courseMarks = marks.filter((m: any) =>
+            m.assessment && (m.assessment.toLowerCase().includes(courseName.toLowerCase()) || m.assessment.toLowerCase().includes(coCode.toLowerCase()))
+          );
+
+          courseMarks.forEach((m: any) => {
+            totalObtained += Number(m.obtained) || 0;
+            totalMax += Number(m.maxMarks) || 100;
+            if (m.student) studentSet.add(m.student.toLowerCase());
+          });
+        }
+
+        const attainmentPercentage = totalMax > 0
+          ? Math.round((totalObtained / totalMax) * 100)
+          : 0;
+
+        let status: 'Achieved' | 'Partial' | 'Not Achieved' = 'Not Achieved';
+        if (attainmentPercentage >= targetPercentage) {
+          status = 'Achieved';
+        } else if (attainmentPercentage >= 50) {
+          status = 'Partial';
+        }
+
+        return {
+          courseName,
+          coCode,
+          description,
+          targetPercentage,
+          attainmentPercentage,
+          status,
+          assessedStudentsCount: studentSet.size
+        };
+      });
+
+    } catch (error) {
+      console.error('Error calculating CO attainments:', error);
+      return [];
+    }
+  }
+
+  /**
+   * Calculate grade distribution across all marks
+   */
+  private calculateGradeDistribution(courses: Course[]): GradeDistribution {
+    const marks = this.getSafeJson('obslmsMarkEntries');
+    
+    let distinction = 0;
+    let firstClass = 0;
+    let pass = 0;
+    let fail = 0;
+    let totalEvaluated = 0;
+
+    marks.forEach((m: any) => {
+      if (m.obtained !== undefined && m.maxMarks) {
+        const pct = (Number(m.obtained) / Number(m.maxMarks)) * 100;
+        totalEvaluated++;
+        if (pct >= 75) distinction++;
+        else if (pct >= 60) firstClass++;
+        else if (pct >= 40) pass++;
+        else fail++;
+      }
+    });
+
+    return {
+      distinction,
+      firstClass,
+      pass,
+      fail,
+      totalEvaluated
+    };
+  }
+
+  /**
+   * Calculate overall attendance across courses
+   */
+  private calculateOverallAttendanceForCourses(courses: Course[]): number {
+    const attendance = this.getSafeJson('obslmsAttendance');
+    if (attendance.length === 0) return 0;
+
+    const present = attendance.filter((a: any) => a.status === 'Present').length;
+    return Math.round((present / attendance.length) * 100);
+  }
+
+  /**
+   * Generate real-time actionable notifications based on actual dates & thresholds
+   */
+  private generateRealTimeNotifications(
+    courses: Course[],
+    assessments: Assessment[],
+    atRiskStudents: AtRiskStudent[],
+    coAttainments: CourseCOAttainmentSummary[]
+  ): Notification[] {
     const notifications: Notification[] = [];
     const now = new Date();
-    
-    // Check for pending assessments (due within 7 days)
-    assessments.forEach(assessment => {
-      const daysUntilDue = Math.floor((assessment.dueDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
-      
-      if (daysUntilDue >= 0 && daysUntilDue <= 7) {
+
+    // 1. Upcoming deadlines (within next 7 days)
+    assessments.forEach(a => {
+      if (a.dueDate) {
+        const diffMs = a.dueDate.getTime() - now.getTime();
+        const diffDays = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
+        if (diffDays >= 0 && diffDays <= 7) {
+          notifications.push({
+            id: `NOTIF-DUE-${a.id}`,
+            title: `Assessment Deadline Soon: ${a.title}`,
+            message: `${a.title} for ${a.courseName} is due in ${diffDays === 0 ? 'today' : diffDays + ' day(s)'}.`,
+            type: 'alert',
+            date: new Date(),
+            read: false
+          });
+        }
+      }
+    });
+
+    // 2. Pending submissions alert
+    assessments.forEach(a => {
+      if (a.status === 'ongoing' && a.submittedCount < a.totalCount && a.totalCount > 0) {
+        const pending = a.totalCount - a.submittedCount;
         notifications.push({
-          id: `N-${assessment.id}`,
-          title: `Deadline Reminder: ${assessment.title}`,
-          message: `${assessment.title} for ${assessment.courseName} is due in ${daysUntilDue} days.`,
-          type: 'alert',
+          id: `NOTIF-PEND-${a.id}`,
+          title: `Pending Submissions: ${a.title}`,
+          message: `${pending} of ${a.totalCount} student submissions remain un-graded for ${a.courseName}.`,
+          type: 'update',
           date: new Date(),
           read: false
         });
       }
     });
-    
-    // Check for incomplete assessments (pending submissions)
-    assessments.forEach(assessment => {
-      if (assessment.status === 'ongoing' && assessment.submittedCount < assessment.totalCount) {
-        const pending = assessment.totalCount - assessment.submittedCount;
-        notifications.push({
-          id: `N-pending-${assessment.id}`,
-          title: `Pending Submissions: ${assessment.title}`,
-          message: `${pending} out of ${assessment.totalCount} students have not submitted for ${assessment.title}.`,
-          type: 'alert',
-          date: new Date(),
-          read: false
-        });
-      }
-    });
-    
-    // Add system update notifications
-    if (courses.length > 0) {
+
+    // 3. At-Risk Alert
+    if (atRiskStudents.length > 0) {
       notifications.push({
-        id: 'N-system-update',
-        title: 'System Update Available',
-        message: 'A new version of the Learning Management System is available.',
-        type: 'announcement',
-        date: new Date(Date.now() - 86400000),
-        read: true
+        id: `NOTIF-ATRISK-${Date.now()}`,
+        title: `Academic Intervention Required`,
+        message: `${atRiskStudents.length} student(s) are currently flagged At-Risk due to low attainment or attendance.`,
+        type: 'alert',
+        date: new Date(),
+        read: false
       });
     }
-    
-    return notifications.slice(0, 5); // Return top 5 notifications
+
+    // 4. Low CO Attainment Alert
+    const unachievedCOs = coAttainments.filter(co => co.status === 'Not Achieved' && co.attainmentPercentage > 0);
+    if (unachievedCOs.length > 0) {
+      notifications.push({
+        id: `NOTIF-CO-${unachievedCOs[0].coCode}`,
+        title: `CQI Review: ${unachievedCOs[0].coCode} Attainment Low`,
+        message: `${unachievedCOs[0].coCode} attainment is currently ${unachievedCOs[0].attainmentPercentage}% (Target: ${unachievedCOs[0].targetPercentage}%). Continuous Quality Improvement plan needed.`,
+        type: 'update',
+        date: new Date(),
+        read: false
+      });
+    }
+
+    return notifications.slice(0, 5);
+  }
+
+  /**
+   * Save a student mark entry into obslmsMarkEntries
+   */
+  saveStudentMark(mark: { student: string; assessment: string; obtained: number; maxMarks: number }): void {
+    try {
+      const marks = this.getSafeJson('obslmsMarkEntries');
+      const existingIdx = marks.findIndex(
+        (m: any) => m.student.toLowerCase() === mark.student.toLowerCase() && m.assessment.toLowerCase() === mark.assessment.toLowerCase()
+      );
+
+      if (existingIdx >= 0) {
+        marks[existingIdx] = { ...marks[existingIdx], obtained: mark.obtained, maxMarks: mark.maxMarks };
+      } else {
+        marks.push({
+          id: Date.now(),
+          student: mark.student.trim(),
+          assessment: mark.assessment.trim(),
+          obtained: Number(mark.obtained),
+          maxMarks: Number(mark.maxMarks)
+        });
+      }
+
+      localStorage.setItem('obslmsMarkEntries', JSON.stringify(marks));
+    } catch (e) {
+      console.error('Error saving student mark:', e);
+    }
+  }
+
+  /**
+   * Bulk save marks
+   */
+  bulkSaveMarks(marksList: Array<{ student: string; assessment: string; obtained: number; maxMarks: number }>): void {
+    try {
+      const existing = this.getSafeJson('obslmsMarkEntries');
+      marksList.forEach(newMark => {
+        const idx = existing.findIndex(
+          (m: any) => m.student.toLowerCase() === newMark.student.toLowerCase() && m.assessment.toLowerCase() === newMark.assessment.toLowerCase()
+        );
+        if (idx >= 0) {
+          existing[idx].obtained = Number(newMark.obtained);
+          existing[idx].maxMarks = Number(newMark.maxMarks);
+        } else {
+          existing.push({
+            id: Date.now() + Math.floor(Math.random() * 1000),
+            student: newMark.student.trim(),
+            assessment: newMark.assessment.trim(),
+            obtained: Number(newMark.obtained),
+            maxMarks: Number(newMark.maxMarks)
+          });
+        }
+      });
+
+      localStorage.setItem('obslmsMarkEntries', JSON.stringify(existing));
+    } catch (e) {
+      console.error('Error bulk saving marks:', e);
+    }
+  }
+
+  /**
+   * Continuous Quality Improvement (CQI) Actions
+   */
+  saveCqiAction(action: Omit<CqiAction, 'id' | 'loggedAt'>): void {
+    try {
+      const cqiList = this.getSafeJson('obslmsCqiActions');
+      const newAction: CqiAction = {
+        ...action,
+        id: `CQI-${Date.now()}`,
+        loggedAt: new Date().toISOString()
+      };
+      cqiList.push(newAction);
+      localStorage.setItem('obslmsCqiActions', JSON.stringify(cqiList));
+    } catch (e) {
+      console.error('Error saving CQI action:', e);
+    }
+  }
+
+  getCqiActions(): CqiAction[] {
+    return this.getSafeJson('obslmsCqiActions');
   }
 
   /**

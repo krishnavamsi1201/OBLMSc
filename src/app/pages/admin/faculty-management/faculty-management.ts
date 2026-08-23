@@ -1,9 +1,10 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Navbar } from '../../../shared/navbar/navbar';
 import { Sidebar } from '../../../shared/sidebar/sidebar';
 import { Footer } from '../../../shared/footer/footer';
+import { ToastService } from '../../../shared/services/toast.service';
 
 interface Faculty {
   id: string;
@@ -22,6 +23,7 @@ interface Faculty {
   styleUrls: ['./faculty-management.css'],
 })
 export class FacultyManagement implements OnInit {
+  private toast = inject(ToastService);
   facultyList: Faculty[] = [];
   filteredFacultyList: Faculty[] = [];
   
@@ -67,7 +69,7 @@ export class FacultyManagement implements OnInit {
       const stored = localStorage.getItem('obslmsCourses');
       if (stored) {
         const coursesList = JSON.parse(stored);
-        this.courses = coursesList.map((c: any) => c.name || c.code);
+        this.courses = coursesList.map((c: any) => `${c.code ? c.code + ' - ' : ''}${c.title || c.name || 'Course'}`);
       }
     } catch {
       this.courses = [];
@@ -106,7 +108,7 @@ export class FacultyManagement implements OnInit {
       email: faculty.email,
       department: faculty.department,
       designation: faculty.designation,
-      courses: faculty.courses.join(', ')
+      courses: (faculty.courses || []).join(', ')
     };
   }
 
@@ -128,7 +130,7 @@ export class FacultyManagement implements OnInit {
 
   saveFaculty(): void {
     if (!this.validateForm()) {
-      alert('Please fill all required fields');
+      this.toast.warning('Please fill all required fields');
       return;
     }
 
@@ -149,6 +151,7 @@ export class FacultyManagement implements OnInit {
           designation: this.formData.designation,
           courses: courseList
         };
+        this.toast.success(`Faculty member "${this.formData.name}" updated successfully.`);
       }
     } else {
       // Add new faculty
@@ -161,6 +164,7 @@ export class FacultyManagement implements OnInit {
         courses: courseList
       };
       this.facultyList.push(newFaculty);
+      this.toast.success(`Faculty member "${this.formData.name}" added successfully.`);
     }
 
     this.saveFacultyToStorage();
@@ -168,10 +172,38 @@ export class FacultyManagement implements OnInit {
   }
 
   deleteFaculty(id: string): void {
-    if (confirm('Are you sure you want to delete this faculty member?')) {
-      this.facultyList = this.facultyList.filter(f => f.id !== id);
-      this.saveFacultyToStorage();
+    const faculty = this.facultyList.find(f => f.id === id);
+    this.facultyList = this.facultyList.filter(f => f.id !== id);
+    this.saveFacultyToStorage();
+    this.toast.info(`Faculty member "${faculty?.name || 'User'}" removed.`);
+  }
+
+  downloadFacultyCsv(): void {
+    if (this.facultyList.length === 0) {
+      this.toast.warning('No faculty records to export.');
+      return;
     }
+
+    const headers = ['Faculty ID', 'Name', 'Email', 'Department', 'Designation', 'Assigned Courses'];
+    const rows = this.facultyList.map(f => [
+      `"${f.id}"`,
+      `"${f.name}"`,
+      `"${f.email}"`,
+      `"${f.department}"`,
+      `"${f.designation}"`,
+      `"${(f.courses || []).join('; ')}"`
+    ].join(','));
+
+    const csvContent = [headers.join(','), ...rows].join('\n');
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.setAttribute('href', url);
+    link.setAttribute('download', `Faculty_Roster_${new Date().toISOString().split('T')[0]}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    this.toast.success('Faculty roster CSV downloaded successfully.');
   }
 
   private validateForm(): boolean {
@@ -188,7 +220,7 @@ export class FacultyManagement implements OnInit {
       localStorage.setItem('obslmsFaculty', JSON.stringify(this.facultyList));
       this.filterFaculty();
     } catch {
-      alert('Error saving faculty data');
+      this.toast.error('Error saving faculty data');
     }
   }
 
@@ -197,6 +229,6 @@ export class FacultyManagement implements OnInit {
   }
 
   getCoursesDisplay(courses: string[]): string {
-    return courses.length > 0 ? courses.slice(0, 2).join(', ') + (courses.length > 2 ? `... +${courses.length - 2}` : '') : 'None';
+    return courses && courses.length > 0 ? courses.slice(0, 2).join(', ') + (courses.length > 2 ? `... +${courses.length - 2}` : '') : 'None';
   }
 }

@@ -190,11 +190,10 @@ interface ScheduleEntry {
             </table>
         </div>
 
+        <app-footer></app-footer>
     </div>
 
-</div>
-
-<app-footer></app-footer>`,
+</div>`,
   styles: [
     `.summary-grid { display: grid; gap: 16px; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); margin-bottom: 24px; }
     .section-card, .table-card, .form-card { padding: 20px; background: #fff; border-radius: 10px; box-shadow: 0 1px 12px rgba(0,0,0,.06); margin-bottom: 24px; }

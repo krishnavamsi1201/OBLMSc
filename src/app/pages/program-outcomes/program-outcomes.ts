@@ -1,9 +1,10 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Navbar } from '../../shared/navbar/navbar';
 import { Sidebar } from '../../shared/sidebar/sidebar';
 import { Footer } from '../../shared/footer/footer';
+import { ToastService } from '../../shared/services/toast.service';
 
 interface ProgramOutcome {
   id: number;
@@ -33,12 +34,12 @@ interface ProgramOutcome {
             <h2>{{ editIndex >= 0 ? 'Edit PO' : 'Add New PO' }}</h2>
             <form (ngSubmit)="savePo()">
                 <label>
-                    PO Number
+                    PO Number (e.g. PO1, PO2)
                     <input type="text" name="poNumber" [(ngModel)]="currentPo.poNumber" required placeholder="e.g. PO1" />
                 </label>
                 <label>
                     PO Description
-                    <textarea name="description" [(ngModel)]="currentPo.description" required placeholder="Describe the program outcome"></textarea>
+                    <textarea name="description" [(ngModel)]="currentPo.description" required placeholder="Describe the graduate attribute or program outcome..."></textarea>
                 </label>
                 <div class="form-actions">
                     <button type="submit">{{ editIndex >= 0 ? 'Update PO' : 'Add PO' }}</button>
@@ -48,7 +49,7 @@ interface ProgramOutcome {
         </div>
 
         <div class="table-card">
-            <h2>PO List</h2>
+            <h2>Program Outcomes Directory</h2>
             <table>
                 <thead>
                     <tr>
@@ -73,30 +74,31 @@ interface ProgramOutcome {
             </table>
         </div>
 
+        <app-footer></app-footer>
     </div>
 
-</div>
-
-<app-footer></app-footer>`,
+</div>`,
   styles: [
     `.page { padding: 24px; }
-    .form-card, .table-card { margin-bottom: 24px; padding: 20px; background: #fff; border-radius: 10px; box-shadow: 0 1px 8px rgba(0,0,0,.08); }
+    .form-card, .table-card { margin-bottom: 24px; padding: 20px; background: #fff; border-radius: 12px; box-shadow: 0 1px 12px rgba(0,0,0,.08); }
     .form-card h2, .table-card h2 { margin-top: 0; }
-    form label { display: block; margin-bottom: 16px; font-weight: 600; }
-    input[type=text], textarea { width: 100%; padding: 10px 12px; margin-top: 8px; border: 1px solid #ccc; border-radius: 6px; font-size: 14px; }
+    form label { display: block; margin-bottom: 16px; font-weight: 600; color: #1e293b; }
+    input[type=text], textarea { width: 100%; padding: 10px 12px; margin-top: 6px; border: 1px solid #ccc; border-radius: 6px; font-size: 14px; }
     textarea { resize: vertical; min-height: 100px; }
     .form-actions { display: flex; gap: 10px; margin-top: 8px; }
-    button { padding: 10px 16px; border: none; border-radius: 6px; cursor: pointer; background: #1565c0; color: #fff; }
-    button.secondary { background: #777; }
-    button.danger { background: #d32f2f; }
+    button { padding: 8px 16px; border: none; border-radius: 6px; cursor: pointer; background: #1565c0; color: #fff; font-weight: 600; }
+    button:hover { filter: brightness(1.1); }
+    button.secondary { background: #64748b; }
+    button.danger { background: #ef4444; }
     table { width: 100%; border-collapse: collapse; }
     th, td { text-align: left; padding: 12px 10px; border-bottom: 1px solid #e0e0e0; }
-    th { color: #333; font-weight: 700; }
+    th { color: #1f3d7a; font-weight: 700; background: #f8fafc; }
     tbody tr:hover { background: #f9f9f9; }
     `
   ]
 })
 export class ProgramOutcomes implements OnInit {
+  private toast = inject(ToastService);
   programOutcomes: ProgramOutcome[] = [];
   role: string | null = null;
 
@@ -148,16 +150,19 @@ export class ProgramOutcomes implements OnInit {
     }
 
     if (!this.currentPo.poNumber.trim() || !this.currentPo.description.trim()) {
+      this.toast.warning('Please fill in both PO number and description.');
       return;
     }
 
     if (this.editIndex >= 0) {
       this.programOutcomes[this.editIndex] = { ...this.currentPo, id: this.programOutcomes[this.editIndex].id };
+      this.toast.success(`Program Outcome ${this.currentPo.poNumber} updated.`);
     } else {
       this.programOutcomes = [
         ...this.programOutcomes,
         { id: Date.now(), poNumber: this.currentPo.poNumber.trim(), description: this.currentPo.description.trim() }
       ];
+      this.toast.success(`Program Outcome ${this.currentPo.poNumber} added.`);
     }
 
     this.saveProgramOutcomes();

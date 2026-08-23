@@ -127,9 +127,10 @@ interface StudentResult {
                     </tr>
                 </tbody>
             </table>
-            <p *ngIf="filteredResults.length === 0" class="empty-state">No academic results compiled yet. Marks need to be entered first.</p>
+            <p *ngIf="filteredResults.length === 0" class="empty-state">No academic results match your search.</p>
         </div>
 
+        <app-footer></app-footer>
     </div>
 
 </div>
@@ -214,6 +215,11 @@ interface StudentResult {
     .action-row button { padding: 10px 18px; border: none; border-radius: 8px; background: #1976d2; color: #fff; cursor: pointer; font-weight: 600; }
     .btn-print { background: #10b981 !important; margin-left: 10px; }
     .status-message { color: #2e7d32; font-weight: 600; }
+    .table-header-row { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; margin-bottom: 12px; }
+    .table-filter-inputs { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+    .table-search-input { padding: 8px 14px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 13.5px; min-width: 220px; outline: none; }
+    .table-search-input:focus { border-color: #1976d2; }
+    .table-filter-select { padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 13.5px; outline: none; }
     .table-card table { width: 100%; border-collapse: collapse; margin-top: 16px; }
     .table-card th, .table-card td { padding: 12px 10px; border-bottom: 1px solid #e8e8e8; text-align: left; }
     .table-card th { font-weight: 700; color: #1f3d7a; background: #f5f5f5; }

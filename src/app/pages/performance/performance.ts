@@ -292,10 +292,9 @@ interface CoAttainmentStatus {
                 </div>
             </div>
         </ng-container>
+        <app-footer></app-footer>
     </div>
-</div>
-
-<app-footer></app-footer>`,
+</div>`,
   styles: [
     `.summary-grid { display: grid; gap: 16px; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); margin-bottom: 24px; }
     .section-card, .table-card, .chart-card, .filter-card { padding: 20px; background: #fff; border-radius: 10px; box-shadow: 0 1px 12px rgba(0,0,0,.06); margin-bottom: 24px; }
@@ -407,39 +406,43 @@ export class Performance implements OnInit {
         const assignments = this.myMarkEntries.filter(m => m.assessment.toLowerCase().includes('assignment') || m.assessment.toLowerCase().includes('lab'));
         const quizzes = this.myMarkEntries.filter(m => m.assessment.toLowerCase().includes('quiz') || m.assessment.toLowerCase().includes('short'));
 
-        this.myInternalAvg = this.calculateAverageScore(internals, 78);
-        this.myAssignmentAvg = this.calculateAverageScore(assignments, 85);
-        this.myQuizAvg = this.calculateAverageScore(quizzes, 82);
+        this.myInternalAvg = this.calculateAverageScore(internals);
+        this.myAssignmentAvg = this.calculateAverageScore(assignments);
+        this.myQuizAvg = this.calculateAverageScore(quizzes);
 
         const totalObtained = this.myMarkEntries.reduce((sum, m) => sum + (Number(m.obtained) || 0), 0);
         const totalMax = this.myMarkEntries.reduce((sum, m) => sum + (Number(m.maxMarks) || 100), 0);
-        this.myOverallAvg = totalMax > 0 ? Math.round((totalObtained / totalMax) * 100) : 80;
+        this.myOverallAvg = totalMax > 0 ? Math.round((totalObtained / totalMax) * 100) : 0;
       } else {
-        // Default mock metrics if no entries exist yet
-        this.myInternalAvg = 82;
-        this.myAssignmentAvg = 90;
-        this.myQuizAvg = 75;
-        this.myOverallAvg = 83;
+        this.myInternalAvg = 0;
+        this.myAssignmentAvg = 0;
+        this.myQuizAvg = 0;
+        this.myOverallAvg = 0;
       }
 
-      // Populate mock CO Attainments
-      this.coAttainments = [
-        { co: 'CO1', name: 'Recall and outline key computational concepts.', target: 70, attained: Math.round(this.myQuizAvg * 0.95) },
-        { co: 'CO2', name: 'Demonstrate mapping of schemas and data configurations.', target: 70, attained: Math.round(this.myAssignmentAvg * 0.98) },
-        { co: 'CO3', name: 'Solve and analyze structured algorithms.', target: 70, attained: Math.round(this.myInternalAvg * 1.02) },
-        { co: 'CO4', name: 'Compare and evaluate infrastructure metrics.', target: 70, attained: Math.round(this.myOverallAvg * 0.92) }
-      ];
+      // Populate real CO Attainments from stored outcomes
+      const storedCos = this.getSafeJson('obslmsCourseOutcomes');
+      if (storedCos.length > 0) {
+        this.coAttainments = storedCos.map((co: any) => ({
+          co: co.co || 'CO',
+          name: co.description || co.course || 'Course Learning Outcome',
+          target: 70,
+          attained: this.myOverallAvg > 0 ? this.myOverallAvg : 0
+        }));
+      } else {
+        this.coAttainments = [];
+      }
 
     } catch (e) {
       console.error('Error loading personal student performance:', e);
     }
   }
 
-  private calculateAverageScore(entries: any[], fallback: number): number {
-    if (entries.length === 0) return fallback;
+  private calculateAverageScore(entries: any[]): number {
+    if (entries.length === 0) return 0;
     const obtained = entries.reduce((sum, e) => sum + (Number(e.obtained) || 0), 0);
     const max = entries.reduce((sum, e) => sum + (Number(e.maxMarks) || 100), 0);
-    return max > 0 ? Math.round((obtained / max) * 100) : fallback;
+    return max > 0 ? Math.round((obtained / max) * 100) : 0;
   }
 
   // SVG Trend Line calculation

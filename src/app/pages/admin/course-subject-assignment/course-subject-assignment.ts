@@ -1,9 +1,10 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Navbar } from '../../../shared/navbar/navbar';
 import { Sidebar } from '../../../shared/sidebar/sidebar';
 import { Footer } from '../../../shared/footer/footer';
+import { ToastService } from '../../../shared/services/toast.service';
 
 interface CourseSubject {
   id: string;
@@ -35,6 +36,7 @@ interface Subject {
   styleUrls: ['./course-subject-assignment.css'],
 })
 export class CourseSubjectAssignment implements OnInit {
+  private toast = inject(ToastService);
   courseSubjectList: CourseSubject[] = [];
   filteredCourseSubjectList: CourseSubject[] = [];
   
@@ -66,7 +68,12 @@ export class CourseSubjectAssignment implements OnInit {
   private loadCourses(): void {
     try {
       const stored = localStorage.getItem('obslmsCourses');
-      this.courseList = stored ? JSON.parse(stored) : [];
+      const courses = stored ? JSON.parse(stored) : [];
+      this.courseList = courses.map((c: any) => ({
+        id: (c.id || '').toString(),
+        name: c.title || c.name || c.code || 'Course',
+        code: c.code || ''
+      }));
     } catch {
       this.courseList = [];
     }
@@ -75,7 +82,13 @@ export class CourseSubjectAssignment implements OnInit {
   private loadSubjects(): void {
     try {
       const stored = localStorage.getItem('obslmsSubjects');
-      this.subjectList = stored ? JSON.parse(stored) : [];
+      const subjects = stored ? JSON.parse(stored) : [];
+      this.subjectList = subjects.map((s: any) => ({
+        id: (s.id || '').toString(),
+        name: s.name || s.title || s.code || 'Subject',
+        code: s.code || '',
+        credits: s.credits || 3
+      }));
     } catch {
       this.subjectList = [];
     }
@@ -141,7 +154,7 @@ export class CourseSubjectAssignment implements OnInit {
 
   saveAssignment(): void {
     if (!this.validateForm()) {
-      alert('Please select both course and subject');
+      this.toast.warning('Please select both course and subject');
       return;
     }
 
@@ -151,7 +164,7 @@ export class CourseSubjectAssignment implements OnInit {
         cs => cs.courseId === this.formData.courseId && cs.subjectId === this.formData.subjectId
       );
       if (exists) {
-        alert('This subject is already assigned to this course!');
+        this.toast.error('This subject is already assigned to this course!');
         return;
       }
     }
@@ -160,7 +173,7 @@ export class CourseSubjectAssignment implements OnInit {
     const subject = this.subjectList.find(s => s.id === this.formData.subjectId);
 
     if (!course || !subject) {
-      alert('Invalid course or subject selection');
+      this.toast.error('Invalid course or subject selection');
       return;
     }
 
@@ -176,6 +189,7 @@ export class CourseSubjectAssignment implements OnInit {
           subjectName: subject.name,
           credits: this.formData.credits
         };
+        this.toast.success(`Subject "${subject.name}" assignment updated.`);
       }
     } else {
       // Add new assignment
@@ -188,6 +202,7 @@ export class CourseSubjectAssignment implements OnInit {
         credits: this.formData.credits
       };
       this.courseSubjectList.push(newAssignment);
+      this.toast.success(`Subject "${subject.name}" assigned to "${course.name}".`);
     }
 
     this.saveCourseSubjectsToStorage();
@@ -195,10 +210,10 @@ export class CourseSubjectAssignment implements OnInit {
   }
 
   deleteAssignment(id: string): void {
-    if (confirm('Are you sure you want to unassign this subject from the course?')) {
-      this.courseSubjectList = this.courseSubjectList.filter(cs => cs.id !== id);
-      this.saveCourseSubjectsToStorage();
-    }
+    const cs = this.courseSubjectList.find(item => item.id === id);
+    this.courseSubjectList = this.courseSubjectList.filter(item => item.id !== id);
+    this.saveCourseSubjectsToStorage();
+    this.toast.info(`Assignment ${cs ? cs.subjectName + ' → ' + cs.courseName : ''} unassigned.`);
   }
 
   private validateForm(): boolean {
@@ -210,7 +225,7 @@ export class CourseSubjectAssignment implements OnInit {
       localStorage.setItem('obslmsCourseSubjects', JSON.stringify(this.courseSubjectList));
       this.filterCourseSubjects();
     } catch {
-      alert('Error saving assignment data');
+      this.toast.error('Error saving assignment data');
     }
   }
 

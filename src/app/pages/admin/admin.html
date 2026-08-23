@@ -1,74 +1,236 @@
 <app-navbar></app-navbar>
 
 <div class="container">
-
 	<app-sidebar></app-sidebar>
 
 	<div class="content">
-
+		<!-- Executive Page Header -->
 		<div class="page-header">
-
-			<h1>🛠️ Admin Dashboard</h1>
-
-			<p>
-				Welcome back, Admin. Manage users, review reports, and configure system settings from one screen.
-			</p>
-
+			<div class="header-main">
+				<h1>🏛️ Institutional Administration & OBE Compliance</h1>
+				<p>
+					Executive control center for institutional governance, NBA/NAAC outcome tracking, curriculum approvals, and department management.
+				</p>
+			</div>
+			<div class="quick-header-actions">
+				<button class="btn-action btn-export" (click)="exportInstitutionAuditCsv()" title="Export complete institutional OBE audit report">
+					📥 Export OBE Audit CSV
+				</button>
+				<a routerLink="/admin/student-management" class="btn-action">+ Student</a>
+				<a routerLink="/admin/faculty-management" class="btn-action">+ Faculty</a>
+				<a routerLink="/courses" class="btn-action">+ Course</a>
+				<a routerLink="/admin/approval-management" class="btn-action btn-approval">
+					⚖️ Approvals
+					<span *ngIf="counts.pendingApprovals > 0" class="badge-count">{{ counts.pendingApprovals }}</span>
+				</a>
+			</div>
 		</div>
 
+		<!-- Top KPI Metric Summary -->
+		<div class="kpi-grid">
+			<div class="kpi-card">
+				<div class="kpi-top">
+					<span class="kpi-icon">🎓</span>
+					<a routerLink="/admin/student-management" class="kpi-link">Manage →</a>
+				</div>
+				<div class="kpi-num">{{ counts.students }}</div>
+				<div class="kpi-label">Registered Students</div>
+			</div>
+
+			<div class="kpi-card">
+				<div class="kpi-top">
+					<span class="kpi-icon">👨‍🏫</span>
+					<a routerLink="/admin/faculty-management" class="kpi-link">Manage →</a>
+				</div>
+				<div class="kpi-num">{{ counts.faculty }}</div>
+				<div class="kpi-label">Faculty Members</div>
+			</div>
+
+			<div class="kpi-card">
+				<div class="kpi-top">
+					<span class="kpi-icon">📘</span>
+					<a routerLink="/courses" class="kpi-link">Manage →</a>
+				</div>
+				<div class="kpi-num">{{ counts.courses }}</div>
+				<div class="kpi-label">Active Courses</div>
+			</div>
+
+			<div class="kpi-card">
+				<div class="kpi-top">
+					<span class="kpi-icon">📚</span>
+					<a routerLink="/subjects" class="kpi-link">Manage →</a>
+				</div>
+				<div class="kpi-num">{{ counts.subjects }}</div>
+				<div class="kpi-label">Curriculum Subjects</div>
+			</div>
+
+			<div class="kpi-card">
+				<div class="kpi-top">
+					<span class="kpi-icon">🔗</span>
+					<a routerLink="/copo-mapping" class="kpi-link">Matrix →</a>
+				</div>
+				<div class="kpi-num">{{ counts.copoMappings }}</div>
+				<div class="kpi-label">CO-PO Mappings ({{ counts.approvedMappings }} Approved)</div>
+			</div>
+
+			<div class="kpi-card" [class.kpi-alert]="counts.pendingApprovals > 0">
+				<div class="kpi-top">
+					<span class="kpi-icon">⚖️</span>
+					<a routerLink="/admin/approval-management" class="kpi-link">Review →</a>
+				</div>
+				<div class="kpi-num">{{ counts.pendingApprovals }}</div>
+				<div class="kpi-label">Pending Approvals</div>
+			</div>
+		</div>
+
+		<!-- 🎯 Institutional OBE Accreditation Readiness Indicator Card -->
+		<div class="obe-readiness-card">
+			<div class="readiness-header">
+				<div>
+					<div class="readiness-title-row">
+						<h2>🎯 Institutional Accreditation Readiness (NBA / NAAC)</h2>
+						<span class="compliance-status-pill" [class.compliant]="obeHealth.accreditationReadinessPct >= 75">
+							{{ obeHealth.complianceStatus }}
+						</span>
+					</div>
+					<p class="readiness-sub">
+						Weighted outcome alignment index across curriculum mapping (60%) and assessment-CO linking (40%).
+					</p>
+				</div>
+				<div class="readiness-score-box">
+					<span class="readiness-score">{{ obeHealth.accreditationReadinessPct }}%</span>
+					<small>Readiness Index</small>
+				</div>
+			</div>
+
+			<div class="readiness-progress-track">
+				<div class="readiness-progress-fill" [style.width]="obeHealth.accreditationReadinessPct + '%'"></div>
+			</div>
+
+			<div class="readiness-breakdown-row">
+				<div class="breakdown-stat">
+					<span class="b-label">Curriculum Mapping Coverage</span>
+					<strong class="b-val">{{ obeHealth.curriculumMappingPct }}%</strong>
+					<small>{{ counts.approvedMappings }} approved of {{ counts.courseOutcomes }} defined COs</small>
+				</div>
+				<div class="breakdown-stat">
+					<span class="b-label">Assessment CO Alignment</span>
+					<strong class="b-val">{{ obeHealth.assessmentAlignmentPct }}%</strong>
+					<small>Evaluations mapped to course outcomes</small>
+				</div>
+				<div class="breakdown-stat">
+					<span class="b-label">Program Outcomes (POs)</span>
+					<strong class="b-val">{{ counts.programOutcomes }}</strong>
+					<small>Institutional graduate attributes defined</small>
+				</div>
+				<div class="breakdown-stat">
+					<span class="b-label">Pending Reviews</span>
+					<strong class="b-val" [class.alert-text]="counts.pendingApprovals > 0">{{ counts.pendingApprovals }}</strong>
+					<small>Awaiting administrative sign-off</small>
+				</div>
+			</div>
+		</div>
+
+		<!-- Split Section: Department Distribution & Live Activity -->
+		<div class="executive-two-col">
+			<!-- Department Breakdown -->
+			<div class="exec-card">
+				<div class="exec-card-header">
+					<h3>📊 Department Enrolment & Faculty Distribution</h3>
+					<small>Institutional breakdown across active academic departments</small>
+				</div>
+				<div *ngIf="departmentStats.length > 0" class="dept-list">
+					<div *ngFor="let dept of departmentStats" class="dept-item">
+						<div class="dept-info">
+							<span class="dept-name">{{ dept.name }}</span>
+							<span class="dept-counts">{{ dept.studentCount }} Students • {{ dept.facultyCount }} Faculty</span>
+						</div>
+						<div class="dept-bar-track">
+							<div class="dept-bar-fill" [style.width]="counts.students > 0 ? (dept.studentCount / counts.students * 100) + '%' : '0%'"></div>
+						</div>
+					</div>
+				</div>
+				<div *ngIf="departmentStats.length === 0" class="empty-state-box">
+					<div class="empty-state-icon">🏛️</div>
+					<div class="empty-state-text">No departmental records found</div>
+					<small>Add students or faculty members to view automatic departmental metrics.</small>
+				</div>
+			</div>
+
+			<!-- Live Activity Feed -->
+			<div class="exec-card">
+				<div class="exec-card-header">
+					<h3>⚡ System Activity & Audit Trail</h3>
+					<small>Real-time log of administrative updates and submissions</small>
+				</div>
+				<div *ngIf="recentActivities.length > 0" class="activity-list">
+					<div *ngFor="let act of recentActivities" class="activity-item">
+						<div class="activity-icon">{{ act.icon }}</div>
+						<div class="activity-details">
+							<h4>{{ act.title }}</h4>
+							<p>{{ act.description }}</p>
+							<small class="activity-time">{{ act.time }}</small>
+						</div>
+					</div>
+				</div>
+				<div *ngIf="recentActivities.length === 0" class="empty-state-box">
+					<div class="empty-state-icon">📝</div>
+					<div class="empty-state-text">No recent administrative activity</div>
+					<small>Audit trail logs and event notifications will appear here in real-time.</small>
+				</div>
+			</div>
+		</div>
+
+		<!-- Academic Management & Accreditation Tools Grid -->
+		<h2 class="section-title">🏛️ Academic Management & Accreditation Tools</h2>
 		<div class="dashboard-grid">
-			<div class="dashboard-card metric-card">
-				<h3>Faculty</h3>
-				<div class="metric-value">{{ counts.faculty }}</div>
-				<p>Total faculty members in the system.</p>
-				<a routerLink="/admin/faculty-management" class="metric-action">Manage faculty</a>
+			<div class="dashboard-card feature-card">
+				<div class="card-badge">CURRICULUM</div>
+				<h3>📚 Course-Subject Assignment</h3>
+				<p>Structure syllabus modules by mapping subjects to degree programs and semesters.</p>
+				<a routerLink="/admin/course-subject-assignment" class="metric-action">Assign Subjects →</a>
 			</div>
-			<div class="dashboard-card metric-card">
-				<h3>Students</h3>
-				<div class="metric-value">{{ counts.students }}</div>
-				<p>Total students enrolled across courses.</p>
-				<a routerLink="/admin/student-management" class="metric-action">Manage students</a>
+
+			<div class="dashboard-card feature-card">
+				<div class="card-badge">FACULTY</div>
+				<h3>👨‍🏫 Faculty Course Allocation</h3>
+				<p>Assign qualified faculty members to course subjects and academic terms.</p>
+				<a routerLink="/admin/faculty-course-allocation" class="metric-action">Allocate Faculty →</a>
 			</div>
-			<div class="dashboard-card metric-card">
-				<h3>Courses</h3>
-				<div class="metric-value">{{ counts.courses }}</div>
-				<p>Active courses available in the curriculum.</p>
-				<a routerLink="/courses" class="metric-action">Manage courses</a>
-			</div>
-			<div class="dashboard-card metric-card">
-				<h3>Subjects</h3>
-				<div class="metric-value">{{ counts.subjects }}</div>
-				<p>Total subjects currently configured.</p>
-				<a routerLink="/subjects" class="metric-action">Manage subjects</a>
-			</div>
-			<div class="dashboard-card metric-card">
-				<h3>Assessments</h3>
-				<div class="metric-value">{{ counts.assessments }}</div>
-				<p>Assessments created across all courses.</p>
-				<a routerLink="/assessments" class="metric-action">Review assessments</a>
-			</div>
-			<div class="dashboard-card metric-card feature-card">
-				<h3>📚 Subject Assignment</h3>
-				<p>Assign subjects to courses and manage curriculum structure.</p>
-				<a routerLink="/admin/course-subject-assignment" class="metric-action">Assign subjects</a>
-			</div>
-			<div class="dashboard-card metric-card feature-card">
-				<h3>👨‍🏫 Faculty Allocation</h3>
-				<p>Allocate faculty to courses and subjects for teaching.</p>
-				<a routerLink="/admin/faculty-course-allocation" class="metric-action">Allocate faculty</a>
-			</div>
-			<div class="dashboard-card metric-card feature-card feature-critical">
+
+			<div class="dashboard-card feature-card feature-critical">
+				<div class="card-badge">OBE ESSENTIAL</div>
 				<h3>🎯 Assessment-CO Mapping</h3>
-				<p>Map assessments to course outcomes (OBE essentials).</p>
-				<a routerLink="/admin/assessment-co-mapping" class="metric-action">Create mappings</a>
-			</div>			<div class="dashboard-card metric-card feature-card">
-				<h3>✅ Approval Workflow</h3>
-				<p>Review and approve pending mappings and configurations.</p>
-				<a routerLink="/admin/approval-management" class="metric-action">Review approvals</a>
-			</div>		</div>
+				<p>Map midterms, assignments, and practicals to specific Course Learning Outcomes.</p>
+				<a routerLink="/admin/assessment-co-mapping" class="metric-action">Create Mappings →</a>
+			</div>
 
+			<div class="dashboard-card feature-card">
+				<div class="card-badge">ACCREDITATION</div>
+				<h3>⚖️ Unified Approval Management</h3>
+				<p>Review, approve, or request changes on pending CO-PO matrices and rubrics.</p>
+				<a routerLink="/admin/approval-management" class="metric-action">
+					Manage Approvals {{ counts.pendingApprovals > 0 ? '(' + counts.pendingApprovals + ' pending)' : '' }} →
+				</a>
+			</div>
+
+			<div class="dashboard-card metric-card">
+				<div class="card-badge">ANALYTICS</div>
+				<h3>📈 Institutional Attainment</h3>
+				<p>Audit overall program outcome attainment against NBA / NAAC compliance targets.</p>
+				<a routerLink="/po-attainment" class="metric-action">View PO Attainment →</a>
+			</div>
+
+			<div class="dashboard-card metric-card">
+				<div class="card-badge">SUPPORT</div>
+				<h3>📬 Student Grievances</h3>
+				<p>Track academic, attendance, and technical support tickets filed by students.</p>
+				<a routerLink="/grievance" class="metric-action">
+					View Tickets {{ counts.openGrievances > 0 ? '(' + counts.openGrievances + ' active)' : '' }} →
+				</a>
+			</div>
+		</div>
+
+		<app-footer></app-footer>
 	</div>
-
 </div>
-
-<app-footer></app-footer>

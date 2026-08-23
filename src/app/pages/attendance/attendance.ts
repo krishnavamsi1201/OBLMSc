@@ -24,34 +24,35 @@ interface AttendanceRecord {
     <app-sidebar></app-sidebar>
     <div class="content">
         <div class="page-header">
-            <h1>📅 Student Attendance</h1>
-            <p>Faculty controls for marking attendance, editing records, and monthly reporting.</p>
+            <h1>📅 {{ role === 'student' ? 'My Attendance Record' : 'Student Attendance Management' }}</h1>
+            <p>{{ role === 'student' ? 'View your class attendance percentage, lecture history, and OBE 75% eligibility standing.' : 'Faculty controls for marking attendance, editing records, and monthly reporting.' }}</p>
         </div>
 
         <div class="summary-grid">
             <div class="section-card">
                 <h3>Attendance Percentage</h3>
-                <strong>{{ attendancePercentage }}%</strong>
-                <p>Average attendance across tracked students.</p>
+                <strong [style.color]="attendancePercentage >= 75 ? '#10b981' : '#ef4444'">{{ attendancePercentage }}%</strong>
+                <p>{{ attendancePercentage >= 75 ? 'Eligible for end-semester exams' : '⚠️ Below 75% threshold' }}</p>
             </div>
             <div class="section-card">
-                <h3>Present</h3>
+                <h3>Present Lectures</h3>
                 <strong>{{ totalPresent }}</strong>
-                <p>Total present entries for selected month.</p>
+                <p>Total lectures attended.</p>
             </div>
             <div class="section-card">
-                <h3>Absent</h3>
+                <h3>Absent Lectures</h3>
                 <strong>{{ totalAbsent }}</strong>
-                <p>Total absent entries for selected month.</p>
+                <p>Total lectures missed.</p>
             </div>
             <div class="section-card">
-                <h3>Monthly Report</h3>
+                <h3>Current Month</h3>
                 <strong>{{ monthlyReportDate }}</strong>
-                <p>Latest monthly attendance summary.</p>
+                <p>Monthly attendance cycle.</p>
             </div>
         </div>
 
-        <div class="form-card">
+        <!-- Mark Attendance Form (Faculty / Admin Only) -->
+        <div class="form-card" *ngIf="role === 'admin' || role === 'faculty'">
             <h2>Mark Attendance</h2>
             <form (ngSubmit)="saveAttendanceRecord()">
                 <div class="grid-row">
@@ -91,11 +92,11 @@ interface AttendanceRecord {
         </div>
 
         <div class="search-card">
-            <h2>Search Attendance</h2>
+            <h2>{{ role === 'student' ? 'Filter Attendance Logs' : 'Search Attendance' }}</h2>
             <div class="search-filters">
                 <label>
-                    Search by Name or RegNo
-                    <input type="text" [(ngModel)]="searchTerm" (input)="onSearch()" placeholder="Enter student name or registration number">
+                    Search by {{ role === 'student' ? 'Course / Subject' : 'Name, RegNo, or Course' }}
+                    <input type="text" [(ngModel)]="searchTerm" (input)="onSearch()" placeholder="Search...">
                 </label>
                 <label>
                     Filter by Status
@@ -109,26 +110,26 @@ interface AttendanceRecord {
         </div>
 
         <div class="table-card">
-            <h2>Attendance Records ({{ filteredRecords.length }})</h2>
+            <h2>{{ role === 'student' ? 'My Attendance Logs' : 'Attendance Records' }} ({{ filteredRecords.length }})</h2>
             <table *ngIf="filteredRecords.length > 0">
                 <thead>
                     <tr>
-                        <th>Student</th>
-                        <th>RegNo</th>
+                        <th *ngIf="role !== 'student'">Student</th>
+                        <th *ngIf="role !== 'student'">RegNo</th>
                         <th>Course</th>
                         <th>Date</th>
                         <th>Status</th>
-                        <th>Actions</th>
+                        <th *ngIf="role === 'admin' || role === 'faculty'">Actions</th>
                     </tr>
                 </thead>
                 <tbody>
                     <tr *ngFor="let record of filteredRecords; index as i">
-                        <td>{{ record.student }}</td>
-                        <td>{{ record.regNo || '-' }}</td>
-                        <td>{{ record.course }}</td>
+                        <td *ngIf="role !== 'student'"><strong>{{ record.student }}</strong></td>
+                        <td *ngIf="role !== 'student'">{{ record.regNo || '-' }}</td>
+                        <td><strong>{{ record.course }}</strong></td>
                         <td>{{ record.date }}</td>
                         <td><span [class.present]="record.status === 'Present'" [class.absent]="record.status === 'Absent'">{{ record.status }}</span></td>
-                        <td>
+                        <td *ngIf="role === 'admin' || role === 'faculty'">
                             <button type="button" class="edit-btn" (click)="editAttendance(attendanceRecords.indexOf(record))">Edit</button>
                             <button type="button" class="delete-btn" (click)="deleteAttendance(attendanceRecords.indexOf(record))">Delete</button>
                         </td>
@@ -139,7 +140,7 @@ interface AttendanceRecord {
         </div>
 
         <div class="chart-card">
-            <h2>Monthly Report</h2>
+            <h2>Monthly Summary</h2>
             <div class="report-summary">
                 <div>
                     <h3>Present</h3>
@@ -151,14 +152,13 @@ interface AttendanceRecord {
                 </div>
                 <div>
                     <h3>Attendance %</h3>
-                    <strong>{{ attendancePercentage }}%</strong>
+                    <strong [style.color]="attendancePercentage >= 75 ? '#10b981' : '#ef4444'">{{ attendancePercentage }}%</strong>
                 </div>
             </div>
         </div>
+        <app-footer></app-footer>
     </div>
-</div>
-
-<app-footer></app-footer>`,
+</div>`,
   styles: [
     `.summary-grid { display: grid; gap: 16px; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); margin-bottom: 24px; }
     .section-card, .table-card, .form-card, .chart-card, .search-card { padding: 20px; background: #fff; border-radius: 10px; box-shadow: 0 1px 12px rgba(0,0,0,.06); margin-bottom: 24px; }
@@ -173,12 +173,12 @@ interface AttendanceRecord {
     button.secondary { background: #616161; }
     button.edit-btn { background: #4CAF50; padding: 6px 12px; font-size: 12px; }
     button.delete-btn { background: #f44336; padding: 6px 12px; font-size: 12px; }
-    .table-card table { width: 100%; border-collapse: collapse; margin-top: 16px; }
-    .table-card th, .table-card td { padding: 12px 10px; border-bottom: 1px solid #e8e8e8; text-align: left; }
-    .table-card th { font-weight: 700; background: #f5f5f5; }
-    .table-card tbody tr:hover { background: #fafafa; }
-    .present { color: #4CAF50; font-weight: 600; }
-    .absent { color: #f44336; font-weight: 600; }
+    table { width: 100%; border-collapse: collapse; margin-top: 16px; }
+    th, td { padding: 12px 10px; border-bottom: 1px solid #e8e8e8; text-align: left; }
+    th { font-weight: 700; background: #f5f5f5; }
+    tbody tr:hover { background: #fafafa; }
+    .present { color: #4CAF50; font-weight: 700; }
+    .absent { color: #f44336; font-weight: 700; }
     .report-summary { display: grid; gap: 16px; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); }
     .report-summary div { background: #f4f7fb; border-radius: 12px; padding: 16px; text-align: center; }
     .report-summary h3 { margin: 0 0 10px; font-size: 1rem; color: #555; }
@@ -189,6 +189,8 @@ interface AttendanceRecord {
   ]
 })
 export class AttendancePage implements OnInit {
+  role: string | null = null;
+  userName = 'Student';
   attendanceRecords: AttendanceRecord[] = [];
   filteredRecords: AttendanceRecord[] = [];
   searchTerm = '';
@@ -199,21 +201,19 @@ export class AttendancePage implements OnInit {
   monthlyReportDate = new Date().toLocaleString('default', { month: 'long', year: 'numeric' });
 
   constructor() {
+    this.role = localStorage.getItem('userRole')?.toLowerCase() || null;
+    this.userName = localStorage.getItem('userName') || 'Student';
     this.loadAttendance();
   }
 
   ngOnInit(): void {
-    this.filteredRecords = [...this.attendanceRecords];
+    this.onSearch();
   }
 
-  /**
-   * Load attendance from localStorage
-   */
   private loadAttendance(): void {
     try {
       const stored = localStorage.getItem('obslmsAttendance');
       this.attendanceRecords = stored ? JSON.parse(stored) as AttendanceRecord[] : [];
-      this.filteredRecords = [...this.attendanceRecords];
     } catch {
       this.attendanceRecords = [];
     }
@@ -281,10 +281,20 @@ export class AttendancePage implements OnInit {
   onSearch(): void {
     let results = this.attendanceRecords;
 
+    if (this.role === 'student') {
+      const uname = (this.userName || localStorage.getItem('userName') || 'Student').toLowerCase();
+      results = results.filter(r =>
+        r.student.toLowerCase() === uname ||
+        r.student.toLowerCase() === 'student' ||
+        r.student.toLowerCase() === 'raj kumar'
+      );
+    }
+
     if (this.searchTerm.trim()) {
       const term = this.searchTerm.toLowerCase();
       results = results.filter(r =>
         r.student.toLowerCase().includes(term) ||
+        r.course.toLowerCase().includes(term) ||
         (r.regNo && r.regNo.toLowerCase().includes(term))
       );
     }
@@ -296,16 +306,28 @@ export class AttendancePage implements OnInit {
     this.filteredRecords = results;
   }
 
+  get userRecords(): AttendanceRecord[] {
+    if (this.role === 'student') {
+      const uname = (this.userName || localStorage.getItem('userName') || 'Student').toLowerCase();
+      return this.attendanceRecords.filter(r =>
+        r.student.toLowerCase() === uname ||
+        r.student.toLowerCase() === 'student' ||
+        r.student.toLowerCase() === 'raj kumar'
+      );
+    }
+    return this.attendanceRecords;
+  }
+
   get totalPresent(): number {
-    return this.attendanceRecords.filter(r => r.status === 'Present').length;
+    return this.userRecords.filter(r => r.status === 'Present').length;
   }
 
   get totalAbsent(): number {
-    return this.attendanceRecords.filter(r => r.status === 'Absent').length;
+    return this.userRecords.filter(r => r.status === 'Absent').length;
   }
 
   get attendancePercentage(): number {
-    const total = this.attendanceRecords.length;
+    const total = this.userRecords.length;
     return total === 0 ? 0 : Math.round((this.totalPresent / total) * 100);
   }
 }

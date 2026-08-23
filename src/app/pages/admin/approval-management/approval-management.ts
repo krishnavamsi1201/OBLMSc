@@ -1,13 +1,14 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Navbar } from '../../../shared/navbar/navbar';
 import { Sidebar } from '../../../shared/sidebar/sidebar';
 import { Footer } from '../../../shared/footer/footer';
+import { ToastService } from '../../../shared/services/toast.service';
 
 interface ApprovalItem {
   id: string;
-  type: string; // 'assessment-co-mapping', 'course-subject-assignment', 'faculty-allocation'
+  type: string; // 'assessment-co-mapping', 'copo-mapping', 'course-subject-assignment', 'faculty-allocation'
   title: string;
   description: string;
   createdBy: string;
@@ -37,6 +38,7 @@ interface AssessmentCOMapping {
   styleUrls: ['./approval-management.css']
 })
 export class ApprovalManagement implements OnInit {
+  private toast = inject(ToastService);
   approvalItems: ApprovalItem[] = [];
   filteredItems: ApprovalItem[] = [];
   filterStatus: string = 'Pending';
@@ -46,6 +48,7 @@ export class ApprovalManagement implements OnInit {
   approvalTypes = [
     { value: '', label: 'All Types' },
     { value: 'assessment-co-mapping', label: 'Assessment-CO Mappings' },
+    { value: 'copo-mapping', label: 'CO-PO Curriculum Mappings' },
     { value: 'course-subject-assignment', label: 'Course-Subject Assignments' },
     { value: 'faculty-allocation', label: 'Faculty Allocations' }
   ];
@@ -65,30 +68,39 @@ export class ApprovalManagement implements OnInit {
 
   loadApprovalItems(): void {
     try {
+      const items: ApprovalItem[] = [];
+
+      // 1. Assessment-CO Mappings
       const assessmentMappings = JSON.parse(localStorage.getItem('obslmsAssessmentCOMappings') || '[]') as AssessmentCOMapping[];
-      
-      this.approvalItems = assessmentMappings.map((mapping: AssessmentCOMapping) => ({
-        id: mapping.id,
-        type: 'assessment-co-mapping',
-        title: `${mapping.assessmentName} → ${mapping.courseOutcomes.join(', ')}`,
-        description: `Assessment: ${mapping.assessmentName} (${mapping.assessmentType}) | Course: ${mapping.courseName} | CO(s): ${mapping.courseOutcomes.join(', ')}`,
-        createdBy: 'System',
-        createdDate: mapping.approvalDate || new Date().toISOString().split('T')[0],
-        status: mapping.approvalStatus || 'Pending',
-        details: mapping
-      }));
+      assessmentMappings.forEach((mapping: AssessmentCOMapping) => {
+        items.push({
+          id: mapping.id,
+          type: 'assessment-co-mapping',
+          title: `${mapping.assessmentName} → ${(mapping.courseOutcomes || []).join(', ')}`,
+          description: `Assessment: ${mapping.assessmentName} (${mapping.assessmentType}) | Course: ${mapping.courseName} | CO(s): ${(mapping.courseOutcomes || []).join(', ')}`,
+          createdBy: 'Faculty',
+          createdDate: mapping.approvalDate || new Date().toISOString().split('T')[0],
+          status: mapping.approvalStatus || 'Pending',
+          details: mapping
+        });
+      });
 
-      // Load course-subject assignments if they have approval workflow
-      try {
-        const courseSubjects = JSON.parse(localStorage.getItem('obslmsCourseSubjects') || '[]');
-        // Add course-subject assignments to approvals if needed
-      } catch {}
+      // 2. CO-PO Curriculum Mappings
+      const copoMappings = JSON.parse(localStorage.getItem('obslmsCoMappings') || '[]');
+      copoMappings.forEach((mapping: any) => {
+        items.push({
+          id: (mapping.id || `${mapping.course}-${mapping.co}-${mapping.po}`).toString(),
+          type: 'copo-mapping',
+          title: `Curriculum: ${mapping.co} → ${mapping.po} (${mapping.course})`,
+          description: `Course: ${mapping.course} | CO: ${mapping.co} mapped to ${mapping.po} | Contribution: ${mapping.contribution}%`,
+          createdBy: 'Faculty',
+          createdDate: new Date().toISOString().split('T')[0],
+          status: mapping.status || 'Pending',
+          details: mapping
+        });
+      });
 
-      // Load faculty allocations if they have approval workflow
-      try {
-        const facultyAllocations = JSON.parse(localStorage.getItem('obslmsFacultyAllocations') || '[]');
-        // Add faculty allocations to approvals if needed
-      } catch {}
+      this.approvalItems = items;
 
     } catch (error) {
       console.error('Error loading approval items:', error);
@@ -117,12 +129,10 @@ export class ApprovalManagement implements OnInit {
   }
 
   approveItem(item: ApprovalItem): void {
-    if (confirm(`Approve this ${item.type}?`)) {
-      item.status = 'Approved';
-      this.updateApprovalInStorage(item);
-      this.showNotification(`✅ Approved: ${item.title}`, 'success');
-      this.filterApprovals();
-    }
+    item.status = 'Approved';
+    this.updateApprovalInStorage(item);
+    this.toast.success(`Approved: ${item.title}`);
+    this.filterApprovals();
   }
 
   rejectItem(item: ApprovalItem): void {
@@ -133,7 +143,7 @@ export class ApprovalManagement implements OnInit {
 
   confirmReject(): void {
     if (!this.rejectionReasonText.trim()) {
-      alert('Please provide a rejection reason');
+      this.toast.warning('Please provide a rejection reason');
       return;
     }
 
@@ -144,7 +154,7 @@ export class ApprovalManagement implements OnInit {
         item.details.rejectionReason = this.rejectionReasonText;
       }
       this.updateApprovalInStorage(item);
-      this.showNotification(`❌ Rejected: ${item.title} - Reason: ${this.rejectionReasonText}`, 'error');
+      this.toast.error(`Rejected: ${item.title}`);
       this.showRejectReason = false;
       this.rejectionReasonText = '';
       this.selectedApprovalId = '';
@@ -167,7 +177,7 @@ export class ApprovalManagement implements OnInit {
           mappings[index].approvalStatus = item.status;
           mappings[index].approvalDate = new Date().toISOString().split('T')[0];
           mappings[index].approvedBy = localStorage.getItem('userName') || 'Admin';
-          if (item.details.rejectionReason) {
+          if (item.details?.rejectionReason) {
             mappings[index].rejectionReason = item.details.rejectionReason;
           }
           localStorage.setItem('obslmsAssessmentCOMappings', JSON.stringify(mappings));
@@ -175,12 +185,32 @@ export class ApprovalManagement implements OnInit {
       } catch (error) {
         console.error('Error updating approval:', error);
       }
+    } else if (item.type === 'copo-mapping') {
+      try {
+        const mappings = JSON.parse(localStorage.getItem('obslmsCoMappings') || '[]');
+        const index = mappings.findIndex((m: any) => m.id.toString() === item.id.toString() || `${m.course}-${m.co}-${m.po}` === item.id);
+        if (index !== -1) {
+          mappings[index].status = item.status;
+          localStorage.setItem('obslmsCoMappings', JSON.stringify(mappings));
+        }
+      } catch (error) {
+        console.error('Error updating copo mapping approval:', error);
+      }
     }
   }
 
-  showNotification(message: string, type: string): void {
-    // Simple notification - in production use a proper notification service
-    console.log(`[${type.toUpperCase()}] ${message}`);
+  getTypeLabel(type: string): string {
+    const found = this.approvalTypes.find(t => t.value === type);
+    return found ? found.label : type;
+  }
+
+  getStatusBadgeClass(status: string): string {
+    switch (status) {
+      case 'Approved': return 'badge-approved';
+      case 'Rejected': return 'badge-rejected';
+      case 'Pending': return 'badge-pending';
+      default: return '';
+    }
   }
 
   getStatusColor(status: string): string {

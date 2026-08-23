@@ -162,25 +162,25 @@ export const routes: Routes = [
     path: 'examination',
     component: Examination,
     canActivate: [RoleGuard],
-    data: { roles: ['faculty'] }
+    data: { roles: ['admin', 'faculty'] }
   },
   {
     path: 'grievance',
     component: Grievance,
     canActivate: [RoleGuard],
-    data: { roles: ['faculty'] }
+    data: { roles: ['admin', 'faculty', 'student'] }
   },
   {
     path: 'question-bank',
     component: QuestionBank,
     canActivate: [RoleGuard],
-    data: { roles: ['faculty'] }
+    data: { roles: ['admin', 'faculty'] }
   },
   {
     path: 'students',
     component: Students,
     canActivate: [RoleGuard],
-    data: { roles: ['student'] }
+    data: { roles: ['admin', 'student'] }
   },
   {
     path: 'reports',
