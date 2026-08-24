@@ -62,7 +62,7 @@
       </div>
 
       <!-- Quick Prompts Panel -->
-      <div class="quick-prompts-panel">
+      <div class="quick-prompts-panel" *ngIf="messages.length <= 1">
         <p class="quick-prompts-title">💡 Ask quick questions:</p>
         <div class="quick-prompts-list">
           <button *ngFor="let prompt of getQuickPrompts()" type="button" class="quick-prompt-btn" (click)="sendQuickPrompt(prompt)">
