@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -39,7 +39,7 @@ export class Examination implements OnInit {
   searchTerm = '';
   statusFilter = '';
 
-  constructor(private http: HttpClient) {
+  constructor(private http: HttpClient, private cdr: ChangeDetectorRef) {
     try {
       this.role = localStorage.getItem('userRole')?.toLowerCase() || null;
     } catch {
@@ -64,11 +64,13 @@ export class Examination implements OnInit {
         } catch {}
         this.applyFilters();
         this.isLoading = false;
+        this.cdr.detectChanges();
       },
       error: () => {
         this.examinationItems = [];
         this.applyFilters();
         this.isLoading = false;
+        this.cdr.detectChanges();
       }
     });
   }

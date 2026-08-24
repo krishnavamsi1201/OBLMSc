@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -57,7 +57,7 @@ export class Grievance implements OnInit {
   categoryFilter = '';
   statusFilter = '';
 
-  constructor(private http: HttpClient) {
+  constructor(private http: HttpClient, private cdr: ChangeDetectorRef) {
     try {
       this.role = localStorage.getItem('userRole')?.toLowerCase() || null;
       this.userName = localStorage.getItem('userName') || 'User';
@@ -79,11 +79,13 @@ export class Grievance implements OnInit {
         } catch {}
         this.applyFilters();
         this.isLoading = false;
+        this.cdr.detectChanges();
       },
       error: () => {
         this.grievanceItems = [];
         this.applyFilters();
         this.isLoading = false;
+        this.cdr.detectChanges();
       }
     });
   }
