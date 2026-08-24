@@ -42,22 +42,22 @@ interface CoAttainmentStatus {
             <div class="summary-grid">
                 <div class="section-card">
                     <h3>Internal Marks Avg</h3>
-                    <strong>{{ internalAvg }}%</strong>
+                    <strong>{{ internalAvg }}</strong>
                     <p>Average internal exam score across this batch.</p>
                 </div>
                 <div class="section-card">
                     <h3>Assignment Marks Avg</h3>
-                    <strong>{{ assignmentAvg }}%</strong>
+                    <strong>{{ assignmentAvg }}</strong>
                     <p>Average assignment score across students.</p>
                 </div>
                 <div class="section-card">
                     <h3>Quiz Marks Avg</h3>
-                    <strong>{{ quizAvg }}%</strong>
+                    <strong>{{ quizAvg }}</strong>
                     <p>Average quiz performance across the course.</p>
                 </div>
                 <div class="section-card">
                     <h3>Overall Average</h3>
-                    <strong>{{ overallAvg }}%</strong>
+                    <strong>{{ overallAvg }}</strong>
                     <p>Average of all marks for monitored students.</p>
                 </div>
             </div>
@@ -380,7 +380,7 @@ export class Performance implements OnInit {
             internal: Math.min(100, Math.round(avgScore * 0.95)),
             assignment: Math.min(100, Math.round(avgScore * 1.02)),
             quiz: Math.min(100, Math.round(avgScore * 0.98)),
-            average: Math.round(avgScore)
+            average: Math.min(100, Math.round(avgScore))
           };
         } else {
           return {
@@ -419,7 +419,7 @@ export class Performance implements OnInit {
 
         const totalObtained = this.myMarkEntries.reduce((sum, m) => sum + (Number(m.obtained) || 0), 0);
         const totalMax = this.myMarkEntries.reduce((sum, m) => sum + (Number(m.maxMarks) || 100), 0);
-        this.myOverallAvg = totalMax > 0 ? Math.round((totalObtained / totalMax) * 100) : 0;
+        this.myOverallAvg = totalMax > 0 ? Math.min(100, Math.round((totalObtained / totalMax) * 100)) : 0;
       } else {
         this.myInternalAvg = 0;
         this.myAssignmentAvg = 0;
@@ -449,7 +449,7 @@ export class Performance implements OnInit {
     if (entries.length === 0) return 0;
     const obtained = entries.reduce((sum, e) => sum + (Number(e.obtained) || 0), 0);
     const max = entries.reduce((sum, e) => sum + (Number(e.maxMarks) || 100), 0);
-    return max > 0 ? Math.round((obtained / max) * 100) : 0;
+    return max > 0 ? Math.min(100, Math.round((obtained / max) * 100)) : 0;
   }
 
   // SVG Trend Line calculation
