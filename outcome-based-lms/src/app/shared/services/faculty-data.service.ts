@@ -935,6 +935,22 @@ export class FacultyDataService {
         }
       });
       localStorage.setItem('obslmsAttendance', JSON.stringify(existing));
+
+      const payloads = records.map(rec => ({
+        student: rec.student.trim(),
+        courseCode: rec.course.trim(),
+        date: rec.date,
+        status: rec.status
+      }));
+
+      this.http.post('http://localhost:8080/api/attendance/bulk', payloads).subscribe({
+        next: () => {
+          console.log('Attendance bulk entries saved to MySQL.');
+        },
+        error: (err) => {
+          console.error('Failed to save attendance to MySQL:', err);
+        }
+      });
     } catch (e) {
       console.error('Error saving bulk attendance:', e);
     }
