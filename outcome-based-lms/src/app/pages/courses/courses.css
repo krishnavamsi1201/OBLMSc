@@ -1,0 +1,127 @@
+.content {
+    background:
+    radial-gradient(circle at 15% 20%, var(--surface-soft), transparent 26%),
+    radial-gradient(circle at 85% 15%, var(--surface-strong), transparent 22%),
+    linear-gradient(135deg, rgba(255, 255, 255, 0.96), rgba(236, 244, 252, 0.92));
+}
+
+.page-header h1{
+    color: var(--text-light);
+    font-size:42px;
+}
+
+.page-header p{
+    color: var(--text-secondary);
+    font-size:18px;
+    margin-top:10px;
+}
+
+.course-actions {
+    display: flex;
+    justify-content: flex-end;
+    margin-bottom: 24px;
+}
+
+.courses-table-card {
+    background: rgba(255, 255, 255, 0.96);
+    border: 1px solid rgba(174, 202, 241, 0.34);
+    border-radius: 22px;
+    box-shadow: 0 18px 40px rgba(47, 101, 195, 0.10);
+    padding: 24px;
+}
+
+.courses-table-card table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.courses-table-card th,
+.courses-table-card td {
+    padding: 16px 12px;
+    text-align: left;
+    border-bottom: 1px solid rgba(72, 101, 145, 0.12);
+}
+
+.courses-table-card th {
+    color: #1f3d7a;
+    font-weight: 700;
+}
+
+.courses-table-card td {
+    color: #455d82;
+}
+
+.actions-cell button {
+    margin-right: 8px;
+}
+
+/* Custom Modal Overlay Styling */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(15, 23, 42, 0.6);
+    backdrop-filter: blur(4px);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 10000;
+}
+
+.modal-card {
+    background: #ffffff;
+    border-radius: 16px;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    padding: 28px;
+    width: 100%;
+    max-width: 440px;
+    animation: modalFadeIn 0.2s ease-out;
+}
+
+@keyframes modalFadeIn {
+    from {
+        opacity: 0;
+        transform: scale(0.95);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+.modal-card h2 {
+    color: #1e293b;
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin-top: 0;
+    margin-bottom: 12px;
+}
+
+.modal-card p {
+    color: #64748b;
+    font-size: 0.95rem;
+    margin-bottom: 20px;
+}
+
+.modal-form-row {
+    margin-bottom: 20px;
+}
+
+.modal-form-row select {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid #cbd5e1;
+    border-radius: 8px;
+    font-size: 0.95rem;
+    color: #334155;
+    background: #f8fafc;
+    outline: none;
+    transition: border-color 0.2s;
+}
+
+.modal-form-row select:focus {
+    border-color: #3b82f6;
+    background: #ffffff;
+}

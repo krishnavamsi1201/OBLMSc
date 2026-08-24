@@ -1,26 +1,17 @@
-# See https://docs.github.com/get-started/getting-started-with-git/ignoring-files for more about ignoring files.
+# Frontend ignored paths
+outcome-based-lms/dist/
+outcome-based-lms/tmp/
+outcome-based-lms/out-tsc/
+outcome-based-lms/node_modules/
+outcome-based-lms/.angular/cache/
 
-# Compiled output
-/dist
-/tmp
-/out-tsc
-/bazel-out
+# Backend ignored paths
+springboot-backend/target/
+springboot-backend/.idea/
+springboot-backend/*.class
 
-# Node
-/node_modules
-npm-debug.log
-yarn-error.log
-
-# IDEs and editors
+# Common files
 .idea/
-.project
-.classpath
-.c9/
-*.launch
-.settings/
-*.sublime-workspace
-
-# Visual Studio Code
 .vscode/*
 !.vscode/settings.json
 !.vscode/tasks.json
@@ -28,17 +19,5 @@ yarn-error.log
 !.vscode/extensions.json
 !.vscode/mcp.json
 .history/*
-
-# Miscellaneous
-/.angular/cache
-.sass-cache/
-/connect.lock
-/coverage
-/libpeerconnection.log
-testem.log
-/typings
-__screenshots__/
-
-# System files
 .DS_Store
 Thumbs.db
