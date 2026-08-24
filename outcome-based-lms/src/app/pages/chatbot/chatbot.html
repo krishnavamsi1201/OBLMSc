@@ -61,16 +61,6 @@
         </button>
       </div>
 
-      <!-- Quick Prompts Panel -->
-      <div class="quick-prompts-panel" *ngIf="messages.length <= 1">
-        <p class="quick-prompts-title">💡 Ask quick questions:</p>
-        <div class="quick-prompts-list">
-          <button *ngFor="let prompt of getQuickPrompts()" type="button" class="quick-prompt-btn" (click)="sendQuickPrompt(prompt)">
-            {{ prompt }}
-          </button>
-        </div>
-      </div>
-
       <div class="chat-actions">
 
         <form class="chat-form" (ngSubmit)="sendMessage()">
@@ -78,6 +68,7 @@
             <input
               type="text"
               [(ngModel)]="userMessage"
+              (ngModelChange)="onInputChange()"
               name="message"
               placeholder="Ask about courses, COs, exams, results..." 
               class="custom-chat-input"

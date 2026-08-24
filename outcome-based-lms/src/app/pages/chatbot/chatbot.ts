@@ -71,26 +71,24 @@ export class Chatbot {
     this.suggestions = [];
   }
 
-  getQuickPrompts(): string[] {
-    const role = localStorage.getItem('userRole')?.toLowerCase() || 'student';
-    if (role === 'student') {
-      return [
-        'What is my current CGPA?',
-        'Do I have any exams scheduled this week?',
-        'Show my attendance summary'
-      ];
-    } else {
-      return [
-        'How many pending grievances are there?',
-        'What is the class average grades?',
-        'Show this week’s timetable slots'
-      ];
+  onInputChange(): void {
+    const lower = this.userMessage.toLowerCase().trim();
+    if (!lower) {
+      this.suggestions = [];
+      return;
     }
-  }
+    const allSuggestions = [
+      { label: 'View Enrolled Courses 📚', route: '/courses', keywords: ['course', 'subject', 'class', 'register', 'enroll'] },
+      { label: 'View Outcomes (CO) 🎯', route: '/course-outcomes', keywords: ['outcome', 'co', 'po', 'attainment', 'mapping'] },
+      { label: 'View Exams Schedule 📝', route: '/assessments', keywords: ['exam', 'test', 'schedule', 'assess', 'mid'] },
+      { label: 'View Attendance 📅', route: '/attendance', keywords: ['attendance', 'present', 'absent', 'percentage'] },
+      { label: 'View Performance & Results 📈', route: '/performance', keywords: ['marks', 'grade', 'cgpa', 'gpa', 'performance', 'average', 'result'] },
+      { label: 'File Grievance Desk 📩', route: '/grievance', keywords: ['complain', 'grievance', 'ticket', 'issue', 'problem', 'support'] }
+    ];
 
-  sendQuickPrompt(prompt: string): void {
-    this.userMessage = prompt;
-    this.sendMessage();
+    this.suggestions = allSuggestions.filter(s => 
+      s.keywords.some(k => lower.includes(k)) || s.label.toLowerCase().includes(lower)
+    ).map(s => ({ label: s.label, route: s.route }));
   }
 
   private defaultSuggestions(): Array<{ label: string; route: string }> {
