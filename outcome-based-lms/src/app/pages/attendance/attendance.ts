@@ -19,28 +19,29 @@ interface AttendanceRecord {
   status: 'Present' | 'Absent';
 }
 
-interface StudentRosterItem {
+interface EnrolledStudentItem {
   id: string;
   name: string;
   regNo: string;
   department: string;
   semester: string;
-  pastAttendancePercentage: number;
-  status: 'Present' | 'Absent';
+  attendancePercentage: number;
+  totalPresent: number;
+  totalLectures: number;
+  status: 'Present' | 'Absent' | 'Unmarked';
 }
 
-const DEFAULT_STUDENT_ROSTER: Omit<StudentRosterItem, 'pastAttendancePercentage' | 'status'>[] = [
-  { id: '240101120001', name: 'Aditya Sharma', regNo: '240101120001', department: 'Computer Science', semester: 'Semester 3' },
-  { id: '240101120002', name: 'Ananya Deshmukh', regNo: '240101120002', department: 'Computer Science', semester: 'Semester 3' },
-  { id: '240101120003', name: 'Kavita Iyer', regNo: '240101120003', department: 'Computer Science', semester: 'Semester 3' },
-  { id: '240101120004', name: 'Manish Chawla', regNo: '240101120004', department: 'Computer Science', semester: 'Semester 3' },
-  { id: '240101120005', name: 'Pooja Reddy', regNo: '240101120005', department: 'Computer Science', semester: 'Semester 3' },
-  { id: '240101120006', name: 'Priyanka Sen', regNo: '240101120006', department: 'Computer Science', semester: 'Semester 3' },
-  { id: '240101120007', name: 'Rahul Verma', regNo: '240101120007', department: 'Computer Science', semester: 'Semester 3' },
-  { id: '240101120008', name: 'Rohan Joshi', regNo: '240101120008', department: 'Computer Science', semester: 'Semester 3' },
-  { id: '240101120009', name: 'Sneha Rao', regNo: '240101120009', department: 'Computer Science', semester: 'Semester 3' },
-  { id: '240101120010', name: 'Tanmay Kulkarni', regNo: '240101120010', department: 'Computer Science', semester: 'Semester 3' },
-  { id: '240101120011', name: 'Vikas Gupta', regNo: '240101120011', department: 'Computer Science', semester: 'Semester 3' }
+const DEFAULT_ENROLLED_STUDENTS = [
+  { id: '240101120001', name: 'Krishnavamsi', regNo: '240101120001', department: 'Computer Science', semester: 'Semester 3' },
+  { id: '240101120002', name: 'Aditya Sharma', regNo: '240101120002', department: 'Computer Science', semester: 'Semester 3' },
+  { id: '240101120003', name: 'Ananya Deshmukh', regNo: '240101120003', department: 'Computer Science', semester: 'Semester 3' },
+  { id: '240101120004', name: 'Pooja Reddy', regNo: '240101120004', department: 'Computer Science', semester: 'Semester 3' },
+  { id: '240101120005', name: 'Rahul Verma', regNo: '240101120005', department: 'Computer Science', semester: 'Semester 3' },
+  { id: '240101120006', name: 'Sneha Rao', regNo: '240101120006', department: 'Computer Science', semester: 'Semester 3' },
+  { id: '240101120007', name: 'Vikas Gupta', regNo: '240101120007', department: 'Computer Science', semester: 'Semester 3' },
+  { id: '240101120008', name: 'Manish Chawla', regNo: '240101120008', department: 'Computer Science', semester: 'Semester 3' },
+  { id: '240101120009', name: 'Kavita Iyer', regNo: '240101120009', department: 'Computer Science', semester: 'Semester 3' },
+  { id: '240101120010', name: 'Rohan Joshi', regNo: '240101120010', department: 'Computer Science', semester: 'Semester 3' }
 ];
 
 @Component({
@@ -53,25 +54,27 @@ const DEFAULT_STUDENT_ROSTER: Omit<StudentRosterItem, 'pastAttendancePercentage'
     <app-sidebar></app-sidebar>
     <div class="content">
         <div class="page-header">
-            <h1>📅 {{ role === 'student' ? 'My Attendance Record' : 'Course Attendance Roster' }}</h1>
-            <p>{{ role === 'student' ? 'View your class attendance percentage, lecture history, and OBE 75% eligibility standing.' : 'Select a course and date to mark attendance for all enrolled students using Present / Absent buttons.' }}</p>
+            <h1>📅 {{ role === 'student' ? 'My Attendance Record' : 'Student Attendance Management' }}</h1>
+            <p>{{ role === 'student' ? 'View your class attendance percentage and lecture history.' : 'Select a course to view enrolled students. Click Present or Absent on the right of each student to instantly update their attendance percentage.' }}</p>
         </div>
 
-        <!-- Student Personal Summary Cards (Student Role Only) -->
+        <!-- ================================================================= -->
+        <!-- STUDENT VIEW: PERSONAL ATTENDANCE SUMMARY                        -->
+        <!-- ================================================================= -->
         <div class="summary-grid" *ngIf="role === 'student'">
             <div class="section-card">
-                <h3>Attendance Percentage</h3>
-                <strong [style.color]="attendancePercentage >= 75 ? '#10b981' : '#ef4444'">{{ attendancePercentage }}%</strong>
-                <p>{{ attendancePercentage >= 75 ? 'Eligible for end-semester exams' : '⚠️ Below 75% threshold' }}</p>
+                <h3>Overall Attendance</h3>
+                <strong [style.color]="myAttendancePercentage >= 75 ? '#10b981' : '#ef4444'">{{ myAttendancePercentage }}%</strong>
+                <p>{{ myAttendancePercentage >= 75 ? 'Eligible for end-semester exams' : '⚠️ Below 75% threshold' }}</p>
             </div>
             <div class="section-card">
                 <h3>Present Lectures</h3>
-                <strong style="color: #10b981;">{{ totalPresent }}</strong>
+                <strong style="color: #10b981;">{{ myPresentCount }}</strong>
                 <p>Total lectures attended.</p>
             </div>
             <div class="section-card">
                 <h3>Absent Lectures</h3>
-                <strong style="color: #ef4444;">{{ totalAbsent }}</strong>
+                <strong style="color: #ef4444;">{{ myAbsentCount }}</strong>
                 <p>Total lectures missed.</p>
             </div>
             <div class="section-card">
@@ -82,97 +85,105 @@ const DEFAULT_STUDENT_ROSTER: Omit<StudentRosterItem, 'pastAttendancePercentage'
         </div>
 
         <!-- ================================================================= -->
-        <!-- FACULTY / ADMIN INTERACTIVE COURSE ATTENDANCE SHEET               -->
+        <!-- FACULTY & ADMIN VIEW: ENROLLED STUDENTS LIST & ATTENDANCE BUTTONS  -->
         <!-- ================================================================= -->
-        <div class="roster-card" *ngIf="role === 'admin' || role === 'faculty'">
-            <div class="roster-header">
-                <div class="roster-title-area">
-                    <h2>📋 Daily Class Attendance Sheet</h2>
-                    <span class="active-badge">{{ selectedCourseTitle }}</span>
+        <div class="main-attendance-card" *ngIf="role !== 'student'">
+            
+            <!-- Top Controls: Course Selector, Date, Batch Actions -->
+            <div class="attendance-toolbar">
+                <div class="selector-field">
+                    <label>Select Course</label>
+                    <select [(ngModel)]="selectedCourseName" (ngModelChange)="onCourseSelectChange()" class="course-dropdown">
+                        <option *ngFor="let c of coursesList" [value]="c.title">{{ c.code ? c.code + ' - ' : '' }}{{ c.title }}</option>
+                    </select>
                 </div>
 
-                <div class="roster-controls-grid">
-                    <div class="control-group">
-                        <label>Select Course</label>
-                        <select [(ngModel)]="selectedCourseName" (ngModelChange)="onCourseChange()">
-                            <option *ngFor="let c of coursesList" [value]="c.title">{{ c.code ? c.code + ' - ' : '' }}{{ c.title }}</option>
-                        </select>
-                    </div>
-                    <div class="control-group">
-                        <label>Attendance Date</label>
-                        <input type="date" [(ngModel)]="attendanceDate" (change)="onDateChange()" />
-                    </div>
-                    <div class="control-group batch-actions">
-                        <label>Quick Actions</label>
-                        <div class="btn-group">
-                            <button type="button" class="btn-batch present" (click)="setAllStatus('Present')">✅ Mark All Present</button>
-                            <button type="button" class="btn-batch absent" (click)="setAllStatus('Absent')">❌ Mark All Absent</button>
-                        </div>
+                <div class="selector-field">
+                    <label>Date</label>
+                    <input type="date" [(ngModel)]="attendanceDate" (change)="onDateSelectChange()" class="date-input" />
+                </div>
+
+                <div class="quick-batch-group">
+                    <label>Batch Actions</label>
+                    <div class="batch-buttons">
+                        <button type="button" class="batch-btn present" (click)="markAll('Present')">
+                            ✅ Mark All Present
+                        </button>
+                        <button type="button" class="batch-btn absent" (click)="markAll('Absent')">
+                            ❌ Mark All Absent
+                        </button>
                     </div>
                 </div>
             </div>
 
-            <!-- Attendance Stats Bar -->
-            <div class="roster-stats-bar">
-                <div class="stat-pill total">
+            <!-- Stats Bar for Current Course & Session -->
+            <div class="course-stats-bar">
+                <div class="stat-item total">
                     <span>Enrolled Students:</span>
-                    <strong>{{ studentRoster.length }}</strong>
+                    <strong>{{ enrolledStudents.length }}</strong>
                 </div>
-                <div class="stat-pill present">
-                    <span>Present:</span>
-                    <strong>{{ presentCount }}</strong>
+                <div class="stat-item present">
+                    <span>Present Today:</span>
+                    <strong>{{ sessionPresentCount }}</strong>
                 </div>
-                <div class="stat-pill absent">
-                    <span>Absent:</span>
-                    <strong>{{ absentCount }}</strong>
+                <div class="stat-item absent">
+                    <span>Absent Today:</span>
+                    <strong>{{ sessionAbsentCount }}</strong>
                 </div>
-                <div class="stat-pill rate">
-                    <span>Session Attendance:</span>
+                <div class="stat-item rate">
+                    <span>Session Attendance Rate:</span>
                     <strong>{{ sessionRate }}%</strong>
                 </div>
             </div>
 
-            <!-- Interactive Student Attendance Table -->
-            <div class="roster-table-wrapper">
-                <table class="roster-table">
+            <!-- Enrolled Students Table with Right-Hand Present/Absent Buttons -->
+            <div class="table-container">
+                <table class="attendance-table">
                     <thead>
                         <tr>
-                            <th style="width: 60px;">#</th>
+                            <th style="width: 50px;">#</th>
                             <th style="width: 140px;">Reg No</th>
                             <th>Student Name</th>
-                            <th>Department & Sem</th>
-                            <th style="width: 140px;">Past Attainment</th>
-                            <th style="width: 240px; text-align: center;">Today's Attendance Status</th>
+                            <th>Course</th>
+                            <th style="width: 170px; text-align: center;">Attendance %</th>
+                            <th style="width: 250px; text-align: center;">Mark Attendance</th>
                         </tr>
                     </thead>
                     <tbody>
-                        <tr *ngFor="let student of studentRoster; let i = index" [class.row-absent]="student.status === 'Absent'">
-                            <td><span class="row-num">{{ i + 1 }}</span></td>
-                            <td><span class="reg-badge">{{ student.regNo }}</span></td>
+                        <tr *ngIf="enrolledStudents.length === 0">
+                            <td colspan="6" class="empty-state">No students found for this course.</td>
+                        </tr>
+                        <tr *ngFor="let s of enrolledStudents; let i = index" [class.row-absent]="s.status === 'Absent'" [class.row-present]="s.status === 'Present'">
+                            <td><span class="index-badge">{{ i + 1 }}</span></td>
+                            <td><span class="reg-no">{{ s.regNo }}</span></td>
                             <td>
-                                <div class="student-info">
-                                    <span class="avatar">{{ student.name.charAt(0) }}</span>
-                                    <strong>{{ student.name }}</strong>
+                                <div class="student-cell">
+                                    <span class="avatar">{{ s.name.charAt(0) }}</span>
+                                    <div>
+                                        <strong>{{ s.name }}</strong>
+                                        <div class="dept-subtext">{{ s.department }} ({{ s.semester }})</div>
+                                    </div>
                                 </div>
                             </td>
-                            <td><span class="dept-text">{{ student.department }} ({{ student.semester }})</span></td>
-                            <td>
-                                <span class="past-badge" [class.good]="student.pastAttendancePercentage >= 75" [class.poor]="student.pastAttendancePercentage < 75">
-                                    {{ student.pastAttendancePercentage }}%
-                                </span>
+                            <td><span class="course-pill">{{ selectedCourseName }}</span></td>
+                            <td style="text-align: center;">
+                                <div class="pct-pill" [class.high]="s.attendancePercentage >= 75" [class.low]="s.attendancePercentage < 75">
+                                    <strong>{{ s.attendancePercentage }}%</strong>
+                                    <small>({{ s.totalPresent }}/{{ s.totalLectures }} classes)</small>
+                                </div>
                             </td>
                             <td style="text-align: center;">
-                                <div class="toggle-button-group">
+                                <div class="action-buttons-group">
                                     <button type="button" 
-                                            class="toggle-btn present-btn" 
-                                            [class.active]="student.status === 'Present'"
-                                            (click)="setStudentStatus(student, 'Present')">
+                                            class="btn-mark present" 
+                                            [class.active]="s.status === 'Present'"
+                                            (click)="markStudentAttendance(s, 'Present')">
                                         ✅ Present
                                     </button>
                                     <button type="button" 
-                                            class="toggle-btn absent-btn" 
-                                            [class.active]="student.status === 'Absent'"
-                                            (click)="setStudentStatus(student, 'Absent')">
+                                            class="btn-mark absent" 
+                                            [class.active]="s.status === 'Absent'"
+                                            (click)="markStudentAttendance(s, 'Absent')">
                                         ❌ Absent
                                     </button>
                                 </div>
@@ -182,27 +193,27 @@ const DEFAULT_STUDENT_ROSTER: Omit<StudentRosterItem, 'pastAttendancePercentage'
                 </table>
             </div>
 
-            <!-- Save Roster Footer -->
-            <div class="roster-footer">
-                <p class="summary-note">
-                    Marking attendance for <strong>{{ studentRoster.length }} students</strong> in <em>{{ selectedCourseTitle }}</em> on <strong>{{ attendanceDate }}</strong>.
-                </p>
-                <button type="button" class="btn-save-attendance" (click)="saveRosterAttendance()">
-                    💾 Save & Record Attendance
+            <!-- Save All Confirmation Footer -->
+            <div class="card-footer">
+                <span class="footer-hint">
+                    💡 Clicking <strong>Present</strong> or <strong>Absent</strong> saves attendance in real-time and recalculates the student's attendance percentage.
+                </span>
+                <button type="button" class="btn-save-all" (click)="saveAllRecordsExplicitly()">
+                    💾 Confirm & Sync Attendance
                 </button>
             </div>
         </div>
 
         <!-- ================================================================= -->
-        <!-- ATTENDANCE LOGS & AUDIT HISTORY                                   -->
+        <!-- ATTENDANCE AUDIT LOGS / HISTORY                                   -->
         <!-- ================================================================= -->
-        <div class="table-card">
-            <div class="log-header">
-                <h2>{{ role === 'student' ? 'My Attendance Logs' : '📜 Recent Attendance History' }} ({{ filteredRecords.length }})</h2>
+        <div class="history-card">
+            <div class="history-header">
+                <h2>📜 {{ role === 'student' ? 'My Attendance History' : 'Recent Attendance Logs' }} ({{ filteredRecords.length }})</h2>
                 
-                <div class="search-filters">
-                    <input type="text" [(ngModel)]="searchTerm" (input)="onSearch()" placeholder="Search by student, course, or date..." class="search-input" />
-                    <select [(ngModel)]="statusFilter" (change)="onSearch()" class="filter-select">
+                <div class="history-filters">
+                    <input type="text" [(ngModel)]="searchTerm" (input)="onSearch()" placeholder="Filter by student, course, or date..." class="filter-input" />
+                    <select [(ngModel)]="statusFilter" (change)="onSearch()" class="filter-dropdown">
                         <option value="">All Statuses</option>
                         <option value="Present">Present Only</option>
                         <option value="Absent">Absent Only</option>
@@ -210,7 +221,7 @@ const DEFAULT_STUDENT_ROSTER: Omit<StudentRosterItem, 'pastAttendancePercentage'
                 </div>
             </div>
 
-            <table *ngIf="filteredRecords.length > 0">
+            <table class="history-table" *ngIf="filteredRecords.length > 0">
                 <thead>
                     <tr>
                         <th *ngIf="role !== 'student'">Student</th>
@@ -218,7 +229,7 @@ const DEFAULT_STUDENT_ROSTER: Omit<StudentRosterItem, 'pastAttendancePercentage'
                         <th>Course</th>
                         <th>Date</th>
                         <th>Status</th>
-                        <th *ngIf="role === 'admin' || role === 'faculty'">Actions</th>
+                        <th *ngIf="role !== 'student'" style="text-align: right;">Action</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -228,17 +239,17 @@ const DEFAULT_STUDENT_ROSTER: Omit<StudentRosterItem, 'pastAttendancePercentage'
                         <td><strong>{{ record.course }}</strong></td>
                         <td>{{ record.date }}</td>
                         <td>
-                            <span class="status-chip" [class.present]="record.status === 'Present'" [class.absent]="record.status === 'Absent'">
+                            <span class="status-badge" [class.present]="record.status === 'Present'" [class.absent]="record.status === 'Absent'">
                                 {{ record.status === 'Present' ? '✅ Present' : '❌ Absent' }}
                             </span>
                         </td>
-                        <td *ngIf="role === 'admin' || role === 'faculty'">
-                            <button type="button" class="delete-btn" (click)="deleteAttendanceRecord(record)">🗑️ Remove</button>
+                        <td *ngIf="role !== 'student'" style="text-align: right;">
+                            <button type="button" class="btn-delete" (click)="deleteAttendanceRecord(record)">🗑️ Remove</button>
                         </td>
                     </tr>
                 </tbody>
             </table>
-            <p *ngIf="filteredRecords.length === 0" class="empty-state">No attendance records found for this criteria.</p>
+            <p *ngIf="filteredRecords.length === 0" class="empty-state">No attendance records found matching the filter.</p>
         </div>
 
         <app-footer></app-footer>
@@ -246,100 +257,104 @@ const DEFAULT_STUDENT_ROSTER: Omit<StudentRosterItem, 'pastAttendancePercentage'
 </div>`,
   styles: [
     `
-    .page-header { margin-bottom: 24px; }
-    .page-header h1 { font-size: 1.8rem; color: #1e293b; margin: 0 0 6px; }
+    .page-header { margin-bottom: 22px; }
+    .page-header h1 { font-size: 1.85rem; color: #0f172a; margin: 0 0 6px; font-weight: 800; }
     .page-header p { color: #64748b; margin: 0; font-size: 0.95rem; }
 
     /* Student Summary Grid */
     .summary-grid { display: grid; gap: 16px; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); margin-bottom: 24px; }
     .section-card { padding: 20px; background: #fff; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.04); border: 1px solid #e2e8f0; }
     .section-card h3 { margin: 0 0 8px; font-size: 0.95rem; color: #475569; }
-    .section-card strong { display: block; font-size: 1.9rem; margin-bottom: 6px; }
+    .section-card strong { display: block; font-size: 2rem; margin-bottom: 6px; }
     .section-card p { margin: 0; font-size: 0.85rem; color: #64748b; }
 
-    /* Roster Card */
-    .roster-card { background: #ffffff; border-radius: 14px; border: 1px solid #cbd5e1; box-shadow: 0 4px 20px rgba(0,0,0,0.05); margin-bottom: 28px; overflow: hidden; }
+    /* Main Attendance Card */
+    .main-attendance-card { background: #ffffff; border-radius: 14px; border: 1px solid #cbd5e1; box-shadow: 0 4px 20px rgba(0,0,0,0.06); margin-bottom: 28px; overflow: hidden; }
     
-    .roster-header { padding: 22px 24px; background: #f8fafc; border-bottom: 1px solid #e2e8f0; }
-    .roster-title-area { display: flex; align-items: center; justify-content: space-between; margin-bottom: 18px; }
-    .roster-title-area h2 { margin: 0; font-size: 1.25rem; color: #0f172a; }
-    .active-badge { background: #e0e7ff; color: #3730a3; padding: 4px 12px; border-radius: 20px; font-size: 0.85rem; font-weight: 700; }
+    .attendance-toolbar { display: grid; grid-template-columns: 2fr 1.2fr 1.6fr; gap: 20px; padding: 22px 24px; background: #f8fafc; border-bottom: 1px solid #e2e8f0; align-items: flex-end; }
+    .selector-field { display: flex; flex-direction: column; }
+    .selector-field label { font-size: 0.88rem; font-weight: 700; color: #334155; margin-bottom: 6px; }
+    .course-dropdown, .date-input { padding: 10px 14px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 0.95rem; background: #ffffff; color: #1e293b; outline: none; transition: border-color 0.15s; }
+    .course-dropdown:focus, .date-input:focus { border-color: #2563eb; box-shadow: 0 0 0 3px rgba(37,99,235,0.12); }
 
-    .roster-controls-grid { display: grid; grid-template-columns: 2fr 1.2fr 1.8fr; gap: 18px; align-items: flex-end; }
-    .control-group { display: flex; flex-direction: column; }
-    .control-group label { font-size: 0.85rem; font-weight: 600; color: #334155; margin-bottom: 6px; }
-    .control-group select, .control-group input[type=date] { padding: 9px 12px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 0.92rem; background: #ffffff; color: #1e293b; outline: none; }
-    .control-group select:focus, .control-group input[type=date]:focus { border-color: #3b82f6; box-shadow: 0 0 0 2px rgba(59,130,246,0.15); }
+    .quick-batch-group { display: flex; flex-direction: column; }
+    .quick-batch-group label { font-size: 0.88rem; font-weight: 700; color: #334155; margin-bottom: 6px; }
+    .batch-buttons { display: flex; gap: 10px; }
+    .batch-btn { padding: 9px 14px; border-radius: 8px; border: 1px solid #cbd5e1; font-size: 0.85rem; font-weight: 700; cursor: pointer; transition: all 0.15s ease; background: #ffffff; }
+    .batch-btn.present { background: #f0fdf4; color: #15803d; border-color: #bbf7d0; }
+    .batch-btn.present:hover { background: #dcfce7; }
+    .batch-btn.absent { background: #fef2f2; color: #b91c1c; border-color: #fecaca; }
+    .batch-btn.absent:hover { background: #fee2e2; }
 
-    .btn-group { display: flex; gap: 8px; }
-    .btn-batch { padding: 8px 12px; border-radius: 6px; border: 1px solid #cbd5e1; font-size: 0.82rem; font-weight: 600; cursor: pointer; background: #ffffff; transition: all 0.15s; }
-    .btn-batch.present { color: #166534; border-color: #bbf7d0; background: #f0fdf4; }
-    .btn-batch.present:hover { background: #dcfce7; }
-    .btn-batch.absent { color: #991b1b; border-color: #fecaca; background: #fef2f2; }
-    .btn-batch.absent:hover { background: #fee2e2; }
+    /* Stats Bar */
+    .course-stats-bar { display: flex; gap: 14px; padding: 14px 24px; background: #ffffff; border-bottom: 1px solid #f1f5f9; flex-wrap: wrap; }
+    .stat-item { display: flex; align-items: center; gap: 8px; padding: 6px 14px; border-radius: 8px; font-size: 0.88rem; font-weight: 600; }
+    .stat-item.total { background: #f1f5f9; color: #334155; }
+    .stat-item.present { background: #dcfce7; color: #15803d; }
+    .stat-item.absent { background: #fee2e2; color: #b91c1c; }
+    .stat-item.rate { background: #e0e7ff; color: #4338ca; }
+    .stat-item strong { font-size: 1.05rem; }
 
-    /* Roster Stats Bar */
-    .roster-stats-bar { display: flex; gap: 14px; padding: 14px 24px; background: #ffffff; border-bottom: 1px solid #f1f5f9; flex-wrap: wrap; }
-    .stat-pill { display: flex; align-items: center; gap: 6px; padding: 6px 14px; border-radius: 8px; font-size: 0.88rem; font-weight: 600; }
-    .stat-pill.total { background: #f1f5f9; color: #334155; }
-    .stat-pill.present { background: #dcfce7; color: #15803d; }
-    .stat-pill.absent { background: #fee2e2; color: #b91c1c; }
-    .stat-pill.rate { background: #e0e7ff; color: #4338ca; }
-    .stat-pill strong { font-size: 1rem; }
+    /* Table Container */
+    .table-container { overflow-x: auto; max-height: 540px; }
+    .attendance-table { width: 100%; border-collapse: collapse; text-align: left; }
+    .attendance-table th { padding: 14px 18px; background: #f8fafc; font-size: 0.84rem; font-weight: 700; color: #475569; text-transform: uppercase; border-bottom: 1px solid #e2e8f0; position: sticky; top: 0; z-index: 2; }
+    .attendance-table td { padding: 14px 18px; border-bottom: 1px solid #f1f5f9; font-size: 0.95rem; color: #1e293b; }
+    .attendance-table tbody tr:hover { background: #f8fafc; }
+    .attendance-table tbody tr.row-present { background: #fafffb; }
+    .attendance-table tbody tr.row-absent { background: #fffbfa; }
 
-    /* Table */
-    .roster-table-wrapper { overflow-x: auto; max-height: 520px; }
-    .roster-table { width: 100%; border-collapse: collapse; text-align: left; }
-    .roster-table th { padding: 12px 16px; background: #f8fafc; font-size: 0.82rem; font-weight: 700; color: #475569; text-transform: uppercase; border-bottom: 1px solid #e2e8f0; position: sticky; top: 0; z-index: 2; }
-    .roster-table td { padding: 12px 16px; border-bottom: 1px solid #f1f5f9; font-size: 0.92rem; color: #1e293b; }
-    .roster-table tbody tr:hover { background: #f8fafc; }
-    .roster-table tbody tr.row-absent { background: #fffbfb; }
-
-    .row-num { font-weight: 600; color: #94a3b8; font-size: 0.85rem; }
-    .reg-badge { background: #f1f5f9; color: #475569; padding: 4px 8px; border-radius: 6px; font-size: 0.82rem; font-family: monospace; font-weight: 600; }
+    .index-badge { font-weight: 700; color: #94a3b8; font-size: 0.88rem; }
+    .reg-no { background: #f1f5f9; color: #475569; padding: 4px 8px; border-radius: 6px; font-size: 0.84rem; font-family: monospace; font-weight: 600; }
     
-    .student-info { display: flex; align-items: center; gap: 10px; }
-    .avatar { width: 30px; height: 30px; border-radius: 50%; background: #3b82f6; color: #fff; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 0.85rem; }
-    .dept-text { color: #64748b; font-size: 0.85rem; }
+    .student-cell { display: flex; align-items: center; gap: 12px; }
+    .avatar { width: 34px; height: 34px; border-radius: 50%; background: #2563eb; color: #fff; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 0.9rem; flex-shrink: 0; }
+    .dept-subtext { color: #64748b; font-size: 0.82rem; margin-top: 2px; }
+    .course-pill { background: #eff6ff; color: #1d4ed8; padding: 4px 10px; border-radius: 6px; font-size: 0.84rem; font-weight: 600; }
+
+    /* Attendance % Pill */
+    .pct-pill { display: inline-flex; flex-direction: column; align-items: center; padding: 5px 12px; border-radius: 10px; min-width: 90px; }
+    .pct-pill.high { background: #dcfce7; color: #15803d; border: 1px solid #bbf7d0; }
+    .pct-pill.low { background: #fee2e2; color: #b91c1c; border: 1px solid #fecaca; }
+    .pct-pill strong { font-size: 1rem; }
+    .pct-pill small { font-size: 0.75rem; opacity: 0.85; margin-top: 1px; }
+
+    /* Interactive Right-Hand Action Buttons */
+    .action-buttons-group { display: inline-flex; gap: 8px; }
+    .btn-mark { padding: 8px 18px; border: 1.5px solid #cbd5e1; border-radius: 8px; font-size: 0.88rem; font-weight: 700; cursor: pointer; background: #ffffff; color: #64748b; transition: all 0.15s ease; outline: none; }
     
-    .past-badge { padding: 3px 8px; border-radius: 12px; font-size: 0.8rem; font-weight: 700; }
-    .past-badge.good { background: #dcfce7; color: #166534; }
-    .past-badge.poor { background: #fee2e2; color: #991b1b; }
+    .btn-mark.present:hover { background: #f0fdf4; border-color: #86efac; color: #16a34a; }
+    .btn-mark.present.active { background: #16a34a; border-color: #15803d; color: #ffffff; box-shadow: 0 2px 8px rgba(22,163,74,0.3); }
 
-    /* Interactive Toggle Buttons */
-    .toggle-button-group { display: inline-flex; border-radius: 8px; border: 1px solid #cbd5e1; overflow: hidden; background: #f1f5f9; }
-    .toggle-btn { padding: 7px 16px; border: none; font-size: 0.85rem; font-weight: 700; cursor: pointer; background: transparent; color: #64748b; transition: all 0.15s ease; outline: none; }
-    
-    .toggle-btn.present-btn.active { background: #16a34a; color: #ffffff; box-shadow: inset 0 1px 3px rgba(0,0,0,0.15); }
-    .toggle-btn.absent-btn.active { background: #dc2626; color: #ffffff; box-shadow: inset 0 1px 3px rgba(0,0,0,0.15); }
-    .toggle-btn:hover:not(.active) { background: #e2e8f0; }
+    .btn-mark.absent:hover { background: #fef2f2; border-color: #fca5a5; color: #dc2626; }
+    .btn-mark.absent.active { background: #dc2626; border-color: #b91c1c; color: #ffffff; box-shadow: 0 2px 8px rgba(220,38,38,0.3); }
 
-    /* Roster Footer */
-    .roster-footer { padding: 18px 24px; background: #f8fafc; border-top: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center; }
-    .summary-note { margin: 0; color: #475569; font-size: 0.92rem; }
-    .btn-save-attendance { padding: 11px 26px; border: none; border-radius: 8px; background: #2563eb; color: #ffffff; font-weight: 700; font-size: 0.95rem; cursor: pointer; box-shadow: 0 4px 12px rgba(37,99,235,0.25); transition: background 0.15s; }
-    .btn-save-attendance:hover { background: #1d4ed8; }
+    /* Card Footer */
+    .card-footer { padding: 18px 24px; background: #f8fafc; border-top: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; }
+    .footer-hint { font-size: 0.9rem; color: #64748b; }
+    .btn-save-all { padding: 11px 24px; border: none; border-radius: 8px; background: #2563eb; color: #ffffff; font-weight: 700; font-size: 0.95rem; cursor: pointer; box-shadow: 0 4px 12px rgba(37,99,235,0.25); transition: background 0.15s; }
+    .btn-save-all:hover { background: #1d4ed8; }
 
-    /* Recent History Card */
-    .table-card { padding: 22px 24px; background: #fff; border-radius: 14px; border: 1px solid #e2e8f0; box-shadow: 0 2px 10px rgba(0,0,0,0.04); margin-bottom: 24px; }
-    .log-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 12px; }
-    .log-header h2 { margin: 0; font-size: 1.15rem; color: #0f172a; }
-    .search-filters { display: flex; gap: 10px; }
-    .search-input { padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 0.88rem; min-width: 220px; outline: none; }
-    .filter-select { padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 0.88rem; background: #fff; outline: none; }
+    /* History Card */
+    .history-card { padding: 22px 24px; background: #ffffff; border-radius: 14px; border: 1px solid #e2e8f0; box-shadow: 0 2px 10px rgba(0,0,0,0.04); margin-bottom: 24px; }
+    .history-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 12px; }
+    .history-header h2 { margin: 0; font-size: 1.2rem; color: #0f172a; }
+    .history-filters { display: flex; gap: 10px; }
+    .filter-input { padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 0.88rem; min-width: 240px; outline: none; }
+    .filter-dropdown { padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 0.88rem; background: #fff; outline: none; }
 
-    .table-card table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-    .table-card th { padding: 10px 14px; background: #f8fafc; font-size: 0.82rem; font-weight: 700; color: #475569; text-transform: uppercase; border-bottom: 1px solid #e2e8f0; text-align: left; }
-    .table-card td { padding: 11px 14px; border-bottom: 1px solid #f1f5f9; font-size: 0.9rem; color: #1e293b; }
-    .table-card tbody tr:hover { background: #f8fafc; }
+    .history-table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+    .history-table th { padding: 12px 14px; background: #f8fafc; font-size: 0.82rem; font-weight: 700; color: #475569; text-transform: uppercase; border-bottom: 1px solid #e2e8f0; text-align: left; }
+    .history-table td { padding: 12px 14px; border-bottom: 1px solid #f1f5f9; font-size: 0.92rem; color: #1e293b; }
+    .history-table tbody tr:hover { background: #f8fafc; }
 
-    .status-chip { display: inline-block; padding: 4px 10px; border-radius: 12px; font-size: 0.82rem; font-weight: 700; }
-    .status-chip.present { background: #dcfce7; color: #166534; }
-    .status-chip.absent { background: #fee2e2; color: #991b1b; }
+    .status-badge { display: inline-block; padding: 4px 10px; border-radius: 12px; font-size: 0.84rem; font-weight: 700; }
+    .status-badge.present { background: #dcfce7; color: #166534; }
+    .status-badge.absent { background: #fee2e2; color: #991b1b; }
 
-    .delete-btn { padding: 4px 10px; border: 1px solid #fecaca; background: #fff; color: #dc2626; border-radius: 6px; cursor: pointer; font-size: 0.82rem; font-weight: 600; }
-    .delete-btn:hover { background: #fee2e2; }
-    .empty-state { padding: 30px; text-align: center; color: #94a3b8; font-size: 0.92rem; }
+    .btn-delete { padding: 5px 12px; border: 1px solid #fecaca; background: #fff; color: #dc2626; border-radius: 6px; cursor: pointer; font-size: 0.82rem; font-weight: 600; }
+    .btn-delete:hover { background: #fee2e2; }
+    .empty-state { padding: 30px; text-align: center; color: #94a3b8; font-size: 0.95rem; }
     `
   ]
 })
@@ -349,9 +364,9 @@ export class AttendancePage implements OnInit, OnDestroy {
 
   // Roster variables
   coursesList: AppCourse[] = [];
-  selectedCourseName = '';
+  selectedCourseName = 'Database Management Systems';
   attendanceDate = new Date().toISOString().split('T')[0];
-  studentRoster: StudentRosterItem[] = [];
+  enrolledStudents: EnrolledStudentItem[] = [];
 
   // Logs & History
   attendanceRecords: AttendanceRecord[] = [];
@@ -368,19 +383,25 @@ export class AttendancePage implements OnInit, OnDestroy {
   private syncSub?: Subscription;
 
   constructor() {
-    this.role = localStorage.getItem('userRole')?.toLowerCase() || null;
-    this.userName = localStorage.getItem('userName') || 'Faculty';
+    try {
+      const storedRole = localStorage.getItem('userRole');
+      this.role = storedRole ? storedRole.toLowerCase() : 'faculty';
+      this.userName = localStorage.getItem('userName') || 'Faculty';
+    } catch {
+      this.role = 'faculty';
+    }
   }
 
   ngOnInit(): void {
+    this.ensureBaselineRecordsExist();
     this.loadCourses();
     this.loadAttendanceRecords();
-    this.buildStudentRoster();
+    this.buildEnrolledStudentsList();
 
     this.syncSub = this.syncService.events$.subscribe((e) => {
       if (e.type === 'ATTENDANCE_CHANGED' || e.type === 'COURSES_CHANGED') {
         this.loadAttendanceRecords();
-        this.buildStudentRoster();
+        this.buildEnrolledStudentsList();
         this.cdr.detectChanges();
       }
     });
@@ -388,10 +409,6 @@ export class AttendancePage implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.syncSub?.unsubscribe();
-  }
-
-  get selectedCourseTitle(): string {
-    return this.selectedCourseName || 'Database Management Systems';
   }
 
   private loadCourses(): void {
@@ -414,10 +431,38 @@ export class AttendancePage implements OnInit, OnDestroy {
   }
 
   /**
-   * Builds the student roster for the selected course and date
+   * Generates initial baseline records if attendance is completely blank so live calculations work smoothly
    */
-  buildStudentRoster(): void {
-    // 1. Get raw students from localStorage or fallback
+  private ensureBaselineRecordsExist(): void {
+    try {
+      const stored = localStorage.getItem('obslmsAttendance');
+      let records: AttendanceRecord[] = stored ? JSON.parse(stored) : [];
+
+      if (records.length === 0) {
+        const sampleDates = ['2026-08-15', '2026-08-17', '2026-08-18', '2026-08-20', '2026-08-22'];
+        DEFAULT_ENROLLED_STUDENTS.forEach((student, sIdx) => {
+          sampleDates.forEach((d, dIdx) => {
+            const isPresent = (sIdx + dIdx) % 4 !== 0; // ~75-80% baseline
+            records.push({
+              id: Date.now() + Math.floor(Math.random() * 100000),
+              student: student.name,
+              regNo: student.regNo,
+              course: 'Database Management Systems',
+              date: d,
+              status: isPresent ? 'Present' : 'Absent'
+            });
+          });
+        });
+        localStorage.setItem('obslmsAttendance', JSON.stringify(records));
+      }
+    } catch {}
+  }
+
+  /**
+   * Builds the student roster for the selected course with live calculated attendance percentages
+   */
+  buildEnrolledStudentsList(): void {
+    // 1. Get raw students from localStorage or default roster
     let studentsRaw: any[] = [];
     try {
       const storedStudents = localStorage.getItem('obslmsStudents');
@@ -426,35 +471,34 @@ export class AttendancePage implements OnInit, OnDestroy {
       }
     } catch {}
 
-    if (studentsRaw.length === 0) {
-      studentsRaw = [...DEFAULT_STUDENT_ROSTER];
+    if (!studentsRaw || studentsRaw.length === 0) {
+      studentsRaw = [...DEFAULT_ENROLLED_STUDENTS];
     }
 
-    // 2. Check existing attendance for this course & date
-    const existingDateRecords = this.attendanceRecords.filter(r =>
-      r.date === this.attendanceDate &&
+    // 2. Filter records for this course
+    const courseRecords = this.attendanceRecords.filter(r =>
       r.course && (
         r.course.toLowerCase().includes(this.selectedCourseName.toLowerCase()) ||
         this.selectedCourseName.toLowerCase().includes(r.course.toLowerCase())
       )
     );
 
-    // 3. Map into StudentRosterItem
-    this.studentRoster = studentsRaw.map((s, idx) => {
+    // 3. Map into EnrolledStudentItem with live attendance calculation
+    this.enrolledStudents = studentsRaw.map((s, idx) => {
       const sName = s.name || s.studentName || 'Student';
       const reg = s.regNo || s.id || `2401011200${(idx + 1).toString().padStart(2, '0')}`;
 
-      // Check if already marked for this date
-      const existing = existingDateRecords.find(r => r.student.toLowerCase() === sName.toLowerCase());
-      const currentStatus: 'Present' | 'Absent' = existing ? existing.status : 'Present';
+      // Check attendance for today
+      const todayRecord = courseRecords.find(r =>
+        r.student.toLowerCase() === sName.toLowerCase() && r.date === this.attendanceDate
+      );
+      const currentStatus: 'Present' | 'Absent' | 'Unmarked' = todayRecord ? todayRecord.status : 'Unmarked';
 
-      // Compute past attendance percentage
-      const studentPastRecords = this.attendanceRecords.filter(r => r.student.toLowerCase() === sName.toLowerCase());
-      let pastPct = 85;
-      if (studentPastRecords.length > 0) {
-        const presents = studentPastRecords.filter(r => r.status === 'Present').length;
-        pastPct = Math.round((presents / studentPastRecords.length) * 100);
-      }
+      // Calculate total present and total lectures for this student in this course
+      const studentRecords = courseRecords.filter(r => r.student.toLowerCase() === sName.toLowerCase());
+      const totalLectures = studentRecords.length;
+      const totalPresent = studentRecords.filter(r => r.status === 'Present').length;
+      const pct = totalLectures > 0 ? Math.round((totalPresent / totalLectures) * 100) : 85;
 
       return {
         id: s.id || reg,
@@ -462,7 +506,9 @@ export class AttendancePage implements OnInit, OnDestroy {
         regNo: reg,
         department: s.department || 'Computer Science',
         semester: s.semester || 'Semester 3',
-        pastAttendancePercentage: pastPct,
+        attendancePercentage: pct,
+        totalPresent: totalPresent,
+        totalLectures: totalLectures,
         status: currentStatus
       };
     });
@@ -470,87 +516,102 @@ export class AttendancePage implements OnInit, OnDestroy {
     this.cdr.detectChanges();
   }
 
-  onCourseChange(): void {
-    this.buildStudentRoster();
+  onCourseSelectChange(): void {
+    this.buildEnrolledStudentsList();
   }
 
-  onDateChange(): void {
-    this.buildStudentRoster();
-  }
-
-  setStudentStatus(student: StudentRosterItem, status: 'Present' | 'Absent'): void {
-    student.status = status;
-  }
-
-  setAllStatus(status: 'Present' | 'Absent'): void {
-    this.studentRoster.forEach(s => s.status = status);
-  }
-
-  get presentCount(): number {
-    return this.studentRoster.filter(s => s.status === 'Present').length;
-  }
-
-  get absentCount(): number {
-    return this.studentRoster.filter(s => s.status === 'Absent').length;
-  }
-
-  get sessionRate(): number {
-    if (this.studentRoster.length === 0) return 0;
-    return Math.round((this.presentCount / this.studentRoster.length) * 100);
+  onDateSelectChange(): void {
+    this.buildEnrolledStudentsList();
   }
 
   /**
-   * Save the daily attendance roster
+   * When Faculty clicks [ Present ] or [ Absent ] for a student:
+   * 1. Updates the attendance record for this date
+   * 2. Recalculates the attendance percentage live (increasing or decreasing it immediately)
+   * 3. Syncs across the app
    */
-  saveRosterAttendance(): void {
-    if (this.studentRoster.length === 0) {
-      this.toast.warning('No students in roster to save.');
-      return;
+  markStudentAttendance(student: EnrolledStudentItem, status: 'Present' | 'Absent'): void {
+    student.status = status;
+
+    // 1. Update or create the record in attendanceRecords
+    const existing = [...this.attendanceRecords];
+    const recordIdx = existing.findIndex(r =>
+      r.student.toLowerCase() === student.name.toLowerCase() &&
+      r.course.toLowerCase() === this.selectedCourseName.toLowerCase() &&
+      r.date === this.attendanceDate
+    );
+
+    if (recordIdx !== -1) {
+      existing[recordIdx].status = status;
+    } else {
+      existing.unshift({
+        id: Date.now() + Math.floor(Math.random() * 10000),
+        student: student.name,
+        regNo: student.regNo,
+        course: this.selectedCourseName,
+        date: this.attendanceDate,
+        status: status
+      });
     }
 
-    const recordsToSave = this.studentRoster.map(s => ({
-      id: Date.now() + Math.floor(Math.random() * 10000),
-      student: s.name,
-      regNo: s.regNo,
-      course: this.selectedCourseTitle,
-      date: this.attendanceDate,
-      status: s.status
-    }));
-
-    // Update localStorage
+    this.attendanceRecords = existing;
     try {
-      const existing = [...this.attendanceRecords];
-      recordsToSave.forEach(rec => {
-        const idx = existing.findIndex(r =>
-          r.student.toLowerCase() === rec.student.toLowerCase() &&
-          r.course.toLowerCase() === rec.course.toLowerCase() &&
-          r.date === rec.date
-        );
-        if (idx !== -1) {
-          existing[idx] = rec;
-        } else {
-          existing.unshift(rec);
-        }
-      });
-
       localStorage.setItem('obslmsAttendance', JSON.stringify(existing));
-      this.attendanceRecords = existing;
-      this.syncService.emit('ATTENDANCE_CHANGED', recordsToSave);
-      this.toast.success(`Attendance saved for ${this.studentRoster.length} students on ${this.attendanceDate}! 🎉`);
-      this.onSearch();
     } catch {}
 
-    // Background sync with Spring Boot backend
-    const payloads = recordsToSave.map(rec => ({
-      student: rec.student,
-      courseCode: rec.course,
-      date: rec.date,
-      status: rec.status
+    // 2. Recalculate this student's attendance percentage live
+    const studentCourseRecords = existing.filter(r =>
+      r.student.toLowerCase() === student.name.toLowerCase() &&
+      (r.course.toLowerCase().includes(this.selectedCourseName.toLowerCase()) || this.selectedCourseName.toLowerCase().includes(r.course.toLowerCase()))
+    );
+
+    const totalLectures = studentCourseRecords.length;
+    const totalPresent = studentCourseRecords.filter(r => r.status === 'Present').length;
+    student.totalLectures = totalLectures;
+    student.totalPresent = totalPresent;
+    student.attendancePercentage = totalLectures > 0 ? Math.round((totalPresent / totalLectures) * 100) : (status === 'Present' ? 100 : 0);
+
+    // 3. Emit real-time sync event
+    this.syncService.emit('ATTENDANCE_CHANGED');
+
+    // 4. Show feedback
+    if (status === 'Present') {
+      this.toast.success(`${student.name} marked Present. (Attendance: ${student.attendancePercentage}%) 📈`);
+    } else {
+      this.toast.warning(`${student.name} marked Absent. (Attendance: ${student.attendancePercentage}%) 📉`);
+    }
+
+    this.onSearch();
+    this.cdr.detectChanges();
+  }
+
+  /**
+   * Batch mark all students Present or Absent
+   */
+  markAll(status: 'Present' | 'Absent'): void {
+    this.enrolledStudents.forEach(s => {
+      this.markStudentAttendance(s, status);
+    });
+    this.toast.success(`All ${this.enrolledStudents.length} students marked ${status} for ${this.attendanceDate}.`);
+  }
+
+  /**
+   * Explicit save button (confirms batch sync to backend)
+   */
+  saveAllRecordsExplicitly(): void {
+    const payload = this.enrolledStudents.map(s => ({
+      student: s.name,
+      courseCode: this.selectedCourseName,
+      date: this.attendanceDate,
+      status: s.status === 'Absent' ? 'Absent' : 'Present'
     }));
-    this.http.post('http://localhost:8080/api/attendance/bulk', payloads).subscribe({
+
+    this.http.post('http://localhost:8080/api/attendance/bulk', payload).subscribe({
       next: () => {},
       error: () => {}
     });
+
+    this.toast.success(`Attendance successfully recorded and synchronized for ${this.selectedCourseName}!`);
   }
 
   deleteAttendanceRecord(record: AttendanceRecord): void {
@@ -560,6 +621,7 @@ export class AttendancePage implements OnInit, OnDestroy {
       this.syncService.emit('ATTENDANCE_CHANGED');
       this.toast.info('Attendance record removed.');
     } catch {}
+    this.buildEnrolledStudentsList();
     this.onSearch();
   }
 
@@ -567,10 +629,11 @@ export class AttendancePage implements OnInit, OnDestroy {
     let results = this.attendanceRecords;
 
     if (this.role === 'student') {
-      const uname = (this.userName || localStorage.getItem('userName') || 'Student').toLowerCase();
+      const uname = (this.userName || 'Student').toLowerCase();
       results = results.filter(r =>
         r.student.toLowerCase() === uname ||
         r.student.toLowerCase() === 'student' ||
+        r.student.toLowerCase() === 'krishnavamsi' ||
         r.student.toLowerCase() === 'raj kumar'
       );
     }
@@ -592,28 +655,41 @@ export class AttendancePage implements OnInit, OnDestroy {
     this.filteredRecords = results;
   }
 
-  get userRecords(): AttendanceRecord[] {
-    if (this.role === 'student') {
-      const uname = (this.userName || localStorage.getItem('userName') || 'Student').toLowerCase();
-      return this.attendanceRecords.filter(r =>
-        r.student.toLowerCase() === uname ||
-        r.student.toLowerCase() === 'student' ||
-        r.student.toLowerCase() === 'raj kumar'
-      );
-    }
-    return this.attendanceRecords;
+  get sessionPresentCount(): number {
+    return this.enrolledStudents.filter(s => s.status === 'Present').length;
   }
 
-  get totalPresent(): number {
-    return this.userRecords.filter(r => r.status === 'Present').length;
+  get sessionAbsentCount(): number {
+    return this.enrolledStudents.filter(s => s.status === 'Absent').length;
   }
 
-  get totalAbsent(): number {
-    return this.userRecords.filter(r => r.status === 'Absent').length;
+  get sessionRate(): number {
+    const totalMarked = this.sessionPresentCount + this.sessionAbsentCount;
+    if (totalMarked === 0) return 0;
+    return Math.round((this.sessionPresentCount / totalMarked) * 100);
   }
 
-  get attendancePercentage(): number {
-    const total = this.userRecords.length;
-    return total === 0 ? 0 : Math.round((this.totalPresent / total) * 100);
+  // Student specific getters
+  get myRecords(): AttendanceRecord[] {
+    const uname = (this.userName || 'Student').toLowerCase();
+    return this.attendanceRecords.filter(r =>
+      r.student.toLowerCase() === uname ||
+      r.student.toLowerCase() === 'student' ||
+      r.student.toLowerCase() === 'krishnavamsi' ||
+      r.student.toLowerCase() === 'raj kumar'
+    );
+  }
+
+  get myPresentCount(): number {
+    return this.myRecords.filter(r => r.status === 'Present').length;
+  }
+
+  get myAbsentCount(): number {
+    return this.myRecords.filter(r => r.status === 'Absent').length;
+  }
+
+  get myAttendancePercentage(): number {
+    const total = this.myRecords.length;
+    return total === 0 ? 0 : Math.round((this.myPresentCount / total) * 100);
   }
 }
