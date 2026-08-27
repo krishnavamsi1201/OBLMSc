@@ -1,9 +1,11 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy, inject, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Navbar } from '../../shared/navbar/navbar';
 import { Sidebar } from '../../shared/sidebar/sidebar';
 import { Footer } from '../../shared/footer/footer';
+import { SyncService } from '../../shared/services/sync.service';
+import { Subscription } from 'rxjs';
 
 interface AttendanceRecord {
   id: number;
@@ -200,6 +202,10 @@ export class AttendancePage implements OnInit {
   editIndex = -1;
   monthlyReportDate = new Date().toLocaleString('default', { month: 'long', year: 'numeric' });
 
+  private syncService = inject(SyncService);
+  private cdr = inject(ChangeDetectorRef);
+  private syncSub?: Subscription;
+
   constructor() {
     this.role = localStorage.getItem('userRole')?.toLowerCase() || null;
     this.userName = localStorage.getItem('userName') || 'Student';
@@ -208,6 +214,18 @@ export class AttendancePage implements OnInit {
 
   ngOnInit(): void {
     this.onSearch();
+
+    this.syncSub = this.syncService.events$.subscribe((e) => {
+      if (e.type === 'ATTENDANCE_CHANGED') {
+        this.loadAttendance();
+        this.onSearch();
+        this.cdr.detectChanges();
+      }
+    });
+  }
+
+  ngOnDestroy(): void {
+    this.syncSub?.unsubscribe();
   }
 
   private loadAttendance(): void {
@@ -225,6 +243,7 @@ export class AttendancePage implements OnInit {
   private saveAttendance(): void {
     try {
       localStorage.setItem('obslmsAttendance', JSON.stringify(this.attendanceRecords));
+      this.syncService.emit('ATTENDANCE_CHANGED');
     } catch {}
   }
 

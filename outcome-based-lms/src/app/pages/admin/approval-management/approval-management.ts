@@ -5,10 +5,11 @@ import { Navbar } from '../../../shared/navbar/navbar';
 import { Sidebar } from '../../../shared/sidebar/sidebar';
 import { Footer } from '../../../shared/footer/footer';
 import { ToastService } from '../../../shared/services/toast.service';
+import { SyncService } from '../../../shared/services/sync.service';
 
 interface ApprovalItem {
   id: string;
-  type: string; // 'assessment-co-mapping', 'copo-mapping', 'course-subject-assignment', 'faculty-allocation'
+  type: string; // 'assessment-co-mapping', 'copo-mapping', 'course-enrollment', 'course-subject-assignment', 'faculty-allocation'
   title: string;
   description: string;
   createdBy: string;
@@ -39,6 +40,7 @@ interface AssessmentCOMapping {
 })
 export class ApprovalManagement implements OnInit {
   private toast = inject(ToastService);
+  private syncService = inject(SyncService);
   approvalItems: ApprovalItem[] = [];
   filteredItems: ApprovalItem[] = [];
   filterStatus: string = 'Pending';
@@ -47,10 +49,11 @@ export class ApprovalManagement implements OnInit {
 
   approvalTypes = [
     { value: '', label: 'All Types' },
-    { value: 'assessment-co-mapping', label: 'Assessment-CO Mappings' },
-    { value: 'copo-mapping', label: 'CO-PO Curriculum Mappings' },
-    { value: 'course-subject-assignment', label: 'Course-Subject Assignments' },
-    { value: 'faculty-allocation', label: 'Faculty Allocations' }
+    { value: 'course-enrollment', label: '🎓 Student Course Enrollments' },
+    { value: 'assessment-co-mapping', label: '🎯 Assessment-CO Mappings' },
+    { value: 'copo-mapping', label: '📐 CO-PO Curriculum Mappings' },
+    { value: 'course-subject-assignment', label: '📚 Course-Subject Assignments' },
+    { value: 'faculty-allocation', label: '👨‍🏫 Faculty Allocations' }
   ];
 
   statusOptions = ['Pending', 'Approved', 'Rejected'];
@@ -70,7 +73,22 @@ export class ApprovalManagement implements OnInit {
     try {
       const items: ApprovalItem[] = [];
 
-      // 1. Assessment-CO Mappings
+      // 1. Student Course Enrollment Requests
+      const courseRequests = JSON.parse(localStorage.getItem('obslmsCourseRequests') || '[]');
+      courseRequests.forEach((req: any) => {
+        items.push({
+          id: req.id,
+          type: 'course-enrollment',
+          title: `Enrollment: ${req.studentName} → ${req.courseTitle || req.courseCode}`,
+          description: `Student: ${req.studentName} requested enrollment in ${req.courseTitle || req.courseCode} (${req.courseCode})`,
+          createdBy: req.studentName || 'Student',
+          createdDate: req.requestedAt ? req.requestedAt.split('T')[0] : new Date().toISOString().split('T')[0],
+          status: req.status || 'Pending',
+          details: req
+        });
+      });
+
+      // 2. Assessment-CO Mappings
       const assessmentMappings = JSON.parse(localStorage.getItem('obslmsAssessmentCOMappings') || '[]') as AssessmentCOMapping[];
       assessmentMappings.forEach((mapping: AssessmentCOMapping) => {
         items.push({
@@ -85,7 +103,7 @@ export class ApprovalManagement implements OnInit {
         });
       });
 
-      // 2. CO-PO Curriculum Mappings
+      // 3. CO-PO Curriculum Mappings
       const copoMappings = JSON.parse(localStorage.getItem('obslmsCoMappings') || '[]');
       copoMappings.forEach((mapping: any) => {
         items.push({
@@ -169,7 +187,54 @@ export class ApprovalManagement implements OnInit {
   }
 
   updateApprovalInStorage(item: ApprovalItem): void {
-    if (item.type === 'assessment-co-mapping') {
+    if (item.type === 'course-enrollment') {
+      try {
+        const requests = JSON.parse(localStorage.getItem('obslmsCourseRequests') || '[]');
+        const reqIdx = requests.findIndex((r: any) => r.id === item.id);
+        if (reqIdx !== -1) {
+          requests[reqIdx].status = item.status;
+          if (item.details?.rejectionReason) {
+            requests[reqIdx].rejectionReason = item.details.rejectionReason;
+          }
+          localStorage.setItem('obslmsCourseRequests', JSON.stringify(requests));
+        }
+
+        if (item.status === 'Approved' && item.details) {
+          // Add to student's enrolled courses
+          const studentCourses = JSON.parse(localStorage.getItem('obslmsStudentCourses') || '[]');
+          const exists = studentCourses.some((sc: any) =>
+            sc.studentName.toLowerCase() === item.details.studentName.toLowerCase() &&
+            sc.courseCode.toLowerCase() === item.details.courseCode.toLowerCase()
+          );
+          if (!exists) {
+            studentCourses.push({
+              studentName: item.details.studentName,
+              courseCode: item.details.courseCode,
+              courseTitle: item.details.courseTitle,
+              enrolledAt: new Date().toISOString()
+            });
+            localStorage.setItem('obslmsStudentCourses', JSON.stringify(studentCourses));
+          }
+
+          // Send approval notification to student
+          const notifs = JSON.parse(localStorage.getItem('obslmsNotifications') || '[]');
+          notifs.unshift({
+            id: 'NOTIF-' + Date.now(),
+            title: 'Course Enrollment Approved! 🎉',
+            message: `Your enrollment request for "${item.details.courseTitle || item.details.courseCode}" has been approved. You can now access syllabus, attendance, and study materials.`,
+            type: 'announcement',
+            date: new Date().toISOString(),
+            read: false,
+            recipient: item.details.studentName
+          });
+          localStorage.setItem('obslmsNotifications', JSON.stringify(notifs));
+        }
+
+        this.syncService.emit('ENROLLMENTS_CHANGED', item.details);
+      } catch (error) {
+        console.error('Error updating course enrollment approval:', error);
+      }
+    } else if (item.type === 'assessment-co-mapping') {
       try {
         const mappings = JSON.parse(localStorage.getItem('obslmsAssessmentCOMappings') || '[]');
         const index = mappings.findIndex((m: any) => m.id === item.id);
@@ -182,6 +247,7 @@ export class ApprovalManagement implements OnInit {
           }
           localStorage.setItem('obslmsAssessmentCOMappings', JSON.stringify(mappings));
         }
+        this.syncService.emit('MARKS_CHANGED');
       } catch (error) {
         console.error('Error updating approval:', error);
       }
@@ -193,6 +259,7 @@ export class ApprovalManagement implements OnInit {
           mappings[index].status = item.status;
           localStorage.setItem('obslmsCoMappings', JSON.stringify(mappings));
         }
+        this.syncService.emit('MARKS_CHANGED');
       } catch (error) {
         console.error('Error updating copo mapping approval:', error);
       }

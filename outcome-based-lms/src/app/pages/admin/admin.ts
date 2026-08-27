@@ -1,10 +1,12 @@
-import { Component, inject } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectorRef, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { Navbar } from '../../shared/navbar/navbar';
 import { Sidebar } from '../../shared/sidebar/sidebar';
 import { Footer } from '../../shared/footer/footer';
 import { ToastService } from '../../shared/services/toast.service';
+import { SyncService } from '../../shared/services/sync.service';
+import { Subscription } from 'rxjs';
 
 export interface DeptStats {
   name: string;
@@ -28,8 +30,11 @@ export interface ActivityItem {
   templateUrl: './admin.html',
   styleUrls: ['./admin.css'],
 })
-export class Admin {
+export class Admin implements OnInit, OnDestroy {
   private toast = inject(ToastService);
+  private cdr = inject(ChangeDetectorRef);
+  private syncService = inject(SyncService);
+  private syncSub?: Subscription;
 
   counts = {
     faculty: 0,
@@ -60,6 +65,17 @@ export class Admin {
     this.loadAdminData();
   }
 
+  ngOnInit(): void {
+    this.syncSub = this.syncService.events$.subscribe(() => {
+      this.loadAdminData();
+      this.cdr.detectChanges();
+    });
+  }
+
+  ngOnDestroy(): void {
+    this.syncSub?.unsubscribe();
+  }
+
   private loadAdminData(): void {
     try {
       this.counts.faculty = this.safeLoadCount('obslmsFaculty');
@@ -77,7 +93,11 @@ export class Admin {
       const assessmentMappings = this.safeLoadArray('obslmsAssessmentCOMappings');
       const pendingAssessments = assessmentMappings.filter((m: any) => m.approvalStatus === 'Pending' || !m.approvalStatus).length;
       const pendingCopo = copoMappings.filter((m: any) => m.status === 'Pending').length;
-      this.counts.pendingApprovals = pendingAssessments + pendingCopo;
+      
+      const courseRequests = this.safeLoadArray('obslmsCourseRequests');
+      const pendingEnrollments = courseRequests.filter((r: any) => r.status === 'Pending').length;
+
+      this.counts.pendingApprovals = pendingAssessments + pendingCopo + pendingEnrollments;
 
       const grievances = this.safeLoadArray('obslmsGrievances');
       this.counts.openGrievances = grievances.filter((g: any) => g.status === 'Open' || g.status === 'In Review').length;

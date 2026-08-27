@@ -1,10 +1,12 @@
-import { Component, OnInit, inject, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, OnDestroy, inject, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Navbar } from '../../shared/navbar/navbar';
 import { Sidebar } from '../../shared/sidebar/sidebar';
 import { Footer } from '../../shared/footer/footer';
 import { HttpClient } from '@angular/common/http';
+import { SyncService } from '../../shared/services/sync.service';
+import { Subscription } from 'rxjs';
 
 interface StudentResult {
   id: number;
@@ -302,6 +304,8 @@ export class Results implements OnInit {
 
   private http = inject(HttpClient);
   private cdr = inject(ChangeDetectorRef);
+  private syncService = inject(SyncService);
+  private syncSub?: Subscription;
 
   constructor() {
     try {
@@ -314,6 +318,16 @@ export class Results implements OnInit {
 
   ngOnInit(): void {
     this.loadResultsData();
+
+    this.syncSub = this.syncService.events$.subscribe((e) => {
+      if (e.type === 'MARKS_CHANGED') {
+        this.loadResultsData();
+      }
+    });
+  }
+
+  ngOnDestroy(): void {
+    this.syncSub?.unsubscribe();
   }
 
   getObeWeights(): { internal: number; external: number } {
@@ -335,80 +349,94 @@ export class Results implements OnInit {
     return Math.round(internal * (weights.internal / 100) + external * (weights.external / 100));
   }
 
+  private processMarksIntoResults(marks: any[]): void {
+    const weights = this.getObeWeights();
+    const intRatio = weights.internal / 100;
+    const extRatio = weights.external / 100;
+
+    // Group marks by student and course
+    const grouped = new Map<string, any>();
+
+    marks.forEach((mark: any) => {
+      if (!mark.student) return;
+      const key = `${mark.student}_${mark.assessment || 'General Course'}`;
+
+      if (!grouped.has(key)) {
+        grouped.set(key, {
+          student: mark.student,
+          course: mark.assessment || 'General Course',
+          marksList: []
+        });
+      }
+      grouped.get(key).marksList.push(mark);
+    });
+
+    let idCounter = 1;
+    this.studentResults = Array.from(grouped.values()).map(group => {
+      const totalObtained = group.marksList.reduce((sum: number, m: any) => sum + (Number(m.obtained) || 0), 0);
+      const totalMax = group.marksList.reduce((sum: number, m: any) => sum + (Number(m.maxMarks) || 100), 0);
+      
+      const internalScore = totalMax > 0 ? Math.round((totalObtained / totalMax) * 100) : 75;
+      const externalScore = Math.min(100, Math.max(0, Math.round(internalScore - 5)));
+      const finalScore = Math.round(internalScore * intRatio + externalScore * extRatio);
+
+      let grade = 'F';
+      let status = 'Fail';
+      
+      if (finalScore >= 90) { grade = 'O'; status = 'Pass'; }
+      else if (finalScore >= 80) { grade = 'A+'; status = 'Pass'; }
+      else if (finalScore >= 70) { grade = 'A'; status = 'Pass'; }
+      else if (finalScore >= 60) { grade = 'B+'; status = 'Pass'; }
+      else if (finalScore >= 50) { grade = 'B'; status = 'Pass'; }
+
+      return {
+        id: idCounter++,
+        student: group.student,
+        course: group.course,
+        internal: internalScore,
+        external: externalScore,
+        grade,
+        status
+      };
+    });
+
+    // Filter results based on student role
+    if (this.role === 'student') {
+      this.filteredResults = this.studentResults.filter(
+        r => r.student.toLowerCase() === this.userName.toLowerCase()
+      );
+    } else {
+      this.filteredResults = [...this.studentResults];
+      this.filteredResults.forEach(r => {
+        if (this.selectedStudentsForPrint[r.student] === undefined) {
+          this.selectedStudentsForPrint[r.student] = false;
+        }
+      });
+    }
+    this.cdr.detectChanges();
+  }
+
   private loadResultsData(): void {
+    // 1. Load from localStorage immediately
+    try {
+      const stored = localStorage.getItem('obslmsMarkEntries');
+      if (stored) {
+        const localMarks = JSON.parse(stored);
+        if (Array.isArray(localMarks) && localMarks.length > 0) {
+          this.processMarksIntoResults(localMarks);
+        }
+      }
+    } catch {}
+
+    // 2. Fetch from backend API
     this.http.get<any[]>('http://localhost:8080/api/obe/marks').subscribe({
       next: (marks) => {
-        const weights = this.getObeWeights();
-        const intRatio = weights.internal / 100;
-        const extRatio = weights.external / 100;
-
-        // Group marks by student and course
-        const grouped = new Map<string, any>();
-
-        marks.forEach((mark: any) => {
-          if (!mark.student) return;
-          const key = `${mark.student}_${mark.assessment || 'General Course'}`;
-
-          if (!grouped.has(key)) {
-            grouped.set(key, {
-              student: mark.student,
-              course: mark.assessment || 'General Course',
-              marksList: []
-            });
-          }
-          grouped.get(key).marksList.push(mark);
-        });
-
-        let idCounter = 1;
-        this.studentResults = Array.from(grouped.values()).map(group => {
-          const totalObtained = group.marksList.reduce((sum: number, m: any) => sum + (Number(m.obtained) || 0), 0);
-          const totalMax = group.marksList.reduce((sum: number, m: any) => sum + (Number(m.maxMarks) || 100), 0);
-          
-          const internalScore = totalMax > 0 ? Math.round((totalObtained / totalMax) * 100) : 75;
-          // Calculate realistic mock external score based on internal
-          const externalScore = Math.min(100, Math.max(0, Math.round(internalScore - 5)));
-          const finalScore = Math.round(internalScore * intRatio + externalScore * extRatio);
-
-          let grade = 'F';
-          let status = 'Fail';
-          
-          if (finalScore >= 90) { grade = 'O'; status = 'Pass'; }
-          else if (finalScore >= 80) { grade = 'A+'; status = 'Pass'; }
-          else if (finalScore >= 70) { grade = 'A'; status = 'Pass'; }
-          else if (finalScore >= 60) { grade = 'B+'; status = 'Pass'; }
-          else if (finalScore >= 50) { grade = 'B'; status = 'Pass'; }
-
-          return {
-            id: idCounter++,
-            student: group.student,
-            course: group.course,
-            internal: internalScore,
-            external: externalScore,
-            grade,
-            status
-          };
-        });
-
-        // Filter results based on student role
-        if (this.role === 'student') {
-          this.filteredResults = this.studentResults.filter(
-            r => r.student.toLowerCase() === this.userName.toLowerCase()
-          );
-        } else {
-          this.filteredResults = [...this.studentResults];
-          // Reset selections
-          this.filteredResults.forEach(r => {
-            if (this.selectedStudentsForPrint[r.student] === undefined) {
-              this.selectedStudentsForPrint[r.student] = false;
-            }
-          });
+        if (Array.isArray(marks) && marks.length > 0) {
+          this.processMarksIntoResults(marks);
         }
-        this.cdr.detectChanges();
       },
       error: () => {
-        this.studentResults = [];
-        this.filteredResults = [];
-        this.cdr.detectChanges();
+        // Backend offline, already rendered local marks
       }
     });
   }

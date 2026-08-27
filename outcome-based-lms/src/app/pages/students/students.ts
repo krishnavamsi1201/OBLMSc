@@ -1,13 +1,14 @@
-import { Component, OnInit, inject } from '@angular/core';
-import { Router } from '@angular/router';
+import { Component, ChangeDetectorRef, OnInit, OnDestroy, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
-
+import { Router } from '@angular/router';
 import { Navbar } from '../../shared/navbar/navbar';
 import { Sidebar } from '../../shared/sidebar/sidebar';
 import { Footer } from '../../shared/footer/footer';
 import { ToastService } from '../../shared/services/toast.service';
+import { SyncService } from '../../shared/services/sync.service';
+import { Subscription } from 'rxjs';
 
 interface DashboardStats {
   enrolledCourses: number;
@@ -70,9 +71,12 @@ interface EnrolledCourseCard {
   templateUrl: './students.html',
   styleUrls: ['./students.css'],
 })
-export class Students implements OnInit {
+export class Students implements OnInit, OnDestroy {
   private router = inject(Router);
   private toast = inject(ToastService);
+  private cdr = inject(ChangeDetectorRef);
+  private syncService = inject(SyncService);
+  private syncSub?: Subscription;
 
   role: string | null = null;
   studentName = 'Student';
@@ -258,6 +262,15 @@ export class Students implements OnInit {
 
   ngOnInit(): void {
     this.loadDashboardData();
+
+    this.syncSub = this.syncService.events$.subscribe(() => {
+      this.loadDashboardData();
+      this.cdr.detectChanges();
+    });
+  }
+
+  ngOnDestroy(): void {
+    this.syncSub?.unsubscribe();
   }
 
   private loadDashboardData(): void {
@@ -443,17 +456,59 @@ export class Students implements OnInit {
         this.todaySchedule = [];
       }
 
-      // 6. OBE Course Outcomes Mastery Progress from real COs
+      // 6. OBE Course Outcomes Mastery Progress from real COs and Marks
       const storedCos = localStorage.getItem('obslmsCourseOutcomes');
       const cos = storedCos ? JSON.parse(storedCos) : [];
+      const mappings = JSON.parse(localStorage.getItem('obslmsAssessmentCOMappings') || '[]');
+
       this.coProgressList = cos.map((co: any) => {
+        const coCode = co.co || co.code || 'CO1';
+        const courseName = co.course || 'Course';
+        const target = Number(co.targetPercentage) || 75;
+
+        // Find assessment mappings linked to this CO
+        const linkedMappings = mappings.filter((m: any) =>
+          m.courseOutcomes && Array.isArray(m.courseOutcomes) && m.courseOutcomes.includes(coCode)
+        );
+
+        let myObt = 0;
+        let myMax = 0;
+
+        if (linkedMappings.length > 0) {
+          linkedMappings.forEach((mapping: any) => {
+            const studentMarks = myMarks.filter((m: any) =>
+              m.assessment && m.assessment.toLowerCase().includes((mapping.assessmentName || '').toLowerCase())
+            );
+            studentMarks.forEach((m: any) => {
+              myObt += Number(m.obtained) || 0;
+              myMax += Number(m.maxMarks) || mapping.maxMarks || 100;
+            });
+          });
+        } else {
+          const studentMarks = myMarks.filter((m: any) =>
+            m.assessment && (m.assessment.toLowerCase().includes(courseName.toLowerCase()) || m.assessment.toLowerCase().includes(coCode.toLowerCase()))
+          );
+          studentMarks.forEach((m: any) => {
+            myObt += Number(m.obtained) || 0;
+            myMax += Number(m.maxMarks) || 100;
+          });
+        }
+
+        const pct = myMax > 0 ? Math.round((myObt / myMax) * 100) : 0;
+        let status: 'Achieved' | 'In Progress' | 'Needs Attention' = 'In Progress';
+        if (pct >= target && pct > 0) {
+          status = 'Achieved';
+        } else if (pct < 40 && myMax > 0) {
+          status = 'Needs Attention';
+        }
+
         return {
-          coCode: co.co || 'CO',
-          courseName: co.course || 'Course',
-          bloomsLevel: 'Apply',
-          attainmentPct: 0,
-          targetPct: 75,
-          status: 'In Progress' as const
+          coCode: coCode,
+          courseName: courseName,
+          bloomsLevel: co.bloomsLevel || 'Apply',
+          attainmentPct: pct,
+          targetPct: target,
+          status: status
         };
       });
 

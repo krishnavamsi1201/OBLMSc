@@ -1,4 +1,4 @@
-import { Component, ChangeDetectorRef, inject, OnInit } from '@angular/core';
+import { Component, ChangeDetectorRef, inject, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Navbar } from '../../shared/navbar/navbar';
@@ -8,6 +8,8 @@ import { MatButtonModule } from '@angular/material/button';
 import { HttpClient } from '@angular/common/http';
 import { ToastService } from '../../shared/services/toast.service';
 import { CourseService, AppCourse } from '../../shared/services/course.service';
+import { SyncService } from '../../shared/services/sync.service';
+import { Subscription } from 'rxjs';
 
 interface Course {
   id: number;
@@ -24,9 +26,11 @@ interface Course {
   templateUrl: './courses.html',
   styleUrls: ['./courses.css'],
 })
-export class Courses implements OnInit {
+export class Courses implements OnInit, OnDestroy {
   private toast = inject(ToastService);
   private courseService = inject(CourseService);
+  private syncService = inject(SyncService);
+  private syncSub?: Subscription;
   courses: Course[] = [];
 
   role: string | null = null;
@@ -76,6 +80,18 @@ export class Courses implements OnInit {
     this.loadCourses();
     this.loadCompletion();
     this.loadFacultyList();
+
+    this.syncSub = this.syncService.events$.subscribe((event) => {
+      if (event.type === 'COURSES_CHANGED' || event.type === 'ENROLLMENTS_CHANGED') {
+        this.loadCourses();
+        this.loadCompletion();
+        this.cdr.detectChanges();
+      }
+    });
+  }
+
+  ngOnDestroy(): void {
+    this.syncSub?.unsubscribe();
   }
 
   createEmptyCourse(): Course {
@@ -378,6 +394,7 @@ export class Courses implements OnInit {
 
     requests.push(newRequest);
     localStorage.setItem('obslmsCourseRequests', JSON.stringify(requests));
+    this.syncService.emit('ENROLLMENTS_CHANGED', newRequest);
     this.toast.success(`Enrollment request sent for course "${course.title}".`);
     this.cdr.detectChanges();
   }

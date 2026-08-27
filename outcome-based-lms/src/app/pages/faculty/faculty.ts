@@ -1,10 +1,12 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectorRef, inject } from '@angular/core';
 import { RouterModule, Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Navbar } from '../../shared/navbar/navbar';
 import { Sidebar } from '../../shared/sidebar/sidebar';
 import { Footer } from '../../shared/footer/footer';
+import { SyncService } from '../../shared/services/sync.service';
+import { Subscription } from 'rxjs';
 import {
   FacultyDataService,
   Course,
@@ -167,6 +169,9 @@ export class Faculty implements OnInit {
   dossierCOs: CourseCOAttainmentSummary[] = [];
   dossierAssessments: Assessment[] = [];
   dossierStudents: StudentProgress[] = [];
+  private syncService = inject(SyncService);
+  private cdr = inject(ChangeDetectorRef);
+  private syncSub?: Subscription;
 
   constructor(
     private facultyDataService: FacultyDataService,
@@ -178,6 +183,15 @@ export class Faculty implements OnInit {
     this.attendanceDate = new Date().toISOString().split('T')[0];
     this.lectureDate = new Date().toISOString().split('T')[0];
     this.loadDashboardData();
+
+    this.syncSub = this.syncService.events$.subscribe(() => {
+      this.loadDashboardData();
+      this.cdr.detectChanges();
+    });
+  }
+
+  ngOnDestroy(): void {
+    this.syncSub?.unsubscribe();
   }
 
   /**

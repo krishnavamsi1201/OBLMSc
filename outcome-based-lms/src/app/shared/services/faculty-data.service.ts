@@ -1,6 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { Observable, of } from 'rxjs';
 import { HttpClient } from '@angular/common/http';
+import { SyncService } from './sync.service';
 
 export interface StorageCourse {
   id: number | string;
@@ -157,6 +158,7 @@ export interface CqiAction {
 export class FacultyDataService {
 
   private http = inject(HttpClient);
+  private syncService = inject(SyncService);
 
   constructor() {}
 
@@ -773,6 +775,7 @@ export class FacultyDataService {
         id: `LEC-${Date.now()}`
       });
       localStorage.setItem('obslmsLectureLogs', JSON.stringify(logs));
+      this.syncService.emit('LECTURES_CHANGED', log);
     } catch (e) {
       console.error('Error saving lecture log:', e);
     }
@@ -875,6 +878,7 @@ export class FacultyDataService {
         marks.push(existingItem);
       }
       localStorage.setItem('obslmsMarkEntries', JSON.stringify(marks));
+      this.syncService.emit('MARKS_CHANGED', mark);
 
       const payload = {
         id: (existingItem.id && existingItem.id < 1000000000) ? existingItem.id : null,
@@ -925,6 +929,7 @@ export class FacultyDataService {
       });
 
       localStorage.setItem('obslmsMarkEntries', JSON.stringify(existing));
+      this.syncService.emit('MARKS_CHANGED', marksList);
     } catch (e) {
       console.error('Error bulk saving marks:', e);
     }
@@ -953,6 +958,7 @@ export class FacultyDataService {
         }
       });
       localStorage.setItem('obslmsAttendance', JSON.stringify(existing));
+      this.syncService.emit('ATTENDANCE_CHANGED', records);
 
       const payloads = records.map(rec => ({
         student: rec.student.trim(),
@@ -987,6 +993,7 @@ export class FacultyDataService {
       };
       cqiList.push(newAction);
       localStorage.setItem('obslmsCqiActions', JSON.stringify(cqiList));
+      this.syncService.emit('MARKS_CHANGED', newAction);
     } catch (e) {
       console.error('Error saving CQI action:', e);
     }

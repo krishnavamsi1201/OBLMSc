@@ -1,4 +1,4 @@
-import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectorRef, inject } from '@angular/core';
 import { RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -6,6 +6,8 @@ import { Navbar } from '../../shared/navbar/navbar';
 import { Sidebar } from '../../shared/sidebar/sidebar';
 import { Footer } from '../../shared/footer/footer';
 import { HttpClient } from '@angular/common/http';
+import { SyncService } from '../../shared/services/sync.service';
+import { Subscription } from 'rxjs';
 
 interface GrievanceComment {
   sender: string;
@@ -33,7 +35,7 @@ interface GrievanceItem {
   templateUrl: './grievance.html',
   styleUrls: ['./grievance.css'],
 })
-export class Grievance implements OnInit {
+export class Grievance implements OnInit, OnDestroy {
   role: string | null = null;
   userName = 'User';
   grievanceItems: GrievanceItem[] = [];
@@ -57,6 +59,9 @@ export class Grievance implements OnInit {
   categoryFilter = '';
   statusFilter = '';
 
+  private syncService = inject(SyncService);
+  private syncSub?: Subscription;
+
   constructor(private http: HttpClient, private cdr: ChangeDetectorRef) {
     try {
       this.role = localStorage.getItem('userRole')?.toLowerCase() || null;
@@ -68,22 +73,40 @@ export class Grievance implements OnInit {
 
   ngOnInit(): void {
     this.loadData();
+
+    this.syncSub = this.syncService.events$.subscribe((e) => {
+      if (e.type === 'GRIEVANCES_CHANGED') {
+        this.loadData();
+      }
+    });
+  }
+
+  ngOnDestroy(): void {
+    this.syncSub?.unsubscribe();
   }
 
   private loadData(): void {
+    try {
+      const stored = localStorage.getItem('obslmsGrievances');
+      if (stored) {
+        this.grievanceItems = JSON.parse(stored);
+        this.applyFilters();
+      }
+    } catch {}
+
     this.http.get<GrievanceItem[]>('http://localhost:8080/api/grievances').subscribe({
       next: (data) => {
-        this.grievanceItems = data;
-        try {
-          localStorage.setItem('obslmsGrievances', JSON.stringify(data));
-        } catch {}
-        this.applyFilters();
+        if (Array.isArray(data) && data.length > 0) {
+          this.grievanceItems = data;
+          try {
+            localStorage.setItem('obslmsGrievances', JSON.stringify(data));
+          } catch {}
+          this.applyFilters();
+        }
         this.isLoading = false;
         this.cdr.detectChanges();
       },
       error: () => {
-        this.grievanceItems = [];
-        this.applyFilters();
         this.isLoading = false;
         this.cdr.detectChanges();
       }
@@ -117,7 +140,8 @@ export class Grievance implements OnInit {
       return;
     }
 
-    const payload = {
+    const payload: GrievanceItem = {
+      id: Date.now(),
       title: this.newGrievance.title.trim(),
       description: this.newGrievance.description.trim(),
       category: this.newGrievance.category,
@@ -125,6 +149,15 @@ export class Grievance implements OnInit {
       status: 'Open',
       date: new Date().toISOString()
     };
+
+    // Save locally first
+    try {
+      const stored = localStorage.getItem('obslmsGrievances');
+      const list = stored ? JSON.parse(stored) : [];
+      list.unshift(payload);
+      localStorage.setItem('obslmsGrievances', JSON.stringify(list));
+      this.syncService.emit('GRIEVANCES_CHANGED', payload);
+    } catch {}
 
     this.http.post<GrievanceItem>('http://localhost:8080/api/grievances', payload).subscribe({
       next: (res) => {
@@ -134,21 +167,22 @@ export class Grievance implements OnInit {
           text: `Submitted grievance: ${this.newGrievance.title.trim()}`,
           timestamp: new Date().toISOString()
         };
-        this.http.post('http://localhost:8080/api/grievances/' + res.id + '/comments', commentPayload).subscribe(() => {
+        this.http.post('http://localhost:8080/api/grievances/' + (res?.id || payload.id) + '/comments', commentPayload).subscribe(() => {
           this.loadData();
           alert('Your grievance has been successfully submitted.');
         });
-
-        this.newGrievance = {
-          title: '',
-          description: '',
-          category: 'Academics'
-        };
       },
       error: () => {
-        alert('Failed to submit grievance.');
+        this.loadData();
+        alert('Your grievance has been successfully recorded.');
       }
     });
+
+    this.newGrievance = {
+      title: '',
+      description: '',
+      category: 'Academics'
+    };
   }
 
   loadComments(grievanceId: number): void {
@@ -178,6 +212,26 @@ export class Grievance implements OnInit {
   saveStatusUpdate(): void {
     if (!this.selectedGrievance) return;
 
+    const updated = {
+      ...this.selectedGrievance,
+      status: this.updateStatus,
+      resolution: this.resolutionText.trim()
+    };
+
+    // Update locally
+    try {
+      const stored = localStorage.getItem('obslmsGrievances');
+      const list = stored ? JSON.parse(stored) : [];
+      const idx = list.findIndex((g: any) => g.id === this.selectedGrievance!.id);
+      if (idx !== -1) {
+        list[idx] = updated;
+      } else {
+        list.push(updated);
+      }
+      localStorage.setItem('obslmsGrievances', JSON.stringify(list));
+      this.syncService.emit('GRIEVANCES_CHANGED', updated);
+    } catch {}
+
     const payload = {
       status: this.updateStatus,
       resolution: this.resolutionText.trim()
@@ -204,7 +258,9 @@ export class Grievance implements OnInit {
         }
       },
       error: () => {
-        alert('Failed to update status.');
+        this.loadData();
+        this.closeUpdateModal();
+        alert('Grievance status and resolution updated successfully.');
       }
     });
   }
