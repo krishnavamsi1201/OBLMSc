@@ -21,3 +21,7 @@ springboot-backend/*.class
 .history/*
 .DS_Store
 Thumbs.db
+node_modules/
+dist/
+.angular/
+package-lock.json
