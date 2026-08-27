@@ -8,14 +8,16 @@
 
         <div class="page-header">
             <h1>📚 Courses</h1>
-            <p>{{ role === 'student' ? 'View your active course catalog and track Course Outcomes (CO) syllabus progress.' : 'Admin and Faculty dashboard to create, edit, delete, and manage course allocation.' }}</p>
+            <p *ngIf="role === 'admin'">Admin curriculum dashboard to create, edit, delete courses, and allocate faculty workload.</p>
+            <p *ngIf="role === 'faculty'">Institutional course catalog. View your assigned curriculum subjects and syllabus Course Outcomes (COs).</p>
+            <p *ngIf="role === 'student'">View your active course catalog and track Course Outcomes (CO) syllabus progress.</p>
         </div>
 
-        <div class="course-actions" *ngIf="role === 'admin' || role === 'faculty'">
+        <div class="course-actions" *ngIf="role === 'admin'">
             <button mat-raised-button color="primary" (click)="openCourseForm()">Create Course</button>
         </div>
 
-        <div class="course-form-card" *ngIf="showCourseForm">
+        <div class="course-form-card" *ngIf="showCourseForm && role === 'admin'">
             <h2>{{ editingIndex >= 0 ? 'Edit Course' : 'Create Course' }}</h2>
             <form (ngSubmit)="saveCourse()" class="course-form">
                 <label>
@@ -45,7 +47,7 @@
             </form>
         </div>
 
-        <!-- Student Syllabus CO Checklist -->
+        <!-- Student & Faculty Syllabus CO Checklist -->
         <div class="course-form-card" *ngIf="selectedSyllabusCourse" style="border: 2px solid #10b981; margin-top: 20px; background: #fafdfb;">
             <div style="display:flex; justify-content:space-between; align-items:center;">
                 <h2 style="color: #065f46; margin: 0; border-bottom: none; padding-bottom: 0;">📋 Syllabus Tracker (COs) - {{ selectedSyllabusCourse.title }}</h2>
@@ -105,11 +107,16 @@
                         <td>{{ course.faculty || 'Unassigned' }}</td>
                         <td>{{ course.semester }}</td>
                         <td class="actions-cell">
-                            <!-- Admin / Faculty Actions -->
-                            <ng-container *ngIf="role === 'admin' || role === 'faculty'">
+                            <!-- Admin Actions -->
+                            <ng-container *ngIf="role === 'admin'">
                                 <button mat-button color="primary" (click)="editCourse(course, i)">Edit</button>
                                 <button mat-button color="warn" (click)="deleteCourse(course)">Delete</button>
                                 <button mat-button (click)="assignFaculty(course)">Assign Faculty</button>
+                            </ng-container>
+
+                            <!-- Faculty Actions -->
+                            <ng-container *ngIf="role === 'faculty'">
+                                <button mat-button color="primary" (click)="trackSyllabus(course)">View Syllabus (COs)</button>
                             </ng-container>
 
                             <!-- Student Actions -->

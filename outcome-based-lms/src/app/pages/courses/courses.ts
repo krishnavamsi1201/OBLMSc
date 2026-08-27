@@ -160,8 +160,8 @@ export class Courses implements OnInit, OnDestroy {
   }
 
   openCourseForm(): void {
-    if (this.role !== 'admin' && this.role !== 'faculty') {
-      this.toast.error('Only admins and faculty can create courses.');
+    if (this.role !== 'admin') {
+      this.toast.error('Only administrators can create courses.');
       return;
     }
     this.showCourseForm = true;
@@ -170,8 +170,8 @@ export class Courses implements OnInit, OnDestroy {
   }
 
   saveCourse(): void {
-    if (this.role !== 'admin' && this.role !== 'faculty') {
-      this.toast.error('Only admins and faculty can save courses.');
+    if (this.role !== 'admin') {
+      this.toast.error('Only administrators can save courses.');
       return;
     }
     if (!this.currentCourse.code.trim() || !this.currentCourse.title.trim() || !this.currentCourse.semester.trim()) {
@@ -183,7 +183,7 @@ export class Courses implements OnInit, OnDestroy {
       id: this.currentCourse.id > 0 ? this.currentCourse.id : Date.now(),
       code: this.currentCourse.code.trim().toUpperCase(),
       title: this.currentCourse.title.trim(),
-      faculty: this.currentCourse.faculty ? this.currentCourse.faculty.trim() : (this.role === 'faculty' ? (localStorage.getItem('userName') || 'Faculty') : 'Faculty Board'),
+      faculty: this.currentCourse.faculty ? this.currentCourse.faculty.trim() : 'Faculty Board',
       semester: this.currentCourse.semester.trim()
     };
 
