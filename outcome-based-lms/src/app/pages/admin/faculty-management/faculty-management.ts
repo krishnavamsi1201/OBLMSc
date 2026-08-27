@@ -59,37 +59,57 @@ export class FacultyManagement implements OnInit {
   private cdr = inject(ChangeDetectorRef);
 
   private loadFaculty(): void {
+    try {
+      const stored = localStorage.getItem('obslmsFaculty');
+      if (stored) {
+        this.facultyList = JSON.parse(stored);
+        this.filterFaculty();
+      }
+    } catch {}
+
     this.http.get<any[]>('http://localhost:8080/api/users').subscribe({
       next: (users) => {
-        this.facultyList = users
-          .filter(u => u.role?.toUpperCase() === 'FACULTY')
-          .map(u => ({
-            id: u.id,
-            name: u.name,
-            email: u.email,
-            department: u.department || 'Computer Science',
-            designation: 'Assistant Professor',
-            courses: []
-          }));
-        this.filterFaculty();
-        this.cdr.detectChanges();
+        if (Array.isArray(users) && users.length > 0) {
+          this.facultyList = users
+            .filter(u => u.role?.toUpperCase() === 'FACULTY')
+            .map(u => ({
+              id: u.id,
+              name: u.name,
+              email: u.email,
+              department: u.department || 'Computer Science',
+              designation: 'Assistant Professor',
+              courses: []
+            }));
+          try {
+            localStorage.setItem('obslmsFaculty', JSON.stringify(this.facultyList));
+          } catch {}
+          this.filterFaculty();
+          this.cdr.detectChanges();
+        }
       },
       error: () => {
-        this.facultyList = [];
-        this.filterFaculty();
+        // Backend offline, already rendered from localStorage
       }
     });
   }
 
   private loadCourses(): void {
+    try {
+      const stored = localStorage.getItem('obslmsCourses');
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        this.courses = parsed.map((c: any) => `${c.code ? c.code + ' - ' : ''}${c.title || c.name || 'Course'}`);
+      }
+    } catch {}
+
     this.http.get<any[]>('http://localhost:8080/api/courses').subscribe({
       next: (data) => {
-        this.courses = data.map((c: any) => `${c.code ? c.code + ' - ' : ''}${c.title || c.name || 'Course'}`);
-        this.cdr.detectChanges();
+        if (Array.isArray(data) && data.length > 0) {
+          this.courses = data.map((c: any) => `${c.code ? c.code + ' - ' : ''}${c.title || c.name || 'Course'}`);
+          this.cdr.detectChanges();
+        }
       },
-      error: () => {
-        this.courses = [];
-      }
+      error: () => {}
     });
   }
 
@@ -151,36 +171,61 @@ export class FacultyManagement implements OnInit {
       return;
     }
 
+    const facultyId = this.currentId || this.generateId();
+    const facultyObj: Faculty = {
+      id: facultyId,
+      name: this.formData.name.trim(),
+      email: this.formData.email.trim(),
+      department: this.formData.department.trim(),
+      designation: this.formData.designation || 'Assistant Professor',
+      courses: this.formData.courses ? this.formData.courses.split(',').map(c => c.trim()).filter(Boolean) : []
+    };
+
+    if (this.isEditMode) {
+      const idx = this.facultyList.findIndex(f => f.id === facultyId);
+      if (idx !== -1) {
+        this.facultyList[idx] = facultyObj;
+      }
+    } else {
+      this.facultyList.unshift(facultyObj);
+    }
+
+    try {
+      localStorage.setItem('obslmsFaculty', JSON.stringify(this.facultyList));
+    } catch {}
+
+    this.filterFaculty();
+    this.closeForm();
+    this.toast.success(`Faculty member "${this.formData.name}" saved successfully.`);
+    this.cdr.detectChanges();
+
     const payload = {
-      id: this.currentId || this.generateId(),
-      name: this.formData.name,
-      email: this.formData.email,
+      id: facultyId,
+      name: this.formData.name.trim(),
+      email: this.formData.email.trim(),
       password: 'password',
       role: 'FACULTY',
-      department: this.formData.department
+      department: this.formData.department.trim()
     };
 
     this.http.post('http://localhost:8080/api/users', payload).subscribe({
-      next: () => {
-        this.loadFaculty();
-        this.closeForm();
-        this.toast.success(`Faculty member "${this.formData.name}" saved successfully.`);
-      },
-      error: () => {
-        this.toast.error('Failed to save faculty to database.');
-      }
+      next: () => {},
+      error: () => {}
     });
   }
 
   deleteFaculty(id: string): void {
+    this.facultyList = this.facultyList.filter(f => f.id !== id);
+    try {
+      localStorage.setItem('obslmsFaculty', JSON.stringify(this.facultyList));
+    } catch {}
+    this.filterFaculty();
+    this.toast.info('Faculty member removed.');
+    this.cdr.detectChanges();
+
     this.http.delete('http://localhost:8080/api/users/' + id).subscribe({
-      next: () => {
-        this.loadFaculty();
-        this.toast.info('Faculty member removed.');
-      },
-      error: () => {
-        this.toast.error('Failed to delete faculty member.');
-      }
+      next: () => {},
+      error: () => {}
     });
   }
 

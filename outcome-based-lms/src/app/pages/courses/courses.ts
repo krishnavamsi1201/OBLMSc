@@ -294,43 +294,57 @@ export class Courses implements OnInit, OnDestroy {
       return;
     }
 
+    const facultyName = this.newFacultyForm.name.trim();
+    const department = this.newFacultyForm.department || 'Computer Science';
+    const emailName = facultyName.toLowerCase().replace(/[^a-z0-9]/g, '.');
+    const email = `${emailName}@oblms.edu`;
     const rawId = 'FAC-' + Date.now();
+
+    const newFaculty = {
+      id: rawId,
+      name: facultyName,
+      email: email,
+      department: department,
+      designation: 'Assistant Professor',
+      courses: []
+    };
+
+    // 1. Immediately save to localStorage and refresh facultyList
+    try {
+      const stored = localStorage.getItem('obslmsFaculty');
+      const list = stored ? JSON.parse(stored) : [];
+      list.push(newFaculty);
+      localStorage.setItem('obslmsFaculty', JSON.stringify(list));
+      this.loadFacultyList();
+    } catch {}
+
+    // 2. Select in the active form
+    if (this.activeFacultySource === 'courseForm') {
+      this.currentCourse.faculty = facultyName;
+    } else {
+      this.selectedFacultyName = facultyName;
+    }
+
+    this.closeAddFacultyModal();
+    this.toast.success(`Faculty member "${facultyName}" created and selected.`);
+    this.cdr.detectChanges();
+
+    // 3. Background sync to backend database
     const payload = {
       id: rawId,
-      name: this.newFacultyForm.name.trim(),
-      email: this.newFacultyForm.name.toLowerCase().replace(/[^a-z]/g, '') + '@oblms.edu',
+      name: facultyName,
+      email: email,
       password: 'password',
       role: 'FACULTY',
-      department: this.newFacultyForm.department
+      department: department
     };
 
     this.http.post('http://localhost:8080/api/users', payload).subscribe({
       next: () => {
-        this.http.get<any[]>('http://localhost:8080/api/users').subscribe({
-          next: (users) => {
-            const faculty = users.filter(u => u.role?.toUpperCase() === 'FACULTY').map(u => ({
-              id: u.id,
-              name: u.name,
-              email: u.email,
-              department: u.department || 'Computer Science',
-              designation: 'Assistant Professor',
-              courses: []
-            }));
-            localStorage.setItem('obslmsFaculty', JSON.stringify(faculty));
-            this.loadFacultyList();
-
-            if (this.activeFacultySource === 'courseForm') {
-              this.currentCourse.faculty = payload.name;
-            } else {
-              this.selectedFacultyName = payload.name;
-            }
-            this.closeAddFacultyModal();
-            this.toast.success(`Faculty member "${payload.name}" created and selected.`);
-          }
-        });
+        // Background sync succeeded
       },
       error: () => {
-        this.toast.error('Failed to create new faculty.');
+        // Backend offline or local fallback, already persisted locally
       }
     });
   }
