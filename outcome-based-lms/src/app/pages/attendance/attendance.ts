@@ -48,7 +48,7 @@ interface EnrolledStudent {
         </div>
 
         <!-- ================================================================= -->
-        <!-- MAIN ATTENDANCE CARD: COURSE ROSTER & PRESENT/ABSENT BUTTONS     -->
+        <!-- 1. COURSE ROSTER & REAL-TIME MARKING SECTION                      -->
         <!-- ================================================================= -->
         <div class="attendance-card">
             
@@ -177,11 +177,11 @@ interface EnrolledStudent {
         </div>
 
         <!-- ================================================================= -->
-        <!-- ATTENDANCE LOGS HISTORY TABLE                                     -->
+        <!-- 2. ATTENDANCE LOGS HISTORY TABLE (WITH BOTH PRESENT/ABSENT & DELETE) -->
         <!-- ================================================================= -->
         <div class="logs-card">
             <div class="logs-header">
-                <h2>📜 Recent Attendance Logs ({{ filteredLogs.length }})</h2>
+                <h2>📜 Attendance Records & Logs ({{ filteredLogs.length }})</h2>
                 <div class="logs-filter-group">
                     <input type="text" [(ngModel)]="searchTerm" (input)="filterLogs()" placeholder="Search logs by student, date, course..." class="search-input" />
                     <select [(ngModel)]="statusFilter" (change)="filterLogs()" class="status-select">
@@ -199,21 +199,36 @@ interface EnrolledStudent {
                         <th>RegNo</th>
                         <th>Course</th>
                         <th>Date</th>
-                        <th>Status</th>
-                        <th style="text-align: right;">Action</th>
+                        <th style="text-align: center; width: 250px;">Change Status (Present / Absent)</th>
+                        <th style="text-align: right; width: 120px;">Action</th>
                     </tr>
                 </thead>
                 <tbody>
                     <tr *ngFor="let log of filteredLogs">
                         <td><strong>{{ log.student }}</strong></td>
-                        <td>{{ log.regNo || '-' }}</td>
+                        <td><span class="reg-pill">{{ log.regNo || '-' }}</span></td>
                         <td><strong>{{ log.course }}</strong></td>
                         <td>{{ log.date }}</td>
-                        <td>
-                            <span class="status-tag" [class.tag-present]="log.status === 'Present'" [class.tag-absent]="log.status === 'Absent'">
-                                {{ log.status === 'Present' ? '✅ Present' : '❌ Absent' }}
-                            </span>
+                        
+                        <!-- BOTH PRESENT & ABSENT BUTTONS AVAILABLE HERE TOO -->
+                        <td style="text-align: center;">
+                            <div class="attendance-btn-pair">
+                                <button type="button" 
+                                        class="btn-attend-mini present-btn" 
+                                        [class.active]="log.status === 'Present'"
+                                        (click)="toggleLogStatus(log, 'Present')">
+                                    ✅ Present
+                                </button>
+                                <button type="button" 
+                                        class="btn-attend-mini absent-btn" 
+                                        [class.active]="log.status === 'Absent'"
+                                        (click)="toggleLogStatus(log, 'Absent')">
+                                    ❌ Absent
+                                </button>
+                            </div>
                         </td>
+
+                        <!-- DELETE ACTION -->
                         <td style="text-align: right;">
                             <button type="button" class="btn-remove-log" (click)="removeLog(log)">🗑️ Delete</button>
                         </td>
@@ -283,14 +298,16 @@ interface EnrolledStudent {
     .pct-sub { font-size: 0.74rem; opacity: 0.88; margin-top: 2px; }
 
     /* 2 Interactive Buttons */
-    .attendance-btn-pair { display: inline-flex; gap: 10px; justify-content: center; }
+    .attendance-btn-pair { display: inline-flex; gap: 8px; justify-content: center; }
     .btn-attend { padding: 9px 18px; border: 1.5px solid #cbd5e1; border-radius: 8px; font-size: 0.88rem; font-weight: 700; cursor: pointer; background: #ffffff; color: #64748b; transition: all 0.15s ease; outline: none; }
     
-    .btn-attend.present-btn:hover { background: #f0fdf4; border-color: #86efac; color: #16a34a; }
-    .btn-attend.present-btn.active { background: #16a34a; border-color: #15803d; color: #ffffff; box-shadow: 0 2px 10px rgba(22,163,74,0.35); }
+    .btn-attend.present-btn:hover, .btn-attend-mini.present-btn:hover { background: #f0fdf4; border-color: #86efac; color: #16a34a; }
+    .btn-attend.present-btn.active, .btn-attend-mini.present-btn.active { background: #16a34a; border-color: #15803d; color: #ffffff; box-shadow: 0 2px 10px rgba(22,163,74,0.35); }
 
-    .btn-attend.absent-btn:hover { background: #fef2f2; border-color: #fca5a5; color: #dc2626; }
-    .btn-attend.absent-btn.active { background: #dc2626; border-color: #b91c1c; color: #ffffff; box-shadow: 0 2px 10px rgba(220,38,38,0.35); }
+    .btn-attend.absent-btn:hover, .btn-attend-mini.absent-btn:hover { background: #fef2f2; border-color: #fca5a5; color: #dc2626; }
+    .btn-attend.absent-btn.active, .btn-attend-mini.absent-btn.active { background: #dc2626; border-color: #b91c1c; color: #ffffff; box-shadow: 0 2px 10px rgba(220,38,38,0.35); }
+
+    .btn-attend-mini { padding: 6px 12px; border: 1.5px solid #cbd5e1; border-radius: 6px; font-size: 0.82rem; font-weight: 700; cursor: pointer; background: #ffffff; color: #64748b; transition: all 0.15s ease; outline: none; }
 
     /* Footer */
     .table-footer-bar { padding: 18px 24px; background: #f8fafc; border-top: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; }
@@ -308,14 +325,10 @@ interface EnrolledStudent {
 
     .logs-table { width: 100%; border-collapse: collapse; margin-top: 10px; }
     .logs-table th { padding: 12px 14px; background: #f8fafc; font-size: 0.82rem; font-weight: 700; color: #475569; text-transform: uppercase; border-bottom: 1px solid #e2e8f0; text-align: left; }
-    .logs-table td { padding: 12px 14px; border-bottom: 1px solid #f1f5f9; font-size: 0.92rem; color: #1e293b; }
+    .logs-table td { padding: 12px 14px; border-bottom: 1px solid #f1f5f9; font-size: 0.92rem; color: #1e293b; vertical-align: middle; }
     .logs-table tbody tr:hover { background: #f8fafc; }
 
-    .status-tag { display: inline-block; padding: 4px 10px; border-radius: 12px; font-size: 0.84rem; font-weight: 700; }
-    .status-tag.tag-present { background: #dcfce7; color: #166534; }
-    .status-tag.tag-absent { background: #fee2e2; color: #991b1b; }
-
-    .btn-remove-log { padding: 5px 12px; border: 1px solid #fecaca; background: #fff; color: #dc2626; border-radius: 6px; cursor: pointer; font-size: 0.82rem; font-weight: 600; }
+    .btn-remove-log { padding: 6px 14px; border: 1px solid #fecaca; background: #fff; color: #dc2626; border-radius: 6px; cursor: pointer; font-size: 0.82rem; font-weight: 600; }
     .btn-remove-log:hover { background: #fee2e2; }
     .no-data, .no-logs { padding: 30px; text-align: center; color: #94a3b8; font-size: 0.95rem; }
     `
@@ -470,8 +483,7 @@ export class AttendancePage implements OnInit, OnDestroy {
   }
 
   /**
-   * Toggle attendance for a single student:
-   * Clicking Present increases %, clicking Absent decreases %
+   * Toggle attendance for a student in the top Roster table
    */
   toggleAttendance(student: EnrolledStudent, newStatus: 'Present' | 'Absent'): void {
     const oldStatus = student.status;
@@ -522,6 +534,28 @@ export class AttendancePage implements OnInit, OnDestroy {
 
     this.filterLogs();
     this.cdr.detectChanges();
+  }
+
+  /**
+   * Toggle status directly from the bottom Attendance Logs table
+   */
+  toggleLogStatus(log: AttendanceRecord, newStatus: 'Present' | 'Absent'): void {
+    if (log.status === newStatus) return;
+    log.status = newStatus;
+
+    try {
+      localStorage.setItem('obslmsAttendance', JSON.stringify(this.allLogs));
+    } catch {}
+
+    this.syncService.emit('ATTENDANCE_CHANGED');
+    this.loadEnrolledStudents();
+    this.filterLogs();
+
+    if (newStatus === 'Present') {
+      this.toast.success(`Switched ${log.student} to Present for ${log.date}. (Attendance increased 📈)`);
+    } else {
+      this.toast.warning(`Switched ${log.student} to Absent for ${log.date}. (Attendance decreased 📉)`);
+    }
   }
 
   /**
