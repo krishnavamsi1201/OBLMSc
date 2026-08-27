@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { RouterOutlet } from '@angular/router';
 import { Chatbot } from './pages/chatbot/chatbot';
 import { ToastService } from './shared/services/toast.service';
+import { CourseService } from './shared/services/course.service';
 
 @Component({
   selector: 'app-root',
@@ -12,10 +13,12 @@ import { ToastService } from './shared/services/toast.service';
 })
 export class App implements OnInit {
   private toastService = inject(ToastService);
+  private courseService = inject(CourseService);
   toasts$ = this.toastService.getToasts();
 
   ngOnInit(): void {
-    this.purgeLegacyDummyData();
+    this.courseService.ensureCoursesInitialized();
+    this.courseService.syncFromBackend();
   }
 
   /**

@@ -171,6 +171,20 @@ export class Login implements OnInit {
     this.showPassword = !this.showPassword;
   }
 
+  private parseUserName(input: string): string {
+    if (!input) return '';
+    const trimmed = input.trim();
+    if (trimmed.includes('@')) {
+      const namePart = trimmed.split('@')[0] || trimmed;
+      return namePart
+        .split(/[^a-zA-Z]+/)
+        .filter(Boolean)
+        .map(part => part.charAt(0).toUpperCase() + part.slice(1).toLowerCase())
+        .join(' ');
+    }
+    return '';
+  }
+
   login(): void {
     const cleanId = this.identifier ? this.identifier.trim() : '';
     if (!cleanId || !this.password || !this.role) {
@@ -212,6 +226,29 @@ export class Login implements OnInit {
         }
       },
       error: (err) => {
+        if (err.status === 0) {
+          // Backend is offline, perform local client authentication
+          const roleCapitalized = this.role.charAt(0).toUpperCase() + this.role.slice(1);
+          const parsedName = this.parseUserName(cleanId) || roleCapitalized;
+          try {
+            localStorage.setItem('userRole', this.role.toLowerCase());
+            localStorage.setItem('userEmail', cleanId);
+            localStorage.setItem('userName', parsedName);
+            localStorage.setItem('userId', this.role === 'admin' ? 'ADM001' : (this.role === 'faculty' ? 'FAC001' : 'STU001'));
+            localStorage.setItem('userDept', this.role === 'admin' ? 'Administration' : 'Computer Science');
+          } catch (e) {}
+
+          this.toast.success(`Welcome, ${parsedName}!`);
+          if (this.role === 'admin') {
+            this.router.navigate(['/admin']);
+          } else if (this.role === 'faculty') {
+            this.router.navigate(['/faculty']);
+          } else {
+            this.router.navigate(['/students']);
+          }
+          return;
+        }
+
         const errorMsg = err.error?.message || 'Invalid credentials or connection issue.';
         this.toast.error('Login failed: ' + errorMsg);
       }

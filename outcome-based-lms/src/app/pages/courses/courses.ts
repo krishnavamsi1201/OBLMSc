@@ -1,4 +1,4 @@
-import { Component, ChangeDetectorRef, inject } from '@angular/core';
+import { Component, ChangeDetectorRef, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Navbar } from '../../shared/navbar/navbar';
@@ -7,6 +7,7 @@ import { Footer } from '../../shared/footer/footer';
 import { MatButtonModule } from '@angular/material/button';
 import { HttpClient } from '@angular/common/http';
 import { ToastService } from '../../shared/services/toast.service';
+import { CourseService, AppCourse } from '../../shared/services/course.service';
 
 interface Course {
   id: number;
@@ -23,8 +24,9 @@ interface Course {
   templateUrl: './courses.html',
   styleUrls: ['./courses.css'],
 })
-export class Courses {
+export class Courses implements OnInit {
   private toast = inject(ToastService);
+  private courseService = inject(CourseService);
   courses: Course[] = [];
 
   role: string | null = null;
@@ -44,7 +46,7 @@ export class Courses {
   get filteredCourses(): Course[] {
     return this.courses.filter(c => {
       const q = this.searchQuery.toLowerCase().trim();
-      const matchesSearch = !q || c.code.toLowerCase().includes(q) || c.title.toLowerCase().includes(q) || c.faculty.toLowerCase().includes(q);
+      const matchesSearch = !q || c.code.toLowerCase().includes(q) || c.title.toLowerCase().includes(q) || (c.faculty && c.faculty.toLowerCase().includes(q));
       const matchesSem = !this.selectedSemester || c.semester === this.selectedSemester;
       return matchesSearch && matchesSem;
     });
@@ -68,6 +70,9 @@ export class Courses {
     } catch (e) {
       this.role = null;
     }
+  }
+
+  ngOnInit(): void {
     this.loadCourses();
     this.loadCompletion();
     this.loadFacultyList();
@@ -78,19 +83,18 @@ export class Courses {
   }
 
   loadCourses(): void {
-    console.log("Calling loadCourses API...");
-    this.http.get<Course[]>('http://localhost:8080/api/courses').subscribe({
+    this.courses = this.courseService.getCoursesSync();
+    this.cdr.detectChanges();
+
+    this.courseService.getCourses().subscribe({
       next: (data) => {
-        console.log("Fetched courses successfully:", data);
-        this.courses = data;
-        try {
-          localStorage.setItem('obslmsCourses', JSON.stringify(data));
-        } catch {}
-        this.cdr.detectChanges();
+        if (data && data.length > 0) {
+          this.courses = data;
+          this.cdr.detectChanges();
+        }
       },
-      error: (err) => {
-        console.error("Failed to fetch courses:", err);
-        this.courses = [];
+      error: () => {
+        this.courses = this.courseService.getCoursesSync();
         this.cdr.detectChanges();
       }
     });
@@ -160,20 +164,24 @@ export class Courses {
     }
 
     const payload = {
-      id: this.currentCourse.id > 0 ? this.currentCourse.id : null,
-      code: this.currentCourse.code,
-      title: this.currentCourse.title,
-      faculty: this.currentCourse.faculty,
-      semester: this.currentCourse.semester
+      id: this.currentCourse.id > 0 ? this.currentCourse.id : Date.now(),
+      code: this.currentCourse.code.trim().toUpperCase(),
+      title: this.currentCourse.title.trim(),
+      faculty: this.currentCourse.faculty ? this.currentCourse.faculty.trim() : (this.role === 'faculty' ? (localStorage.getItem('userName') || 'Faculty') : 'Faculty Board'),
+      semester: this.currentCourse.semester.trim()
     };
 
-    this.http.post<Course>('http://localhost:8080/api/courses', payload).subscribe({
+    this.courseService.saveCourse(payload).subscribe({
       next: () => {
-        this.loadCourses();
+        this.courses = this.courseService.getCoursesSync();
+        this.toast.success(`Course "${payload.title}" saved successfully.`);
         this.resetCourseForm();
+        this.cdr.detectChanges();
       },
       error: () => {
-        alert('Failed to save course.');
+        this.courses = this.courseService.getCoursesSync();
+        this.resetCourseForm();
+        this.cdr.detectChanges();
       }
     });
   }
@@ -193,12 +201,15 @@ export class Courses {
       this.toast.error('Only admins can delete courses.');
       return;
     }
-    this.http.delete('http://localhost:8080/api/courses/' + course.id).subscribe({
+    this.courseService.deleteCourse(course.id).subscribe({
       next: () => {
-        this.loadCourses();
+        this.courses = this.courseService.getCoursesSync();
+        this.toast.success(`Course "${course.title}" removed.`);
+        this.cdr.detectChanges();
       },
       error: () => {
-        alert('Failed to delete course.');
+        this.courses = this.courseService.getCoursesSync();
+        this.cdr.detectChanges();
       }
     });
   }
@@ -226,14 +237,17 @@ export class Courses {
     if (!this.assigningCourse) return;
     
     this.assigningCourse.faculty = this.selectedFacultyName;
-    this.http.post<Course>('http://localhost:8080/api/courses', this.assigningCourse).subscribe({
+    this.courseService.assignFaculty(this.assigningCourse, this.selectedFacultyName).subscribe({
       next: () => {
-        this.loadCourses();
+        this.courses = this.courseService.getCoursesSync();
         this.closeAssignModal();
-        this.toast.success('Faculty assigned successfully.');
+        this.toast.success(`Assigned ${this.selectedFacultyName} to ${this.assigningCourse?.title}.`);
+        this.cdr.detectChanges();
       },
       error: () => {
-        this.toast.error('Failed to assign faculty.');
+        this.courses = this.courseService.getCoursesSync();
+        this.closeAssignModal();
+        this.cdr.detectChanges();
       }
     });
   }

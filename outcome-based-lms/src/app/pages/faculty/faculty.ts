@@ -420,7 +420,7 @@ export class Faculty implements OnInit {
   // 2. ONE-CLICK QUICK ATTENDANCE SHEET
   // ==========================================
   openQuickAttendanceModal(courseName?: string): void {
-    this.attendanceCourse = courseName || this.courses[0]?.name || 'Course';
+    this.attendanceCourse = courseName || this.courses[0]?.name || 'Database Management Systems';
     this.attendanceDate = new Date().toISOString().split('T')[0];
 
     const allStudents = this.getSafeJson('obslmsStudents');
@@ -493,7 +493,7 @@ export class Faculty implements OnInit {
   // 3. SYLLABUS & LESSON PLAN LOGGER
   // ==========================================
   openAddLectureModal(unit?: SyllabusUnit): void {
-    this.lectureCourse = this.courses[0]?.name || '';
+    this.lectureCourse = this.courses[0]?.name || 'Database Management Systems';
     this.lectureUnit = unit ? unit.unitNumber : 1;
     this.lectureCO = unit ? unit.mappedCO : 'CO1';
     this.lectureTopic = '';

@@ -240,7 +240,25 @@ export class FacultyDataService {
    */
   private getRealTimeCourses(facultyName: string): Course[] {
     try {
-      const allCourses = this.getSafeJson('obslmsCourses') as StorageCourse[];
+      let allCourses = this.getSafeJson('obslmsCourses') as StorageCourse[];
+      if (!allCourses || allCourses.length === 0) {
+        allCourses = [
+          { id: 1, code: 'CS101', title: 'Database Management Systems', faculty: 'Dr. Ramesh Babu', semester: 'Semester 3' },
+          { id: 2, code: 'CS102', title: 'Data Structures & Algorithms', faculty: 'Prof. Sunita Sharma', semester: 'Semester 3' },
+          { id: 3, code: 'CS103', title: 'Object-Oriented Programming with Java', faculty: 'Dr. Ramesh Babu', semester: 'Semester 3' },
+          { id: 4, code: 'CS201', title: 'Operating Systems', faculty: 'Dr. Amit Patel', semester: 'Semester 4' },
+          { id: 5, code: 'CS202', title: 'Machine Learning & Data Science', faculty: 'Prof. Sunita Sharma', semester: 'Semester 5' },
+          { id: 6, code: 'CS301', title: 'Computer Networks', faculty: 'Dr. Priya Nair', semester: 'Semester 5' },
+          { id: 7, code: 'CS302', title: 'Software Engineering & Agile Methodologies', faculty: 'Prof. Rajesh Verma', semester: 'Semester 6' },
+          { id: 8, code: 'CS303', title: 'Cloud Computing & DevOps', faculty: 'Dr. Amit Patel', semester: 'Semester 6' },
+          { id: 9, code: 'CS401', title: 'Artificial Intelligence', faculty: 'Dr. Ramesh Babu', semester: 'Semester 7' },
+          { id: 10, code: 'CS402', title: 'Cyber Security & Cryptography', faculty: 'Prof. Rajesh Verma', semester: 'Semester 7' }
+        ];
+        try {
+          localStorage.setItem('obslmsCourses', JSON.stringify(allCourses));
+        } catch {}
+      }
+
       const allocations = this.getSafeJson('obslmsFacultyAllocations') as FacultyAllocation[];
       const marks = this.getSafeJson('obslmsMarkEntries');
       const attendance = this.getSafeJson('obslmsAttendance');
@@ -248,7 +266,7 @@ export class FacultyDataService {
       let filteredCourses: Array<{ id: string; name: string; code: string; semester: string; faculty: string }> = [];
 
       // Check if this faculty has specific allocations
-      if (facultyName) {
+      if (facultyName && facultyName.toLowerCase() !== 'faculty' && facultyName.toLowerCase() !== 'faculty member') {
         const matchingAllocations = allocations.filter(a =>
           (a.facultyName && a.facultyName.toLowerCase().includes(facultyName.toLowerCase())) ||
           (facultyName.toLowerCase().includes(a.facultyName ? a.facultyName.toLowerCase() : ''))
@@ -280,14 +298,14 @@ export class FacultyDataService {
         }
       }
 
-      // If no faculty-specific filtered courses found (or admin/general view), return all existing courses from storage
+      // If no faculty-specific filtered courses found (or general/all view), return all existing courses from database
       if (filteredCourses.length === 0) {
         filteredCourses = allCourses.map(c => ({
           id: c.id.toString(),
           name: c.title,
           code: c.code,
           semester: c.semester || 'Semester 1',
-          faculty: c.faculty || 'Faculty'
+          faculty: c.faculty || 'Faculty Board'
         }));
       }
 
