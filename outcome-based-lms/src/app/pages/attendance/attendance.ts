@@ -43,45 +43,19 @@ interface EnrolledStudent {
 
         <!-- Page Header -->
         <div class="page-header">
-            <h1>📅 {{ isStudent ? 'My Attendance' : 'Course Attendance Management' }}</h1>
-            <p>{{ isStudent ? 'Track your course attendance percentage and class history.' : 'Select a course to view enrolled students. Click Present or Absent to instantly increase or decrease their attendance percentage.' }}</p>
+            <h1>📅 Course Attendance Management</h1>
+            <p>Select a course to view enrolled students. Click Present or Absent on the right of each student to instantly increase or decrease their attendance percentage.</p>
         </div>
 
         <!-- ================================================================= -->
-        <!-- 🎓 STUDENT PERSONAL SUMMARY CARDS (When logged in as Student)     -->
+        <!-- MAIN ATTENDANCE CARD: COURSE ROSTER & PRESENT/ABSENT BUTTONS     -->
         <!-- ================================================================= -->
-        <div class="student-summary-grid" *ngIf="isStudent">
-            <div class="summary-card">
-                <h3>Overall Attendance</h3>
-                <strong [style.color]="myOverallPercentage >= 75 ? '#10b981' : '#ef4444'">{{ myOverallPercentage }}%</strong>
-                <p>{{ myOverallPercentage >= 75 ? 'Eligible for End-Sem Exams' : '⚠️ Below 75% Threshold' }}</p>
-            </div>
-            <div class="summary-card">
-                <h3>Classes Attended</h3>
-                <strong style="color: #10b981;">{{ myPresentCount }}</strong>
-                <p>Total lectures present</p>
-            </div>
-            <div class="summary-card">
-                <h3>Classes Missed</h3>
-                <strong style="color: #ef4444;">{{ myAbsentCount }}</strong>
-                <p>Total lectures absent</p>
-            </div>
-            <div class="summary-card">
-                <h3>Total Sessions</h3>
-                <strong>{{ myTotalLectures }}</strong>
-                <p>Recorded class lectures</p>
-            </div>
-        </div>
-
-        <!-- ================================================================= -->
-        <!-- 👨‍🏫 FACULTY & ADMIN: ENROLLED STUDENTS LIST & ATTENDANCE BUTTONS  -->
-        <!-- ================================================================= -->
-        <div class="attendance-card" *ngIf="!isStudent">
+        <div class="attendance-card">
             
             <!-- Top Controls Toolbar -->
             <div class="toolbar-header">
                 <div class="toolbar-field">
-                    <label>Course</label>
+                    <label>Select Course</label>
                     <select [(ngModel)]="selectedCourse" (ngModelChange)="onCourseChanged()" class="styled-select">
                         <option *ngFor="let c of coursesList" [value]="c.title">{{ c.code ? c.code + ' - ' : '' }}{{ c.title }}</option>
                     </select>
@@ -93,7 +67,7 @@ interface EnrolledStudent {
                 </div>
 
                 <div class="toolbar-actions">
-                    <label>Quick Actions</label>
+                    <label>Batch Actions</label>
                     <div class="action-btn-row">
                         <button type="button" class="btn-quick present-all" (click)="markAll('Present')">
                             ✅ Mark All Present
@@ -125,7 +99,7 @@ interface EnrolledStudent {
                 </div>
             </div>
 
-            <!-- ENROLLED STUDENTS TABLE -->
+            <!-- ENROLLED STUDENTS TABLE WITH PRESENT/ABSENT BUTTONS -->
             <div class="table-responsive">
                 <table class="students-table">
                     <thead>
@@ -150,7 +124,7 @@ interface EnrolledStudent {
                             <td><span class="reg-pill">{{ s.regNo }}</span></td>
                             <td>
                                 <div class="student-name-group">
-                                    <span class="avatar-circle">{{ s.name.charAt(0) }}</span>
+                                    <span class="avatar-circle">{{ (s.name && s.name.length > 0 ? s.name.charAt(0) : 'S') }}</span>
                                     <div>
                                         <div class="student-title">{{ s.name }}</div>
                                         <div class="course-sub">{{ selectedCourse }}</div>
@@ -161,11 +135,11 @@ interface EnrolledStudent {
                                 <span class="dept-label">{{ s.department }} ({{ s.semester }})</span>
                             </td>
                             
-                            <!-- ATTENDANCE PERCENTAGE BADGE (Increases on Present, Decreases on Absent) -->
+                            <!-- ATTENDANCE PERCENTAGE (Increases on Present, Decreases on Absent) -->
                             <td style="text-align: center;">
                                 <div class="pct-badge" [class.good]="s.attendancePercentage >= 75" [class.warning]="s.attendancePercentage < 75">
                                     <span class="pct-val">{{ s.attendancePercentage }}%</span>
-                                    <span class="pct-sub">({{ s.totalPresent }}/{{ s.totalLectures }} attended)</span>
+                                    <span class="pct-sub">({{ s.totalPresent }}/{{ s.totalLectures }} classes)</span>
                                 </div>
                             </td>
 
@@ -207,7 +181,7 @@ interface EnrolledStudent {
         <!-- ================================================================= -->
         <div class="logs-card">
             <div class="logs-header">
-                <h2>📜 {{ isStudent ? 'My Attendance History' : 'Recent Attendance Logs' }} ({{ filteredLogs.length }})</h2>
+                <h2>📜 Recent Attendance Logs ({{ filteredLogs.length }})</h2>
                 <div class="logs-filter-group">
                     <input type="text" [(ngModel)]="searchTerm" (input)="filterLogs()" placeholder="Search logs by student, date, course..." class="search-input" />
                     <select [(ngModel)]="statusFilter" (change)="filterLogs()" class="status-select">
@@ -221,18 +195,18 @@ interface EnrolledStudent {
             <table class="logs-table" *ngIf="filteredLogs.length > 0">
                 <thead>
                     <tr>
-                        <th *ngIf="!isStudent">Student</th>
-                        <th *ngIf="!isStudent">RegNo</th>
+                        <th>Student</th>
+                        <th>RegNo</th>
                         <th>Course</th>
                         <th>Date</th>
                         <th>Status</th>
-                        <th *ngIf="!isStudent" style="text-align: right;">Action</th>
+                        <th style="text-align: right;">Action</th>
                     </tr>
                 </thead>
                 <tbody>
                     <tr *ngFor="let log of filteredLogs">
-                        <td *ngIf="!isStudent"><strong>{{ log.student }}</strong></td>
-                        <td *ngIf="!isStudent">{{ log.regNo || '-' }}</td>
+                        <td><strong>{{ log.student }}</strong></td>
+                        <td>{{ log.regNo || '-' }}</td>
                         <td><strong>{{ log.course }}</strong></td>
                         <td>{{ log.date }}</td>
                         <td>
@@ -240,7 +214,7 @@ interface EnrolledStudent {
                                 {{ log.status === 'Present' ? '✅ Present' : '❌ Absent' }}
                             </span>
                         </td>
-                        <td *ngIf="!isStudent" style="text-align: right;">
+                        <td style="text-align: right;">
                             <button type="button" class="btn-remove-log" (click)="removeLog(log)">🗑️ Delete</button>
                         </td>
                     </tr>
@@ -257,13 +231,6 @@ interface EnrolledStudent {
     .page-header { margin-bottom: 22px; }
     .page-header h1 { font-size: 1.85rem; color: #0f172a; margin: 0 0 6px; font-weight: 800; }
     .page-header p { color: #64748b; margin: 0; font-size: 0.95rem; }
-
-    /* Student Summary Grid */
-    .student-summary-grid { display: grid; gap: 16px; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); margin-bottom: 24px; }
-    .summary-card { padding: 20px; background: #fff; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.04); border: 1px solid #e2e8f0; }
-    .summary-card h3 { margin: 0 0 8px; font-size: 0.95rem; color: #475569; }
-    .summary-card strong { display: block; font-size: 2rem; margin-bottom: 6px; }
-    .summary-card p { margin: 0; font-size: 0.85rem; color: #64748b; }
 
     /* Attendance Card */
     .attendance-card { background: #ffffff; border-radius: 14px; border: 1px solid #cbd5e1; box-shadow: 0 4px 24px rgba(0,0,0,0.06); margin-bottom: 28px; overflow: hidden; }
@@ -355,14 +322,13 @@ interface EnrolledStudent {
   ]
 })
 export class AttendancePage implements OnInit, OnDestroy {
-  role: string | null = 'faculty';
-  userName = 'Faculty';
-  isStudent = false;
+  role: string = 'faculty';
+  userName: string = 'Faculty';
 
   // Active selections
   coursesList: AppCourse[] = [];
-  selectedCourse = 'Database Management Systems';
-  attendanceDate = new Date().toISOString().split('T')[0];
+  selectedCourse: string = 'Advanced Java';
+  attendanceDate: string = new Date().toISOString().split('T')[0];
 
   // Enrolled Students list
   students: EnrolledStudent[] = [];
@@ -370,8 +336,8 @@ export class AttendancePage implements OnInit, OnDestroy {
   // Logs & History
   allLogs: AttendanceRecord[] = [];
   filteredLogs: AttendanceRecord[] = [];
-  searchTerm = '';
-  statusFilter = '';
+  searchTerm: string = '';
+  statusFilter: string = '';
 
   private toast = inject(ToastService);
   private syncService = inject(SyncService);
@@ -381,10 +347,8 @@ export class AttendancePage implements OnInit, OnDestroy {
   private syncSub?: Subscription;
 
   constructor() {
-    const r = (localStorage.getItem('userRole') || '').toLowerCase();
-    this.role = r || 'faculty';
-    this.isStudent = this.role === 'student';
-    this.userName = localStorage.getItem('userName') || (this.isStudent ? 'Student' : 'Faculty');
+    this.role = (localStorage.getItem('userRole') || 'faculty').toLowerCase();
+    this.userName = localStorage.getItem('userName') || 'Faculty';
   }
 
   ngOnInit(): void {
@@ -409,6 +373,8 @@ export class AttendancePage implements OnInit, OnDestroy {
     this.coursesList = this.courseService.getCoursesSync();
     if (this.coursesList.length > 0) {
       this.selectedCourse = this.coursesList[0].title;
+    } else {
+      this.selectedCourse = 'Advanced Java';
     }
   }
 
@@ -426,7 +392,6 @@ export class AttendancePage implements OnInit, OnDestroy {
    * Loads students enrolled in the current course
    */
   loadEnrolledStudents(): void {
-    // 1. Get raw students from localStorage or defaults
     const rawRoster = [
       { id: '240101120001', regNo: '240101120001', name: 'Krishnavamsi', department: 'Computer Science', semester: 'Semester 5' },
       { id: '240101120002', regNo: '240101120002', name: 'Aditya Sharma', department: 'Computer Science', semester: 'Semester 3' },
@@ -446,7 +411,7 @@ export class AttendancePage implements OnInit, OnDestroy {
         const parsed = JSON.parse(stored);
         if (Array.isArray(parsed) && parsed.length > 0) {
           parsed.forEach(p => {
-            if (!rawRoster.some(r => r.name.toLowerCase() === (p.name || '').toLowerCase())) {
+            if (p.name && !rawRoster.some(r => r.name.toLowerCase() === p.name.toLowerCase())) {
               rawRoster.push({
                 id: p.id || `2401011200${rawRoster.length + 1}`,
                 regNo: p.regNo || `2401011200${rawRoster.length + 1}`,
@@ -460,23 +425,19 @@ export class AttendancePage implements OnInit, OnDestroy {
       }
     } catch {}
 
-    // 2. Map every student with dynamic attendance calculations
+    // Map every student with dynamic attendance calculations
     this.students = rawRoster.map(s => {
-      // Find all past logs for this student in this course
       const studentCourseLogs = this.allLogs.filter(l =>
-        l.student.toLowerCase() === s.name.toLowerCase() &&
-        (l.course.toLowerCase().includes(this.selectedCourse.toLowerCase()) || this.selectedCourse.toLowerCase().includes(l.course.toLowerCase()))
+        l.student && l.student.toLowerCase() === s.name.toLowerCase() &&
+        l.course && (l.course.toLowerCase().includes(this.selectedCourse.toLowerCase()) || this.selectedCourse.toLowerCase().includes(l.course.toLowerCase()))
       );
 
-      // Check today's status
       const todayLog = studentCourseLogs.find(l => l.date === this.attendanceDate);
       const status: 'Present' | 'Absent' | 'Unmarked' = todayLog ? todayLog.status : 'Unmarked';
 
-      // Total counts
       let totalLectures = studentCourseLogs.length;
       let totalPresent = studentCourseLogs.filter(l => l.status === 'Present').length;
 
-      // If student has no past logs yet, provide realistic baseline e.g. 17/20
       if (totalLectures === 0) {
         totalLectures = 15;
         totalPresent = 13;
@@ -516,7 +477,6 @@ export class AttendancePage implements OnInit, OnDestroy {
     const oldStatus = student.status;
     student.status = newStatus;
 
-    // 1. Recalculate attendance stats immediately for instant feedback
     if (oldStatus === 'Unmarked') {
       student.totalLectures += 1;
       if (newStatus === 'Present') {
@@ -529,10 +489,9 @@ export class AttendancePage implements OnInit, OnDestroy {
     }
     student.attendancePercentage = Math.round((student.totalPresent / student.totalLectures) * 100);
 
-    // 2. Update allLogs array
     const recordIndex = this.allLogs.findIndex(l =>
-      l.student.toLowerCase() === student.name.toLowerCase() &&
-      l.course.toLowerCase() === this.selectedCourse.toLowerCase() &&
+      l.student && l.student.toLowerCase() === student.name.toLowerCase() &&
+      l.course && l.course.toLowerCase() === this.selectedCourse.toLowerCase() &&
       l.date === this.attendanceDate
     );
 
@@ -553,14 +512,12 @@ export class AttendancePage implements OnInit, OnDestroy {
       localStorage.setItem('obslmsAttendance', JSON.stringify(this.allLogs));
     } catch {}
 
-    // 3. Emit real-time sync event
     this.syncService.emit('ATTENDANCE_CHANGED');
 
-    // 4. Show friendly toast
     if (newStatus === 'Present') {
-      this.toast.success(`${student.name} marked Present. Attendance: ${student.attendancePercentage}% 📈`);
+      this.toast.success(`${student.name} marked Present. (Attendance: ${student.attendancePercentage}%) 📈`);
     } else {
-      this.toast.warning(`${student.name} marked Absent. Attendance: ${student.attendancePercentage}% 📉`);
+      this.toast.warning(`${student.name} marked Absent. (Attendance: ${student.attendancePercentage}%) 📉`);
     }
 
     this.filterLogs();
@@ -607,22 +564,13 @@ export class AttendancePage implements OnInit, OnDestroy {
   filterLogs(): void {
     let results = this.allLogs;
 
-    if (this.isStudent) {
-      const u = (this.userName || 'student').toLowerCase();
-      results = results.filter(l =>
-        l.student.toLowerCase() === u ||
-        l.student.toLowerCase() === 'student' ||
-        l.student.toLowerCase() === 'krishnavamsi'
-      );
-    }
-
     if (this.searchTerm.trim()) {
       const term = this.searchTerm.toLowerCase();
       results = results.filter(l =>
-        l.student.toLowerCase().includes(term) ||
-        l.course.toLowerCase().includes(term) ||
+        (l.student && l.student.toLowerCase().includes(term)) ||
+        (l.course && l.course.toLowerCase().includes(term)) ||
         (l.regNo && l.regNo.toLowerCase().includes(term)) ||
-        l.date.includes(term)
+        (l.date && l.date.includes(term))
       );
     }
 
@@ -645,32 +593,5 @@ export class AttendancePage implements OnInit, OnDestroy {
     const marked = this.countPresentToday + this.countAbsentToday;
     if (marked === 0) return 0;
     return Math.round((this.countPresentToday / marked) * 100);
-  }
-
-  // Student Getters
-  get myLogs(): AttendanceRecord[] {
-    const u = (this.userName || 'student').toLowerCase();
-    return this.allLogs.filter(l =>
-      l.student.toLowerCase() === u ||
-      l.student.toLowerCase() === 'student' ||
-      l.student.toLowerCase() === 'krishnavamsi'
-    );
-  }
-
-  get myPresentCount(): number {
-    return this.myLogs.filter(l => l.status === 'Present').length;
-  }
-
-  get myAbsentCount(): number {
-    return this.myLogs.filter(l => l.status === 'Absent').length;
-  }
-
-  get myTotalLectures(): number {
-    return this.myLogs.length;
-  }
-
-  get myOverallPercentage(): number {
-    if (this.myTotalLectures === 0) return 0;
-    return Math.round((this.myPresentCount / this.myTotalLectures) * 100);
   }
 }
