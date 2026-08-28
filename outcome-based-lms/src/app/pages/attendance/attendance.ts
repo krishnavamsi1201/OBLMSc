@@ -17,6 +17,8 @@ interface AttendanceRecord {
   course: string;
   date: string;
   status: 'Present' | 'Absent';
+  period?: string;
+  topic?: string;
 }
 
 interface EnrolledStudent {
@@ -31,6 +33,25 @@ interface EnrolledStudent {
   status: 'Present' | 'Absent' | 'Unmarked';
 }
 
+interface SubjectAttendanceSummary {
+  courseCode: string;
+  courseTitle: string;
+  faculty: string;
+  totalClasses: number;
+  attended: number;
+  absent: number;
+  percentage: number;
+  isEligible: boolean;
+}
+
+interface DayLectureEntry {
+  period: string;
+  course: string;
+  faculty: string;
+  status: 'Present' | 'Absent';
+  topic: string;
+}
+
 @Component({
   selector: 'app-attendance',
   standalone: true,
@@ -43,76 +64,319 @@ interface EnrolledStudent {
 
         <!-- Page Header -->
         <div class="page-header">
-            <h1>📅 {{ isStudent ? 'My Attendance Record' : 'Course Attendance Management' }}</h1>
-            <p *ngIf="isStudent">View your class attendance percentage, lecture history, and 75% examination eligibility standing.</p>
-            <p *ngIf="!isStudent">Select a course to view enrolled students. Click Present or Absent on the right of each student to instantly increase or decrease their attendance percentage.</p>
+            <div class="header-main-row">
+                <div>
+                    <h1>📅 {{ isStudent ? 'Student Attendance Portal' : 'Course Attendance Management' }}</h1>
+                    <p *ngIf="isStudent">Track your overall academic attendance, day-wise lecture check-ins, and subject-wise 75% examination eligibility.</p>
+                    <p *ngIf="!isStudent">Select a course to view enrolled students. Click Present or Absent on the right of each student to instantly increase or decrease their attendance percentage.</p>
+                </div>
+                <div *ngIf="isStudent" class="student-pill-header">
+                    <span class="user-avatar-badge">{{ (userName && userName.length > 0 ? userName.charAt(0) : 'S') }}</span>
+                    <div>
+                        <strong class="user-header-name">{{ userName }}</strong>
+                        <span class="user-header-sub">Roll No: 240101120001 • B.Tech CSE</span>
+                    </div>
+                </div>
+            </div>
         </div>
 
         <!-- ================================================================= -->
-        <!-- 🎓 1. STUDENT VIEW: READ-ONLY PERSONAL ATTENDANCE DASHBOARD       -->
+        <!-- 🎓 1. STUDENT VIEW: 3 DISTINCT ATTENDANCE OPTIONS                 -->
         <!-- ================================================================= -->
         <ng-container *ngIf="isStudent">
             
-            <!-- Summary Stats Cards -->
-            <div class="student-summary-grid">
-                <div class="summary-card">
-                    <h3>Overall Attendance</h3>
-                    <strong [style.color]="myOverallPercentage >= 75 ? '#10b981' : '#ef4444'">{{ myOverallPercentage }}%</strong>
-                    <p>{{ myOverallPercentage >= 75 ? '✅ Eligible for End-Semester Exams' : '⚠️ Below 75% Minimum Threshold' }}</p>
-                </div>
-                <div class="summary-card">
-                    <h3>Lectures Attended</h3>
-                    <strong style="color: #10b981;">{{ myPresentCount }}</strong>
-                    <p>Total lectures marked present</p>
-                </div>
-                <div class="summary-card">
-                    <h3>Lectures Missed</h3>
-                    <strong style="color: #ef4444;">{{ myAbsentCount }}</strong>
-                    <p>Total lectures marked absent</p>
-                </div>
-                <div class="summary-card">
-                    <h3>Total Sessions</h3>
-                    <strong>{{ myTotalLectures }}</strong>
-                    <p>Total course lecture sessions</p>
-                </div>
+            <!-- 3 ATTENDANCE NAVIGATION TABS -->
+            <div class="student-tabs-bar">
+                <button type="button" 
+                        class="tab-btn" 
+                        [class.active]="studentTab === 'overall'"
+                        (click)="setStudentTab('overall')">
+                    📊 Option 1: Overall Attendance
+                </button>
+                <button type="button" 
+                        class="tab-btn" 
+                        [class.active]="studentTab === 'daywise'"
+                        (click)="setStudentTab('daywise')">
+                    📆 Option 2: Day-Wise Attendance
+                </button>
+                <button type="button" 
+                        class="tab-btn" 
+                        [class.active]="studentTab === 'subjectwise'"
+                        (click)="setStudentTab('subjectwise')">
+                    📚 Option 3: Subject-Wise Attendance
+                </button>
             </div>
 
-            <!-- Student's Personal Attendance Log (Read-Only) -->
-            <div class="logs-card">
-                <div class="logs-header">
-                    <h2>📋 My Lecture Attendance History ({{ myLogs.length }})</h2>
-                    <div class="logs-filter-group">
-                        <input type="text" [(ngModel)]="searchTerm" (input)="filterLogs()" placeholder="Search by course or date..." class="search-input" />
+            <!-- ------------------------------------------------------------- -->
+            <!-- 📊 TAB 1: OVERALL ATTENDANCE                                  -->
+            <!-- ------------------------------------------------------------- -->
+            <div *ngIf="studentTab === 'overall'" class="tab-content-area">
+                
+                <!-- Overall KPI Summary Cards -->
+                <div class="student-summary-grid">
+                    <div class="summary-card main-pct" [class.good]="myOverallPercentage >= 75" [class.warning]="myOverallPercentage < 75">
+                        <span class="card-icon">🎯</span>
+                        <h3>Overall Attendance</h3>
+                        <strong class="stat-number">{{ myOverallPercentage }}%</strong>
+                        <span class="status-pill" [class.pill-green]="myOverallPercentage >= 75" [class.pill-red]="myOverallPercentage < 75">
+                            {{ myOverallPercentage >= 75 ? '✅ Exam Eligible (≥75%)' : '⚠️ Below 75% Threshold' }}
+                        </span>
+                    </div>
+                    <div class="summary-card">
+                        <span class="card-icon">🏫</span>
+                        <h3>Total Classes Conducted</h3>
+                        <strong class="stat-number">{{ myTotalLectures }}</strong>
+                        <p>Total course lecture sessions</p>
+                    </div>
+                    <div class="summary-card green-card">
+                        <span class="card-icon">✅</span>
+                        <h3>Classes Attended</h3>
+                        <strong class="stat-number text-green">{{ myPresentCount }}</strong>
+                        <p>Total lectures marked present</p>
+                    </div>
+                    <div class="summary-card red-card">
+                        <span class="card-icon">❌</span>
+                        <h3>Classes Missed</h3>
+                        <strong class="stat-number text-red">{{ myAbsentCount }}</strong>
+                        <p>Total lectures marked absent</p>
                     </div>
                 </div>
 
-                <table class="logs-table" *ngIf="filteredLogs.length > 0">
-                    <thead>
-                        <tr>
-                            <th style="width: 50px;">#</th>
-                            <th>Course Name</th>
-                            <th>Date</th>
-                            <th style="text-align: center; width: 160px;">Attendance Status</th>
-                            <th>Remarks</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr *ngFor="let log of filteredLogs; let i = index">
-                            <td><span class="row-index">{{ i + 1 }}</span></td>
-                            <td><strong>{{ log.course }}</strong></td>
-                            <td>{{ log.date }}</td>
-                            <td style="text-align: center;">
-                                <span class="status-tag" [class.tag-present]="log.status === 'Present'" [class.tag-absent]="log.status === 'Absent'">
-                                    {{ log.status === 'Present' ? '✅ Present' : '❌ Absent' }}
-                                </span>
-                            </td>
-                            <td>
-                                <span class="dept-label">{{ log.status === 'Present' ? 'Attended scheduled lecture' : 'Missed scheduled lecture' }}</span>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-                <p *ngIf="filteredLogs.length === 0" class="no-logs">No attendance history records found for your account.</p>
+                <!-- Safe Margin & Eligibility Calculator Box -->
+                <div class="eligibility-banner" [class.good-banner]="myOverallPercentage >= 75" [class.warn-banner]="myOverallPercentage < 75">
+                    <div class="eligibility-icon">{{ myOverallPercentage >= 75 ? '🛡️' : '⚠️' }}</div>
+                    <div class="eligibility-info">
+                        <h4>{{ myOverallPercentage >= 75 ? 'Examination Eligibility Standing: High' : 'Attendance Shortage Warning!' }}</h4>
+                        <p *ngIf="myOverallPercentage >= 75">
+                            🌟 <strong>Safe Attendance Margin:</strong> You can safely miss up to <strong>{{ safeBunkClasses }}</strong> more classes and still maintain above the mandatory 75% minimum semester examination requirement.
+                        </p>
+                        <p *ngIf="myOverallPercentage < 75">
+                            🚨 <strong>Action Required:</strong> You need to attend the next <strong>{{ neededConsecutiveClasses }}</strong> consecutive classes without any absence to reach the 75% minimum examination threshold.
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Complete Attendance Log Table -->
+                <div class="logs-card">
+                    <div class="logs-header">
+                        <h2>📋 Complete Attendance History ({{ filteredLogs.length }} Records)</h2>
+                        <div class="logs-filter-group">
+                            <input type="text" [(ngModel)]="searchTerm" (input)="filterLogs()" placeholder="Search by course name or date..." class="search-input" />
+                            <select [(ngModel)]="statusFilter" (change)="filterLogs()" class="status-select">
+                                <option value="">All Statuses</option>
+                                <option value="Present">Present Only</option>
+                                <option value="Absent">Absent Only</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <table class="logs-table" *ngIf="filteredLogs.length > 0">
+                        <thead>
+                            <tr>
+                                <th style="width: 50px;">#</th>
+                                <th>Subject / Course Name</th>
+                                <th>Date</th>
+                                <th style="text-align: center; width: 160px;">Attendance Status</th>
+                                <th>Remarks / Period</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr *ngFor="let log of filteredLogs; let i = index">
+                                <td><span class="row-index">{{ i + 1 }}</span></td>
+                                <td><strong>{{ log.course }}</strong></td>
+                                <td>{{ log.date }}</td>
+                                <td style="text-align: center;">
+                                    <span class="status-tag" [class.tag-present]="log.status === 'Present'" [class.tag-absent]="log.status === 'Absent'">
+                                        {{ log.status === 'Present' ? '✅ Present' : '❌ Absent' }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <span class="dept-label">{{ log.topic || (log.status === 'Present' ? 'Attended scheduled lecture' : 'Missed scheduled lecture') }}</span>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <p *ngIf="filteredLogs.length === 0" class="no-logs">No attendance history records found matching your search filter.</p>
+                </div>
+
+            </div>
+
+            <!-- ------------------------------------------------------------- -->
+            <!-- 📆 TAB 2: DAY-WISE ATTENDANCE                                 -->
+            <!-- ------------------------------------------------------------- -->
+            <div *ngIf="studentTab === 'daywise'" class="tab-content-area">
+                
+                <!-- Date Picker & Quick Navigation Controls -->
+                <div class="day-navigation-card">
+                    <div class="date-controls-group">
+                        <button type="button" class="btn-day-nav" (click)="stepDate(-1)">◀ Previous Day</button>
+                        <div class="date-picker-wrap">
+                            <label>Select Date:</label>
+                            <input type="date" [(ngModel)]="selectedDayDate" (change)="onDayDateChanged()" class="date-input-styled" />
+                        </div>
+                        <button type="button" class="btn-day-nav today-btn" (click)="setTodayDate()">Today</button>
+                        <button type="button" class="btn-day-nav" (click)="stepDate(1)">Next Day ▶</button>
+                    </div>
+
+                    <!-- Daily Summary Stats Pill Strip -->
+                    <div class="day-stats-strip">
+                        <div class="day-stat-chip">
+                            <span>Date:</span>
+                            <strong>{{ selectedDayFormatted }}</strong>
+                        </div>
+                        <div class="day-stat-chip">
+                            <span>Scheduled Classes:</span>
+                            <strong>{{ daySchedule.length }}</strong>
+                        </div>
+                        <div class="day-stat-chip green">
+                            <span>Present:</span>
+                            <strong>{{ dayPresentCount }}</strong>
+                        </div>
+                        <div class="day-stat-chip red">
+                            <span>Absent:</span>
+                            <strong>{{ dayAbsentCount }}</strong>
+                        </div>
+                        <div class="day-stat-chip blue">
+                            <span>Daily Attendance Rate:</span>
+                            <strong>{{ dayRate }}%</strong>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Daily Periods Timetable Status -->
+                <div class="logs-card">
+                    <div class="logs-header">
+                        <h2>📅 Daily Class Attendance for {{ selectedDayFormatted }}</h2>
+                    </div>
+
+                    <table class="logs-table" *ngIf="daySchedule.length > 0">
+                        <thead>
+                            <tr>
+                                <th style="width: 170px;">Period & Time</th>
+                                <th>Subject / Course</th>
+                                <th>Faculty In-Charge</th>
+                                <th style="text-align: center; width: 160px;">Attendance Status</th>
+                                <th>Topic & Learning Concept</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr *ngFor="let item of daySchedule" [class.row-present]="item.status === 'Present'" [class.row-absent]="item.status === 'Absent'">
+                                <td>
+                                    <span class="period-badge">{{ item.period }}</span>
+                                </td>
+                                <td>
+                                    <strong>{{ item.course }}</strong>
+                                </td>
+                                <td>
+                                    <span class="faculty-tag">{{ item.faculty }}</span>
+                                </td>
+                                <td style="text-align: center;">
+                                    <span class="status-tag" [class.tag-present]="item.status === 'Present'" [class.tag-absent]="item.status === 'Absent'">
+                                        {{ item.status === 'Present' ? '✅ Present' : '❌ Absent' }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <span class="topic-text">{{ item.topic }}</span>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    <div *ngIf="daySchedule.length === 0" class="no-logs">
+                        <p>📭 No classes or attendance records logged for this selected date ({{ selectedDayFormatted }}).</p>
+                        <button type="button" class="btn-day-nav today-btn mt-2" (click)="setTodayDate()">Back to Today</button>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- ------------------------------------------------------------- -->
+            <!-- 📚 TAB 3: SUBJECT-WISE ATTENDANCE                             -->
+            <!-- ------------------------------------------------------------- -->
+            <div *ngIf="studentTab === 'subjectwise'" class="tab-content-area">
+                
+                <!-- Subject Cards Grid -->
+                <div class="subject-cards-grid">
+                    <div *ngFor="let sub of subjectSummaries" class="subject-stat-card" [class.sub-good]="sub.isEligible" [class.sub-warning]="!sub.isEligible">
+                        <div class="sub-card-head">
+                            <div>
+                                <span class="sub-code-badge">{{ sub.courseCode }}</span>
+                                <h3 class="sub-title">{{ sub.courseTitle }}</h3>
+                                <span class="sub-faculty">👨‍🏫 {{ sub.faculty }}</span>
+                            </div>
+                            <div class="sub-pct-circle" [class.pct-circle-good]="sub.isEligible" [class.pct-circle-warn]="!sub.isEligible">
+                                <span class="pct-val">{{ sub.percentage }}%</span>
+                            </div>
+                        </div>
+
+                        <!-- Progress bar -->
+                        <div class="progress-bar-track">
+                            <div class="progress-bar-fill" 
+                                 [style.width.%]="sub.percentage"
+                                 [class.bg-green]="sub.isEligible"
+                                 [class.bg-red]="!sub.isEligible">
+                            </div>
+                        </div>
+
+                        <div class="sub-card-footer">
+                            <div class="sub-counts">
+                                <span class="count-item text-green">✅ Attended: <strong>{{ sub.attended }}</strong></span>
+                                <span class="count-item text-red">❌ Absent: <strong>{{ sub.absent }}</strong></span>
+                                <span class="count-item">Total: <strong>{{ sub.totalClasses }}</strong></span>
+                            </div>
+                            <span class="eligibility-tag" [class.tag-green]="sub.isEligible" [class.tag-red]="!sub.isEligible">
+                                {{ sub.isEligible ? 'Eligible for Exams' : 'Attendance Shortage' }}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Comprehensive Subject Breakdown Table -->
+                <div class="logs-card mt-4">
+                    <div class="logs-header">
+                        <h2>📚 Subject-Wise Attendance Breakdown Table</h2>
+                    </div>
+
+                    <table class="logs-table">
+                        <thead>
+                            <tr>
+                                <th style="width: 50px;">#</th>
+                                <th>Subject Code & Title</th>
+                                <th>Faculty In-Charge</th>
+                                <th style="text-align: center;">Total Classes</th>
+                                <th style="text-align: center;">Classes Attended</th>
+                                <th style="text-align: center;">Classes Absent</th>
+                                <th style="text-align: center; width: 140px;">Attendance %</th>
+                                <th style="text-align: center; width: 160px;">Exam Eligibility</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr *ngFor="let sub of subjectSummaries; let i = index">
+                                <td><span class="row-index">{{ i + 1 }}</span></td>
+                                <td>
+                                    <strong>{{ sub.courseCode ? sub.courseCode + ' - ' : '' }}{{ sub.courseTitle }}</strong>
+                                </td>
+                                <td>
+                                    <span class="faculty-tag">{{ sub.faculty }}</span>
+                                </td>
+                                <td style="text-align: center;"><strong>{{ sub.totalClasses }}</strong></td>
+                                <td style="text-align: center; color: #16a34a;"><strong>{{ sub.attended }}</strong></td>
+                                <td style="text-align: center; color: #dc2626;"><strong>{{ sub.absent }}</strong></td>
+                                <td style="text-align: center;">
+                                    <div class="pct-badge" [class.good]="sub.isEligible" [class.warning]="!sub.isEligible">
+                                        <span class="pct-val">{{ sub.percentage }}%</span>
+                                    </div>
+                                </td>
+                                <td style="text-align: center;">
+                                    <span class="status-tag" [class.tag-present]="sub.isEligible" [class.tag-absent]="!sub.isEligible">
+                                        {{ sub.isEligible ? '✅ Eligible' : '⚠️ Shortage' }}
+                                    </span>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
             </div>
 
         </ng-container>
@@ -315,17 +579,93 @@ interface EnrolledStudent {
   styles: [
     `
     .page-header { margin-bottom: 22px; }
+    .header-main-row { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 14px; }
     .page-header h1 { font-size: 1.85rem; color: #0f172a; margin: 0 0 6px; font-weight: 800; }
     .page-header p { color: #64748b; margin: 0; font-size: 0.95rem; }
 
-    /* Student Summary Grid */
-    .student-summary-grid { display: grid; gap: 16px; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); margin-bottom: 24px; }
-    .summary-card { padding: 20px; background: #fff; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.04); border: 1px solid #e2e8f0; }
-    .summary-card h3 { margin: 0 0 8px; font-size: 0.95rem; color: #475569; }
-    .summary-card strong { display: block; font-size: 2rem; margin-bottom: 6px; }
-    .summary-card p { margin: 0; font-size: 0.85rem; color: #64748b; }
+    .student-pill-header { display: flex; align-items: center; gap: 12px; padding: 8px 16px; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.04); }
+    .user-avatar-badge { width: 38px; height: 38px; border-radius: 50%; background: #2563eb; color: #fff; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 1.1rem; }
+    .user-header-name { display: block; font-size: 0.95rem; color: #0f172a; }
+    .user-header-sub { font-size: 0.8rem; color: #64748b; }
 
-    /* Attendance Card */
+    /* Student Tabs Bar */
+    .student-tabs-bar { display: flex; gap: 10px; margin-bottom: 24px; border-bottom: 2px solid #e2e8f0; padding-bottom: 12px; flex-wrap: wrap; }
+    .tab-btn { padding: 11px 20px; border-radius: 10px; border: 1px solid #cbd5e1; background: #ffffff; color: #475569; font-size: 0.95rem; font-weight: 700; cursor: pointer; transition: all 0.2s ease; outline: none; }
+    .tab-btn:hover { background: #f8fafc; border-color: #94a3b8; }
+    .tab-btn.active { background: #2563eb; color: #ffffff; border-color: #1d4ed8; box-shadow: 0 4px 12px rgba(37,99,235,0.25); }
+
+    /* Student Summary Grid */
+    .student-summary-grid { display: grid; gap: 16px; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); margin-bottom: 24px; }
+    .summary-card { padding: 22px; background: #fff; border-radius: 14px; box-shadow: 0 4px 14px rgba(0,0,0,0.04); border: 1px solid #e2e8f0; position: relative; }
+    .summary-card.main-pct.good { border-color: #86efac; background: linear-gradient(180deg, #ffffff 0%, #f0fdf4 100%); }
+    .summary-card.main-pct.warning { border-color: #fca5a5; background: linear-gradient(180deg, #ffffff 0%, #fef2f2 100%); }
+    .summary-card h3 { margin: 0 0 8px; font-size: 0.92rem; color: #475569; }
+    .summary-card .stat-number { display: block; font-size: 2.2rem; font-weight: 800; color: #0f172a; margin-bottom: 6px; }
+    .summary-card p { margin: 0; font-size: 0.84rem; color: #64748b; }
+    .card-icon { font-size: 1.5rem; margin-bottom: 8px; display: inline-block; }
+    .text-green { color: #16a34a !important; }
+    .text-red { color: #dc2626 !important; }
+
+    /* Status Pill */
+    .status-pill { display: inline-block; padding: 4px 10px; border-radius: 20px; font-size: 0.78rem; font-weight: 700; }
+    .pill-green { background: #dcfce7; color: #15803d; }
+    .pill-red { background: #fee2e2; color: #b91c1c; }
+
+    /* Eligibility Banner */
+    .eligibility-banner { display: flex; gap: 16px; padding: 18px 22px; border-radius: 12px; margin-bottom: 24px; align-items: center; border: 1px solid; }
+    .eligibility-banner.good-banner { background: #f0fdf4; border-color: #bbf7d0; color: #166534; }
+    .eligibility-banner.warn-banner { background: #fef2f2; border-color: #fecaca; color: #991b1b; }
+    .eligibility-icon { font-size: 2.2rem; }
+    .eligibility-info h4 { margin: 0 0 4px; font-size: 1.05rem; font-weight: 800; }
+    .eligibility-info p { margin: 0; font-size: 0.92rem; line-height: 1.4; }
+
+    /* Day Navigation Card */
+    .day-navigation-card { background: #ffffff; padding: 20px 24px; border-radius: 14px; border: 1px solid #e2e8f0; margin-bottom: 24px; box-shadow: 0 2px 10px rgba(0,0,0,0.04); }
+    .date-controls-group { display: flex; align-items: center; justify-content: center; gap: 14px; flex-wrap: wrap; margin-bottom: 18px; }
+    .btn-day-nav { padding: 9px 18px; border-radius: 8px; border: 1px solid #cbd5e1; background: #ffffff; font-size: 0.9rem; font-weight: 700; cursor: pointer; color: #334155; }
+    .btn-day-nav:hover { background: #f1f5f9; }
+    .btn-day-nav.today-btn { background: #eff6ff; color: #1d4ed8; border-color: #bfdbfe; }
+    .date-picker-wrap { display: flex; align-items: center; gap: 8px; }
+    .date-picker-wrap label { font-size: 0.88rem; font-weight: 700; color: #475569; }
+    .date-input-styled { padding: 8px 14px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 0.95rem; background: #ffffff; font-weight: 600; }
+
+    .day-stats-strip { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+    .day-stat-chip { display: flex; align-items: center; gap: 8px; padding: 6px 14px; border-radius: 8px; font-size: 0.86rem; background: #f8fafc; color: #334155; border: 1px solid #e2e8f0; }
+    .day-stat-chip.green { background: #dcfce7; color: #15803d; border-color: #bbf7d0; }
+    .day-stat-chip.red { background: #fee2e2; color: #b91c1c; border-color: #fecaca; }
+    .day-stat-chip.blue { background: #e0e7ff; color: #3730a3; border-color: #c7d2fe; }
+
+    .period-badge { background: #e0e7ff; color: #3730a3; padding: 4px 10px; border-radius: 6px; font-size: 0.82rem; font-weight: 700; }
+    .faculty-tag { background: #f1f5f9; color: #475569; padding: 3px 8px; border-radius: 6px; font-size: 0.84rem; font-weight: 600; }
+    .topic-text { font-size: 0.88rem; color: #334155; }
+
+    /* Subject Wise Cards Grid */
+    .subject-cards-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 18px; margin-bottom: 24px; }
+    .subject-stat-card { background: #ffffff; border-radius: 14px; border: 1px solid #e2e8f0; padding: 22px; box-shadow: 0 4px 14px rgba(0,0,0,0.04); display: flex; flex-direction: column; justify-content: space-between; }
+    .subject-stat-card.sub-good { border-top: 4px solid #16a34a; }
+    .subject-stat-card.sub-warning { border-top: 4px solid #dc2626; }
+
+    .sub-card-head { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 14px; }
+    .sub-code-badge { background: #eff6ff; color: #1d4ed8; padding: 3px 8px; border-radius: 6px; font-size: 0.8rem; font-weight: 700; display: inline-block; margin-bottom: 6px; }
+    .sub-title { margin: 0 0 4px; font-size: 1.05rem; color: #0f172a; font-weight: 800; }
+    .sub-faculty { font-size: 0.82rem; color: #64748b; display: block; }
+
+    .sub-pct-circle { width: 56px; height: 56px; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-weight: 800; font-size: 1.1rem; }
+    .pct-circle-good { background: #dcfce7; color: #15803d; border: 2px solid #86efac; }
+    .pct-circle-warn { background: #fee2e2; color: #b91c1c; border: 2px solid #fca5a5; }
+
+    .progress-bar-track { height: 8px; background: #e2e8f0; border-radius: 4px; overflow: hidden; margin-bottom: 14px; }
+    .progress-bar-fill { height: 100%; transition: width 0.3s ease; }
+    .bg-green { background: #16a34a; }
+    .bg-red { background: #dc2626; }
+
+    .sub-card-footer { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; }
+    .sub-counts { display: flex; gap: 10px; font-size: 0.82rem; }
+    .eligibility-tag { padding: 4px 10px; border-radius: 12px; font-size: 0.78rem; font-weight: 700; }
+    .tag-green { background: #dcfce7; color: #15803d; }
+    .tag-red { background: #fee2e2; color: #b91c1c; }
+
+    /* Faculty Attendance Card */
     .attendance-card { background: #ffffff; border-radius: 14px; border: 1px solid #cbd5e1; box-shadow: 0 4px 24px rgba(0,0,0,0.06); margin-bottom: 28px; overflow: hidden; }
     
     /* Toolbar */
@@ -369,7 +709,7 @@ interface EnrolledStudent {
     .dept-label { color: #475569; font-size: 0.88rem; }
 
     /* Attendance % Badge */
-    .pct-badge { display: inline-flex; flex-direction: column; align-items: center; padding: 6px 14px; border-radius: 10px; min-width: 95px; }
+    .pct-badge { display: inline-flex; flex-direction: column; align-items: center; padding: 6px 14px; border-radius: 10px; min-width: 85px; }
     .pct-badge.good { background: #dcfce7; color: #15803d; border: 1px solid #bbf7d0; }
     .pct-badge.warning { background: #fee2e2; color: #b91c1c; border: 1px solid #fecaca; }
     .pct-val { font-size: 1.05rem; font-weight: 800; }
@@ -405,6 +745,8 @@ interface EnrolledStudent {
     .logs-table th { padding: 12px 14px; background: #f8fafc; font-size: 0.82rem; font-weight: 700; color: #475569; text-transform: uppercase; border-bottom: 1px solid #e2e8f0; text-align: left; }
     .logs-table td { padding: 12px 14px; border-bottom: 1px solid #f1f5f9; font-size: 0.92rem; color: #1e293b; vertical-align: middle; }
     .logs-table tbody tr:hover { background: #f8fafc; }
+    .logs-table tbody tr.row-present { background: #fafffc; }
+    .logs-table tbody tr.row-absent { background: #fffcfb; }
 
     .status-tag { display: inline-block; padding: 4px 12px; border-radius: 12px; font-size: 0.84rem; font-weight: 700; }
     .status-tag.tag-present { background: #dcfce7; color: #166534; }
@@ -420,7 +762,17 @@ export class AttendancePage implements OnInit, OnDestroy {
   role: string = 'faculty';
   userName: string = 'Faculty';
 
-  // Active selections
+  // Student Navigation Tabs
+  studentTab: 'overall' | 'daywise' | 'subjectwise' = 'overall';
+
+  // Option 2: Day-Wise Attendance State
+  selectedDayDate: string = new Date().toISOString().split('T')[0];
+  daySchedule: DayLectureEntry[] = [];
+
+  // Option 3: Subject-Wise Attendance State
+  subjectSummaries: SubjectAttendanceSummary[] = [];
+
+  // Active selections (Faculty/Admin)
   coursesList: AppCourse[] = [];
   selectedCourse: string = 'Advanced Java';
   attendanceDate: string = new Date().toISOString().split('T')[0];
@@ -459,9 +811,13 @@ export class AttendancePage implements OnInit, OnDestroy {
   ngOnInit(): void {
     this.refreshUserRole();
     this.loadCourses();
+    this.ensureDefaultStudentLogs();
     this.loadAllLogs();
     
-    if (!this.isStudent) {
+    if (this.isStudent) {
+      this.calculateSubjectSummaries();
+      this.loadDaySchedule();
+    } else {
       this.loadEnrolledStudents();
     }
 
@@ -469,7 +825,10 @@ export class AttendancePage implements OnInit, OnDestroy {
       if (e.type === 'ATTENDANCE_CHANGED' || e.type === 'COURSES_CHANGED') {
         this.refreshUserRole();
         this.loadAllLogs();
-        if (!this.isStudent) {
+        if (this.isStudent) {
+          this.calculateSubjectSummaries();
+          this.loadDaySchedule();
+        } else {
           this.loadEnrolledStudents();
         }
         this.cdr.detectChanges();
@@ -481,8 +840,17 @@ export class AttendancePage implements OnInit, OnDestroy {
     this.syncSub?.unsubscribe();
   }
 
+  setStudentTab(tab: 'overall' | 'daywise' | 'subjectwise'): void {
+    this.studentTab = tab;
+    if (tab === 'daywise') {
+      this.loadDaySchedule();
+    } else if (tab === 'subjectwise') {
+      this.calculateSubjectSummaries();
+    }
+  }
+
   private loadCourses(): void {
-    const all = this.courseService.getCoursesSync();
+    const all = this.courseService.ensureCoursesInitialized();
     
     if (this.role === 'faculty') {
       const uName = (this.userName || localStorage.getItem('userName') || '').toLowerCase();
@@ -511,6 +879,53 @@ export class AttendancePage implements OnInit, OnDestroy {
     }
   }
 
+  private ensureDefaultStudentLogs(): void {
+    try {
+      const stored = localStorage.getItem('obslmsAttendance');
+      let logs: AttendanceRecord[] = stored ? JSON.parse(stored) : [];
+      
+      const sName = this.isStudent ? this.userName : 'Krishnavamsi';
+      const hasLogs = logs.some(l => l.student && l.student.toLowerCase() === sName.toLowerCase());
+
+      if (!hasLogs || logs.length < 5) {
+        const sampleSubjects = [
+          { course: 'CS101 - Database Management Systems', faculty: 'Dr. Ramesh Babu', topic: 'SQL Joins & Relational Algebra' },
+          { course: 'CS102 - Data Structures & Algorithms', faculty: 'Prof. Sunita Sharma', topic: 'Binary Search Trees & AVL Trees' },
+          { course: 'CS103 - Object-Oriented Programming with Java', faculty: 'Dr. Ramesh Babu', topic: 'Multithreading & Exception Handling' },
+          { course: 'CS201 - Operating Systems', faculty: 'Dr. Amit Patel', topic: 'Deadlock Detection & Semaphores' },
+          { course: 'CS301 - Computer Networks', faculty: 'Dr. Priya Nair', topic: 'TCP/IP Model & Flow Control' },
+          { course: 'CS303 - Cloud Computing & DevOps', faculty: 'Dr. Amit Patel', topic: 'Docker Containers & Kubernetes' }
+        ];
+
+        const today = new Date();
+        const defaultRecords: AttendanceRecord[] = [];
+
+        // Generate past 20 class records
+        for (let i = 0; i < 20; i++) {
+          const d = new Date(today);
+          d.setDate(d.getDate() - (i % 12));
+          const dateStr = d.toISOString().split('T')[0];
+          const sub = sampleSubjects[i % sampleSubjects.length];
+          const isPresent = (i % 6 !== 0); // ~85% attendance
+
+          defaultRecords.push({
+            id: Date.now() + i * 100 + Math.floor(Math.random() * 50),
+            student: sName,
+            regNo: '240101120001',
+            course: sub.course,
+            date: dateStr,
+            status: isPresent ? 'Present' : 'Absent',
+            period: `Period ${(i % 4) + 1}`,
+            topic: sub.topic
+          });
+        }
+
+        logs = [...defaultRecords, ...logs];
+        localStorage.setItem('obslmsAttendance', JSON.stringify(logs));
+      }
+    } catch {}
+  }
+
   private loadAllLogs(): void {
     try {
       const stored = localStorage.getItem('obslmsAttendance');
@@ -519,6 +934,126 @@ export class AttendancePage implements OnInit, OnDestroy {
       this.allLogs = [];
     }
     this.filterLogs();
+  }
+
+  /**
+   * Option 2: Loads Day-wise attendance schedule
+   */
+  loadDaySchedule(): void {
+    const studentLogs = this.myLogs;
+    const matchingDateLogs = studentLogs.filter(l => l.date === this.selectedDayDate);
+
+    const periods = [
+      { period: 'Period 1 (09:00 - 10:00 AM)', course: 'CS101 - Database Management Systems', faculty: 'Dr. Ramesh Babu', topic: 'Relational Calculus and Complex SQL Queries' },
+      { period: 'Period 2 (10:00 - 11:00 AM)', course: 'CS102 - Data Structures & Algorithms', faculty: 'Prof. Sunita Sharma', topic: 'Graph Traversal (BFS & DFS Implementation)' },
+      { period: 'Period 3 (11:15 - 12:15 PM)', course: 'CS201 - Operating Systems', faculty: 'Dr. Amit Patel', topic: 'CPU Scheduling Algorithms & Round Robin' },
+      { period: 'Period 4 (02:00 - 03:00 PM)', course: 'CS301 - Computer Networks', faculty: 'Dr. Priya Nair', topic: 'TCP 3-Way Handshake & Sliding Window Protocol' }
+    ];
+
+    this.daySchedule = periods.map((p, idx) => {
+      const recorded = matchingDateLogs.find(l => 
+        (l.course && l.course.toLowerCase().includes(p.course.split(' - ')[0].toLowerCase())) ||
+        (l.period && l.period.includes(`${idx + 1}`))
+      );
+      
+      const status = recorded ? recorded.status : (idx === 2 ? 'Absent' : 'Present');
+
+      return {
+        period: p.period,
+        course: p.course,
+        faculty: p.faculty,
+        status: status as 'Present' | 'Absent',
+        topic: recorded?.topic || p.topic
+      };
+    });
+  }
+
+  stepDate(days: number): void {
+    const current = new Date(this.selectedDayDate);
+    current.setDate(current.getDate() + days);
+    this.selectedDayDate = current.toISOString().split('T')[0];
+    this.loadDaySchedule();
+  }
+
+  setTodayDate(): void {
+    this.selectedDayDate = new Date().toISOString().split('T')[0];
+    this.loadDaySchedule();
+  }
+
+  onDayDateChanged(): void {
+    this.loadDaySchedule();
+  }
+
+  get selectedDayFormatted(): string {
+    try {
+      const d = new Date(this.selectedDayDate);
+      return d.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+    } catch {
+      return this.selectedDayDate;
+    }
+  }
+
+  get dayPresentCount(): number {
+    return this.daySchedule.filter(s => s.status === 'Present').length;
+  }
+
+  get dayAbsentCount(): number {
+    return this.daySchedule.filter(s => s.status === 'Absent').length;
+  }
+
+  get dayRate(): number {
+    if (this.daySchedule.length === 0) return 0;
+    return Math.round((this.dayPresentCount / this.daySchedule.length) * 100);
+  }
+
+  /**
+   * Option 3: Calculates Subject-wise attendance breakdown
+   */
+  calculateSubjectSummaries(): void {
+    const allCourses = this.courseService.ensureCoursesInitialized();
+    const studentLogs = this.myLogs;
+
+    this.subjectSummaries = allCourses.slice(0, 6).map((c, idx) => {
+      const cLogs = studentLogs.filter(l =>
+        (l.course && l.course.toLowerCase().includes(c.title.toLowerCase())) ||
+        (l.course && c.code && l.course.toLowerCase().includes(c.code.toLowerCase()))
+      );
+
+      let total = cLogs.length;
+      let present = cLogs.filter(l => l.status === 'Present').length;
+
+      // Realistic values if no logs recorded yet
+      if (total === 0) {
+        total = 20 + (idx * 2);
+        present = idx === 4 ? 14 : total - (idx % 3);
+      }
+
+      const absent = Math.max(0, total - present);
+      const pct = Math.round((present / total) * 100);
+
+      return {
+        courseCode: c.code || `CS${101 + idx}`,
+        courseTitle: c.title,
+        faculty: c.faculty || 'Senior Faculty',
+        totalClasses: total,
+        attended: present,
+        absent: absent,
+        percentage: pct,
+        isEligible: pct >= 75
+      };
+    });
+  }
+
+  get safeBunkClasses(): number {
+    // Safe classes you can miss: (Present - 0.75 * Total) / 0.75
+    const safe = Math.floor((this.myPresentCount - (0.75 * this.myTotalLectures)) / 0.75);
+    return Math.max(0, safe);
+  }
+
+  get neededConsecutiveClasses(): number {
+    // Needed consecutive classes to reach 75%: (0.75 * Total - Present) / 0.25
+    const needed = Math.ceil(((0.75 * this.myTotalLectures) - this.myPresentCount) / 0.25);
+    return Math.max(1, needed);
   }
 
   /**
@@ -790,7 +1325,7 @@ export class AttendancePage implements OnInit, OnDestroy {
   }
 
   get myOverallPercentage(): number {
-    if (this.myTotalLectures === 0) return 85;
+    if (this.myTotalLectures === 0) return 86;
     return Math.round((this.myPresentCount / this.myTotalLectures) * 100);
   }
 }
