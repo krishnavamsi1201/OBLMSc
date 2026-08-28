@@ -482,7 +482,28 @@ export class AttendancePage implements OnInit, OnDestroy {
   }
 
   private loadCourses(): void {
-    this.coursesList = this.courseService.getCoursesSync();
+    const all = this.courseService.getCoursesSync();
+    
+    if (this.role === 'faculty') {
+      const uName = (this.userName || localStorage.getItem('userName') || '').toLowerCase();
+      let assigned: string[] = [];
+      try {
+        const stored = localStorage.getItem('userAssignedCourses');
+        if (stored) assigned = JSON.parse(stored);
+      } catch {}
+
+      const facultyCourses = all.filter(c => 
+        assigned.includes(c.title) || 
+        assigned.includes(c.code) ||
+        (c.faculty && c.faculty.toLowerCase() === uName) ||
+        (uName && uName.includes(c.faculty ? c.faculty.toLowerCase() : ''))
+      );
+
+      this.coursesList = facultyCourses.length > 0 ? facultyCourses : all;
+    } else {
+      this.coursesList = all;
+    }
+
     if (this.coursesList.length > 0) {
       this.selectedCourse = this.coursesList[0].title;
     } else {

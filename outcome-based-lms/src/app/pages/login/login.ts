@@ -205,11 +205,14 @@ export class Login implements OnInit {
           localStorage.setItem('userEmail', response.email);
           localStorage.setItem('userName', response.name);
           localStorage.setItem('userId', response.id);
-          localStorage.setItem('userDept', response.department);
+          localStorage.setItem('userDept', response.department || 'Computer Science');
+          if (response.assignedCourses) {
+            localStorage.setItem('userAssignedCourses', JSON.stringify(response.assignedCourses));
+          }
         } catch (e) {}
 
         this.syncDatabaseToLocalStorage();
-        this.toast.success(`Welcome, ${response.name}!`);
+        this.toast.success(`Welcome back, ${response.name}! 🎉`);
 
         switch (response.role.toLowerCase()) {
           case 'admin':
@@ -225,32 +228,55 @@ export class Login implements OnInit {
             this.router.navigate(['/login']);
         }
       },
-      error: (err) => {
-        if (err.status === 0) {
-          // Backend is offline, perform local client authentication
-          const roleCapitalized = this.role.charAt(0).toUpperCase() + this.role.slice(1);
-          const parsedName = this.parseUserName(cleanId) || roleCapitalized;
-          try {
-            localStorage.setItem('userRole', this.role.toLowerCase());
-            localStorage.setItem('userEmail', cleanId);
-            localStorage.setItem('userName', parsedName);
-            localStorage.setItem('userId', this.role === 'admin' ? 'ADM001' : (this.role === 'faculty' ? 'FAC001' : 'STU001'));
-            localStorage.setItem('userDept', this.role === 'admin' ? 'Administration' : 'Computer Science');
-          } catch (e) {}
+      error: () => {
+        // Local Client Authentication Fallback
+        let matchedUser: any = null;
 
-          this.toast.success(`Welcome, ${parsedName}!`);
-          if (this.role === 'admin') {
-            this.router.navigate(['/admin']);
-          } else if (this.role === 'faculty') {
-            this.router.navigate(['/faculty']);
-          } else {
-            this.router.navigate(['/students']);
+        try {
+          const storedUsers = localStorage.getItem('obslmsUsersDatabase');
+          if (storedUsers) {
+            const users = JSON.parse(storedUsers);
+            matchedUser = users.find((u: any) =>
+              (u.email && u.email.toLowerCase() === cleanId.toLowerCase()) ||
+              (u.name && u.name.toLowerCase() === cleanId.toLowerCase())
+            );
           }
-          return;
-        }
 
-        const errorMsg = err.error?.message || 'Invalid credentials or connection issue.';
-        this.toast.error('Login failed: ' + errorMsg);
+          if (!matchedUser && this.role === 'faculty') {
+            const storedFac = localStorage.getItem('obslmsFaculty');
+            if (storedFac) {
+              const facList = JSON.parse(storedFac);
+              matchedUser = facList.find((f: any) =>
+                (f.email && f.email.toLowerCase() === cleanId.toLowerCase()) ||
+                (f.name && f.name.toLowerCase() === cleanId.toLowerCase())
+              );
+            }
+          }
+        } catch {}
+
+        const userName = matchedUser ? matchedUser.name : (this.parseUserName(cleanId) || (this.role === 'admin' ? 'Administrator' : (this.role === 'faculty' ? 'Faculty Member' : 'Student')));
+        const userDept = matchedUser?.department || (this.role === 'admin' ? 'Administration' : 'Computer Science');
+        const userAssignedCourses = matchedUser?.courses || matchedUser?.assignedCourses || [];
+
+        try {
+          localStorage.setItem('userRole', this.role.toLowerCase());
+          localStorage.setItem('userEmail', cleanId);
+          localStorage.setItem('userName', userName);
+          localStorage.setItem('userId', matchedUser?.id || (this.role === 'admin' ? 'ADM001' : (this.role === 'faculty' ? 'FAC001' : 'STU001')));
+          localStorage.setItem('userDept', userDept);
+          if (userAssignedCourses.length > 0) {
+            localStorage.setItem('userAssignedCourses', JSON.stringify(userAssignedCourses));
+          }
+        } catch (e) {}
+
+        this.toast.success(`Welcome, ${userName}! 🎉`);
+        if (this.role === 'admin') {
+          this.router.navigate(['/admin']);
+        } else if (this.role === 'faculty') {
+          this.router.navigate(['/faculty']);
+        } else {
+          this.router.navigate(['/students']);
+        }
       }
     });
   }

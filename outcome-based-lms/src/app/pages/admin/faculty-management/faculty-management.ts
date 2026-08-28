@@ -5,6 +5,8 @@ import { Navbar } from '../../../shared/navbar/navbar';
 import { Sidebar } from '../../../shared/sidebar/sidebar';
 import { Footer } from '../../../shared/footer/footer';
 import { ToastService } from '../../../shared/services/toast.service';
+import { CourseService, AppCourse } from '../../../shared/services/course.service';
+import { SyncService } from '../../../shared/services/sync.service';
 import { HttpClient } from '@angular/common/http';
 
 interface Faculty {
@@ -25,8 +27,14 @@ interface Faculty {
 })
 export class FacultyManagement implements OnInit {
   private toast = inject(ToastService);
+  private courseService = inject(CourseService);
+  private syncService = inject(SyncService);
+  private http = inject(HttpClient);
+  private cdr = inject(ChangeDetectorRef);
+
   facultyList: Faculty[] = [];
   filteredFacultyList: Faculty[] = [];
+  allAvailableCourses: AppCourse[] = [];
   
   // Form fields
   showForm = false;
@@ -37,26 +45,39 @@ export class FacultyManagement implements OnInit {
   formData = {
     name: '',
     email: '',
-    department: '',
-    designation: '',
-    courses: ''
+    password: '',
+    department: 'Computer Science',
+    designation: 'Assistant Professor',
+    selectedCourses: [] as string[]
   };
 
   // Filter and search
   searchQuery = '';
   filterDepartment = '';
   
-  departments = ['Computer Science', 'Electronics', 'Mechanical', 'Civil', 'Electrical'];
-  designations = ['Assistant Professor', 'Associate Professor', 'Professor', 'Lecturer'];
-  courses: string[] = [];
+  departments = [
+    'Computer Science', 
+    'Computer Science & Engineering',
+    'Information Technology',
+    'Electronics & Communication', 
+    'Mechanical Engineering', 
+    'Civil Engineering', 
+    'Electrical Engineering'
+  ];
+  
+  designations = [
+    'Assistant Professor', 
+    'Associate Professor', 
+    'Professor', 
+    'Head of Department (HOD)',
+    'Dean of Academics',
+    'Lecturer'
+  ];
 
   ngOnInit(): void {
     this.loadFaculty();
     this.loadCourses();
   }
-
-  private http = inject(HttpClient);
-  private cdr = inject(ChangeDetectorRef);
 
   private loadFaculty(): void {
     try {
@@ -70,47 +91,34 @@ export class FacultyManagement implements OnInit {
     this.http.get<any[]>('http://localhost:8080/api/users').subscribe({
       next: (users) => {
         if (Array.isArray(users) && users.length > 0) {
-          this.facultyList = users
+          const backendFaculty = users
             .filter(u => u.role?.toUpperCase() === 'FACULTY')
             .map(u => ({
               id: u.id,
               name: u.name,
               email: u.email,
               department: u.department || 'Computer Science',
-              designation: 'Assistant Professor',
-              courses: []
+              designation: u.designation || 'Assistant Professor',
+              courses: u.assignedCourses || []
             }));
-          try {
-            localStorage.setItem('obslmsFaculty', JSON.stringify(this.facultyList));
-          } catch {}
-          this.filterFaculty();
-          this.cdr.detectChanges();
-        }
-      },
-      error: () => {
-        // Backend offline, already rendered from localStorage
-      }
-    });
-  }
-
-  private loadCourses(): void {
-    try {
-      const stored = localStorage.getItem('obslmsCourses');
-      if (stored) {
-        const parsed = JSON.parse(stored);
-        this.courses = parsed.map((c: any) => `${c.code ? c.code + ' - ' : ''}${c.title || c.name || 'Course'}`);
-      }
-    } catch {}
-
-    this.http.get<any[]>('http://localhost:8080/api/courses').subscribe({
-      next: (data) => {
-        if (Array.isArray(data) && data.length > 0) {
-          this.courses = data.map((c: any) => `${c.code ? c.code + ' - ' : ''}${c.title || c.name || 'Course'}`);
-          this.cdr.detectChanges();
+          
+          if (backendFaculty.length > 0) {
+            this.facultyList = backendFaculty;
+            try {
+              localStorage.setItem('obslmsFaculty', JSON.stringify(this.facultyList));
+            } catch {}
+            this.filterFaculty();
+            this.cdr.detectChanges();
+          }
         }
       },
       error: () => {}
     });
+  }
+
+  private loadCourses(): void {
+    this.allAvailableCourses = this.courseService.ensureCoursesInitialized();
+    this.cdr.detectChanges();
   }
 
   private filterFaculty(): void {
@@ -134,6 +142,7 @@ export class FacultyManagement implements OnInit {
     this.showForm = true;
     this.isEditMode = false;
     this.resetForm();
+    this.formData.password = 'Welcome@123';
   }
 
   openEditForm(faculty: Faculty): void {
@@ -143,9 +152,10 @@ export class FacultyManagement implements OnInit {
     this.formData = {
       name: faculty.name,
       email: faculty.email,
+      password: 'password',
       department: faculty.department,
       designation: faculty.designation,
-      courses: (faculty.courses || []).join(', ')
+      selectedCourses: faculty.courses ? [...faculty.courses] : []
     };
   }
 
@@ -158,29 +168,49 @@ export class FacultyManagement implements OnInit {
     this.formData = {
       name: '',
       email: '',
-      department: '',
-      designation: '',
-      courses: ''
+      password: '',
+      department: 'Computer Science',
+      designation: 'Assistant Professor',
+      selectedCourses: []
     };
     this.currentId = null;
   }
 
+  isCourseSelected(courseTitle: string): boolean {
+    return this.formData.selectedCourses.includes(courseTitle);
+  }
+
+  toggleCourseSelection(courseTitle: string): void {
+    const idx = this.formData.selectedCourses.indexOf(courseTitle);
+    if (idx !== -1) {
+      this.formData.selectedCourses.splice(idx, 1);
+    } else {
+      this.formData.selectedCourses.push(courseTitle);
+    }
+  }
+
   saveFaculty(): void {
     if (!this.validateForm()) {
-      this.toast.warning('Please fill all required fields');
+      this.toast.warning('Please fill all required fields (Name, Email, Department, Designation)');
       return;
     }
 
     const facultyId = this.currentId || this.generateId();
+    const facultyName = this.formData.name.trim();
+    const facultyEmail = this.formData.email.trim();
+    const facultyPassword = this.formData.password.trim() || 'Welcome@123';
+    const assignedCourses = [...this.formData.selectedCourses];
+
     const facultyObj: Faculty = {
       id: facultyId,
-      name: this.formData.name.trim(),
-      email: this.formData.email.trim(),
+      name: facultyName,
+      email: facultyEmail,
       department: this.formData.department.trim(),
-      designation: this.formData.designation || 'Assistant Professor',
-      courses: this.formData.courses ? this.formData.courses.split(',').map(c => c.trim()).filter(Boolean) : []
+      designation: this.formData.designation.trim(),
+      courses: assignedCourses
     };
 
+    // 1. Update Faculty List in state & localStorage
     if (this.isEditMode) {
       const idx = this.facultyList.findIndex(f => f.id === facultyId);
       if (idx !== -1) {
@@ -194,18 +224,80 @@ export class FacultyManagement implements OnInit {
       localStorage.setItem('obslmsFaculty', JSON.stringify(this.facultyList));
     } catch {}
 
+    // 2. Save / Update User in Login Authentication Database (`obslmsUsersDatabase`)
+    try {
+      const storedUsers = localStorage.getItem('obslmsUsersDatabase');
+      const usersList = storedUsers ? JSON.parse(storedUsers) : [];
+      const userIdx = usersList.findIndex((u: any) => u.email?.toLowerCase() === facultyEmail.toLowerCase());
+
+      const userRecord = {
+        id: facultyId,
+        name: facultyName,
+        email: facultyEmail,
+        password: facultyPassword,
+        role: 'FACULTY',
+        department: this.formData.department.trim(),
+        designation: this.formData.designation.trim(),
+        assignedCourses: assignedCourses
+      };
+
+      if (userIdx !== -1) {
+        usersList[userIdx] = userRecord;
+      } else {
+        usersList.push(userRecord);
+      }
+      localStorage.setItem('obslmsUsersDatabase', JSON.stringify(usersList));
+    } catch {}
+
+    // 3. Update Course Allocations in `obslmsCourses` & `obslmsFacultyAllocations`
+    try {
+      const courses = this.courseService.getCoursesSync();
+      let updatedCourses = false;
+
+      courses.forEach(c => {
+        if (assignedCourses.includes(c.title)) {
+          c.faculty = facultyName;
+          updatedCourses = true;
+        } else if (c.faculty === facultyName && !assignedCourses.includes(c.title)) {
+          c.faculty = 'Faculty Board';
+          updatedCourses = true;
+        }
+      });
+
+      if (updatedCourses) {
+        localStorage.setItem('obslmsCourses', JSON.stringify(courses));
+      }
+
+      // Also record allocations
+      const allocations = this.formData.selectedCourses.map((cTitle, idx) => ({
+        id: `${facultyId}-${idx}`,
+        facultyId: facultyId,
+        facultyName: facultyName,
+        courseId: facultyId,
+        courseName: cTitle,
+        subjectId: facultyId,
+        subjectName: cTitle,
+        semester: 'Semester 3'
+      }));
+      localStorage.setItem('obslmsFacultyAllocations', JSON.stringify(allocations));
+      this.syncService.emit('COURSES_CHANGED');
+    } catch {}
+
     this.filterFaculty();
     this.closeForm();
-    this.toast.success(`Faculty member "${this.formData.name}" saved successfully.`);
+    this.toast.success(`Faculty account for "${facultyName}" saved with login credentials! 🎉`);
     this.cdr.detectChanges();
 
+    // 4. Background Sync to Spring Boot Backend
     const payload = {
       id: facultyId,
-      name: this.formData.name.trim(),
-      email: this.formData.email.trim(),
-      password: 'password',
+      name: facultyName,
+      email: facultyEmail,
+      password: facultyPassword,
       role: 'FACULTY',
-      department: this.formData.department.trim()
+      department: this.formData.department.trim(),
+      designation: this.formData.designation.trim(),
+      assignedCourses: assignedCourses
     };
 
     this.http.post('http://localhost:8080/api/users', payload).subscribe({
@@ -215,12 +307,35 @@ export class FacultyManagement implements OnInit {
   }
 
   deleteFaculty(id: string): void {
+    const facultyToDelete = this.facultyList.find(f => f.id === id);
     this.facultyList = this.facultyList.filter(f => f.id !== id);
+    
     try {
       localStorage.setItem('obslmsFaculty', JSON.stringify(this.facultyList));
+
+      // Remove from users database
+      const storedUsers = localStorage.getItem('obslmsUsersDatabase');
+      if (storedUsers) {
+        const usersList = JSON.parse(storedUsers);
+        const filtered = usersList.filter((u: any) => u.id !== id && u.email !== facultyToDelete?.email);
+        localStorage.setItem('obslmsUsersDatabase', JSON.stringify(filtered));
+      }
+
+      // Reset faculty on courses
+      if (facultyToDelete) {
+        const courses = this.courseService.getCoursesSync();
+        courses.forEach(c => {
+          if (c.faculty === facultyToDelete.name) {
+            c.faculty = 'Faculty Board';
+          }
+        });
+        localStorage.setItem('obslmsCourses', JSON.stringify(courses));
+        this.syncService.emit('COURSES_CHANGED');
+      }
     } catch {}
+
     this.filterFaculty();
-    this.toast.info('Faculty member removed.');
+    this.toast.info('Faculty member and credentials removed.');
     this.cdr.detectChanges();
 
     this.http.delete('http://localhost:8080/api/users/' + id).subscribe({
@@ -264,15 +379,6 @@ export class FacultyManagement implements OnInit {
       this.formData.department &&
       this.formData.designation
     );
-  }
-
-  private saveFacultyToStorage(): void {
-    try {
-      localStorage.setItem('obslmsFaculty', JSON.stringify(this.facultyList));
-      this.filterFaculty();
-    } catch {
-      this.toast.error('Error saving faculty data');
-    }
   }
 
   private generateId(): string {
