@@ -43,200 +43,271 @@ interface EnrolledStudent {
 
         <!-- Page Header -->
         <div class="page-header">
-            <h1>📅 Course Attendance Management</h1>
-            <p>Select a course to view enrolled students. Click Present or Absent on the right of each student to instantly increase or decrease their attendance percentage.</p>
+            <h1>📅 {{ isStudent ? 'My Attendance Record' : 'Course Attendance Management' }}</h1>
+            <p *ngIf="isStudent">View your class attendance percentage, lecture history, and 75% examination eligibility standing.</p>
+            <p *ngIf="!isStudent">Select a course to view enrolled students. Click Present or Absent on the right of each student to instantly increase or decrease their attendance percentage.</p>
         </div>
 
         <!-- ================================================================= -->
-        <!-- 1. COURSE ROSTER & REAL-TIME MARKING SECTION                      -->
+        <!-- 🎓 1. STUDENT VIEW: READ-ONLY PERSONAL ATTENDANCE DASHBOARD       -->
         <!-- ================================================================= -->
-        <div class="attendance-card">
+        <ng-container *ngIf="isStudent">
             
-            <!-- Top Controls Toolbar -->
-            <div class="toolbar-header">
-                <div class="toolbar-field">
-                    <label>Select Course</label>
-                    <select [(ngModel)]="selectedCourse" (ngModelChange)="onCourseChanged()" class="styled-select">
-                        <option *ngFor="let c of coursesList" [value]="c.title">{{ c.code ? c.code + ' - ' : '' }}{{ c.title }}</option>
-                    </select>
+            <!-- Summary Stats Cards -->
+            <div class="student-summary-grid">
+                <div class="summary-card">
+                    <h3>Overall Attendance</h3>
+                    <strong [style.color]="myOverallPercentage >= 75 ? '#10b981' : '#ef4444'">{{ myOverallPercentage }}%</strong>
+                    <p>{{ myOverallPercentage >= 75 ? '✅ Eligible for End-Semester Exams' : '⚠️ Below 75% Minimum Threshold' }}</p>
                 </div>
-
-                <div class="toolbar-field">
-                    <label>Date</label>
-                    <input type="date" [(ngModel)]="attendanceDate" (change)="onDateChanged()" class="styled-input" />
+                <div class="summary-card">
+                    <h3>Lectures Attended</h3>
+                    <strong style="color: #10b981;">{{ myPresentCount }}</strong>
+                    <p>Total lectures marked present</p>
                 </div>
+                <div class="summary-card">
+                    <h3>Lectures Missed</h3>
+                    <strong style="color: #ef4444;">{{ myAbsentCount }}</strong>
+                    <p>Total lectures marked absent</p>
+                </div>
+                <div class="summary-card">
+                    <h3>Total Sessions</h3>
+                    <strong>{{ myTotalLectures }}</strong>
+                    <p>Total course lecture sessions</p>
+                </div>
+            </div>
 
-                <div class="toolbar-actions">
-                    <label>Batch Actions</label>
-                    <div class="action-btn-row">
-                        <button type="button" class="btn-quick present-all" (click)="markAll('Present')">
-                            ✅ Mark All Present
-                        </button>
-                        <button type="button" class="btn-quick absent-all" (click)="markAll('Absent')">
-                            ❌ Mark All Absent
-                        </button>
+            <!-- Student's Personal Attendance Log (Read-Only) -->
+            <div class="logs-card">
+                <div class="logs-header">
+                    <h2>📋 My Lecture Attendance History ({{ myLogs.length }})</h2>
+                    <div class="logs-filter-group">
+                        <input type="text" [(ngModel)]="searchTerm" (input)="filterLogs()" placeholder="Search by course or date..." class="search-input" />
                     </div>
                 </div>
-            </div>
 
-            <!-- Session Stats Header Bar -->
-            <div class="stats-ribbon">
-                <div class="stat-bubble">
-                    <span>Enrolled Students:</span>
-                    <strong>{{ students.length }}</strong>
-                </div>
-                <div class="stat-bubble green">
-                    <span>Present Today:</span>
-                    <strong>{{ countPresentToday }}</strong>
-                </div>
-                <div class="stat-bubble red">
-                    <span>Absent Today:</span>
-                    <strong>{{ countAbsentToday }}</strong>
-                </div>
-                <div class="stat-bubble blue">
-                    <span>Today's Attendance Rate:</span>
-                    <strong>{{ todayRate }}%</strong>
-                </div>
-            </div>
-
-            <!-- ENROLLED STUDENTS TABLE WITH PRESENT/ABSENT BUTTONS -->
-            <div class="table-responsive">
-                <table class="students-table">
+                <table class="logs-table" *ngIf="filteredLogs.length > 0">
                     <thead>
                         <tr>
                             <th style="width: 50px;">#</th>
-                            <th style="width: 140px;">Reg No</th>
-                            <th>Student Name</th>
-                            <th>Department & Sem</th>
-                            <th style="width: 180px; text-align: center;">Attendance %</th>
-                            <th style="width: 260px; text-align: center;">Mark Attendance</th>
+                            <th>Course Name</th>
+                            <th>Date</th>
+                            <th style="text-align: center; width: 160px;">Attendance Status</th>
+                            <th>Remarks</th>
                         </tr>
                     </thead>
                     <tbody>
-                        <tr *ngIf="students.length === 0">
-                            <td colspan="6" class="no-data">No students enrolled in this course.</td>
-                        </tr>
-                        <tr *ngFor="let s of students; let i = index" 
-                            [class.marked-present]="s.status === 'Present'"
-                            [class.marked-absent]="s.status === 'Absent'">
-                            
+                        <tr *ngFor="let log of filteredLogs; let i = index">
                             <td><span class="row-index">{{ i + 1 }}</span></td>
-                            <td><span class="reg-pill">{{ s.regNo }}</span></td>
-                            <td>
-                                <div class="student-name-group">
-                                    <span class="avatar-circle">{{ (s.name && s.name.length > 0 ? s.name.charAt(0) : 'S') }}</span>
-                                    <div>
-                                        <div class="student-title">{{ s.name }}</div>
-                                        <div class="course-sub">{{ selectedCourse }}</div>
-                                    </div>
-                                </div>
+                            <td><strong>{{ log.course }}</strong></td>
+                            <td>{{ log.date }}</td>
+                            <td style="text-align: center;">
+                                <span class="status-tag" [class.tag-present]="log.status === 'Present'" [class.tag-absent]="log.status === 'Absent'">
+                                    {{ log.status === 'Present' ? '✅ Present' : '❌ Absent' }}
+                                </span>
                             </td>
                             <td>
-                                <span class="dept-label">{{ s.department }} ({{ s.semester }})</span>
-                            </td>
-                            
-                            <!-- ATTENDANCE PERCENTAGE (Increases on Present, Decreases on Absent) -->
-                            <td style="text-align: center;">
-                                <div class="pct-badge" [class.good]="s.attendancePercentage >= 75" [class.warning]="s.attendancePercentage < 75">
-                                    <span class="pct-val">{{ s.attendancePercentage }}%</span>
-                                    <span class="pct-sub">({{ s.totalPresent }}/{{ s.totalLectures }} classes)</span>
-                                </div>
-                            </td>
-
-                            <!-- 2 BUTTONS: PRESENT & ABSENT ON THE RIGHT -->
-                            <td style="text-align: center;">
-                                <div class="attendance-btn-pair">
-                                    <button type="button" 
-                                            class="btn-attend present-btn" 
-                                            [class.active]="s.status === 'Present'"
-                                            (click)="toggleAttendance(s, 'Present')">
-                                        ✅ Present
-                                    </button>
-                                    <button type="button" 
-                                            class="btn-attend absent-btn" 
-                                            [class.active]="s.status === 'Absent'"
-                                            (click)="toggleAttendance(s, 'Absent')">
-                                        ❌ Absent
-                                    </button>
-                                </div>
+                                <span class="dept-label">{{ log.status === 'Present' ? 'Attended scheduled lecture' : 'Missed scheduled lecture' }}</span>
                             </td>
                         </tr>
                     </tbody>
                 </table>
+                <p *ngIf="filteredLogs.length === 0" class="no-logs">No attendance history records found for your account.</p>
             </div>
 
-            <!-- Footer confirmation note -->
-            <div class="table-footer-bar">
-                <span class="info-text">
-                    💡 Clicking <strong>Present</strong> increases attendance % and <strong>Absent</strong> decreases attendance % in real-time.
-                </span>
-                <button type="button" class="btn-confirm-save" (click)="saveBulkToBackend()">
-                    💾 Sync All Attendance
-                </button>
-            </div>
-        </div>
+        </ng-container>
 
         <!-- ================================================================= -->
-        <!-- 2. ATTENDANCE LOGS HISTORY TABLE (WITH BOTH PRESENT/ABSENT & DELETE) -->
+        <!-- 👨‍🏫 2. FACULTY & ADMIN VIEW: COURSE ROSTER & MANAGEMENT CONTROLS   -->
         <!-- ================================================================= -->
-        <div class="logs-card">
-            <div class="logs-header">
-                <h2>📜 Attendance Records & Logs ({{ filteredLogs.length }})</h2>
-                <div class="logs-filter-group">
-                    <input type="text" [(ngModel)]="searchTerm" (input)="filterLogs()" placeholder="Search logs by student, date, course..." class="search-input" />
-                    <select [(ngModel)]="statusFilter" (change)="filterLogs()" class="status-select">
-                        <option value="">All Statuses</option>
-                        <option value="Present">Present Only</option>
-                        <option value="Absent">Absent Only</option>
-                    </select>
+        <ng-container *ngIf="!isStudent">
+            
+            <!-- Main Attendance Marking Card -->
+            <div class="attendance-card">
+                
+                <!-- Top Controls Toolbar -->
+                <div class="toolbar-header">
+                    <div class="toolbar-field">
+                        <label>Select Course</label>
+                        <select [(ngModel)]="selectedCourse" (ngModelChange)="onCourseChanged()" class="styled-select">
+                            <option *ngFor="let c of coursesList" [value]="c.title">{{ c.code ? c.code + ' - ' : '' }}{{ c.title }}</option>
+                        </select>
+                    </div>
+
+                    <div class="toolbar-field">
+                        <label>Date</label>
+                        <input type="date" [(ngModel)]="attendanceDate" (change)="onDateChanged()" class="styled-input" />
+                    </div>
+
+                    <div class="toolbar-actions">
+                        <label>Batch Actions</label>
+                        <div class="action-btn-row">
+                            <button type="button" class="btn-quick present-all" (click)="markAll('Present')">
+                                ✅ Mark All Present
+                            </button>
+                            <button type="button" class="btn-quick absent-all" (click)="markAll('Absent')">
+                                ❌ Mark All Absent
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Session Stats Header Bar -->
+                <div class="stats-ribbon">
+                    <div class="stat-bubble">
+                        <span>Enrolled Students:</span>
+                        <strong>{{ students.length }}</strong>
+                    </div>
+                    <div class="stat-bubble green">
+                        <span>Present Today:</span>
+                        <strong>{{ countPresentToday }}</strong>
+                    </div>
+                    <div class="stat-bubble red">
+                        <span>Absent Today:</span>
+                        <strong>{{ countAbsentToday }}</strong>
+                    </div>
+                    <div class="stat-bubble blue">
+                        <span>Today's Attendance Rate:</span>
+                        <strong>{{ todayRate }}%</strong>
+                    </div>
+                </div>
+
+                <!-- ENROLLED STUDENTS TABLE WITH PRESENT/ABSENT BUTTONS -->
+                <div class="table-responsive">
+                    <table class="students-table">
+                        <thead>
+                            <tr>
+                                <th style="width: 50px;">#</th>
+                                <th style="width: 140px;">Reg No</th>
+                                <th>Student Name</th>
+                                <th>Department & Sem</th>
+                                <th style="width: 180px; text-align: center;">Attendance %</th>
+                                <th style="width: 260px; text-align: center;">Mark Attendance</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr *ngIf="students.length === 0">
+                                <td colspan="6" class="no-data">No students enrolled in this course.</td>
+                            </tr>
+                            <tr *ngFor="let s of students; let i = index" 
+                                [class.marked-present]="s.status === 'Present'"
+                                [class.marked-absent]="s.status === 'Absent'">
+                                
+                                <td><span class="row-index">{{ i + 1 }}</span></td>
+                                <td><span class="reg-pill">{{ s.regNo }}</span></td>
+                                <td>
+                                    <div class="student-name-group">
+                                        <span class="avatar-circle">{{ (s.name && s.name.length > 0 ? s.name.charAt(0) : 'S') }}</span>
+                                        <div>
+                                            <div class="student-title">{{ s.name }}</div>
+                                            <div class="course-sub">{{ selectedCourse }}</div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <span class="dept-label">{{ s.department }} ({{ s.semester }})</span>
+                                </td>
+                                
+                                <!-- ATTENDANCE PERCENTAGE (Increases on Present, Decreases on Absent) -->
+                                <td style="text-align: center;">
+                                    <div class="pct-badge" [class.good]="s.attendancePercentage >= 75" [class.warning]="s.attendancePercentage < 75">
+                                        <span class="pct-val">{{ s.attendancePercentage }}%</span>
+                                        <span class="pct-sub">({{ s.totalPresent }}/{{ s.totalLectures }} classes)</span>
+                                    </div>
+                                </td>
+
+                                <!-- 2 BUTTONS: PRESENT & ABSENT ON THE RIGHT -->
+                                <td style="text-align: center;">
+                                    <div class="attendance-btn-pair">
+                                        <button type="button" 
+                                                class="btn-attend present-btn" 
+                                                [class.active]="s.status === 'Present'"
+                                                (click)="toggleAttendance(s, 'Present')">
+                                            ✅ Present
+                                        </button>
+                                        <button type="button" 
+                                                class="btn-attend absent-btn" 
+                                                [class.active]="s.status === 'Absent'"
+                                                (click)="toggleAttendance(s, 'Absent')">
+                                            ❌ Absent
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Footer confirmation note -->
+                <div class="table-footer-bar">
+                    <span class="info-text">
+                        💡 Clicking <strong>Present</strong> increases attendance % and <strong>Absent</strong> decreases attendance % in real-time.
+                    </span>
+                    <button type="button" class="btn-confirm-save" (click)="saveBulkToBackend()">
+                        💾 Sync All Attendance
+                    </button>
                 </div>
             </div>
 
-            <table class="logs-table" *ngIf="filteredLogs.length > 0">
-                <thead>
-                    <tr>
-                        <th>Student</th>
-                        <th>RegNo</th>
-                        <th>Course</th>
-                        <th>Date</th>
-                        <th style="text-align: center; width: 250px;">Change Status (Present / Absent)</th>
-                        <th style="text-align: right; width: 120px;">Action</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr *ngFor="let log of filteredLogs">
-                        <td><strong>{{ log.student }}</strong></td>
-                        <td><span class="reg-pill">{{ log.regNo || '-' }}</span></td>
-                        <td><strong>{{ log.course }}</strong></td>
-                        <td>{{ log.date }}</td>
-                        
-                        <!-- BOTH PRESENT & ABSENT BUTTONS AVAILABLE HERE TOO -->
-                        <td style="text-align: center;">
-                            <div class="attendance-btn-pair">
-                                <button type="button" 
-                                        class="btn-attend-mini present-btn" 
-                                        [class.active]="log.status === 'Present'"
-                                        (click)="toggleLogStatus(log, 'Present')">
-                                    ✅ Present
-                                </button>
-                                <button type="button" 
-                                        class="btn-attend-mini absent-btn" 
-                                        [class.active]="log.status === 'Absent'"
-                                        (click)="toggleLogStatus(log, 'Absent')">
-                                    ❌ Absent
-                                </button>
-                            </div>
-                        </td>
+            <!-- Attendance Logs History Table for Faculty/Admin (With Status Change & Delete) -->
+            <div class="logs-card">
+                <div class="logs-header">
+                    <h2>📜 Attendance Records & Logs ({{ filteredLogs.length }})</h2>
+                    <div class="logs-filter-group">
+                        <input type="text" [(ngModel)]="searchTerm" (input)="filterLogs()" placeholder="Search logs by student, date, course..." class="search-input" />
+                        <select [(ngModel)]="statusFilter" (change)="filterLogs()" class="status-select">
+                            <option value="">All Statuses</option>
+                            <option value="Present">Present Only</option>
+                            <option value="Absent">Absent Only</option>
+                        </select>
+                    </div>
+                </div>
 
-                        <!-- DELETE ACTION -->
-                        <td style="text-align: right;">
-                            <button type="button" class="btn-remove-log" (click)="removeLog(log)">🗑️ Delete</button>
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
-            <p *ngIf="filteredLogs.length === 0" class="no-logs">No attendance history records match your search filter.</p>
-        </div>
+                <table class="logs-table" *ngIf="filteredLogs.length > 0">
+                    <thead>
+                        <tr>
+                            <th>Student</th>
+                            <th>RegNo</th>
+                            <th>Course</th>
+                            <th>Date</th>
+                            <th style="text-align: center; width: 250px;">Change Status (Present / Absent)</th>
+                            <th style="text-align: right; width: 120px;">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr *ngFor="let log of filteredLogs">
+                            <td><strong>{{ log.student }}</strong></td>
+                            <td><span class="reg-pill">{{ log.regNo || '-' }}</span></td>
+                            <td><strong>{{ log.course }}</strong></td>
+                            <td>{{ log.date }}</td>
+                            
+                            <td style="text-align: center;">
+                                <div class="attendance-btn-pair">
+                                    <button type="button" 
+                                            class="btn-attend-mini present-btn" 
+                                            [class.active]="log.status === 'Present'"
+                                            (click)="toggleLogStatus(log, 'Present')">
+                                        ✅ Present
+                                    </button>
+                                    <button type="button" 
+                                            class="btn-attend-mini absent-btn" 
+                                            [class.active]="log.status === 'Absent'"
+                                            (click)="toggleLogStatus(log, 'Absent')">
+                                        ❌ Absent
+                                    </button>
+                                </div>
+                            </td>
+
+                            <td style="text-align: right;">
+                                <button type="button" class="btn-remove-log" (click)="removeLog(log)">🗑️ Delete</button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+                <p *ngIf="filteredLogs.length === 0" class="no-logs">No attendance history records match your search filter.</p>
+            </div>
+
+        </ng-container>
 
         <app-footer></app-footer>
     </div>
@@ -246,6 +317,13 @@ interface EnrolledStudent {
     .page-header { margin-bottom: 22px; }
     .page-header h1 { font-size: 1.85rem; color: #0f172a; margin: 0 0 6px; font-weight: 800; }
     .page-header p { color: #64748b; margin: 0; font-size: 0.95rem; }
+
+    /* Student Summary Grid */
+    .student-summary-grid { display: grid; gap: 16px; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); margin-bottom: 24px; }
+    .summary-card { padding: 20px; background: #fff; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.04); border: 1px solid #e2e8f0; }
+    .summary-card h3 { margin: 0 0 8px; font-size: 0.95rem; color: #475569; }
+    .summary-card strong { display: block; font-size: 2rem; margin-bottom: 6px; }
+    .summary-card p { margin: 0; font-size: 0.85rem; color: #64748b; }
 
     /* Attendance Card */
     .attendance-card { background: #ffffff; border-radius: 14px; border: 1px solid #cbd5e1; box-shadow: 0 4px 24px rgba(0,0,0,0.06); margin-bottom: 28px; overflow: hidden; }
@@ -328,6 +406,10 @@ interface EnrolledStudent {
     .logs-table td { padding: 12px 14px; border-bottom: 1px solid #f1f5f9; font-size: 0.92rem; color: #1e293b; vertical-align: middle; }
     .logs-table tbody tr:hover { background: #f8fafc; }
 
+    .status-tag { display: inline-block; padding: 4px 12px; border-radius: 12px; font-size: 0.84rem; font-weight: 700; }
+    .status-tag.tag-present { background: #dcfce7; color: #166534; }
+    .status-tag.tag-absent { background: #fee2e2; color: #991b1b; }
+
     .btn-remove-log { padding: 6px 14px; border: 1px solid #fecaca; background: #fff; color: #dc2626; border-radius: 6px; cursor: pointer; font-size: 0.82rem; font-weight: 600; }
     .btn-remove-log:hover { background: #fee2e2; }
     .no-data, .no-logs { padding: 30px; text-align: center; color: #94a3b8; font-size: 0.95rem; }
@@ -343,7 +425,7 @@ export class AttendancePage implements OnInit, OnDestroy {
   selectedCourse: string = 'Advanced Java';
   attendanceDate: string = new Date().toISOString().split('T')[0];
 
-  // Enrolled Students list
+  // Enrolled Students list (Faculty/Admin only)
   students: EnrolledStudent[] = [];
 
   // Logs & History
@@ -360,19 +442,36 @@ export class AttendancePage implements OnInit, OnDestroy {
   private syncSub?: Subscription;
 
   constructor() {
-    this.role = (localStorage.getItem('userRole') || 'faculty').toLowerCase();
-    this.userName = localStorage.getItem('userName') || 'Faculty';
+    this.refreshUserRole();
+  }
+
+  get isStudent(): boolean {
+    const r = (this.role || localStorage.getItem('userRole') || '').toLowerCase();
+    return r === 'student';
+  }
+
+  private refreshUserRole(): void {
+    const r = (localStorage.getItem('userRole') || 'faculty').toLowerCase();
+    this.role = r;
+    this.userName = localStorage.getItem('userName') || (this.isStudent ? 'Krishnavamsi' : 'Faculty');
   }
 
   ngOnInit(): void {
+    this.refreshUserRole();
     this.loadCourses();
     this.loadAllLogs();
-    this.loadEnrolledStudents();
+    
+    if (!this.isStudent) {
+      this.loadEnrolledStudents();
+    }
 
     this.syncSub = this.syncService.events$.subscribe((e) => {
       if (e.type === 'ATTENDANCE_CHANGED' || e.type === 'COURSES_CHANGED') {
+        this.refreshUserRole();
         this.loadAllLogs();
-        this.loadEnrolledStudents();
+        if (!this.isStudent) {
+          this.loadEnrolledStudents();
+        }
         this.cdr.detectChanges();
       }
     });
@@ -402,7 +501,7 @@ export class AttendancePage implements OnInit, OnDestroy {
   }
 
   /**
-   * Loads students enrolled in the current course
+   * Loads students enrolled in the current course (For Faculty / Admin)
    */
   loadEnrolledStudents(): void {
     const rawRoster = [
@@ -475,11 +574,15 @@ export class AttendancePage implements OnInit, OnDestroy {
   }
 
   onCourseChanged(): void {
-    this.loadEnrolledStudents();
+    if (!this.isStudent) {
+      this.loadEnrolledStudents();
+    }
   }
 
   onDateChanged(): void {
-    this.loadEnrolledStudents();
+    if (!this.isStudent) {
+      this.loadEnrolledStudents();
+    }
   }
 
   /**
@@ -548,7 +651,9 @@ export class AttendancePage implements OnInit, OnDestroy {
     } catch {}
 
     this.syncService.emit('ATTENDANCE_CHANGED');
-    this.loadEnrolledStudents();
+    if (!this.isStudent) {
+      this.loadEnrolledStudents();
+    }
     this.filterLogs();
 
     if (newStatus === 'Present') {
@@ -591,12 +696,24 @@ export class AttendancePage implements OnInit, OnDestroy {
       this.syncService.emit('ATTENDANCE_CHANGED');
       this.toast.info('Attendance entry deleted.');
     } catch {}
-    this.loadEnrolledStudents();
+    if (!this.isStudent) {
+      this.loadEnrolledStudents();
+    }
     this.filterLogs();
   }
 
   filterLogs(): void {
     let results = this.allLogs;
+
+    // If Student, only show their own logs
+    if (this.isStudent) {
+      const u = (this.userName || localStorage.getItem('userName') || 'student').toLowerCase();
+      results = results.filter(l =>
+        (l.student && l.student.toLowerCase() === u) ||
+        (l.student && l.student.toLowerCase() === 'student') ||
+        (l.student && l.student.toLowerCase() === 'krishnavamsi')
+      );
+    }
 
     if (this.searchTerm.trim()) {
       const term = this.searchTerm.toLowerCase();
@@ -627,5 +744,32 @@ export class AttendancePage implements OnInit, OnDestroy {
     const marked = this.countPresentToday + this.countAbsentToday;
     if (marked === 0) return 0;
     return Math.round((this.countPresentToday / marked) * 100);
+  }
+
+  // Student Getters
+  get myLogs(): AttendanceRecord[] {
+    const u = (this.userName || localStorage.getItem('userName') || 'student').toLowerCase();
+    return this.allLogs.filter(l =>
+      (l.student && l.student.toLowerCase() === u) ||
+      (l.student && l.student.toLowerCase() === 'student') ||
+      (l.student && l.student.toLowerCase() === 'krishnavamsi')
+    );
+  }
+
+  get myPresentCount(): number {
+    return this.myLogs.filter(l => l.status === 'Present').length;
+  }
+
+  get myAbsentCount(): number {
+    return this.myLogs.filter(l => l.status === 'Absent').length;
+  }
+
+  get myTotalLectures(): number {
+    return this.myLogs.length;
+  }
+
+  get myOverallPercentage(): number {
+    if (this.myTotalLectures === 0) return 85;
+    return Math.round((this.myPresentCount / this.myTotalLectures) * 100);
   }
 }
