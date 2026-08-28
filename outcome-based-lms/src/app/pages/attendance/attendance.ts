@@ -91,19 +91,19 @@ interface DayLectureEntry {
                         class="tab-btn" 
                         [class.active]="studentTab === 'overall'"
                         (click)="setStudentTab('overall')">
-                    📊 Option 1: Overall Attendance
+                    📊 Overall Attendance
                 </button>
                 <button type="button" 
                         class="tab-btn" 
                         [class.active]="studentTab === 'daywise'"
                         (click)="setStudentTab('daywise')">
-                    📆 Option 2: Day-Wise Attendance
+                    📆 Day-Wise Attendance
                 </button>
                 <button type="button" 
                         class="tab-btn" 
                         [class.active]="studentTab === 'subjectwise'"
                         (click)="setStudentTab('subjectwise')">
-                    📚 Option 3: Subject-Wise Attendance
+                    📚 Subject-Wise Attendance
                 </button>
             </div>
 
