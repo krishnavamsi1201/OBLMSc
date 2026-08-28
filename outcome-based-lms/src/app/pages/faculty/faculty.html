@@ -600,10 +600,10 @@
 		</div>
 
 		<!-- ================================================================= -->
-		<!-- MODAL 2: One-Click Quick Attendance Sheet                         -->
+		<!-- MODAL 2: One-Click Quick Attendance Sheet (Vertical Roster View)   -->
 		<!-- ================================================================= -->
 		<div *ngIf="showQuickAttendanceModal" class="modal-backdrop" (click)="closeQuickAttendanceModal()">
-			<div class="modal-card" (click)="$event.stopPropagation()">
+			<div class="modal-card modal-large" (click)="$event.stopPropagation()">
 				<div class="modal-header">
 					<h2>📅 Quick Attendance Marker</h2>
 					<button class="close-btn" (click)="closeQuickAttendanceModal()">✖</button>
@@ -612,30 +612,80 @@
 					<div class="modal-form-grid">
 						<div class="form-field">
 							<label>Select Course</label>
-							<select [(ngModel)]="attendanceCourse">
+							<select [(ngModel)]="attendanceCourse" (ngModelChange)="onQuickAttendanceCourseChanged()">
 								<option *ngFor="let c of courses" [value]="c.name">{{ c.name }}</option>
 							</select>
 						</div>
 						<div class="form-field">
 							<label>Attendance Date</label>
-							<input type="date" [(ngModel)]="attendanceDate" />
+							<input type="date" [(ngModel)]="attendanceDate" (change)="onQuickAttendanceCourseChanged()" />
 						</div>
 					</div>
 
-					<div class="attendance-toolbar mt-3">
-						<button class="btn secondary small" (click)="markAllAttendance('Present')">✅ Mark All Present</button>
-						<button class="btn secondary small" (click)="markAllAttendance('Absent')">❌ Mark All Absent</button>
+					<div class="attendance-toolbar mt-3" style="display: flex; justify-content: space-between; align-items: center;">
+						<div style="display: flex; gap: 10px;">
+							<button type="button" class="btn secondary small" (click)="markAllAttendance('Present')">✅ Mark All Present</button>
+							<button type="button" class="btn secondary small" (click)="markAllAttendance('Absent')">❌ Mark All Absent</button>
+						</div>
+						<span style="font-size: 13px; color: #64748b; font-weight: 600;">
+							Total Students: <strong>{{ attendanceStudentList.length }}</strong>
+						</span>
 					</div>
 
-					<div class="attendance-grid-container mt-3">
-						<div *ngFor="let student of attendanceStudentList; let i = index" 
-							class="attendance-chip" 
-							[class.present]="student.status === 'Present'"
-							[class.absent]="student.status === 'Absent'"
-							(click)="toggleAttendance(i)">
-							<span class="chip-name">{{ student.studentName }}</span>
-							<span class="chip-status">{{ student.status }}</span>
-						</div>
+					<!-- VERTICAL ATTENDANCE TABLE (AS EARLIER) -->
+					<div class="vertical-attendance-container mt-3">
+						<table class="vertical-attendance-table">
+							<thead>
+								<tr>
+									<th style="width: 45px;">#</th>
+									<th>Student Name</th>
+									<th style="text-align: center; width: 140px;">Current Status</th>
+									<th style="text-align: center; width: 220px;">Mark Attendance</th>
+								</tr>
+							</thead>
+							<tbody>
+								<tr *ngFor="let student of attendanceStudentList; let i = index"
+									[class.row-present]="student.status === 'Present'"
+									[class.row-absent]="student.status === 'Absent'">
+									<td><span class="row-num">{{ i + 1 }}</span></td>
+									<td>
+										<div class="student-info-cell">
+											<span class="student-avatar">{{ student.studentName ? student.studentName.charAt(0) : 'S' }}</span>
+											<div>
+												<strong>{{ student.studentName }}</strong>
+												<span class="sub-dept">{{ attendanceCourse }}</span>
+											</div>
+										</div>
+									</td>
+									<td style="text-align: center;">
+										<span class="status-tag" [class.tag-present]="student.status === 'Present'" [class.tag-absent]="student.status === 'Absent'">
+											{{ student.status === 'Present' ? '✅ Present' : '❌ Absent' }}
+										</span>
+									</td>
+									<td style="text-align: center;">
+										<div class="btn-attend-group">
+											<button type="button" 
+													class="btn-attend-opt opt-present" 
+													[class.active]="student.status === 'Present'"
+													(click)="setStudentStatus(i, 'Present')">
+												✅ Present
+											</button>
+											<button type="button" 
+													class="btn-attend-opt opt-absent" 
+													[class.active]="student.status === 'Absent'"
+													(click)="setStudentStatus(i, 'Absent')">
+												❌ Absent
+											</button>
+										</div>
+									</td>
+								</tr>
+								<tr *ngIf="attendanceStudentList.length === 0">
+									<td colspan="4" style="text-align: center; padding: 20px; color: #94a3b8;">
+										No students found for this course.
+									</td>
+								</tr>
+							</tbody>
+						</table>
 					</div>
 				</div>
 				<div class="modal-footer">

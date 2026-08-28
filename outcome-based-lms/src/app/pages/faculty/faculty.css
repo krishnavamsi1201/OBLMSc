@@ -1077,6 +1077,134 @@
     margin-top: 12px;
 }
 
+.vertical-attendance-container {
+    max-height: 380px;
+    overflow-y: auto;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    background: #ffffff;
+    box-shadow: inset 0 2px 4px rgba(0,0,0,0.02);
+}
+
+.vertical-attendance-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13.5px;
+}
+
+.vertical-attendance-table thead {
+    position: sticky;
+    top: 0;
+    background: #f8fafc;
+    z-index: 2;
+    border-bottom: 2px solid #e2e8f0;
+}
+
+.vertical-attendance-table th {
+    padding: 12px 14px;
+    font-size: 12px;
+    font-weight: 700;
+    color: #475569;
+    text-transform: uppercase;
+    text-align: left;
+}
+
+.vertical-attendance-table td {
+    padding: 11px 14px;
+    border-bottom: 1px solid #f1f5f9;
+    vertical-align: middle;
+}
+
+.vertical-attendance-table tbody tr:hover {
+    background: #f8fafc;
+}
+
+.vertical-attendance-table tbody tr.row-present {
+    background: #fafffc;
+}
+
+.vertical-attendance-table tbody tr.row-absent {
+    background: #fffcfb;
+}
+
+.student-info-cell {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.student-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: #2563eb;
+    color: white;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    flex-shrink: 0;
+}
+
+.sub-dept {
+    display: block;
+    font-size: 11.5px;
+    color: #64748b;
+    margin-top: 1px;
+}
+
+.row-num {
+    font-weight: 700;
+    color: #94a3b8;
+    font-size: 12px;
+}
+
+.btn-attend-group {
+    display: inline-flex;
+    gap: 8px;
+    justify-content: center;
+}
+
+.btn-attend-opt {
+    padding: 6px 14px;
+    border-radius: 6px;
+    border: 1.5px solid #cbd5e1;
+    background: #ffffff;
+    color: #64748b;
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    outline: none;
+}
+
+.btn-attend-opt.opt-present:hover {
+    background: #f0fdf4;
+    border-color: #86efac;
+    color: #16a34a;
+}
+
+.btn-attend-opt.opt-present.active {
+    background: #16a34a;
+    border-color: #15803d;
+    color: #ffffff;
+    box-shadow: 0 2px 8px rgba(22,163,74,0.35);
+}
+
+.btn-attend-opt.opt-absent:hover {
+    background: #fef2f2;
+    border-color: #fca5a5;
+    color: #dc2626;
+}
+
+.btn-attend-opt.opt-absent.active {
+    background: #dc2626;
+    border-color: #b91c1c;
+    color: #ffffff;
+    box-shadow: 0 2px 8px rgba(220,38,38,0.35);
+}
+
 .attendance-grid-container {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));

@@ -6,6 +6,7 @@ import { Navbar } from '../../shared/navbar/navbar';
 import { Sidebar } from '../../shared/sidebar/sidebar';
 import { Footer } from '../../shared/footer/footer';
 import { SyncService } from '../../shared/services/sync.service';
+import { ToastService } from '../../shared/services/toast.service';
 import { Subscription } from 'rxjs';
 import {
   FacultyDataService,
@@ -170,6 +171,7 @@ export class Faculty implements OnInit {
   dossierAssessments: Assessment[] = [];
   dossierStudents: StudentProgress[] = [];
   private syncService = inject(SyncService);
+  private toast = inject(ToastService);
   private cdr = inject(ChangeDetectorRef);
   private syncSub?: Subscription;
 
@@ -478,6 +480,48 @@ export class Faculty implements OnInit {
     this.attendanceStudentList.forEach(s => s.status = status);
   }
 
+  onQuickAttendanceCourseChanged(): void {
+    const allStudents = this.getSafeJson('obslmsStudents');
+    const existingAttendance = this.getSafeJson('obslmsAttendance');
+
+    const studentsSet = new Set<string>();
+    allStudents.forEach((s: any) => {
+      if (s.name || s.studentName) studentsSet.add(s.name || s.studentName);
+    });
+    this.studentProgressList.forEach(s => studentsSet.add(s.studentName));
+
+    if (studentsSet.size === 0) {
+      studentsSet.add('Krishnavamsi');
+      studentsSet.add('Aditya Sharma');
+      studentsSet.add('Ananya Deshmukh');
+      studentsSet.add('Pooja Reddy');
+      studentsSet.add('Rahul Verma');
+      studentsSet.add('Sneha Rao');
+      studentsSet.add('Vikas Gupta');
+      studentsSet.add('Manish Chawla');
+      studentsSet.add('Kavita Iyer');
+      studentsSet.add('Rohan Joshi');
+    }
+
+    this.attendanceStudentList = Array.from(studentsSet).map(sName => {
+      const existing = existingAttendance.find(
+        (a: any) => a.student && a.student.toLowerCase() === sName.toLowerCase() && 
+                    a.course && a.course.toLowerCase().includes(this.attendanceCourse.toLowerCase()) && 
+                    a.date === this.attendanceDate
+      );
+      return {
+        studentName: sName,
+        status: existing ? (existing.status as 'Present' | 'Absent') : 'Present'
+      };
+    });
+  }
+
+  setStudentStatus(index: number, status: 'Present' | 'Absent'): void {
+    if (this.attendanceStudentList[index]) {
+      this.attendanceStudentList[index].status = status;
+    }
+  }
+
   toggleAttendance(index: number): void {
     if (this.attendanceStudentList[index]) {
       this.attendanceStudentList[index].status = this.attendanceStudentList[index].status === 'Present' ? 'Absent' : 'Present';
@@ -486,7 +530,7 @@ export class Faculty implements OnInit {
 
   saveQuickAttendance(): void {
     if (!this.attendanceCourse || this.attendanceStudentList.length === 0) {
-      alert('No attendance records to save.');
+      this.toast.warning('No attendance records to save.');
       return;
     }
 
@@ -498,8 +542,9 @@ export class Faculty implements OnInit {
     }));
 
     this.facultyDataService.saveBulkAttendance(records);
+    this.syncService.emit('ATTENDANCE_CHANGED');
     this.closeQuickAttendanceModal();
-    alert(`Attendance for ${records.length} students recorded on ${this.attendanceDate}! Updating live analytics...`);
+    this.toast.success(`Attendance for ${records.length} students recorded for ${this.attendanceDate}! 🎉`);
     this.loadDashboardData();
   }
 
