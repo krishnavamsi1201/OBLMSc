@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { RouterLink } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { Navbar } from '../../shared/navbar/navbar';
 import { Sidebar } from '../../shared/sidebar/sidebar';
 import { Footer } from '../../shared/footer/footer';
@@ -32,6 +32,9 @@ export class Notifications implements OnInit {
   filterStatus: string = '';
   searchQuery: string = '';
 
+  userRole: string = 'student';
+  userName: string = 'Krishnavamsi';
+
   notificationTypes = [
     { value: '', label: 'All Types' },
     { value: 'info', label: 'Info' },
@@ -41,8 +44,11 @@ export class Notifications implements OnInit {
     { value: 'approval', label: 'Approval Required' }
   ];
 
-  constructor() {
+  constructor(private router: Router) {
+    this.userRole = (localStorage.getItem('userRole') || 'student').toLowerCase();
+    this.userName = localStorage.getItem('userName') || (this.userRole === 'student' ? 'Krishnavamsi' : 'Faculty');
     this.loadNotifications();
+    this.generateSmartSystemAlerts();
   }
 
   ngOnInit(): void {
@@ -62,6 +68,81 @@ export class Notifications implements OnInit {
     try {
       localStorage.setItem('obslmsNotifications', JSON.stringify(this.allNotifications));
     } catch {}
+  }
+
+  private generateSmartSystemAlerts(): void {
+    const existingIds = new Set(this.allNotifications.map(n => n.id));
+    const now = new Date().toISOString();
+
+    // 1. Student Attendance Shortage Alerts
+    if (this.userRole === 'student') {
+      try {
+        const storedLogs = JSON.parse(localStorage.getItem('obslmsAttendance') || '[]');
+        const myLogs = storedLogs.filter((l: any) =>
+          (l.student && l.student.toLowerCase() === this.userName.toLowerCase()) ||
+          (l.student && l.student.toLowerCase() === 'krishnavamsi')
+        );
+
+        if (myLogs.length > 0) {
+          const present = myLogs.filter((l: any) => l.status === 'Present').length;
+          const overallPct = Math.round((present / myLogs.length) * 100);
+
+          if (overallPct < 75 && !existingIds.has('alert-att-shortage')) {
+            this.allNotifications.unshift({
+              id: 'alert-att-shortage',
+              type: 'warning',
+              title: '⚠️ Mandatory Attendance Shortage Notice (<75%)',
+              message: `Your overall attendance is currently ${overallPct}%, which is below the mandatory 75% examination eligibility threshold. Please attend upcoming lectures to maintain exam clearance.`,
+              timestamp: now,
+              isRead: false,
+              actionUrl: '/attendance'
+            });
+          }
+        }
+      } catch {}
+
+      // Student Grievance Resolution Notice
+      if (!existingIds.has('alert-grievance-resolved')) {
+        this.allNotifications.push({
+          id: 'alert-grievance-resolved',
+          type: 'success',
+          title: '✅ Grievance Ticket Resolved',
+          message: 'Your recent academic re-evaluation request has been reviewed and marked Resolved by the Department Dean.',
+          timestamp: now,
+          isRead: false,
+          actionUrl: '/grievance'
+        });
+      }
+    }
+
+    // 2. Accreditation & Admin Alerts
+    if (this.userRole === 'admin' || this.userRole === 'faculty') {
+      if (!existingIds.has('alert-nba-ready')) {
+        this.allNotifications.unshift({
+          id: 'alert-nba-ready',
+          type: 'info',
+          title: '🎯 NBA SAR Criterion 3 Dossier Ready',
+          message: 'Annual Course Outcome & Program Outcome Attainment report for Tier-1 evaluation has been compiled and is ready for PDF export.',
+          timestamp: now,
+          isRead: false,
+          actionUrl: '/reports'
+        });
+      }
+
+      if (!existingIds.has('alert-course-approvals')) {
+        this.allNotifications.push({
+          id: 'alert-course-approvals',
+          type: 'approval',
+          title: '📋 Pending CO-PO Matrix Approvals',
+          message: 'New Course Outcomes mappings for Semester 3 require HOD approval.',
+          timestamp: now,
+          isRead: false,
+          actionUrl: '/admin/approvals'
+        });
+      }
+    }
+
+    this.saveNotifications();
   }
 
   filterNotifications(): void {
@@ -155,59 +236,9 @@ export class Notifications implements OnInit {
     return date.toLocaleDateString();
   }
 
-  addNotification(notif: Omit<Notification, 'id'>): void {
-    const newNotif: Notification = {
-      ...notif,
-      id: Date.now().toString()
-    };
-    this.allNotifications.unshift(newNotif);
-    this.saveNotifications();
-    this.filterNotifications();
-  }
-
-  notifyFacultyAdded(facultyName: string, department: string): void {
-    this.addNotification({
-      type: 'success',
-      title: 'Faculty Added',
-      message: `${facultyName} has been added as Faculty - ${department} Department`,
-      timestamp: new Date().toISOString(),
-      isRead: false,
-      relatedData: { type: 'faculty', action: 'added', name: facultyName }
-    });
-  }
-
-  notifyAssessmentCreated(assessmentName: string, course: string): void {
-    this.addNotification({
-      type: 'info',
-      title: 'Assessment Created',
-      message: `${assessmentName} assessment has been created for ${course}`,
-      timestamp: new Date().toISOString(),
-      isRead: false,
-      relatedData: { type: 'assessment', action: 'created' }
-    });
-  }
-
-  notifyMarksEntered(assessmentName: string, course: string): void {
-    this.addNotification({
-      type: 'success',
-      title: 'Marks Entered',
-      message: `Marks for ${assessmentName} (${course}) have been entered`,
-      timestamp: new Date().toISOString(),
-      isRead: false,
-      relatedData: { type: 'marks', action: 'entered' }
-    });
-  }
-
-  notifyMappingPending(): void {
-    this.addNotification({
-      type: 'approval',
-      title: 'Mapping Pending Approval',
-      message: 'New mappings require admin approval',
-      timestamp: new Date().toISOString(),
-      isRead: false,
-      actionUrl: '/admin/approval-management',
-      relatedData: { type: 'mapping', status: 'pending' }
-    });
+  navigate(url?: string): void {
+    if (url) {
+      this.router.navigateByUrl(url);
+    }
   }
 }
-
