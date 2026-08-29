@@ -934,6 +934,33 @@ export class AttendancePage implements OnInit, OnDestroy {
       this.allLogs = [];
     }
     this.filterLogs();
+
+    // API-First Sync with MySQL backend
+    this.http.get<any[]>('http://localhost:8080/api/attendance').subscribe({
+      next: (backendLogs) => {
+        if (Array.isArray(backendLogs) && backendLogs.length > 0) {
+          const mapped: AttendanceRecord[] = backendLogs.map((b, idx) => ({
+            id: b.id || (Date.now() + idx),
+            student: b.student,
+            regNo: b.regNo || '240101120001',
+            course: b.courseCode || b.course || 'CS101 - Database Management Systems',
+            date: b.date || this.attendanceDate,
+            status: (b.status === 'Absent' ? 'Absent' : 'Present') as 'Present' | 'Absent',
+            period: b.period,
+            topic: b.topic
+          }));
+          this.allLogs = mapped;
+          localStorage.setItem('obslmsAttendance', JSON.stringify(mapped));
+          this.filterLogs();
+          if (this.isStudent) {
+            this.calculateSubjectSummaries();
+            this.loadDaySchedule();
+          }
+          this.cdr.detectChanges();
+        }
+      },
+      error: () => {}
+    });
   }
 
   /**
@@ -1182,6 +1209,14 @@ export class AttendancePage implements OnInit, OnDestroy {
     try {
       localStorage.setItem('obslmsAttendance', JSON.stringify(this.allLogs));
     } catch {}
+
+    // Immediate background push to MySQL database
+    this.http.post('http://localhost:8080/api/attendance', {
+      student: student.name,
+      courseCode: this.selectedCourse,
+      date: this.attendanceDate,
+      status: newStatus
+    }).subscribe({ error: () => {} });
 
     this.syncService.emit('ATTENDANCE_CHANGED');
 
