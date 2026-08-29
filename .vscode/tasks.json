@@ -1,0 +1,62 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "☕ Start Spring Boot Backend (Port 8080)",
+            "type": "shell",
+            "command": "mvn spring-boot:run",
+            "options": {
+                "cwd": "${workspaceFolder}/springboot-backend"
+            },
+            "isBackground": true,
+            "problemMatcher": {
+                "pattern": {
+                    "regexp": "^$"
+                },
+                "background": {
+                    "activeOnStart": true,
+                    "beginsPattern": "^.*Tomcat started on port.*$",
+                    "endsPattern": "^.*Started BackendApplication.*$"
+                }
+            },
+            "presentation": {
+                "reveal": "always",
+                "panel": "new",
+                "group": "backend"
+            }
+        },
+        {
+            "label": "🌐 Start Angular Frontend (Port 4200)",
+            "type": "shell",
+            "command": "npm start",
+            "options": {
+                "cwd": "${workspaceFolder}/outcome-based-lms"
+            },
+            "isBackground": true,
+            "problemMatcher": {
+                "pattern": {
+                    "regexp": "^$"
+                },
+                "background": {
+                    "activeOnStart": true,
+                    "beginsPattern": "^.*Building...*$",
+                    "endsPattern": "^.*Application bundle generation complete.*$"
+                }
+            },
+            "presentation": {
+                "reveal": "always",
+                "panel": "new",
+                "group": "frontend"
+            }
+        },
+        {
+            "label": "🚀 Start Entire Full-Stack OBLMS (Backend + Frontend)",
+            "dependsOn": [
+                "☕ Start Spring Boot Backend (Port 8080)",
+                "🌐 Start Angular Frontend (Port 4200)"
+            ],
+            "dependsOrder": "parallel",
+            "problemMatcher": []
+        }
+    ]
+}

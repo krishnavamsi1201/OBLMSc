@@ -1,0 +1,20 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "java",
+            "name": "☕ Spring Boot: BackendApplication",
+            "request": "launch",
+            "mainClass": "com.oblms.backend.BackendApplication",
+            "projectName": "backend",
+            "cwd": "${workspaceFolder}/springboot-backend"
+        },
+        {
+            "type": "chrome",
+            "request": "launch",
+            "name": "🌐 Angular: Launch Chrome (Port 4200)",
+            "url": "http://localhost:4200",
+            "webRoot": "${workspaceFolder}/outcome-based-lms"
+        }
+    ]
+}

@@ -1,0 +1,10 @@
+{
+    "recommendations": [
+        "vscjava.vscode-java-pack",
+        "vmware.vscode-spring-boot",
+        "vmware.vscode-boot-dev-pack",
+        "angular.ng-template",
+        "ms-azuretools.vscode-docker",
+        "esbenp.prettier-vscode"
+    ]
+}
