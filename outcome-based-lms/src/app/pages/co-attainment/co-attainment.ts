@@ -134,10 +134,10 @@ export class CoAttainment implements OnInit {
       }
       
       if (studentNames.length === 0) {
-        studentNames = ['Raj Kumar', 'Sneha Patel', 'Amit Shah', 'Krishnavamsi'];
+        studentNames = ['Krishnavamsi', 'Raj Kumar', 'Aarav Mehta', 'Aditya Sen', 'Ananya Iyer'];
       }
       
-      const seedStudents = ['krishnavamsi', 'raj kumar', 'sneha patel', 'amit shah'];
+      const seedStudents = ['krishnavamsi', 'raj kumar', 'aarav mehta', 'aditya sen', 'ananya iyer'];
 
       this.studentHeatmap = studentNames.map(name => {
         const coScores: { [coCode: string]: number } = {};

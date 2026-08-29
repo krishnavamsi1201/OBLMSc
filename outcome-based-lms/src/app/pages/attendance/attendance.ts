@@ -1087,38 +1087,33 @@ export class AttendancePage implements OnInit, OnDestroy {
    * Loads students enrolled in the current course (For Faculty / Admin)
    */
   loadEnrolledStudents(): void {
-    const rawRoster = [
-      { id: '240101120001', regNo: '240101120001', name: 'Krishnavamsi', department: 'Computer Science', semester: 'Semester 5' },
-      { id: '240101120002', regNo: '240101120002', name: 'Aditya Sharma', department: 'Computer Science', semester: 'Semester 3' },
-      { id: '240101120003', regNo: '240101120003', name: 'Ananya Deshmukh', department: 'Computer Science', semester: 'Semester 3' },
-      { id: '240101120004', regNo: '240101120004', name: 'Pooja Reddy', department: 'Computer Science', semester: 'Semester 3' },
-      { id: '240101120005', regNo: '240101120005', name: 'Rahul Verma', department: 'Computer Science', semester: 'Semester 3' },
-      { id: '240101120006', regNo: '240101120006', name: 'Sneha Rao', department: 'Computer Science', semester: 'Semester 3' },
-      { id: '240101120007', regNo: '240101120007', name: 'Vikas Gupta', department: 'Computer Science', semester: 'Semester 3' },
-      { id: '240101120008', regNo: '240101120008', name: 'Manish Chawla', department: 'Computer Science', semester: 'Semester 3' },
-      { id: '240101120009', regNo: '240101120009', name: 'Kavita Iyer', department: 'Computer Science', semester: 'Semester 3' },
-      { id: '240101120010', regNo: '240101120010', name: 'Rohan Joshi', department: 'Computer Science', semester: 'Semester 3' }
-    ];
+    let rawRoster: any[] = [];
 
     try {
       const stored = localStorage.getItem('obslmsStudents');
       if (stored) {
         const parsed = JSON.parse(stored);
         if (Array.isArray(parsed) && parsed.length > 0) {
-          parsed.forEach(p => {
-            if (p.name && !rawRoster.some(r => r.name.toLowerCase() === p.name.toLowerCase())) {
-              rawRoster.push({
-                id: p.id || `2401011200${rawRoster.length + 1}`,
-                regNo: p.regNo || `2401011200${rawRoster.length + 1}`,
-                name: p.name,
-                department: p.department || 'Computer Science',
-                semester: p.semester || 'Semester 3'
-              });
-            }
-          });
+          rawRoster = parsed.map((p: any, idx: number) => ({
+            id: p.id || `2401011200${idx + 1}`,
+            regNo: p.regNo || p.id || `2401011200${idx + 1}`,
+            name: p.name,
+            department: p.department || 'Computer Science',
+            semester: p.semester || 'Semester 3'
+          }));
         }
       }
     } catch {}
+
+    if (rawRoster.length === 0) {
+      rawRoster = [
+        { id: 'STU004', regNo: 'STU004', name: 'Krishnavamsi', department: 'Computer Science & Engineering', semester: 'Semester 3' },
+        { id: 'STU001', regNo: 'STU001', name: 'Raj Kumar', department: 'Computer Science', semester: 'Semester 3' },
+        { id: 'STU002', regNo: 'STU002', name: 'Aarav Mehta', department: 'Computer Science & Engineering', semester: 'Semester 3' },
+        { id: 'STU003', regNo: 'STU003', name: 'Aditya Sen', department: 'Information Technology', semester: 'Semester 3' },
+        { id: 'STU005', regNo: 'STU005', name: 'Ananya Iyer', department: 'Electronics & Communication Engineering', semester: 'Semester 3' }
+      ];
+    }
 
     // Map every student with dynamic attendance calculations
     this.students = rawRoster.map(s => {
