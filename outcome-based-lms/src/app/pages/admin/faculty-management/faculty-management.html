@@ -143,7 +143,7 @@
               <th>Designation</th>
               <th>Email</th>
               <th>Courses</th>
-              <th>Actions</th>
+              <th style="width: 170px; text-align: center;">Actions</th>
             </tr>
           </thead>
           <tbody>
@@ -157,8 +157,14 @@
                 <span class="courses-badge">{{ getCoursesDisplay(faculty.courses) }}</span>
               </td>
               <td class="actions-cell">
-                <button class="btn-icon btn-edit" (click)="openEditForm(faculty)" title="Edit">✎</button>
-                <button class="btn-icon btn-delete" (click)="deleteFaculty(faculty.id)" title="Delete">🗑️</button>
+                <div class="actions-btn-wrap">
+                  <button type="button" class="btn-action-pill edit" (click)="openEditForm(faculty)" title="Edit Faculty">
+                    ✎ Edit
+                  </button>
+                  <button type="button" class="btn-action-pill delete" (click)="deleteFaculty(faculty.id)" title="Delete Faculty">
+                    🗑️ Delete
+                  </button>
+                </div>
               </td>
             </tr>
           </tbody>

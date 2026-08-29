@@ -127,12 +127,12 @@
         <table class="data-table">
           <thead>
             <tr>
-              <th>Reg No</th>
+              <th style="width: 120px;">Reg No</th>
               <th>Name</th>
-              <th>Semester</th>
+              <th style="width: 130px;">Semester</th>
               <th>Department</th>
               <th>Email</th>
-              <th>Actions</th>
+              <th style="width: 170px; text-align: center;">Actions</th>
             </tr>
           </thead>
           <tbody>
@@ -143,13 +143,21 @@
               <td><span class="badge badge-dept">{{ student.department }}</span></td>
               <td class="student-email">{{ student.email }}</td>
               <td class="actions-cell">
-                <button class="btn-icon btn-edit" (click)="openEditForm(student)" title="Edit">✎</button>
-                <button class="btn-icon btn-delete" (click)="deleteStudent(student.id)" title="Delete">🗑️</button>
+                <div class="actions-btn-wrap">
+                  <button type="button" class="btn-action-pill edit" (click)="openEditForm(student)" title="Edit Student">
+                    ✎ Edit
+                  </button>
+                  <button type="button" class="btn-action-pill delete" (click)="deleteStudent(student.id)" title="Delete Student">
+                    🗑️ Delete
+                  </button>
+                </div>
               </td>
             </tr>
           </tbody>
         </table>
       </div>
+    </div>
+
     <!-- Course Enrollment Approval Dashboard -->
     <div class="table-section" style="margin-top: 30px;">
       <div class="table-header">
@@ -167,7 +175,7 @@
               <th>Student Name</th>
               <th>Course Code</th>
               <th>Course Title</th>
-              <th>Actions</th>
+              <th style="width: 180px; text-align: center;">Actions</th>
             </tr>
           </thead>
           <tbody>
@@ -176,8 +184,14 @@
               <td><span class="badge badge-semester">{{ req.courseCode }}</span></td>
               <td>{{ req.courseTitle }}</td>
               <td class="actions-cell">
-                <button class="btn btn-primary" (click)="approveEnrollment(req)" style="background: #10b981; border: none; margin-right: 8px;">Approve</button>
-                <button class="btn btn-primary" (click)="rejectEnrollment(req)" style="background: #ef4444; border: none;">Reject</button>
+                <div class="actions-btn-wrap">
+                  <button type="button" class="btn-action-pill approve" (click)="approveEnrollment(req)">
+                    ✅ Approve
+                  </button>
+                  <button type="button" class="btn-action-pill delete" (click)="rejectEnrollment(req)">
+                    ❌ Reject
+                  </button>
+                </div>
               </td>
             </tr>
           </tbody>
