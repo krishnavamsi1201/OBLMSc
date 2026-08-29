@@ -1,27 +1,36 @@
-<!-- Floating Button -->
-<button class="chat-float-btn" (click)="toggleChat()" title="Chat with OBLMS Assistant">
-  <span class="float-icon">💬</span>
+<!-- Floating Chat Button -->
+<button class="chat-float-btn" (click)="toggleChat()" title="Chat with OBLMS Academic AI Assistant">
+  <span class="float-icon">🤖</span>
   <span class="float-pulse"></span>
 </button>
 
 <!-- Chat Window -->
 <div class="chat-popup" *ngIf="isOpen">
-
   <div class="chatbot-card">
-
     <div class="chat-header">
       <div class="header-bot-info">
         <div class="bot-avatar">🤖</div>
         <div>
-          <h3>OBLMS AI Assistant</h3>
-          <span class="bot-status"><span class="status-dot"></span> Online • Outcome Learning AI</span>
+          <h3>OBLMS Academic AI</h3>
+          <span class="bot-status"><span class="status-dot"></span> Online • Outcome-Based AI Assistant</span>
         </div>
       </div>
       <button class="close-btn" (click)="toggleChat()" title="Close chat">✕</button>
     </div>
 
     <div class="chat-body">
+      <!-- Quick Prompt Chips -->
+      <div class="quick-prompts-bar">
+        <button 
+          *ngFor="let p of quickPrompts" 
+          type="button" 
+          class="quick-prompt-pill" 
+          (click)="sendQuickPrompt(p)">
+          {{ p }}
+        </button>
+      </div>
 
+      <!-- Messages Area -->
       <div class="messages">
         <div
           *ngFor="let message of messages"
@@ -33,19 +42,25 @@
 
           <div class="bubble-wrap">
             <div class="message-label">
-              {{ message.from === 'user' ? '👤 You' : '🤖 Assistant' }}
+              {{ message.from === 'user' ? '👤 You' : '🤖 Academic AI' }}
             </div>
 
             <div class="message-text">
               {{ message.text }}
             </div>
-          </div>
 
+            <!-- Bot Quick Action Button -->
+            <div class="quick-action-container" *ngIf="message.quickAction">
+              <button class="btn-quick-action" (click)="clickSuggestion(message.quickAction.route)">
+                {{ message.quickAction.label }} →
+              </button>
+            </div>
+          </div>
         </div>
 
         <!-- Quick Navigation Suggestions -->
         <div class="suggestions-wrap" *ngIf="suggestions.length > 0">
-          <span class="suggestion-label">Quick Shortcuts:</span>
+          <span class="suggestion-label">Suggested Shortcuts:</span>
           <div class="suggestion-chips">
             <button *ngFor="let s of suggestions" type="button" class="chip-btn" (click)="clickSuggestion(s.route)">
               {{ s.label }} →
@@ -54,15 +69,8 @@
         </div>
       </div>
 
-      <!-- Suggestions Panel -->
-      <div class="suggestions-panel" *ngIf="suggestions.length > 0">
-        <button *ngFor="let s of suggestions" type="button" class="suggestion-btn" (click)="clickSuggestion(s.route)">
-          {{ s.label }}
-        </button>
-      </div>
-
+      <!-- Chat Actions & Voice Input -->
       <div class="chat-actions">
-
         <form class="chat-form" (ngSubmit)="sendMessage()">
           <div class="input-container">
             <input
@@ -70,7 +78,7 @@
               [(ngModel)]="userMessage"
               (ngModelChange)="onInputChange()"
               name="message"
-              placeholder="Ask about courses, COs, exams, results..." 
+              placeholder="Ask about attendance, safe bunks, COs, exams..." 
               class="custom-chat-input"
               autocomplete="off"
             />
@@ -86,16 +94,12 @@
             class="mic-pill-btn"
             [class.listening]="isListening"
             (click)="toggleVoice()">
-            {{ isListening ? '⏹️ Stop' : '🎙️ Mic On' }}
+            {{ isListening ? '⏹️ Stop' : '🎙️ Speak' }}
           </button>
 
-          <span class="voice-status-text">{{ voiceStatus }}</span>
+          <span class="voice-status-text" [class.active-voice]="isListening">{{ voiceStatus }}</span>
         </div>
-
       </div>
-
     </div>
-
   </div>
-
 </div>

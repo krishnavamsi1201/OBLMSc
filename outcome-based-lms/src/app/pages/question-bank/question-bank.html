@@ -4,8 +4,14 @@
 	<app-sidebar></app-sidebar>
 	<div class="content">
 		<div class="page-header">
-			<h1>🧠 Question Bank</h1>
-			<p>View, create, and manage outcomes-aligned questions for assessments.</p>
+			<div class="header-left">
+				<h1>🧠 Question Bank & AI Bloom's Classifier</h1>
+				<p>Manage outcomes-aligned questions with automatic Bloom's Taxonomy cognitive classification & 1-Click AI Exam Paper Generator.</p>
+			</div>
+			<div class="header-right" *ngIf="role === 'admin' || role === 'faculty'">
+				<button class="btn btn-ai-exam" (click)="openExamGenerator()">⚡ 1-Click AI Exam Generator</button>
+				<button class="btn btn-primary" (click)="openQuestionForm()">➕ Add Question</button>
+			</div>
 		</div>
 
 		<div *ngIf="isLoading" class="loading-spinner">
@@ -13,61 +19,93 @@
 		</div>
 
 		<div *ngIf="!isLoading">
-			<!-- Actions Bar -->
-			<div class="actions-bar" *ngIf="role === 'admin' || role === 'faculty'">
-				<button class="btn btn-primary" (click)="openQuestionForm()">➕ Create Question</button>
-			</div>
-
 			<!-- Add/Edit Question Form -->
 			<div class="form-card" *ngIf="showQuestionForm">
-				<h2>{{ editIndex >= 0 ? 'Edit Question Details' : 'Add New Question to Bank' }}</h2>
+				<div class="form-header">
+					<h2>{{ editIndex >= 0 ? 'Edit Question Details' : 'Add New Question (with AI Bloom\'s Detection)' }}</h2>
+					<button class="btn-close-form" (click)="closeQuestionForm()">✕</button>
+				</div>
 				<form (ngSubmit)="saveQuestion()">
 					<div class="grid-row">
 						<label>
 							Subject / Course Name
-							<input type="text" name="subject" [(ngModel)]="currentQuestion.subject" placeholder="e.g. Database Management Systems" required />
+							<select name="subject" [(ngModel)]="currentQuestion.subject" required>
+								<option value="Database Management Systems">Database Management Systems</option>
+								<option value="Data Structures & Algorithms">Data Structures & Algorithms</option>
+								<option value="Operating Systems">Operating Systems</option>
+								<option value="Computer Networks">Computer Networks</option>
+								<option value="Artificial Intelligence">Artificial Intelligence</option>
+								<option value="Software Engineering">Software Engineering</option>
+							</select>
+						</label>
+						<label>
+							Bloom's Cognitive Level
+							<select name="bloomsLevel" [(ngModel)]="currentQuestion.bloomsLevel" required>
+								<option value="L1: Remember">L1: Remember (Recall definitions/terms)</option>
+								<option value="L2: Understand">L2: Understand (Explain concepts)</option>
+								<option value="L3: Apply">L3: Apply (Compute/Implement solutions)</option>
+								<option value="L4: Analyze">L4: Analyze (Compare/Deconstruct)</option>
+								<option value="L5: Evaluate">L5: Evaluate (Assess/Critique)</option>
+								<option value="L6: Create">L6: Create (Design/Synthesize)</option>
+							</select>
 						</label>
 						<label>
 							Mapped Course Outcome (CO)
 							<select name="coMapped" [(ngModel)]="currentQuestion.coMapped" required>
-								<option value="CO1">CO1 - Remember & Understand</option>
-								<option value="CO2">CO2 - Apply</option>
-								<option value="CO3">CO3 - Analyze</option>
-								<option value="CO4">CO4 - Evaluate</option>
-								<option value="CO5">CO5 - Create</option>
+								<option value="CO1">CO1 - Foundational Knowledge & Concepts</option>
+								<option value="CO2">CO2 - Procedural Application & Computation</option>
+								<option value="CO3">CO3 - Critical Analysis & Optimization</option>
+								<option value="CO4">CO4 - System Evaluation & Diagnostics</option>
+								<option value="CO5">CO5 - Complex Synthesis & Design</option>
 							</select>
 						</label>
 					</div>
+
 					<div class="grid-row">
 						<label>
 							Question Type
 							<select name="type" [(ngModel)]="currentQuestion.type" required>
+								<option value="Short Answer">Short Answer (5-8 Marks)</option>
+								<option value="Essay">Essay / Long Form (10-15 Marks)</option>
 								<option value="MCQ">Multiple Choice Question (MCQ)</option>
-								<option value="Short Answer">Short Answer</option>
-								<option value="Essay">Essay</option>
 							</select>
 						</label>
 						<label>
 							Difficulty Level
 							<select name="difficulty" [(ngModel)]="currentQuestion.difficulty" required>
-								<option value="Easy">Easy</option>
-								<option value="Medium">Medium</option>
-								<option value="Hard">Hard</option>
+								<option value="Easy">Easy (Foundational)</option>
+								<option value="Medium">Medium (Application)</option>
+								<option value="Hard">Hard (Higher Order)</option>
 							</select>
 						</label>
 						<label>
 							Marks Allocation
-							<input type="number" name="marks" [(ngModel)]="currentQuestion.marks" min="1" required />
+							<input type="number" name="marks" [(ngModel)]="currentQuestion.marks" min="1" max="25" required />
 						</label>
 					</div>
+
 					<div class="grid-row">
 						<label style="grid-column: span 3;">
 							Question Text
-							<textarea name="questionText" [(ngModel)]="currentQuestion.questionText" placeholder="Enter the complete question here..." rows="3" required></textarea>
+							<textarea 
+								name="questionText" 
+								[(ngModel)]="currentQuestion.questionText" 
+								(input)="analyzeBloomsTaxonomy()" 
+								placeholder="Type question here (e.g. 'Design a relational schema...' or 'Compare Dijkstra vs Bellman-Ford...')" 
+								rows="3" 
+								required>
+							</textarea>
 						</label>
 					</div>
+
+					<!-- AI Suggestion Chip -->
+					<div class="ai-suggestion-pill" *ngIf="aiSuggestedBlooms">
+						<span class="ai-sparkle">✨ AI Auto-Detected:</span>
+						<strong>{{ aiSuggestedBlooms }}</strong> | Target Outcome: <strong>{{ aiSuggestedCO }}</strong>
+					</div>
+
 					<div class="form-actions">
-						<button type="submit" class="btn btn-success">{{ editIndex >= 0 ? 'Save Edits' : 'Add to Bank' }}</button>
+						<button type="submit" class="btn btn-success">{{ editIndex >= 0 ? 'Save Edits' : '➕ Add to Bank' }}</button>
 						<button type="button" class="btn btn-secondary" (click)="closeQuestionForm()">Cancel</button>
 					</div>
 				</form>
@@ -77,32 +115,35 @@
 			<div class="filter-card">
 				<div class="filters-container">
 					<label class="filter-input">
-						Search Questions:
-						<input type="text" [(ngModel)]="searchTerm" (input)="applyFilters()" placeholder="Search text or mapped CO..." />
+						Search:
+						<input type="text" [(ngModel)]="searchTerm" (input)="applyFilters()" placeholder="🔍 Search question keywords..." />
 					</label>
 					<label class="filter-select">
-						Filter by Subject:
+						Subject:
 						<select [(ngModel)]="subjectFilter" (change)="applyFilters()">
-							<option value="">All Subjects</option>
+							<option value="">All Subjects ({{ questions.length }})</option>
 							<option *ngFor="let sub of subjectsList" [value]="sub">{{ sub }}</option>
 						</select>
 					</label>
 					<label class="filter-select">
-						Filter by Difficulty:
+						Bloom's Level:
+						<select [(ngModel)]="bloomsFilter" (change)="applyFilters()">
+							<option value="">All Cognitive Levels</option>
+							<option value="L1: Remember">L1: Remember</option>
+							<option value="L2: Understand">L2: Understand</option>
+							<option value="L3: Apply">L3: Apply</option>
+							<option value="L4: Analyze">L4: Analyze</option>
+							<option value="L5: Evaluate">L5: Evaluate</option>
+							<option value="L6: Create">L6: Create</option>
+						</select>
+					</label>
+					<label class="filter-select">
+						Difficulty:
 						<select [(ngModel)]="difficultyFilter" (change)="applyFilters()">
 							<option value="">All Difficulties</option>
 							<option value="Easy">Easy</option>
 							<option value="Medium">Medium</option>
 							<option value="Hard">Hard</option>
-						</select>
-					</label>
-					<label class="filter-select">
-						Filter by Type:
-						<select [(ngModel)]="typeFilter" (change)="applyFilters()">
-							<option value="">All Types</option>
-							<option value="MCQ">MCQ</option>
-							<option value="Short Answer">Short Answer</option>
-							<option value="Essay">Essay</option>
 						</select>
 					</label>
 				</div>
@@ -113,6 +154,9 @@
 				<div class="questions-grid" *ngIf="filteredQuestions.length > 0">
 					<div class="question-card" *ngFor="let q of filteredQuestions">
 						<div class="card-badges">
+							<span class="badge blooms-badge" [style.backgroundColor]="getBloomsColor(q.bloomsLevel)">
+								{{ q.bloomsLevel }}
+							</span>
 							<span class="badge diff-badge" [class.easy]="q.difficulty === 'Easy'" [class.medium]="q.difficulty === 'Medium'" [class.hard]="q.difficulty === 'Hard'">
 								{{ q.difficulty }}
 							</span>
@@ -123,14 +167,14 @@
 						<div class="card-body">
 							<p class="question-text">{{ q.questionText }}</p>
 							<div class="metadata-footer">
-								<span><strong>Subject:</strong> {{ q.subject }}</span>
-								<span class="co-badge">{{ q.coMapped }}</span>
+								<span class="subject-tag">📚 {{ q.subject }}</span>
+								<span class="co-badge">🎯 {{ q.coMapped }}</span>
 							</div>
 						</div>
 						
 						<div class="card-footer" *ngIf="role === 'admin' || role === 'faculty'">
-							<button class="btn btn-edit" (click)="editQuestion(q)">Edit</button>
-							<button class="btn btn-delete" (click)="deleteQuestion(q)">Delete</button>
+							<button class="btn btn-edit" (click)="editQuestion(q)">✎ Edit</button>
+							<button class="btn btn-delete" (click)="deleteQuestion(q)">🗑️ Delete</button>
 						</div>
 					</div>
 				</div>
@@ -140,8 +184,119 @@
 					<p>Create a new question or modify the search filters.</p>
 				</div>
 			</div>
-
-			<app-footer></app-footer>
 		</div>
+
+		<!-- ======================================== -->
+		<!-- AI Exam Paper Generator Modal -->
+		<!-- ======================================== -->
+		<div class="modal-overlay" *ngIf="showExamGeneratorModal">
+			<div class="modal-card">
+				<div class="modal-header">
+					<h2>⚡ AI-Powered Balanced Exam Paper Generator</h2>
+					<button class="btn-close-modal" (click)="closeExamGenerator()">✕</button>
+				</div>
+
+				<div class="modal-body" *ngIf="!showGeneratedPaperView">
+					<p class="modal-sub">Generate a standardized, NBA-compliant question paper with balanced Bloom's cognitive distribution (30% Lower Order L1/L2, 40% Application L3/L4, 30% Higher Order L5/L6).</p>
+					
+					<div class="generator-config-grid">
+						<label>
+							Select Target Subject:
+							<select [(ngModel)]="examCourse">
+								<option value="Database Management Systems">Database Management Systems (CS101)</option>
+								<option value="Data Structures & Algorithms">Data Structures & Algorithms (CS102)</option>
+								<option value="Operating Systems">Operating Systems (CS201)</option>
+								<option value="Computer Networks">Computer Networks (CS301)</option>
+							</select>
+						</label>
+
+						<label>
+							Examination Type:
+							<select [(ngModel)]="examType">
+								<option value="Midterm Exam 1">Midterm Examination 1</option>
+								<option value="Midterm Exam 2">Midterm Examination 2</option>
+								<option value="Semester Final Exam">Semester Final Examination</option>
+							</select>
+						</label>
+
+						<label>
+							Max Total Marks:
+							<select [(ngModel)]="examTotalMarks">
+								<option [value]="50">50 Marks (Midterm Standard)</option>
+								<option [value]="100">100 Marks (Final Exam Standard)</option>
+							</select>
+						</label>
+
+						<label>
+							Time Duration:
+							<select [(ngModel)]="examDuration">
+								<option value="2 Hours">2 Hours</option>
+								<option value="3 Hours">3 Hours</option>
+							</select>
+						</label>
+					</div>
+
+					<div class="modal-actions">
+						<button class="btn btn-primary btn-generate" (click)="generateBalancedExamPaper()">✨ Generate Balanced Question Paper</button>
+						<button class="btn btn-secondary" (click)="closeExamGenerator()">Cancel</button>
+					</div>
+				</div>
+
+				<!-- Paper Preview View -->
+				<div class="modal-body paper-preview-body" *ngIf="showGeneratedPaperView">
+					<div class="paper-toolbar">
+						<button class="btn btn-secondary" (click)="showGeneratedPaperView = false">← Reconfigure</button>
+						<button class="btn btn-primary" (click)="printExamPaper()">🖨️ Print / Save as PDF</button>
+					</div>
+
+					<div class="official-exam-sheet">
+						<div class="exam-header-banner">
+							<div class="college-title">OUTCOME-BASED LEARNING MANAGEMENT SYSTEM</div>
+							<div class="dept-title">DEPARTMENT OF COMPUTER SCIENCE & ENGINEERING</div>
+							<div class="exam-title-badge">{{ examType.toUpperCase() }} (ACADEMIC YEAR 2025-26)</div>
+							<div class="exam-meta-grid">
+								<div><strong>Course:</strong> {{ examCourse }}</div>
+								<div><strong>Duration:</strong> {{ examDuration }}</div>
+								<div><strong>Max Marks:</strong> {{ examTotalMarks }}</div>
+								<div><strong>Regulation:</strong> OBE Tier-1 (NBA Standards)</div>
+							</div>
+						</div>
+
+						<div class="instructions-box">
+							<strong>Instructions:</strong> Answer all questions. Each question is labeled with its corresponding Course Outcome (CO) and Bloom's Cognitive Level (L1 to L6).
+						</div>
+
+						<table class="exam-questions-table">
+							<thead>
+								<tr>
+									<th style="width: 8%;">Q.No</th>
+									<th>Question Description</th>
+									<th style="width: 14%;">Bloom's Level</th>
+									<th style="width: 10%;">CO Mapped</th>
+									<th style="width: 10%;">Marks</th>
+								</tr>
+							</thead>
+							<tbody>
+								<tr *ngFor="let q of generatedPaperQuestions; let idx = index">
+									<td class="center-text"><strong>Q{{ idx + 1 }}</strong></td>
+									<td>{{ q.questionText }}</td>
+									<td class="center-text"><span class="badge blooms-badge" [style.backgroundColor]="getBloomsColor(q.bloomsLevel)">{{ q.bloomsLevel }}</span></td>
+									<td class="center-text"><span class="co-badge">{{ q.coMapped }}</span></td>
+									<td class="center-text"><strong>{{ q.marks }}M</strong></td>
+								</tr>
+							</tbody>
+						</table>
+
+						<div class="exam-sign-footer">
+							<div>Course Coordinator</div>
+							<div>Module Coordinator</div>
+							<div>Controller of Examinations</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<app-footer></app-footer>
 	</div>
 </div>

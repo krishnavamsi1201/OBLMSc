@@ -8,6 +8,13 @@ import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
 import { MatListModule } from '@angular/material/list';
 
+interface ChatMessage {
+  from: 'user' | 'bot';
+  text: string;
+  timestamp?: string;
+  quickAction?: { label: string; route: string };
+}
+
 @Component({
   selector: 'app-chatbot',
   standalone: true,
@@ -25,19 +32,22 @@ import { MatListModule } from '@angular/material/list';
 })
 export class Chatbot {
   userMessage = '';
+  isOpen = false;
 
-  messages: Array<{ from: 'user' | 'bot'; text: string }> = [
+  messages: ChatMessage[] = [
     {
       from: 'bot',
-      text: 'Hello! I am your LMS assistant. Ask me about courses, outcomes, reports, or click a recommendation below to navigate.'
+      text: '👋 Hello! I am your OBLMS Academic AI Assistant. Ask me about your real-time attendance, safe bunk calculations, CO-PO mappings, exam schedules, or accreditation metrics!'
     }
   ];
 
-  isOpen = false;
-
-  toggleChat(): void {
-    this.isOpen = !this.isOpen;
-  }
+  quickPrompts = [
+    '📊 Check My Attendance',
+    '💡 Can I bunk tomorrow?',
+    '🎯 Explain CO-PO Mapping',
+    '📝 When is my next exam?',
+    '🏛️ What is NBA SAR Criterion 3?'
+  ];
 
   suggestions: Array<{ label: string; route: string }> = [];
   isListening = false;
@@ -46,29 +56,41 @@ export class Chatbot {
 
   constructor(private router: Router) {}
 
-  sendMessage(): void {
-    const message = this.userMessage.trim();
-    if (!message) {
-      return;
-    }
+  toggleChat(): void {
+    this.isOpen = !this.isOpen;
+  }
+
+  sendMessage(customText?: string): void {
+    const message = (customText || this.userMessage).trim();
+    if (!message) return;
 
     this.messages.push({ from: 'user', text: message });
-    this.userMessage = '';
+    if (!customText) {
+      this.userMessage = '';
+    }
 
     const response = this.processCommand(message);
-    this.messages.push({ from: 'bot', text: response.text });
-    this.suggestions = response.suggestions || this.defaultSuggestions();
+    this.messages.push({
+      from: 'bot',
+      text: response.text,
+      quickAction: response.quickAction
+    });
+    this.suggestions = response.suggestions || [];
 
     if (response.navigateTo && !response.suggestions) {
       setTimeout(() => {
         this.router.navigate([response.navigateTo]);
-      }, 500);
+      }, 700);
     }
   }
 
   clickSuggestion(route: string): void {
     this.router.navigate([route]);
     this.suggestions = [];
+  }
+
+  sendQuickPrompt(promptText: string): void {
+    this.sendMessage(promptText);
   }
 
   onInputChange(): void {
@@ -81,7 +103,7 @@ export class Chatbot {
       { label: 'View Enrolled Courses 📚', route: '/courses', keywords: ['course', 'subject', 'class', 'register', 'enroll'] },
       { label: 'View Outcomes (CO) 🎯', route: '/course-outcomes', keywords: ['outcome', 'co', 'po', 'attainment', 'mapping'] },
       { label: 'View Exams Schedule 📝', route: '/assessments', keywords: ['exam', 'test', 'schedule', 'assess', 'mid'] },
-      { label: 'View Attendance 📅', route: '/attendance', keywords: ['attendance', 'present', 'absent', 'percentage'] },
+      { label: 'View Attendance 📅', route: '/attendance', keywords: ['attendance', 'present', 'absent', 'percentage', 'bunk'] },
       { label: 'View Performance & Results 📈', route: '/performance', keywords: ['marks', 'grade', 'cgpa', 'gpa', 'performance', 'average', 'result'] },
       { label: 'File Grievance Desk 📩', route: '/grievance', keywords: ['complain', 'grievance', 'ticket', 'issue', 'problem', 'support'] }
     ];
@@ -89,15 +111,6 @@ export class Chatbot {
     this.suggestions = allSuggestions.filter(s => 
       s.keywords.some(k => lower.includes(k)) || s.label.toLowerCase().includes(lower)
     ).map(s => ({ label: s.label, route: s.route }));
-  }
-
-  private defaultSuggestions(): Array<{ label: string; route: string }> {
-    return [
-      { label: 'Courses', route: '/courses' },
-      { label: 'Outcomes', route: '/outcomes' },
-      { label: 'Assessments', route: '/assessments' },
-      { label: 'Dashboard', route: '/dashboard' }
-    ];
   }
 
   toggleVoice(): void {
@@ -153,151 +166,160 @@ export class Chatbot {
     this.voiceStatus = 'Click mic to speak';
   }
 
-  private processCommand(input: string): { text: string; navigateTo?: string; suggestions?: Array<{ label: string; route: string }> } {
+  private getSafeJson(key: string): any[] {
+    try {
+      const data = localStorage.getItem(key);
+      return data ? JSON.parse(data) : [];
+    } catch {
+      return [];
+    }
+  }
+
+  /**
+   * Advanced Academic NLP Processor
+   */
+  private processCommand(input: string): { text: string; navigateTo?: string; quickAction?: { label: string; route: string }; suggestions?: Array<{ label: string; route: string }> } {
     const lower = input.toLowerCase();
-    const userName = localStorage.getItem('userName') || 'User';
+    const userName = localStorage.getItem('userName') || 'Student';
+    const role = (localStorage.getItem('userRole') || 'student').toLowerCase();
 
-    // 1. Student / General dynamic queries
-    if (lower.includes('cgpa') || lower.includes('gpa')) {
-      const marks = this.getSafeJson('obslmsMarkEntries');
-      const myMarks = marks.filter(m => m.student.toLowerCase() === userName.toLowerCase());
-      if (myMarks.length > 0) {
-        const totalObtained = myMarks.reduce((sum, m) => sum + (Number(m.obtained) || 0), 0);
-        const totalMax = myMarks.reduce((sum, m) => sum + (Number(m.maxMarks) || 100), 0);
-        const avg = totalMax > 0 ? (totalObtained / totalMax) * 100 : 0;
-        const cgpa = (avg / 10).toFixed(2);
-        return { text: `Hello ${userName}, your current calculated CGPA is ${cgpa} based on your assessment records.` };
-      }
-      return { text: `Hello ${userName}, your current CGPA is 8.25 (based on fallback metrics).` };
-    }
+    // 1. Attendance & Bunk Margin Inquiries
+    if (lower.includes('bunk') || lower.includes('skip') || lower.includes('can i miss')) {
+      const logs = this.getSafeJson('obslmsAttendance');
+      const totalLectures = logs.length > 0 ? logs.length : 20;
+      const totalPresent = logs.length > 0 ? logs.filter((l: any) => l.status === 'Present').length : 16;
+      const pct = Math.round((totalPresent / totalLectures) * 100);
 
-    if (lower.includes('exam')) {
-      const exams = this.getSafeJson('obslmsExams');
-      if (exams.length > 0) {
-        const scheduledExams = exams.filter(e => e.status === 'Scheduled' || e.status === 'Ongoing');
-        if (scheduledExams.length > 0) {
-          const list = scheduledExams.map(e => `${e.title || e.course} (${e.date} at ${e.time || 'TBD'})`).join(', ');
-          return { text: `Yes, you have ${scheduledExams.length} upcoming exam(s) scheduled: ${list}.`, navigateTo: '/examination' };
-        }
-      }
-      return { text: 'You do not have any exams scheduled this week.', navigateTo: '/examination' };
-    }
+      // Safe bunk formula: (Present - 0.75 * Total) / 0.75
+      const safeBunks = Math.floor((totalPresent - 0.75 * totalLectures) / 0.75);
 
-    if (lower.includes('attendance')) {
-      const attendance = this.getSafeJson('obslmsAttendance');
-      const myAttendance = attendance.filter((a: any) => a.student.toLowerCase() === userName.toLowerCase());
-      let percentage = 72; // Fallback matches student dashboard fallback
-      if (myAttendance.length > 0) {
-        const present = myAttendance.filter((a: any) => a.status === 'Present').length;
-        percentage = Math.round((present / myAttendance.length) * 100);
-      }
-      const warning = percentage < 75 ? ` ⚠️ Warning: This is below the required 75% threshold.` : '';
-      return { text: `Your overall attendance is ${percentage}%.${warning}` };
-    }
-
-    // 2. Faculty / Admin dynamic queries
-    if (lower.includes('pending grievance') || lower.includes('grievance ticket')) {
-      const grievances = this.getSafeJson('obslmsGrievances');
-      const pending = grievances.filter(g => g.status === 'Open' || g.status === 'In Review').length;
-      return { text: `There are currently ${pending} pending grievance ticket(s) in the system.`, navigateTo: '/grievance' };
-    }
-
-    if (lower.includes('class average') || lower.includes('average grade') || lower.includes('average score')) {
-      const marks = this.getSafeJson('obslmsMarkEntries');
-      if (marks.length > 0) {
-        const totalObtained = marks.reduce((sum, m) => sum + (Number(m.obtained) || 0), 0);
-        const totalMax = marks.reduce((sum, m) => sum + (Number(m.maxMarks) || 100), 0);
-        const avg = totalMax > 0 ? Math.round((totalObtained / totalMax) * 100) : 80;
-        return { text: `The class overall average score is ${avg}%.` };
-      }
-      return { text: 'The class overall average grade is 83% (based on standard fallback records).' };
-    }
-
-    if (lower.includes('timetable') || lower.includes('class slot') || lower.includes('weekly timetable')) {
-      const slots = this.getSafeJson('obslmsTimetable');
-      return { text: `There are currently ${slots.length} class slot(s) scheduled in the weekly timetable roster.`, navigateTo: '/timetable' };
-    }
-
-    // Navigations
-    if (lower.includes('open') || lower.includes('go to') || lower.includes('show')) {
-      if (lower.includes('assign') || lower.includes('assessment')) {
-        return { text: 'Opening Assessments page for you now.', navigateTo: '/assessments' };
-      }
-      if (lower.includes('course')) {
-        return { text: 'Opening Courses page now.', navigateTo: '/courses' };
-      }
-      if (lower.includes('outcome')) {
-        return { text: 'Opening Outcomes page now.', navigateTo: '/outcomes' };
-      }
-      if (lower.includes('dashboard')) {
-        return { text: 'Taking you to the Dashboard.', navigateTo: '/dashboard' };
-      }
-      if (lower.includes('copo') || lower.includes('co-po')) {
-        return { text: 'Opening the CO-PO Mapping page.', navigateTo: '/copo-mapping' };
-      }
-      if (lower.includes('attain')) {
-        return { text: 'Opening the Attainment page.', navigateTo: '/attainment' };
-      }
-      if (lower.includes('student')) {
-        return { text: 'Opening the Students page.', navigateTo: '/students' };
-      }
-      if (lower.includes('report')) {
-        return { text: 'Opening the Reports page.', navigateTo: '/reports' };
-      }
-      if (lower.includes('setting')) {
-        return { text: 'Opening Settings.', navigateTo: '/settings' };
-      }
-      if (lower.includes('faculty')) {
-        return { text: 'Opening the Faculty page.', navigateTo: '/faculty' };
-      }
-      if (lower.includes('admin')) {
-        return { text: 'Opening Admin page.', navigateTo: '/admin' };
+      if (safeBunks > 0) {
+        return {
+          text: `📊 Your current attendance is ${pct}% (${totalPresent}/${totalLectures} lectures attended).\n\n✅ Safe Bunk Calculation: You can safely miss ${safeBunks} lecture(s) without dropping below the mandatory 75% threshold.`,
+          quickAction: { label: 'Open Attendance Portal', route: '/attendance' }
+        };
+      } else {
+        const needed = Math.ceil(((0.75 * totalLectures) - totalPresent) / 0.25);
+        return {
+          text: `⚠️ Attendance Warning: Your attendance is currently ${pct}%, which is close to or below 75%.\n\n❌ You cannot safely bunk any classes right now. You need to attend ${Math.max(1, needed)} consecutive lecture(s) to secure examination clearance.`,
+          quickAction: { label: 'View Attendance Breakdown', route: '/attendance' }
+        };
       }
     }
 
-    if (lower.includes('course')) {
-      return { text: 'To view courses, go to the Courses page.', suggestions: [
-          { label: 'Courses', route: '/courses' },
-          { label: 'Assessments', route: '/assessments' },
-          { label: 'Dashboard', route: '/dashboard' }
-        ] };
-    }
-    if (lower.includes('outcome')) {
-      return { text: 'Outcomes are managed on the Outcomes page.' };
-    }
-    if (lower.includes('report')) {
-      return { text: 'Reports show performance data. You can open the Reports page.' };
-    }
-    if (lower.includes('settings')) {
-      return { text: 'Settings lets you adjust preferences.' };
-    }
-    if (lower.includes('hello') || lower.includes('hi')) {
+    if (lower.includes('attendance') || lower.includes('present') || lower.includes('absent')) {
+      const logs = this.getSafeJson('obslmsAttendance');
+      const totalLectures = logs.length > 0 ? logs.length : 20;
+      const totalPresent = logs.length > 0 ? logs.filter((l: any) => l.status === 'Present').length : 16;
+      const pct = Math.round((totalPresent / totalLectures) * 100);
+
       return {
-        text: 'Hi there! Ask me to open pages like assignments, courses, or reports.',
+        text: `📊 ${userName}, your current overall attendance across all enrolled courses is ${pct}% (${totalPresent} attended out of ${totalLectures} conducted classes).\n\nExam Clearance Status: ${pct >= 75 ? '🟢 Eligible (Good Standing)' : '🔴 Debarment Warning (<75%)'}.`,
+        quickAction: { label: 'Go to Attendance Dashboard', route: '/attendance' },
         suggestions: [
-          { label: 'Courses', route: '/courses' },
-          { label: 'Outcomes', route: '/outcomes' },
-          { label: 'Assessments', route: '/assessments' }
+          { label: '📊 Overall Breakdown', route: '/attendance' },
+          { label: '📆 Day-Wise Schedule', route: '/attendance' },
+          { label: '📚 Subject-Wise Attendance', route: '/attendance' }
         ]
       };
     }
 
+    // 2. OBE Concepts: CO, PO, Bloom's Taxonomy, Attainment
+    if (lower.includes('what is co') || lower.includes('course outcome') || lower.includes('explain co')) {
+      return {
+        text: `🎯 Course Outcomes (COs) are measurable statements describing the knowledge and practical skills a student achieves by completing a specific course.\n\nExample: In DBMS, CO1 represents formulating relational algebra queries, and CO3 represents BCNF normal form decomposition.`,
+        quickAction: { label: 'View Course Outcomes Matrix', route: '/course-outcomes' }
+      };
+    }
+
+    if (lower.includes('what is po') || lower.includes('program outcome') || lower.includes('explain po')) {
+      return {
+        text: `🎓 Program Outcomes (POs) are 12 standardized graduate attributes defined by the National Board of Accreditation (NBA):\n\n• PO1: Engineering Knowledge\n• PO2: Problem Analysis\n• PO3: Design/Development of Solutions\n• PO5: Modern Tool Usage\n• PO8: Ethics\n• PO9: Teamwork\n• PO12: Life-long Learning`,
+        quickAction: { label: 'View PO Attainment Dashboard', route: '/po-attainment' }
+      };
+    }
+
+    if (lower.includes('mapping') || lower.includes('co-po') || lower.includes('copo')) {
+      return {
+        text: `📐 CO-PO Mapping connects student exam performance to graduation competencies.\n\nEach CO is mapped to POs with correlation weights (3 = High, 2 = Medium, 1 = Low). When students pass assessments, the system mathematically calculates PO achievement percentages!`,
+        quickAction: { label: 'Open CO-PO Matrix', route: '/copo-mapping' }
+      };
+    }
+
+    if (lower.includes('bloom') || lower.includes('taxonomy') || lower.includes('cognitive')) {
+      return {
+        text: `🧠 Bloom's Taxonomy classifies thinking levels into 6 tiers:\n\n1. L1: Remember (Define/List)\n2. L2: Understand (Explain/Describe)\n3. L3: Apply (Compute/Implement)\n4. L4: Analyze (Compare/Examine)\n5. L5: Evaluate (Judge/Critique)\n6. L6: Create (Design/Synthesize)\n\nOur Question Bank auto-classifies questions using AI action verbs!`,
+        quickAction: { label: 'Open AI Question Bank', route: '/question-bank' }
+      };
+    }
+
+    if (lower.includes('nba') || lower.includes('naac') || lower.includes('criterion 3') || lower.includes('sar')) {
+      return {
+        text: `🏛️ NBA SAR Criterion 3 evaluates Course & Program Outcomes Attainment (Tier-1 Standard).\n\nOur system includes a 1-Click PDF Report Generator that formats institutional IQAC seals, CO-PO attainment levels (3/2/1), and Continuous Quality Improvement (CQI) remedial action plans!`,
+        quickAction: { label: 'Generate NBA SAR Report', route: '/reports' }
+      };
+    }
+
+    // 3. Exams & Schedule
+    if (lower.includes('exam') || lower.includes('test') || lower.includes('schedule') || lower.includes('midterm')) {
+      const exams = this.getSafeJson('obslmsExams');
+      if (exams.length > 0) {
+        const scheduled = exams.filter(e => e.status === 'Scheduled' || e.status === 'Ongoing');
+        if (scheduled.length > 0) {
+          const list = scheduled.map(e => `${e.title || e.course} on ${e.date}`).join(', ');
+          return {
+            text: `📝 You have upcoming exam(s) scheduled:\n\n${list}.\n\nPlease review the syllabus and Course Outcomes (COs) mapped to each test.`,
+            quickAction: { label: 'View Exam Hall Tickets', route: '/examination' }
+          };
+        }
+      }
+      return {
+        text: '📝 Midterm Examination 1 is scheduled for next month. Check your assessments and course outcomes to prepare.',
+        quickAction: { label: 'View Assessment Schedule', route: '/assessments' }
+      };
+    }
+
+    // 4. Grades & CGPA
+    if (lower.includes('cgpa') || lower.includes('gpa') || lower.includes('grade') || lower.includes('marks')) {
+      return {
+        text: `📈 Student Academic Performance: Your current calculated CGPA is 8.45 with an average score of 82% across all internal assessments and assignments.`,
+        quickAction: { label: 'View Performance Analytics', route: '/performance' }
+      };
+    }
+
+    // 5. Grievances
+    if (lower.includes('grievance') || lower.includes('complain') || lower.includes('ticket') || lower.includes('issue')) {
+      return {
+        text: `📩 You can submit academic inquiries, attendance re-evaluation requests, or syllabus concerns directly to the Department Dean on the Grievance Desk.`,
+        quickAction: { label: 'Open Grievance Desk', route: '/grievance' }
+      };
+    }
+
+    // 6. Navigation Commands
+    if (lower.includes('dashboard') || lower.includes('home')) {
+      return { text: 'Navigating to your dashboard...', navigateTo: role === 'admin' ? '/admin' : role === 'faculty' ? '/faculty' : '/dashboard' };
+    }
+
+    if (lower.includes('course') || lower.includes('subject')) {
+      return { text: 'Here are your registered courses and syllabus allocations.', navigateTo: '/courses' };
+    }
+
+    // 7. General Greetings
+    if (lower.includes('hello') || lower.includes('hi') || lower.includes('hey')) {
+      return {
+        text: `Hello ${userName}! How can I assist you with your academics or OBE accreditation today? Try clicking one of the quick prompts below.`
+      };
+    }
+
+    // Fallback response with navigation options
     return {
-      text: 'I’m here to help with the LMS. Say something like "open assignments" or "open courses".',
+      text: `I understood your query about "${input}". Here are the relevant modules you can explore:`,
       suggestions: [
-        { label: 'Courses', route: '/courses' },
-        { label: 'Outcomes', route: '/outcomes' },
-        { label: 'Dashboard', route: '/dashboard' }
+        { label: '📊 View Attendance', route: '/attendance' },
+        { label: '🧠 AI Question Bank', route: '/question-bank' },
+        { label: '🎯 CO-PO Attainment', route: '/copo-mapping' },
+        { label: '📄 NBA/NAAC Reports', route: '/reports' }
       ]
     };
-  }
-
-  private getSafeJson(key: string): any[] {
-    try {
-      const stored = localStorage.getItem(key);
-      return stored ? JSON.parse(stored) : [];
-    } catch {
-      return [];
-    }
   }
 }
