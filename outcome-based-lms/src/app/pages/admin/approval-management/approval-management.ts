@@ -116,12 +116,21 @@ export class ApprovalManagement implements OnInit {
       }
 
       rawAssessmentMappings.forEach((mapping: any) => {
-        const aName = mapping.assessmentName || mapping.name || mapping.assessment || mapping.title || `${mapping.assessmentType || mapping.type || 'Assessment'} - ${mapping.courseName || mapping.course || 'Course'}`;
-        const aType = mapping.assessmentType || mapping.type || 'Assessment';
-        const cName = mapping.courseName || mapping.course || mapping.courseTitle || 'Curriculum Course';
+        let aType = mapping.assessmentType || mapping.type || 'Assessment';
+        let cName = mapping.courseName || mapping.course || mapping.courseTitle || 'Curriculum Course';
+        let aName = mapping.assessmentName || mapping.name || mapping.assessment || mapping.title || '';
+
+        // Clean out any legacy corrupted "undefined" strings
+        if (!aName || aName.toLowerCase().includes('undefined')) {
+          aName = `${cName} - ${aType !== 'Assessment' ? aType : 'Midterm / Evaluation'}`;
+        }
+        if (aType.toLowerCase().includes('undefined')) {
+          aType = 'Assessment';
+        }
+
         const coList = Array.isArray(mapping.courseOutcomes)
           ? mapping.courseOutcomes.join(', ')
-          : (typeof mapping.courseOutcomes === 'string' && mapping.courseOutcomes.length > 0 ? mapping.courseOutcomes : 'CO1, CO2');
+          : (typeof mapping.courseOutcomes === 'string' && mapping.courseOutcomes.length > 0 && !mapping.courseOutcomes.toLowerCase().includes('undefined') ? mapping.courseOutcomes : 'CO1, CO2');
 
         items.push({
           id: (mapping.id || Math.random()).toString(),

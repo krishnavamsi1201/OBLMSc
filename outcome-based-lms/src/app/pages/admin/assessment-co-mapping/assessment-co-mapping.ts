@@ -88,8 +88,8 @@ export class AssessmentCOMapping implements OnInit {
       next: (data) => {
         this.assessmentList = data.map((a: any) => ({
           id: (a.id || '').toString(),
-          name: a.name || `${a.type} - ${a.courseName}`,
-          type: a.type || 'Exam'
+          name: a.assessmentName || a.name || `${a.assessmentType || a.type || 'Assessment'} - ${a.courseName}`,
+          type: a.assessmentType || a.type || 'Assessment'
         }));
         this.cdr.detectChanges();
       },
@@ -138,8 +138,8 @@ export class AssessmentCOMapping implements OnInit {
         this.mappingList = data.map((item: any) => ({
           id: (item.id || '').toString(),
           assessmentId: (item.id || '').toString(),
-          assessmentName: item.name || `${item.type} - ${item.courseName}`,
-          assessmentType: item.type,
+          assessmentName: item.assessmentName || item.name || `${item.assessmentType || item.type || 'Assessment'} - ${item.courseName}`,
+          assessmentType: item.assessmentType || item.type || 'Assessment',
           courseId: item.courseId,
           courseName: item.courseName,
           courseOutcomes: (item.courseOutcomes || 'CO1').split(','),
