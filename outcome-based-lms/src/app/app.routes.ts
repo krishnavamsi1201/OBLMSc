@@ -174,7 +174,7 @@ export const routes: Routes = [
     path: 'question-bank',
     component: QuestionBank,
     canActivate: [RoleGuard],
-    data: { roles: ['admin', 'faculty'] }
+    data: { roles: ['admin', 'faculty', 'student'] }
   },
   {
     path: 'students',
