@@ -74,14 +74,22 @@ export class ApprovalManagement implements OnInit {
       const items: ApprovalItem[] = [];
 
       // 1. Student Course Enrollment Requests
-      const courseRequests = JSON.parse(localStorage.getItem('obslmsCourseRequests') || '[]');
+      let courseRequests: any[] = [];
+      try {
+        courseRequests = JSON.parse(localStorage.getItem('obslmsCourseRequests') || '[]');
+      } catch {}
+
       courseRequests.forEach((req: any) => {
+        const sName = req.studentName || req.student || 'Student';
+        const cTitle = req.courseTitle || req.courseName || req.courseCode || req.course || 'Course';
+        const cCode = req.courseCode || req.course || '';
+
         items.push({
-          id: req.id,
+          id: (req.id || Math.random()).toString(),
           type: 'course-enrollment',
-          title: `Enrollment: ${req.studentName} → ${req.courseTitle || req.courseCode}`,
-          description: `Student: ${req.studentName} requested enrollment in ${req.courseTitle || req.courseCode} (${req.courseCode})`,
-          createdBy: req.studentName || 'Student',
+          title: `Enrollment: ${sName} → ${cTitle}`,
+          description: `Student: ${sName} requested enrollment in ${cTitle} ${cCode ? '(' + cCode + ')' : ''}`,
+          createdBy: sName,
           createdDate: req.requestedAt ? req.requestedAt.split('T')[0] : new Date().toISOString().split('T')[0],
           status: req.status || 'Pending',
           details: req
@@ -89,30 +97,63 @@ export class ApprovalManagement implements OnInit {
       });
 
       // 2. Assessment-CO Mappings
-      const assessmentMappings = JSON.parse(localStorage.getItem('obslmsAssessmentCOMappings') || '[]') as AssessmentCOMapping[];
-      assessmentMappings.forEach((mapping: AssessmentCOMapping) => {
+      let rawAssessmentMappings: any[] = [];
+      try {
+        rawAssessmentMappings = JSON.parse(localStorage.getItem('obslmsAssessmentCOMappings') || '[]');
+      } catch {}
+
+      if (!Array.isArray(rawAssessmentMappings) || rawAssessmentMappings.length === 0) {
+        rawAssessmentMappings = [
+          { id: '1', assessmentName: 'INMCA202 - Midterm 1', assessmentType: 'Midterm', courseName: 'Probability and Statistics', courseOutcomes: ['CO1', 'CO2'], approvalStatus: 'Pending' },
+          { id: '2', assessmentName: 'DS - Practical Lab Exam', assessmentType: 'Practical', courseName: 'Data Structures and Analysis of Computer Algorithms', courseOutcomes: ['CO1'], approvalStatus: 'Pending' },
+          { id: '3', assessmentName: 'MES - Quiz 1', assessmentType: 'Quiz', courseName: 'Microprocessors and Embedded Systems', courseOutcomes: ['CO1', 'CO2'], approvalStatus: 'Pending' },
+          { id: '4', assessmentName: 'IT305 - Assignment 1', assessmentType: 'Assignment', courseName: 'Operating Systems', courseOutcomes: ['CO1', 'CO2', 'CO3'], approvalStatus: 'Pending' },
+          { id: '5', assessmentName: 'OOP - Practical Exam', assessmentType: 'Practical', courseName: 'Object Oriented Programming with C++', courseOutcomes: ['CO1'], approvalStatus: 'Pending' }
+        ];
+        try {
+          localStorage.setItem('obslmsAssessmentCOMappings', JSON.stringify(rawAssessmentMappings));
+        } catch {}
+      }
+
+      rawAssessmentMappings.forEach((mapping: any) => {
+        const aName = mapping.assessmentName || mapping.name || mapping.assessment || mapping.title || `${mapping.assessmentType || mapping.type || 'Assessment'} - ${mapping.courseName || mapping.course || 'Course'}`;
+        const aType = mapping.assessmentType || mapping.type || 'Assessment';
+        const cName = mapping.courseName || mapping.course || mapping.courseTitle || 'Curriculum Course';
+        const coList = Array.isArray(mapping.courseOutcomes)
+          ? mapping.courseOutcomes.join(', ')
+          : (typeof mapping.courseOutcomes === 'string' && mapping.courseOutcomes.length > 0 ? mapping.courseOutcomes : 'CO1, CO2');
+
         items.push({
-          id: mapping.id,
+          id: (mapping.id || Math.random()).toString(),
           type: 'assessment-co-mapping',
-          title: `${mapping.assessmentName} → ${(mapping.courseOutcomes || []).join(', ')}`,
-          description: `Assessment: ${mapping.assessmentName} (${mapping.assessmentType}) | Course: ${mapping.courseName} | CO(s): ${(mapping.courseOutcomes || []).join(', ')}`,
-          createdBy: 'Faculty',
-          createdDate: mapping.approvalDate || new Date().toISOString().split('T')[0],
-          status: mapping.approvalStatus || 'Pending',
+          title: `${aName} → ${coList}`,
+          description: `Assessment: ${aName} (${aType}) | Course: ${cName} | CO(s): ${coList}`,
+          createdBy: mapping.createdBy || 'Faculty',
+          createdDate: mapping.approvalDate || mapping.createdDate || new Date().toISOString().split('T')[0],
+          status: mapping.approvalStatus || mapping.status || 'Pending',
           details: mapping
         });
       });
 
       // 3. CO-PO Curriculum Mappings
-      const copoMappings = JSON.parse(localStorage.getItem('obslmsCoMappings') || '[]');
+      let copoMappings: any[] = [];
+      try {
+        copoMappings = JSON.parse(localStorage.getItem('obslmsCoMappings') || '[]');
+      } catch {}
+
       copoMappings.forEach((mapping: any) => {
+        const co = mapping.co || mapping.coCode || 'CO1';
+        const po = mapping.po || mapping.poCode || 'PO1';
+        const course = mapping.course || mapping.courseName || 'Course';
+        const contrib = mapping.contribution || mapping.weight || '3';
+
         items.push({
-          id: (mapping.id || `${mapping.course}-${mapping.co}-${mapping.po}`).toString(),
+          id: (mapping.id || `${course}-${co}-${po}`).toString(),
           type: 'copo-mapping',
-          title: `Curriculum: ${mapping.co} → ${mapping.po} (${mapping.course})`,
-          description: `Course: ${mapping.course} | CO: ${mapping.co} mapped to ${mapping.po} | Contribution: ${mapping.contribution}%`,
-          createdBy: 'Faculty',
-          createdDate: new Date().toISOString().split('T')[0],
+          title: `Curriculum: ${co} → ${po} (${course})`,
+          description: `Course: ${course} | CO: ${co} mapped to ${po} | Contribution Level: ${contrib}`,
+          createdBy: mapping.createdBy || 'Faculty',
+          createdDate: mapping.createdDate || new Date().toISOString().split('T')[0],
           status: mapping.status || 'Pending',
           details: mapping
         });
