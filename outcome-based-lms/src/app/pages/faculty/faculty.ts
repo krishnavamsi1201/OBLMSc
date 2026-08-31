@@ -95,6 +95,8 @@ export class Faculty implements OnInit {
 
   // Filter
   selectedCourseFilter = '';
+  selectedSubjectFilter = '';
+  rawDashboardData: any = null;
 
   // Faculty task widgets
   examinationItems: ExaminationItem[] = [];
@@ -205,35 +207,21 @@ export class Faculty implements OnInit {
 
     this.facultyDataService.getFacultyDashboardData().subscribe({
       next: (data) => {
-        this.courses = data.courses;
-        this.activeAssessments = data.activeAssessments;
-        this.studentProgressList = data.studentProgressSummary;
-        this.filteredProgressList = [...this.studentProgressList];
-        this.atRiskStudents = data.atRiskStudents;
-        this.courseCOAttainments = data.courseCOAttainments;
-        this.gradeDistribution = data.gradeDistribution;
-        this.notifications = data.notifications;
-        this.syllabusUnits = data.syllabusUnits;
-
-        // Statistics
-        this.totalCourses = data.totalCourses;
-        this.totalStudents = data.totalStudents;
-        this.overallAttainment = data.overallAttainment;
-        this.averageAttendance = data.averageAttendance;
-        this.activeAssessmentsCount = data.activeAssessmentsCount;
-        this.atRiskCount = data.atRiskCount;
-        this.pendingNotificationsCount = this.notifications.filter(n => !n.read).length;
-
+        this.rawDashboardData = data;
+        
         // Load workbench widget data directly from storage
         this.loadWorkbenchData();
 
         // Load CQI actions
         this.cqiActionsList = this.facultyDataService.getCqiActions();
 
+        // Apply selected subject filter on the dataset
+        this.applySubjectFilter();
+
         // Update subjects list for question paper generator
         const storedQB = this.getSafeJson('obslmsQuestionBank') as QuestionBankItem[];
         const subs = storedQB.map(q => q.subject).filter(Boolean);
-        this.allSubjectsList = Array.from(new Set([...subs, ...this.courses.map(c => c.name)]));
+        this.allSubjectsList = Array.from(new Set([...subs, ...data.courses.map((c: any) => c.name)]));
 
         this.isLoading = false;
       },
@@ -243,6 +231,125 @@ export class Faculty implements OnInit {
         this.isLoading = false;
       }
     });
+  }
+
+  applySubjectFilter(): void {
+    if (!this.rawDashboardData) return;
+
+    const data = this.rawDashboardData;
+    const filter = this.selectedSubjectFilter;
+
+    if (!filter) {
+      // Show all data combined
+      this.courses = data.courses;
+      this.activeAssessments = data.activeAssessments;
+      this.studentProgressList = data.studentProgressSummary;
+      this.filteredProgressList = [...this.studentProgressList];
+      this.atRiskStudents = data.atRiskStudents;
+      this.courseCOAttainments = data.courseCOAttainments;
+      this.gradeDistribution = data.gradeDistribution;
+      this.notifications = data.notifications;
+      this.syllabusUnits = data.syllabusUnits;
+
+      this.totalCourses = data.totalCourses;
+      this.totalStudents = data.totalStudents;
+      this.overallAttainment = data.overallAttainment;
+      this.averageAttendance = data.averageAttendance;
+      this.activeAssessmentsCount = data.activeAssessmentsCount;
+      this.atRiskCount = data.atRiskCount;
+      this.pendingNotificationsCount = this.notifications.filter(n => !n.read).length;
+    } else {
+      // Filter dashboard contents strictly by selected subject
+      this.courses = data.courses.filter((c: any) => c.name === filter || c.code === filter);
+      this.activeAssessments = data.activeAssessments.filter((a: any) => a.courseName === filter);
+      this.studentProgressList = data.studentProgressSummary.filter((sp: any) => sp.courseName.toLowerCase().includes(filter.toLowerCase()));
+      this.filteredProgressList = [...this.studentProgressList];
+      this.atRiskStudents = data.atRiskStudents.filter((ar: any) => ar.courseName.toLowerCase().includes(filter.toLowerCase()));
+      this.courseCOAttainments = data.courseCOAttainments.filter((co: any) => co.courseName === filter);
+      
+      // Recalculate syllabus units dynamically
+      this.syllabusUnits = this.getDynamicSyllabusUnits(filter);
+
+      // Recalculate statistics for selected subject
+      this.totalCourses = this.courses.length;
+      
+      const uniqueStudents = new Set<string>();
+      this.studentProgressList.forEach(sp => uniqueStudents.add(sp.studentName.toLowerCase()));
+      this.totalStudents = uniqueStudents.size;
+
+      const validCOs = this.courseCOAttainments.filter(co => co.attainmentPercentage > 0);
+      this.overallAttainment = validCOs.length > 0
+        ? Math.round(validCOs.reduce((sum, co) => sum + co.attainmentPercentage, 0) / validCOs.length)
+        : 0;
+
+      const validProgress = this.studentProgressList.filter(sp => sp.attendance > 0);
+      this.averageAttendance = validProgress.length > 0
+        ? Math.round(validProgress.reduce((sum, sp) => sum + sp.attendance, 0) / validProgress.length)
+        : 0;
+
+      this.activeAssessmentsCount = this.activeAssessments.filter((a: any) => a.status === 'ongoing' || a.status === 'pending').length;
+      this.atRiskCount = this.atRiskStudents.length;
+      this.pendingNotificationsCount = data.notifications.filter((n: any) => !n.read).length;
+
+      // Recalculate Grade Distribution for selected subject
+      this.recalculateGradeDistributionForSubject(filter);
+    }
+  }
+
+  private getDynamicSyllabusUnits(courseName: string): any[] {
+    const storedLogs = this.getSafeJson('obslmsLectureLogs');
+    const isJava = courseName.toLowerCase().includes('java') || courseName.toLowerCase().includes('oop');
+    
+    const units = isJava ? [
+      { unitNumber: 1, title: 'Unit 1: Java basics, JVM, Classes & Objects', mappedCO: 'CO1', plannedLectures: 9, completedLectures: 0, status: 'Planned' },
+      { unitNumber: 2, title: 'Unit 2: Inheritance, Polymorphism & Interfaces', mappedCO: 'CO2', plannedLectures: 10, completedLectures: 0, status: 'Planned' },
+      { unitNumber: 3, title: 'Unit 3: Exception Handling & Multithreading', mappedCO: 'CO3', plannedLectures: 10, completedLectures: 0, status: 'Planned' },
+      { unitNumber: 4, title: 'Unit 4: I/O Streams, Collections & Generics', mappedCO: 'CO4', plannedLectures: 8, completedLectures: 0, status: 'Planned' },
+      { unitNumber: 5, title: 'Unit 5: GUI Programming using Swing/JavaFX', mappedCO: 'CO5', plannedLectures: 8, completedLectures: 0, status: 'Planned' },
+    ] : [
+      { unitNumber: 1, title: 'Unit 1: Foundations & Architecture', mappedCO: 'CO1', plannedLectures: 9, completedLectures: 0, status: 'Planned' },
+      { unitNumber: 2, title: 'Unit 2: Relational Model & SQL Queries', mappedCO: 'CO2', plannedLectures: 10, completedLectures: 0, status: 'Planned' },
+      { unitNumber: 3, title: 'Unit 3: Normalization & Indexing', mappedCO: 'CO3', plannedLectures: 10, completedLectures: 0, status: 'Planned' },
+      { unitNumber: 4, title: 'Unit 4: Transaction & Concurrency Control', mappedCO: 'CO4', plannedLectures: 8, completedLectures: 0, status: 'Planned' },
+      { unitNumber: 5, title: 'Unit 5: Advanced & Distributed Systems', mappedCO: 'CO5', plannedLectures: 8, completedLectures: 0, status: 'Planned' },
+    ];
+
+    return units.map(unit => {
+      const logsForUnit = storedLogs.filter((l: any) => 
+        Number(l.unitNumber) === unit.unitNumber && 
+        (l.courseName || '').toLowerCase().includes(courseName.toLowerCase())
+      );
+      const completed = logsForUnit.length;
+      let status: 'Completed' | 'In Progress' | 'Planned' = 'Planned';
+      if (completed >= unit.plannedLectures) {
+        status = 'Completed';
+      } else if (completed > 0) {
+        status = 'In Progress';
+      }
+      return { ...unit, completedLectures: completed, status };
+    });
+  }
+
+  private recalculateGradeDistributionForSubject(courseName: string): void {
+    const marks = this.getSafeJson('obslmsMarkEntries');
+    let distinction = 0;
+    let firstClass = 0;
+    let pass = 0;
+    let fail = 0;
+    let totalEvaluated = 0;
+
+    marks.forEach((m: any) => {
+      if (m.obtained !== undefined && m.maxMarks && m.assessment && m.assessment.toLowerCase().includes(courseName.toLowerCase())) {
+        const pct = (Number(m.obtained) / Number(m.maxMarks)) * 100;
+        totalEvaluated++;
+        if (pct >= 75) distinction++;
+        else if (pct >= 60) firstClass++;
+        else if (pct >= 40) pass++;
+        else fail++;
+      }
+    });
+
+    this.gradeDistribution = { distinction, firstClass, pass, fail, totalEvaluated };
   }
 
   /**

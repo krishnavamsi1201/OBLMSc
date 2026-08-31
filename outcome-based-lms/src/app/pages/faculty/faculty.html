@@ -28,6 +28,24 @@
 			</div>
 		</div>
 
+		<!-- Subject/Course Filter Selector Row -->
+		<div class="filter-row-container" style="background: #f8fafc; border: 1px solid #e2e8f0; padding: 12px 16px; border-radius: 8px; margin-bottom: 24px; display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap;">
+			<div style="display: flex; align-items: center; gap: 10px;">
+				<span style="font-size: 1.1rem;">📚</span>
+				<div>
+					<strong style="color: #1e293b; font-size: 0.95rem; display: block;">Active Subject Work Context</strong>
+					<span style="font-size: 0.8rem; color: #64748b;">Filter command center actions and KPIs by course</span>
+				</div>
+			</div>
+			<div style="display: flex; align-items: center; gap: 12px;">
+				<label for="subjectSelect" style="font-weight: 600; color: #475569; font-size: 0.9rem;">Select Subject:</label>
+				<select id="subjectSelect" [(ngModel)]="selectedSubjectFilter" (ngModelChange)="applySubjectFilter()" style="padding: 8px 16px; border-radius: 6px; border: 1px solid #cbd5e1; outline: none; min-width: 250px; font-weight: 500; color: #1e293b; background-color: #ffffff;">
+					<option value="">✨ All Mapped Subjects</option>
+					<option *ngFor="let c of (rawDashboardData?.courses || [])" [value]="c.name">{{ c.name }} ({{ c.code }})</option>
+				</select>
+			</div>
+		</div>
+
 		<!-- Loading State -->
 		<div *ngIf="isLoading" class="loading-spinner">
 			<div class="spinner-ring"></div>
@@ -97,7 +115,7 @@
 					<button class="view-all-btn" (click)="goToStudentProgress()">Full Matrix →</button>
 				</div>
 				<div class="at-risk-grid">
-					<div *ngFor="let student of atRiskStudents" class="at-risk-card" (click)="openAtRiskModal(student)">
+					<div *ngFor="let student of atRiskStudents.slice(0, 3)" class="at-risk-card" (click)="openAtRiskModal(student)">
 						<div class="at-risk-card-top">
 							<div>
 								<h4>{{ student.studentName }}</h4>
