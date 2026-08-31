@@ -2,6 +2,7 @@ package com.oblms.backend.controller;
 
 import com.oblms.backend.model.Course;
 import com.oblms.backend.repository.CourseRepository;
+import com.oblms.backend.repository.UserRepository;
 import jakarta.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -20,6 +21,9 @@ public class CourseController {
 
     @Autowired
     private CourseRepository courseRepository;
+
+    @Autowired
+    private UserRepository userRepository;
 
     @PostConstruct
     public void seedCourses() {
@@ -58,7 +62,27 @@ public class CourseController {
     @GetMapping
     public List<Course> getAllCourses(@RequestParam(required = false) String faculty) {
         if (faculty != null && !faculty.trim().isEmpty()) {
-            return courseRepository.findByFacultyContainingIgnoreCase(faculty.trim());
+            String q = faculty.trim();
+            Optional<com.oblms.backend.model.User> uOpt = userRepository.findById(q);
+            if (uOpt.isEmpty()) {
+                uOpt = userRepository.findByEmailIgnoreCase(q);
+            }
+            if (uOpt.isEmpty()) {
+                uOpt = userRepository.findAll().stream()
+                    .filter(u -> u.getName().equalsIgnoreCase(q))
+                    .findFirst();
+            }
+
+            if (uOpt.isPresent() && uOpt.get().getEnrolledCourses() != null && !uOpt.get().getEnrolledCourses().isEmpty()) {
+                java.util.List<String> codes = java.util.Arrays.stream(uOpt.get().getEnrolledCourses().split(","))
+                    .map(String::trim)
+                    .map(String::toLowerCase)
+                    .toList();
+                return courseRepository.findAll().stream()
+                    .filter(c -> codes.contains(c.getCode().toLowerCase()) || codes.contains(c.getTitle().toLowerCase()))
+                    .toList();
+            }
+            return courseRepository.findByFacultyContainingIgnoreCase(q);
         }
         return courseRepository.findAll();
     }

@@ -102,9 +102,8 @@ public class DashboardStatsController {
         List<Course> allCourses = courseRepository.findAll();
         List<Course> allottedCourses = new ArrayList<>();
         for (Course c : allCourses) {
-            boolean nameMatch = c.getFaculty() != null && c.getFaculty().toLowerCase().contains(facultyName.toLowerCase());
             boolean titleMatch = allottedCourseNames.contains(c.getTitle().toLowerCase()) || allottedCourseNames.contains(c.getCode().toLowerCase());
-            if (nameMatch || titleMatch) {
+            if (titleMatch) {
                 allottedCourses.add(c);
             }
         }
