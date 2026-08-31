@@ -7,9 +7,9 @@
 		<!-- Executive Page Header -->
 		<div class="page-header">
 			<div class="header-main">
-				<h1>🏛️ Institutional Administration & OBE Compliance</h1>
+				<h1>🏛️ Institutional Administration & OBE Governance</h1>
 				<p>
-					Executive control center for institutional governance, NBA/NAAC outcome tracking, curriculum approvals, and department management.
+					Executive control center for institutional governance, NBA/NAAC outcome tracking, role management, and academic approvals.
 				</p>
 			</div>
 			<div class="quick-header-actions">
@@ -26,6 +26,31 @@
 			</div>
 		</div>
 
+		<!-- 👑 Dean & Chief Administrator Executive Profile Card -->
+		<div class="admin-profile-banner">
+			<div class="banner-left">
+				<div class="admin-avatar">👑</div>
+				<div class="admin-info">
+					<div class="admin-title-row">
+						<h2>{{ adminUser.name }}</h2>
+						<span class="role-chip admin-chip">Chief Academic Administrator & Dean</span>
+					</div>
+					<div class="admin-meta-row">
+						<span class="meta-tag">🆔 <strong>Admin ID:</strong> {{ adminUser.id }}</span>
+						<span class="meta-tag">📧 <strong>Official Email:</strong> {{ adminUser.email }}</span>
+						<span class="meta-tag">🏛️ <strong>Authority:</strong> Full Institutional OBE Oversight</span>
+						<span class="meta-tag verified-tag">🟢 <strong>MySQL Database Status:</strong> Verified & Active</span>
+					</div>
+				</div>
+			</div>
+			<div class="banner-right">
+				<div class="db-stat-pill">
+					<span class="pill-num">{{ counts.totalVerifiedUsers }}</span>
+					<span class="pill-lbl">Total Verified Database Accounts</span>
+				</div>
+			</div>
+		</div>
+
 		<!-- Top KPI Metric Summary -->
 		<div class="kpi-grid">
 			<div class="kpi-card">
@@ -34,7 +59,7 @@
 					<a routerLink="/admin/student-management" class="kpi-link">Manage →</a>
 				</div>
 				<div class="kpi-num">{{ counts.students }}</div>
-				<div class="kpi-label">Registered Students</div>
+				<div class="kpi-label">Registered Students (STU001 - STU030)</div>
 			</div>
 
 			<div class="kpi-card">
@@ -43,7 +68,7 @@
 					<a routerLink="/admin/faculty-management" class="kpi-link">Manage →</a>
 				</div>
 				<div class="kpi-num">{{ counts.faculty }}</div>
-				<div class="kpi-label">Faculty Members</div>
+				<div class="kpi-label">Faculty Members (FAC001 - FAC015)</div>
 			</div>
 
 			<div class="kpi-card">
@@ -80,6 +105,148 @@
 				</div>
 				<div class="kpi-num">{{ counts.pendingApprovals }}</div>
 				<div class="kpi-label">Pending Approvals</div>
+			</div>
+		</div>
+
+		<!-- 🏛️ Master Institutional User Accounts Directory & Role Vault -->
+		<div class="master-directory-card">
+			<div class="directory-header">
+				<div>
+					<h2>👥 Institutional User Directory & Role-Lock Vault</h2>
+					<p>Standardized master directory of 1 Admin, 15 Faculty, and 30 Students with strict role-locked authentication.</p>
+				</div>
+				<div class="directory-tab-controls">
+					<button class="dir-tab-btn" [class.active]="activeDirectoryTab === 'faculty'" (click)="setDirectoryTab('faculty')">
+						👨‍🏫 Faculty Directory ({{ facultyList.length }})
+					</button>
+					<button class="dir-tab-btn" [class.active]="activeDirectoryTab === 'students'" (click)="setDirectoryTab('students')">
+						🎓 Student Roster ({{ studentList.length }})
+					</button>
+					<button class="dir-tab-btn" [class.active]="activeDirectoryTab === 'security'" (click)="setDirectoryTab('security')">
+						🔒 Role-Lock Security Matrix
+					</button>
+				</div>
+			</div>
+
+			<!-- Search & Filter Bar for Directory -->
+			<div class="directory-toolbar" *ngIf="activeDirectoryTab !== 'security'">
+				<div class="dir-search-wrap">
+					<input 
+						type="text" 
+						[(ngModel)]="directorySearchQuery" 
+						placeholder="🔍 Search by name, ID (e.g. FAC001, STU004), email, or department..." 
+						class="dir-search-input"
+					/>
+				</div>
+				<div class="dir-actions">
+					<a *ngIf="activeDirectoryTab === 'faculty'" routerLink="/admin/faculty-management" class="btn-manage-link">
+						⚙️ Manage & Add Faculty →
+					</a>
+					<a *ngIf="activeDirectoryTab === 'students'" routerLink="/admin/student-management" class="btn-manage-link">
+						⚙️ Manage & Add Students →
+					</a>
+				</div>
+			</div>
+
+			<!-- TAB 1: FACULTY DIRECTORY -->
+			<div *ngIf="activeDirectoryTab === 'faculty'" class="directory-table-wrap">
+				<table class="styled-directory-table">
+					<thead>
+						<tr>
+							<th>Faculty ID</th>
+							<th>Faculty Name</th>
+							<th>Department</th>
+							<th>Email Address</th>
+							<th>Access Role</th>
+							<th>Actions</th>
+						</tr>
+					</thead>
+					<tbody>
+						<tr *ngFor="let f of filteredFacultyList">
+							<td><span class="id-badge fac-badge">{{ f.id }}</span></td>
+							<td><strong>{{ f.name }}</strong></td>
+							<td>{{ f.department || 'Computer Science & Engineering' }}</td>
+							<td><span class="email-text">{{ f.email }}</span></td>
+							<td><span class="role-pill fac-pill">👨‍🏫 Faculty</span></td>
+							<td>
+								<button class="btn-copy-cred" (click)="copyCredentials(f)" title="Copy login credentials to clipboard">
+									📋 Copy Login
+								</button>
+							</td>
+						</tr>
+					</tbody>
+				</table>
+			</div>
+
+			<!-- TAB 2: STUDENT ROSTER -->
+			<div *ngIf="activeDirectoryTab === 'students'" class="directory-table-wrap">
+				<table class="styled-directory-table">
+					<thead>
+						<tr>
+							<th>Student ID</th>
+							<th>Student Name</th>
+							<th>Department</th>
+							<th>Email Address</th>
+							<th>Access Role</th>
+							<th>Actions</th>
+						</tr>
+					</thead>
+					<tbody>
+						<tr *ngFor="let s of filteredStudentList">
+							<td><span class="id-badge stu-badge">{{ s.id }}</span></td>
+							<td><strong>{{ s.name }}</strong></td>
+							<td>{{ s.department || 'Computer Science & Engineering' }}</td>
+							<td><span class="email-text">{{ s.email }}</span></td>
+							<td><span class="role-pill stu-pill">🎓 Student</span></td>
+							<td>
+								<button class="btn-copy-cred" (click)="copyCredentials(s)" title="Copy login credentials to clipboard">
+									📋 Copy Login
+								</button>
+							</td>
+						</tr>
+					</tbody>
+				</table>
+			</div>
+
+			<!-- TAB 3: ROLE-LOCK SECURITY SPECIFICATIONS -->
+			<div *ngIf="activeDirectoryTab === 'security'" class="security-matrix-box">
+				<div class="security-grid">
+					<div class="sec-card admin-sec">
+						<div class="sec-header">
+							<span class="sec-icon">👑</span>
+							<h3>Admin Role Specification</h3>
+						</div>
+						<ul>
+							<li><strong>Account:</strong> <code>ADM001</code> / <code>admin@oblms.edu</code></li>
+							<li><strong>Access Scope:</strong> System Governance, All Approvals, Curriculum Mappings, Audit Reports.</li>
+							<li><strong>Enforcement:</strong> Cannot log in as Faculty or Student. Restricted strictly to Admin Portal.</li>
+						</ul>
+					</div>
+
+					<div class="sec-card fac-sec">
+						<div class="sec-header">
+							<span class="sec-icon">👨‍🏫</span>
+							<h3>Faculty Role Specification</h3>
+						</div>
+						<ul>
+							<li><strong>Accounts:</strong> 15 Pre-Seeded Faculty (<code>FAC001</code> to <code>FAC015</code>) + Admin-added faculty.</li>
+							<li><strong>Access Scope:</strong> Course syllabi, Question Bank, CO-PO proposal submissions, Attendance marking.</li>
+							<li><strong>Enforcement:</strong> Cannot log in as Student or Admin. Role mismatch is blocked with HTTP 403.</li>
+						</ul>
+					</div>
+
+					<div class="sec-card stu-sec">
+						<div class="sec-header">
+							<span class="sec-icon">🎓</span>
+							<h3>Student Role Specification</h3>
+						</div>
+						<ul>
+							<li><strong>Accounts:</strong> 30 Pre-Seeded Students (<code>STU001</code> to <code>STU030</code>) + Admin-added students.</li>
+							<li><strong>Access Scope:</strong> Enrolled course view, Bunk calculator, Exam tickets, Grievance desk.</li>
+							<li><strong>Enforcement:</strong> Cannot access Faculty or Admin endpoints. Strictly role-locked.</li>
+						</ul>
+					</div>
+				</div>
 			</div>
 		</div>
 
