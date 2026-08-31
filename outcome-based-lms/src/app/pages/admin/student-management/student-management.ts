@@ -38,13 +38,10 @@ export class StudentManagement implements OnInit {
   private http = inject(HttpClient);
   private cdr = inject(ChangeDetectorRef);
 
-  activeTab: 'students' | 'faculty' | 'requests' = 'students';
+  activeTab: 'students' | 'requests' = 'students';
 
   studentList: Student[] = [];
   filteredStudentList: Student[] = [];
-
-  facultyList: FacultyUser[] = [];
-  filteredFacultyList: FacultyUser[] = [];
 
   courseRequests: any[] = [];
   
@@ -61,18 +58,6 @@ export class StudentManagement implements OnInit {
     password: 'password',
     department: 'Computer Science & Engineering',
     semester: 'Semester 3'
-  };
-
-  // Faculty Form data
-  showFacultyForm = false;
-  isFacultyEditMode = false;
-  facultyFormData = {
-    id: '',
-    name: '',
-    email: '',
-    password: 'password',
-    department: 'Computer Science & Engineering',
-    designation: 'Assistant Professor'
   };
 
   // Filter and search
@@ -110,23 +95,11 @@ export class StudentManagement implements OnInit {
             semester: 'Semester 3'
           }));
 
-        this.facultyList = users
-          .filter(u => u.role?.toUpperCase() === 'FACULTY')
-          .map(u => ({
-            id: u.id,
-            name: u.name,
-            email: u.email,
-            password: u.password || 'password',
-            department: u.department || 'Computer Science & Engineering',
-            designation: 'Professor / Instructor'
-          }));
-
         this.filterUsers();
         this.cdr.detectChanges();
       },
       error: () => {
         this.studentList = [];
-        this.facultyList = [];
         this.filterUsers();
       }
     });
@@ -143,14 +116,6 @@ export class StudentManagement implements OnInit {
       const matchSem = !this.filterSemester || s.semester === this.filterSemester;
       return matchSearch && matchDept && matchSem;
     });
-
-    this.filteredFacultyList = this.facultyList.filter(f => {
-      const matchSearch = !q || f.name.toLowerCase().includes(q) ||
-                         f.email.toLowerCase().includes(q) ||
-                         f.id.toLowerCase().includes(q);
-      const matchDept = !this.filterDepartment || f.department === this.filterDepartment;
-      return matchSearch && matchDept;
-    });
   }
 
   onSearchChange(): void {
@@ -161,7 +126,7 @@ export class StudentManagement implements OnInit {
     this.filterUsers();
   }
 
-  switchTab(tab: 'students' | 'faculty' | 'requests'): void {
+  switchTab(tab: 'students' | 'requests'): void {
     this.activeTab = tab;
     this.filterUsers();
   }
@@ -252,75 +217,7 @@ export class StudentManagement implements OnInit {
     });
   }
 
-  openAddFacultyForm(): void {
-    this.showFacultyForm = true;
-    this.isFacultyEditMode = false;
-    this.facultyFormData = {
-      id: `FAC${String(this.facultyList.length + 1).padStart(3, '0')}`,
-      name: '',
-      email: '',
-      password: 'password',
-      department: 'Computer Science & Engineering',
-      designation: 'Assistant Professor'
-    };
-  }
 
-  openEditFacultyForm(fac: FacultyUser): void {
-    this.showFacultyForm = true;
-    this.isFacultyEditMode = true;
-    this.facultyFormData = {
-      id: fac.id,
-      name: fac.name,
-      email: fac.email,
-      password: fac.password || 'password',
-      department: fac.department || 'Computer Science & Engineering',
-      designation: fac.designation || 'Assistant Professor'
-    };
-  }
-
-  closeFacultyForm(): void {
-    this.showFacultyForm = false;
-    this.isFacultyEditMode = false;
-  }
-
-  saveFacultyUser(): void {
-    if (!this.facultyFormData.id || !this.facultyFormData.name || !this.facultyFormData.email) {
-      this.toast.warning('Please fill ID, Name, and Email for faculty.');
-      return;
-    }
-
-    const payload = {
-      id: this.facultyFormData.id.trim(),
-      name: this.facultyFormData.name.trim(),
-      email: this.facultyFormData.email.trim(),
-      password: this.facultyFormData.password.trim() || 'password',
-      role: 'FACULTY',
-      department: this.facultyFormData.department
-    };
-
-    this.http.post('http://localhost:8080/api/users', payload).subscribe({
-      next: () => {
-        this.loadUsers();
-        this.closeFacultyForm();
-        this.toast.success(`Faculty member "${this.facultyFormData.name}" saved with login credentials! 🎉`);
-      },
-      error: () => {
-        this.toast.error('Failed to save faculty to database.');
-      }
-    });
-  }
-
-  deleteFaculty(id: string): void {
-    this.http.delete('http://localhost:8080/api/users/' + id).subscribe({
-      next: () => {
-        this.loadUsers();
-        this.toast.info('Faculty removed.');
-      },
-      error: () => {
-        this.toast.error('Failed to delete faculty.');
-      }
-    });
-  }
 
   loadCourseRequests(): void {
     try {
@@ -359,9 +256,9 @@ export class StudentManagement implements OnInit {
   }
 
   downloadUserListCsv(): void {
-    const list = this.activeTab === 'students' ? this.studentList : this.facultyList;
+    const list = this.studentList;
     if (list.length === 0) {
-      this.toast.warning('No records to export.');
+      this.toast.warning('No student records to export.');
       return;
     }
 
@@ -379,11 +276,11 @@ export class StudentManagement implements OnInit {
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.setAttribute('href', url);
-    link.setAttribute('download', `${this.activeTab === 'students' ? 'Student_Roster' : 'Faculty_Directory'}_${new Date().toISOString().split('T')[0]}.csv`);
+    link.setAttribute('download', `Student_Roster_${new Date().toISOString().split('T')[0]}.csv`);
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
-    this.toast.success('Roster CSV downloaded successfully.');
+    this.toast.success('Student roster CSV downloaded successfully.');
   }
 
   private validateStudentForm(): boolean {

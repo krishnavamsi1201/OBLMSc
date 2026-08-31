@@ -18,3 +18,42 @@ button { padding: 10px 18px; border: none; border-radius: 8px; background: #1976
 button.secondary { background: #616161; }
 button.danger { background: #d32f2f; }
 button[disabled] { opacity: 0.55; cursor: not-allowed; }
+
+/* Custom Action Buttons Group */
+.action-btn-group {
+  display: flex;
+  gap: 6px;
+  flex-wrap: nowrap;
+}
+
+.action-btn {
+  padding: 6px 10px;
+  font-size: 12px;
+  font-weight: 600;
+  border-radius: 6px;
+  border: none;
+  color: #fff;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+
+.action-btn:hover {
+  opacity: 0.9;
+}
+
+.action-btn.edit {
+  background: #1976d2;
+}
+
+.action-btn.approve {
+  background: #2e7d32;
+}
+
+.action-btn.delete {
+  background: #d32f2f;
+}
+
+.action-btn[disabled] {
+  opacity: 0.5;
+  cursor: not-allowed;
+}

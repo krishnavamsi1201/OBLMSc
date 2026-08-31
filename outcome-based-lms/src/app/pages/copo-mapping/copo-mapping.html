@@ -152,46 +152,53 @@
             </form>
         </div>
 
-        <div class="table-card">
+        <div *ngFor="let group of groupedMappings" class="table-card" style="margin-bottom: 24px; padding: 16px; border: 1px solid #e2e8f0; border-radius: 8px; background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
+            <h2 style="margin: 0; color: #1e3a8a; border-bottom: 2px solid #3b82f6; padding-bottom: 8px; font-size: 1.1rem; display: flex; justify-content: space-between; align-items: center; cursor: pointer;" (click)="toggleGroup(group.courseName)">
+                <span style="display: flex; align-items: center; gap: 8px;">📖 {{ group.courseName }} CO-PO Mappings</span>
+                <span style="font-size: 0.85rem; color: #64748b; font-weight: 600;">
+                    {{ collapsedGroups[group.courseName] ? '▼ Show' : '▲ Hide' }} ({{ group.mappings.length }} Mappings)
+                </span>
+            </h2>
+
+            <div *ngIf="!collapsedGroups[group.courseName]" style="margin-top: 16px; overflow-x: auto;">
+                <table style="width: 100%; border-collapse: collapse;">
+                    <thead>
+                        <tr>
+                            <th>CO</th>
+                            <th>CO Description</th>
+                            <th>Mapped PO</th>
+                            <th>PO Description</th>
+                            <th>Contribution</th>
+                            <th>Mapping Level</th>
+                            <th>Status</th>
+                            <th *ngIf="role === 'admin' || role === 'faculty'">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr *ngFor="let mapping of group.mappings">
+                            <td><span class="obe-badge obe-badge-co">{{ mapping.co }}</span></td>
+                            <td>{{ getCourseOutcomeDescription(mapping.course, mapping.co) || '—' }}</td>
+                            <td><span class="obe-badge obe-badge-po">{{ mapping.po }}</span></td>
+                            <td>{{ getProgramOutcomeDescription(mapping.po) || '—' }}</td>
+                            <td>{{ mapping.contribution }}%</td>
+                            <td>{{ getMappingLevelLabel(mapping.mappingLevel) }}</td>
+                            <td><span class="obe-badge" [class.obe-badge-co]="mapping.status === 'Approved'">{{ mapping.status }}</span></td>
+                            <td *ngIf="role === 'admin' || role === 'faculty'">
+                                <div class="action-btn-group">
+                                    <button type="button" class="action-btn edit" (click)="editMapping(mappings.indexOf(mapping))">✏️ Edit</button>
+                                    <button type="button" class="action-btn approve" (click)="approveMapping(mappings.indexOf(mapping))" [disabled]="mapping.status === 'Approved'">✔️ Approve</button>
+                                    <button type="button" class="action-btn danger delete" (click)="deleteMapping(mappings.indexOf(mapping))">🗑️ Delete</button>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div *ngIf="groupedMappings.length === 0" class="table-card">
             <h2>Mapped COs to POs</h2>
-            <p style="color: var(--text-secondary); margin-bottom: 16px;">
-                {{ role === 'student' ? 'Overview of curriculum outcome alignment and competency contribution.' : 'Admins and faculty can manage and approve pending mappings here.' }}
-            </p>
-            <table>
-                <thead>
-                    <tr>
-                        <th>Course</th>
-                        <th>CO</th>
-                        <th>CO Description</th>
-                        <th>Mapped PO</th>
-                        <th>PO Description</th>
-                        <th>Contribution %</th>
-                        <th>Mapping Level</th>
-                        <th>Status</th>
-                        <th *ngIf="role === 'admin' || role === 'faculty'">Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr *ngIf="mappings.length === 0">
-                        <td [attr.colspan]="(role === 'admin' || role === 'faculty') ? 9 : 8">No CO-PO mappings created yet.</td>
-                    </tr>
-                    <tr *ngFor="let mapping of mappings; index as i">
-                        <td><strong>{{ mapping.course }}</strong></td>
-                        <td><span class="obe-badge obe-badge-co">{{ mapping.co }}</span></td>
-                        <td>{{ getCourseOutcomeDescription(mapping.course, mapping.co) || '—' }}</td>
-                        <td><span class="obe-badge obe-badge-po">{{ mapping.po }}</span></td>
-                        <td>{{ getProgramOutcomeDescription(mapping.po) || '—' }}</td>
-                        <td>{{ mapping.contribution }}%</td>
-                        <td>{{ getMappingLevelLabel(mapping.mappingLevel) }}</td>
-                        <td><span class="obe-badge" [class.obe-badge-co]="mapping.status === 'Approved'">{{ mapping.status }}</span></td>
-                        <td *ngIf="role === 'admin' || role === 'faculty'">
-                            <button type="button" (click)="editMapping(i)">Edit</button>
-                            <button type="button" (click)="approveMapping(i)" [disabled]="mapping.status === 'Approved'" style="margin-left: 8px;">Approve</button>
-                            <button type="button" class="danger" (click)="deleteMapping(i)" style="margin-left: 8px;">Delete</button>
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
+            <p style="color: var(--text-secondary); text-align: center; padding: 20px;">No CO-PO mappings created yet.</p>
         </div>
 
         <div class="table-card">

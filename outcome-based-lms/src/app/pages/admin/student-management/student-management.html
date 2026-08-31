@@ -17,25 +17,16 @@
         <button class="btn btn-primary" *ngIf="activeTab === 'students'" (click)="openAddForm()">
           + Add Student
         </button>
-        <button class="btn btn-faculty" *ngIf="activeTab === 'faculty'" (click)="openAddFacultyForm()">
-          + Add Faculty
-        </button>
       </div>
     </div>
 
-    <!-- Active Tab Switcher (Students vs Faculty vs Requests) -->
+    <!-- Active Tab Switcher (Students vs Requests) -->
     <div class="tab-nav-bar">
       <button 
         class="tab-btn" 
         [class.active]="activeTab === 'students'"
         (click)="switchTab('students')">
         🎓 Student Accounts ({{ studentList.length }})
-      </button>
-      <button 
-        class="tab-btn" 
-        [class.active]="activeTab === 'faculty'"
-        (click)="switchTab('faculty')">
-        👨‍🏫 Faculty Accounts ({{ facultyList.length }})
       </button>
       <button 
         class="tab-btn" 
@@ -148,74 +139,7 @@
       </div>
     </div>
 
-    <!-- Add Faculty Modal Form -->
-    <div class="modal-overlay" *ngIf="showFacultyForm">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h2>{{ isFacultyEditMode ? 'Edit Faculty Profile' : 'Add New Faculty Account' }}</h2>
-          <button class="close-btn" (click)="closeFacultyForm()">✕</button>
-        </div>
 
-        <form (ngSubmit)="saveFacultyUser()" class="student-form">
-          <div class="form-group">
-            <label>Faculty ID *</label>
-            <input 
-              type="text" 
-              [(ngModel)]="facultyFormData.id" 
-              name="facultyId"
-              [readonly]="isFacultyEditMode"
-              placeholder="e.g. FAC016"
-              required
-            />
-          </div>
-
-          <div class="form-group">
-            <label>Faculty Name *</label>
-            <input 
-              type="text" 
-              [(ngModel)]="facultyFormData.name" 
-              name="facultyName"
-              placeholder="e.g. Dr. Anand Mohan"
-              required
-            />
-          </div>
-
-          <div class="form-group">
-            <label>Email Address *</label>
-            <input 
-              type="email" 
-              [(ngModel)]="facultyFormData.email" 
-              name="facultyEmail"
-              placeholder="e.g. anand.mohan@oblms.edu" 
-              required 
-            />
-          </div>
-
-          <div class="form-group">
-            <label>Login Password *</label>
-            <input 
-              type="text" 
-              [(ngModel)]="facultyFormData.password" 
-              name="facultyPassword"
-              placeholder="Enter faculty password (defaults to 'password')" 
-              required 
-            />
-          </div>
-
-          <div class="form-group">
-            <label>Department *</label>
-            <select [(ngModel)]="facultyFormData.department" name="facultyDept" required>
-              <option *ngFor="let dept of departments" [value]="dept">{{ dept }}</option>
-            </select>
-          </div>
-
-          <div class="form-actions">
-            <button type="button" class="btn btn-secondary" (click)="closeFacultyForm()">Cancel</button>
-            <button type="submit" class="btn btn-faculty">{{ isFacultyEditMode ? 'Update Faculty' : 'Add Faculty Member' }}</button>
-          </div>
-        </form>
-      </div>
-    </div>
 
     <!-- ==================== TAB 1: STUDENT TABLE ==================== -->
     <div class="table-section" *ngIf="activeTab === 'students'">
@@ -269,55 +193,7 @@
       </div>
     </div>
 
-    <!-- ==================== TAB 2: FACULTY TABLE ==================== -->
-    <div class="table-section" *ngIf="activeTab === 'faculty'">
-      <div class="table-header">
-        <h3>👨‍🏫 Faculty Members & Login Credentials ({{ filteredFacultyList.length }})</h3>
-      </div>
 
-      <div *ngIf="filteredFacultyList.length === 0" class="empty-state">
-        <p>📭 No faculty members found matching search filters.</p>
-      </div>
-
-      <div *ngIf="filteredFacultyList.length > 0" class="table-wrapper">
-        <table class="data-table">
-          <thead>
-            <tr>
-              <th style="width: 110px;">Faculty ID</th>
-              <th>Faculty Name</th>
-              <th>Department</th>
-              <th>Email Address</th>
-              <th style="width: 140px;">🔑 Password</th>
-              <th style="width: 180px; text-align: center;">Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr *ngFor="let fac of filteredFacultyList">
-              <td><span class="id-pill fac-id">{{ fac.id }}</span></td>
-              <td class="student-name"><strong>{{ fac.name }}</strong></td>
-              <td><span class="badge badge-dept">{{ fac.department }}</span></td>
-              <td class="student-email">{{ fac.email }}</td>
-              <td>
-                <span class="cred-pass-badge">{{ fac.password || 'password' }}</span>
-              </td>
-              <td class="actions-cell">
-                <div class="actions-btn-wrap">
-                  <button type="button" class="btn-action-pill copy" (click)="copyCredentials(fac.id, fac.email, 'faculty', fac.password)" title="Copy Credentials">
-                    📋 Copy
-                  </button>
-                  <button type="button" class="btn-action-pill edit" (click)="openEditFacultyForm(fac)" title="Edit Faculty">
-                    ✎ Edit
-                  </button>
-                  <button type="button" class="btn-action-pill delete" (click)="deleteFaculty(fac.id)" title="Delete Faculty">
-                    🗑️ Delete
-                  </button>
-                </div>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
 
     <!-- ==================== TAB 3: COURSE ENROLLMENT REQUESTS ==================== -->
     <div class="table-section" *ngIf="activeTab === 'requests'">

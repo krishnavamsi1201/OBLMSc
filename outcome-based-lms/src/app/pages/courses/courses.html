@@ -14,7 +14,7 @@
         </div>
 
         <div class="course-actions" *ngIf="role === 'admin'">
-            <button mat-raised-button color="primary" (click)="openCourseForm()">Create Course</button>
+            <button class="btn btn-primary" (click)="openCourseForm()">+ Create Course</button>
         </div>
 
         <div class="course-form-card" *ngIf="showCourseForm && role === 'admin'">
@@ -40,9 +40,9 @@
                     Semester
                     <input type="text" [(ngModel)]="currentCourse.semester" name="semester" required />
                 </label>
-                <div class="form-actions">
-                    <button mat-raised-button color="primary" type="submit">{{ editingIndex >= 0 ? 'Save Changes' : 'Save Course' }}</button>
-                    <button mat-button type="button" (click)="resetCourseForm()">Cancel</button>
+                <div class="form-actions" style="margin-top: 14px; display: flex; gap: 10px;">
+                    <button class="btn btn-primary" type="submit">{{ editingIndex >= 0 ? 'Save Changes' : 'Save Course' }}</button>
+                    <button class="btn btn-secondary" type="button" (click)="resetCourseForm()">Cancel</button>
                 </div>
             </form>
         </div>
@@ -109,25 +109,25 @@
                         <td class="actions-cell">
                             <!-- Admin Actions -->
                             <ng-container *ngIf="role === 'admin'">
-                                <button mat-button color="primary" (click)="editCourse(course, i)">Edit</button>
-                                <button mat-button color="warn" (click)="deleteCourse(course)">Delete</button>
-                                <button mat-button (click)="assignFaculty(course)">Assign Faculty</button>
+                                <button type="button" class="btn btn-secondary" (click)="editCourse(course, i)">✏️ Edit</button>
+                                <button type="button" class="btn btn-danger" (click)="deleteCourse(course)">🗑️ Delete</button>
+                                <button type="button" class="btn btn-primary" (click)="assignFaculty(course)">👤 Assign Faculty</button>
                             </ng-container>
 
                             <!-- Faculty Actions -->
                             <ng-container *ngIf="role === 'faculty'">
-                                <button mat-button color="primary" (click)="trackSyllabus(course)">View Syllabus (COs)</button>
+                                <button type="button" class="btn btn-primary" (click)="trackSyllabus(course)">View Syllabus (COs)</button>
                             </ng-container>
 
                             <!-- Student Actions -->
                             <ng-container *ngIf="role === 'student'">
                                 <span *ngIf="isEnrolled(course.code)" style="display: inline-block; padding: 4px 8px; background: #e6f4ea; color: #137333; font-weight: bold; border-radius: 4px; margin-right: 8px; font-size: 0.85rem;">✓ Enrolled</span>
-                                <button *ngIf="isEnrolled(course.code)" mat-button color="primary" (click)="trackSyllabus(course)">Track Syllabus</button>
+                                <button *ngIf="isEnrolled(course.code)" type="button" class="btn btn-primary" (click)="trackSyllabus(course)">Track Syllabus</button>
                                 
                                 <span *ngIf="isRequestPending(course.code)" style="display: inline-block; padding: 4px 8px; background: #f1f3f4; color: #5f6368; font-weight: bold; border-radius: 4px; font-size: 0.85rem;">⏳ Pending Approval</span>
                                 <span *ngIf="isRequestRejected(course.code)" style="display: inline-block; padding: 4px 8px; background: #fce8e6; color: #c5221f; font-weight: bold; border-radius: 4px; font-size: 0.85rem;">✕ Rejected</span>
                                 
-                                <button *ngIf="!isEnrolled(course.code) && !isRequestPending(course.code)" mat-button (click)="requestEnrollment(course)" style="background: #1565c0; color: #fff; border-radius: 4px; border: none; padding: 4px 10px; cursor: pointer; font-size: 0.85rem; font-weight: bold;">
+                                <button *ngIf="!isEnrolled(course.code) && !isRequestPending(course.code)" type="button" class="btn btn-primary" (click)="requestEnrollment(course)">
                                     Request Enrollment
                                 </button>
                             </ng-container>
@@ -150,8 +150,8 @@
                     </select>
                 </div>
                 <div class="modal-actions" style="margin-top: 16px; display: flex; gap: 8px; justify-content: flex-end;">
-                    <button mat-raised-button color="primary" (click)="saveFacultyAssignment()">Save</button>
-                    <button mat-button (click)="closeAssignModal()">Cancel</button>
+                    <button class="btn btn-primary" (click)="saveFacultyAssignment()">Save</button>
+                    <button class="btn btn-secondary" (click)="closeAssignModal()">Cancel</button>
                 </div>
             </div>
         </div>

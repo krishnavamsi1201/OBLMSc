@@ -44,7 +44,8 @@ public class CSVSeederService {
                 || programRepository.count() == 0
                 || subjectRepository.count() == 0
                 || coRepository.count() == 0 
-                || copoMappingRepository.count() == 0;
+                || copoMappingRepository.count() == 0
+                || subjectRepository.count() > 100; // Force re-seed if old large dataset is present
 
         if (!needsSeeding) {
             System.out.println("[INFO] OBLMS Dataset already fully seeded in MySQL. (Streams: " 
@@ -68,6 +69,13 @@ public class CSVSeederService {
         }
 
         try {
+            if (subjectRepository.count() > 100) {
+                System.out.println("[INFO] Old large dataset detected. Wiping tables to seed 50 sample subjects...");
+                copoMappingRepository.deleteAllInBatch();
+                coRepository.deleteAllInBatch();
+                courseRepository.deleteAllInBatch();
+                subjectRepository.deleteAllInBatch();
+            }
             System.out.println("[INFO] Loading complete OBLMS dataset from: " + DATASET_DIR);
 
             // 1. Import Streams (1.Stream.csv)
@@ -135,7 +143,7 @@ public class CSVSeederService {
                 List<Course> coursesToSave = new ArrayList<>();
                 Set<String> uniqueCourseCodes = new HashSet<>();
 
-                while ((line = br.readLine()) != null) {
+                while ((line = br.readLine()) != null && subjectCount < 50) {
                     List<String> values = parseCSVLine(line);
                     if (values.size() >= 4) {
                         try {
@@ -231,7 +239,7 @@ public class CSVSeederService {
                 String line = br.readLine(); // Header: comid,semsubId,outcome,shortCode,nba_acid
                 List<CourseOutcome> cos = new ArrayList<>();
 
-                while ((line = br.readLine()) != null && coCount < 1000) {
+                while ((line = br.readLine()) != null) {
                     List<String> values = parseCSVLine(line);
                     if (values.size() >= 4) {
                         try {
@@ -239,9 +247,14 @@ public class CSVSeederService {
                             Long semSubId = Long.parseLong(values.get(1));
                             String outcomeDesc = values.get(2);
                             String shortCode = values.get(3);
+                            
+                            if (!subIdToCodeMap.containsKey(String.valueOf(semSubId))) {
+                                continue;
+                            }
+                            
                             if (outcomeDesc.length() > 2000) outcomeDesc = outcomeDesc.substring(0, 1995) + "...";
 
-                            String courseCode = subIdToCodeMap.getOrDefault(String.valueOf(semSubId), "INMCA202");
+                            String courseCode = subIdToCodeMap.get(String.valueOf(semSubId));
                             String coCode = shortCode.startsWith("CO") ? shortCode : ("CO" + shortCode);
 
                             CourseOutcome co = new CourseOutcome(comid, semSubId, courseCode, coCode, outcomeDesc);

@@ -62,6 +62,8 @@ export class CopoMapping implements OnInit {
 
   showMatrix = true;
   mappings: CoMapping[] = [];
+  groupedMappings: Array<{ courseName: string; mappings: CoMapping[] }> = [];
+  collapsedGroups: { [courseName: string]: boolean } = {};
 
   currentMapping: CoMapping = { id: 0, course: '', co: '', po: '', contribution: 0, mappingLevel: 0, status: 'Pending' };
   editIndex = -1;
@@ -136,6 +138,7 @@ export class CopoMapping implements OnInit {
           }
         }
         this.mappings = list;
+        this.groupMappings();
         this.cdr.detectChanges();
       }
     });
@@ -410,6 +413,25 @@ export class CopoMapping implements OnInit {
 
   printMatrix(): void {
     window.print();
+  }
+
+  groupMappings() {
+    const groups = new Map<string, CoMapping[]>();
+    this.mappings.forEach(m => {
+      const cName = m.course || 'General';
+      if (!groups.has(cName)) {
+        groups.set(cName, []);
+      }
+      groups.get(cName)!.push(m);
+    });
+    this.groupedMappings = Array.from(groups.keys()).map(cName => ({
+      courseName: cName,
+      mappings: groups.get(cName)!
+    }));
+  }
+
+  toggleGroup(courseName: string) {
+    this.collapsedGroups[courseName] = !this.collapsedGroups[courseName];
   }
 
   resetMapping() {
