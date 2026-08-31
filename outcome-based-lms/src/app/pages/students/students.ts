@@ -113,6 +113,8 @@ export class Students implements OnInit, OnDestroy {
   notifications: any[] = [];
   recentGrades: StudentGrade[] = [];
   coProgressList: StudentCoProgress[] = [];
+  groupedCOs: Array<{ courseName: string; cos: StudentCoProgress[] }> = [];
+  collapsedCoGroups: { [key: string]: boolean } = {};
   upcomingDeadlines: UpcomingDeadline[] = [];
   enrolledCourseCards: EnrolledCourseCard[] = [];
 
@@ -215,6 +217,24 @@ export class Students implements OnInit, OnDestroy {
       c.bloomsLevel.toLowerCase().includes(q) ||
       c.status.toLowerCase().includes(q)
     );
+  }
+
+  get filteredGroupedCOs() {
+    if (!this.searchQuery.trim()) {
+      return this.groupedCOs;
+    }
+    const q = this.searchQuery.toLowerCase();
+    return this.groupedCOs.map(group => {
+      const matchingCos = group.cos.filter(co => 
+        co.coCode.toLowerCase().includes(q) || 
+        co.courseName.toLowerCase().includes(q) || 
+        co.bloomsLevel.toLowerCase().includes(q)
+      );
+      return {
+        courseName: group.courseName,
+        cos: matchingCos
+      };
+    }).filter(group => group.cos.length > 0);
   }
 
   get filteredDeadlines(): UpcomingDeadline[] {
@@ -472,6 +492,14 @@ export class Students implements OnInit, OnDestroy {
       const cos = storedCos ? JSON.parse(storedCos) : [];
       const mappings = JSON.parse(localStorage.getItem('obslmsAssessmentCOMappings') || '[]');
 
+      const getCourseFullName = (courseCode: string) => {
+        const found = allCourses.find((c: any) => 
+          c.code?.toLowerCase() === courseCode?.toLowerCase() || 
+          c.title?.toLowerCase() === courseCode?.toLowerCase()
+        );
+        return found ? `${found.code} - ${found.title}` : courseCode;
+      };
+
       this.coProgressList = cos.map((co: any) => {
         const coCode = co.co || co.code || 'CO1';
         const courseName = co.course || 'Course';
@@ -515,13 +543,28 @@ export class Students implements OnInit, OnDestroy {
 
         return {
           coCode: coCode,
-          courseName: courseName,
+          courseName: getCourseFullName(courseName),
           bloomsLevel: co.bloomsLevel || 'Apply',
           attainmentPct: pct,
           targetPct: target,
           status: status
         };
       });
+
+      // Group the CO progress list by course full name
+      const groupedMap = new Map<string, StudentCoProgress[]>();
+      this.coProgressList.forEach(item => {
+        const key = item.courseName;
+        if (!groupedMap.has(key)) {
+          groupedMap.set(key, []);
+        }
+        groupedMap.get(key)!.push(item);
+      });
+
+      this.groupedCOs = Array.from(groupedMap.entries()).map(([courseName, cos]) => ({
+        courseName,
+        cos
+      }));
 
       // 7. Notifications from real system logs
       const storedNotifs = localStorage.getItem('obslmsNotifications');
@@ -638,6 +681,10 @@ export class Students implements OnInit, OnDestroy {
       '--student-border': border,
       '--student-sidebar-bg': sidebarBg
     };
+  }
+
+  toggleCoGroup(courseName: string): void {
+    this.collapsedCoGroups[courseName] = !this.collapsedCoGroups[courseName];
   }
 
   navigate(path: string): void {

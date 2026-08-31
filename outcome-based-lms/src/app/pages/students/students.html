@@ -211,37 +211,53 @@
 
         <!-- OBE Course Outcomes (CO) Mastery Progress Card -->
         <div class="dashboard-card obe-card">
-          <div class="card-header">
+          <div class="card-header" style="margin-bottom: 20px;">
             <div>
-              <h2>🎯 My Course Outcomes (CO) Mastery ({{ filteredCoProgress.length }})</h2>
+              <h2>🎯 My Course Outcomes (CO) Mastery</h2>
               <small class="header-sub">Track personal outcome attainment against target threshold (75%)</small>
             </div>
             <button mat-button color="primary" (click)="navigate('/co-attainment')">Full Analytics →</button>
           </div>
           
-          <div class="co-progress-list" *ngIf="filteredCoProgress.length > 0">
-            <div *ngFor="let co of filteredCoProgress" class="co-progress-item">
-              <div class="co-item-header">
-                <div class="co-header-left">
-                  <span class="obe-badge obe-badge-co">{{ co.coCode }}</span>
-                  <strong class="co-course-name">{{ co.courseName }}</strong>
+          <div *ngIf="filteredGroupedCOs.length > 0" class="co-groups-container">
+            <div *ngFor="let group of filteredGroupedCOs" class="co-group-block" style="margin-bottom: 16px; border: 1px solid var(--student-border); border-radius: 12px; padding: 16px; background: var(--student-card-bg);">
+              <h3 style="margin: 0; color: var(--student-primary); padding-bottom: 8px; font-size: 1.05rem; display: flex; justify-content: space-between; align-items: center; cursor: pointer; border-bottom: 1px solid var(--student-border);" (click)="toggleCoGroup(group.courseName)">
+                <span style="display: flex; align-items: center; gap: 8px;">📖 {{ group.courseName }}</span>
+                <span style="font-size: 0.82rem; color: var(--student-text-secondary); font-weight: 600;">
+                  {{ collapsedCoGroups[group.courseName] ? '▼ Show' : '▲ Hide' }} ({{ group.cos.length }} COs)
+                </span>
+              </h3>
+              
+              <div class="co-progress-list" *ngIf="!collapsedCoGroups[group.courseName]" style="margin-top: 14px; display: flex; flex-direction: column; gap: 14px;">
+                <div *ngFor="let co of group.cos" class="co-progress-item" style="margin-bottom: 0;">
+                  <div class="co-item-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                    <div class="co-header-left" style="display: flex; align-items: center; gap: 8px;">
+                      <span class="obe-badge obe-badge-co">{{ co.coCode }}</span>
+                      <span class="blooms-tag" style="background: rgba(var(--student-primary-rgb), 0.08); color: var(--student-primary); padding: 2px 6px; border-radius: 4px; font-size: 11px; font-weight: 600;">{{ co.bloomsLevel }}</span>
+                    </div>
+                    <div class="co-header-right" style="display: flex; align-items: center; gap: 8px;">
+                      <span class="co-attainment-val" style="font-weight: 700; font-size: 13px;" [class.achieved]="co.attainmentPct >= co.targetPct">
+                        {{ co.attainmentPct }}% / Target: {{ co.targetPct }}%
+                      </span>
+                      <span class="co-status-pill" style="font-size: 11px; padding: 2px 8px; border-radius: 12px; font-weight: 700;" 
+                        [class.achieved-pill]="co.attainmentPct >= co.targetPct"
+                        [style.background]="co.attainmentPct >= co.targetPct ? '#dcfce7' : '#fee2e2'"
+                        [style.color]="co.attainmentPct >= co.targetPct ? '#15803d' : '#b91c1c'">
+                        {{ co.attainmentPct >= co.targetPct ? 'Achieved' : 'In Progress' }}
+                      </span>
+                    </div>
+                  </div>
+                  <div class="progress-bar-wrap" style="height: 6px; background: #e2e8f0; border-radius: 4px; overflow: hidden; width: 100%;">
+                    <div class="progress-bar-fill" [style.width]="co.attainmentPct + '%'" 
+                      [style.background]="co.attainmentPct >= co.targetPct ? '#10b981' : '#f59e0b'"
+                      style="height: 100%; transition: width 0.3s ease;"></div>
+                  </div>
                 </div>
-                <div class="co-header-right">
-                  <span class="blooms-tag" title="Bloom's Taxonomy Cognitive Level">{{ co.bloomsLevel }}</span>
-                  <span class="co-attainment-val" [class.achieved]="co.attainmentPct >= co.targetPct">
-                    {{ co.attainmentPct }}%
-                  </span>
-                  <span class="co-status-pill" [class.achieved-pill]="co.attainmentPct >= co.targetPct">
-                    {{ co.attainmentPct >= co.targetPct ? 'Achieved' : 'In Progress' }}
-                  </span>
-                </div>
-              </div>
-              <div class="progress-bar-wrap">
-                <div class="progress-bar-fill" [style.width]="co.attainmentPct + '%'" [class.achieved-bar]="co.attainmentPct >= co.targetPct"></div>
               </div>
             </div>
           </div>
-          <p *ngIf="filteredCoProgress.length === 0" class="empty-filter-notice">
+          
+          <p *ngIf="filteredGroupedCOs.length === 0" class="empty-filter-notice">
             {{ searchQuery ? 'No outcomes matching "' + searchQuery + '".' : 'No course outcomes available yet.' }}
           </p>
         </div>
