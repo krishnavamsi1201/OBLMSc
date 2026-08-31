@@ -35,11 +35,16 @@ public class CSVSeederService {
     @Autowired
     private CoPoMappingRepository copoMappingRepository;
 
+    @Autowired
+    private UserRepository userRepository;
+
     // Official Dataset Directory on User System
     private static final String DATASET_DIR = "D:\\OBLMSc\\OBLMS Data Set\\Program & Course Data\\";
 
     @PostConstruct
     public void seedFromCSV() {
+        redistributeStudents();
+
         boolean needsSeeding = streamRepository.count() == 0 
                 || programRepository.count() == 0
                 || subjectRepository.count() == 0
@@ -56,6 +61,45 @@ public class CSVSeederService {
         }
 
         importAllDataset();
+    }
+
+    private void redistributeStudents() {
+        try {
+            List<User> users = userRepository.findAll();
+            List<User> students = new ArrayList<>();
+            for (User u : users) {
+                if ("STUDENT".equalsIgnoreCase(u.getRole())) {
+                    students.add(u);
+                }
+            }
+
+            if (students.isEmpty()) {
+                System.out.println("[INFO] No students found in database to redistribute.");
+                return;
+            }
+
+            // Sort students by id to ensure deterministic allocation
+            students.sort(Comparator.comparing(User::getId));
+
+            String[] departments = {
+                "Computer Science & Engineering",
+                "Information Technology",
+                "Electronics & Communication Engineering",
+                "Mechanical Engineering",
+                "Civil Engineering",
+                "Electrical & Electronics Engineering"
+            };
+
+            for (int i = 0; i < students.size(); i++) {
+                User student = students.get(i);
+                String assignedDept = departments[i % departments.length];
+                student.setDepartment(assignedDept);
+                userRepository.save(student);
+            }
+            System.out.println("[INFO] Redistributed " + students.size() + " students equally across " + departments.length + " departments.");
+        } catch (Exception e) {
+            System.err.println("[ERROR] Failed to redistribute students: " + e.getMessage());
+        }
     }
 
     public synchronized Map<String, Object> importAllDataset() {
