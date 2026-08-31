@@ -483,101 +483,112 @@ export class FacultyDataService {
   }
 
   /**
-   * Calculate real student progress per student from actual marks and attendance
+   * Calculate real student progress per course from actual marks and attendance
    */
   private getRealTimeStudentProgress(courses: Course[]): StudentProgress[] {
     try {
       const marks = this.getSafeJson('obslmsMarkEntries');
       const attendance = this.getSafeJson('obslmsAttendance');
+      const allStudents = this.getSafeJson('obslmsStudents');
 
-      if (marks.length === 0 && attendance.length === 0) {
-        return [];
-      }
+      const progressList: StudentProgress[] = [];
 
-      const studentMap = new Map<string, {
-        studentName: string;
-        coursesSet: Set<string>;
-        obtainedTotal: number;
-        maxMarksTotal: number;
-        assessmentCount: number;
-        lastUpdate: Date;
-      }>();
+      // Loop through each course allotted to this faculty member
+      courses.forEach(course => {
+        const courseName = course.name;
+        const courseCode = course.code;
 
-      // Aggregate marks
-      marks.forEach((mark: any) => {
-        if (!mark.student) return;
-        const sKey = mark.student.trim().toLowerCase();
+        // Find all unique student names associated with this course
+        // (Either from student roster, mark entries, or attendance logs)
+        const studentNames = new Set<string>();
 
-        if (!studentMap.has(sKey)) {
-          studentMap.set(sKey, {
-            studentName: mark.student.trim(),
-            coursesSet: new Set(),
-            obtainedTotal: 0,
-            maxMarksTotal: 0,
-            assessmentCount: 0,
+        // 1. Check all students in localStorage who have this course code in their profile
+        allStudents.forEach((st: any) => {
+          const enrolledCourses = st.course || ''; // e.g. "INMCA202,DS"
+          const codes = enrolledCourses.split(',').map((c: string) => c.trim().toLowerCase());
+          if (codes.includes(courseCode.toLowerCase()) || codes.some((c: string) => courseName.toLowerCase().includes(c))) {
+            studentNames.add(st.name.trim());
+          }
+        });
+
+        // 2. Check marks for this course to find students
+        marks.forEach((m: any) => {
+          if (m.student && m.assessment && (
+            m.assessment.toLowerCase().includes(courseName.toLowerCase()) ||
+            m.assessment.toLowerCase().includes(courseCode.toLowerCase())
+          )) {
+            studentNames.add(m.student.trim());
+          }
+        });
+
+        // 3. Check attendance for this course to find students
+        attendance.forEach((a: any) => {
+          if (a.student && a.course && (
+            a.course.toLowerCase().includes(courseName.toLowerCase()) ||
+            a.course.toLowerCase().includes(courseCode.toLowerCase()) ||
+            courseName.toLowerCase().includes(a.course.toLowerCase())
+          )) {
+            studentNames.add(a.student.trim());
+          }
+        });
+
+        // Now compute metrics for each student in this course
+        studentNames.forEach(studentName => {
+          const sNameLower = studentName.toLowerCase();
+
+          // Aggregate marks for this student and this course
+          const studentCourseMarks = marks.filter((m: any) =>
+            m.student && m.student.trim().toLowerCase() === sNameLower &&
+            m.assessment && (
+              m.assessment.toLowerCase().includes(courseName.toLowerCase()) ||
+              m.assessment.toLowerCase().includes(courseCode.toLowerCase())
+            )
+          );
+
+          let obtainedTotal = 0;
+          let maxMarksTotal = 0;
+          studentCourseMarks.forEach((m: any) => {
+            obtainedTotal += Number(m.obtained) || 0;
+            maxMarksTotal += Number(m.maxMarks) || 100;
+          });
+
+          const coAttainment = maxMarksTotal > 0
+            ? Math.round((obtainedTotal / maxMarksTotal) * 100)
+            : 0;
+
+          // Aggregate attendance for this student and this course
+          const studentCourseAtt = attendance.filter((a: any) =>
+            a.student && a.student.trim().toLowerCase() === sNameLower &&
+            a.course && (
+              a.course.toLowerCase().includes(courseName.toLowerCase()) ||
+              a.course.toLowerCase().includes(courseCode.toLowerCase()) ||
+              courseName.toLowerCase().includes(a.course.toLowerCase())
+            )
+          );
+
+          let attendancePct = 0;
+          if (studentCourseAtt.length > 0) {
+            const presentCount = studentCourseAtt.filter((a: any) => a.status === 'Present').length;
+            attendancePct = Math.round((presentCount / studentCourseAtt.length) * 100);
+          } else {
+            // Default to 100% if enrolled but no attendance marked yet
+            attendancePct = 100;
+          }
+
+          progressList.push({
+            studentId: `STU-${studentName.replace(/\s+/g, '-').toUpperCase()}-${courseCode.toUpperCase()}`,
+            studentName: studentName,
+            courseId: course.id,
+            courseName: courseName,
+            attendance: attendancePct,
+            coAttainment: coAttainment,
+            totalAssessments: studentCourseMarks.length,
             lastUpdate: new Date()
           });
-        }
-
-        const record = studentMap.get(sKey)!;
-        record.obtainedTotal += Number(mark.obtained) || 0;
-        record.maxMarksTotal += Number(mark.maxMarks) || 100;
-        record.assessmentCount += 1;
-
-        if (mark.assessment) {
-          courses.forEach(c => {
-            if (mark.assessment.toLowerCase().includes(c.name.toLowerCase()) || mark.assessment.toLowerCase().includes(c.code.toLowerCase())) {
-              record.coursesSet.add(c.name);
-            }
-          });
-        }
+        });
       });
 
-      // Aggregate attendance into student map as well
-      attendance.forEach((att: any) => {
-        if (!att.student) return;
-        const sKey = att.student.trim().toLowerCase();
-        if (!studentMap.has(sKey)) {
-          studentMap.set(sKey, {
-            studentName: att.student.trim(),
-            coursesSet: new Set(att.course ? [att.course] : []),
-            obtainedTotal: 0,
-            maxMarksTotal: 0,
-            assessmentCount: 0,
-            lastUpdate: new Date()
-          });
-        } else if (att.course) {
-          studentMap.get(sKey)!.coursesSet.add(att.course);
-        }
-      });
-
-      return Array.from(studentMap.values()).map(s => {
-        // Calculate CO attainment %
-        const coAttainment = s.maxMarksTotal > 0
-          ? Math.round((s.obtainedTotal / s.maxMarksTotal) * 100)
-          : 0;
-
-        // Calculate student attendance %
-        const studentAtt = attendance.filter((a: any) => a.student && a.student.trim().toLowerCase() === s.studentName.toLowerCase());
-        let attendancePct = 0;
-        if (studentAtt.length > 0) {
-          const presentCount = studentAtt.filter((a: any) => a.status === 'Present').length;
-          attendancePct = Math.round((presentCount / studentAtt.length) * 100);
-        }
-
-        const courseName = Array.from(s.coursesSet).join(', ') || (courses.length > 0 ? courses[0].name : 'Course');
-
-        return {
-          studentId: `STU-${s.studentName.replace(/\s+/g, '-').toUpperCase()}`,
-          studentName: s.studentName,
-          courseId: courses[0]?.id || 'C1',
-          courseName,
-          attendance: attendancePct,
-          coAttainment,
-          totalAssessments: s.assessmentCount,
-          lastUpdate: s.lastUpdate
-        };
-      });
+      return progressList;
 
     } catch (error) {
       console.error('Error calculating real-time student progress:', error);
