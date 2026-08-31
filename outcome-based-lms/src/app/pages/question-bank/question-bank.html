@@ -1,5 +1,123 @@
 <app-navbar></app-navbar>
 
+<div *ngIf="role === 'student'; else fullApp" class="student-shell" [ngStyle]="themeStyles">
+  <!-- Categorized Sidebar Navigation -->
+  <div class="student-sidebar">
+    <div class="logo">
+      <h2>🎓 OBLMS</h2>
+      <p>Outcome Based LMS</p>
+    </div>
+
+    <div class="nav-groups-container">
+      <div *ngFor="let group of studentNavGroups" class="nav-group-block">
+        <span class="group-title">{{ group.title }}</span>
+        <div class="group-items">
+          <button mat-button *ngFor="let item of group.items" (click)="navigate(item.path)" [class.active]="item.path === '/question-bank'">
+            <span class="icon">{{ item.icon }}</span>
+            <span class="nav-label">{{ item.label }}</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Mini Profile Card at Bottom of Sidebar -->
+    <div class="sidebar-user-card" (click)="navigate('/profile')" title="View profile details" style="margin-top: auto; padding: 10px 12px; background: var(--student-card-bg); border: 1px solid var(--student-border); border-radius: 12px; display: flex; align-items: center; gap: 10px; cursor: pointer; transition: all 0.2s ease;">
+      <div class="user-avatar-mini" style="width: 36px; height: 36px; border-radius: 50%; overflow: hidden; background: rgba(var(--student-primary-rgb), 0.1); display: flex; align-items: center; justify-content: center; flex-shrink: 0; border: 1.5px solid var(--student-primary);">
+        <img *ngIf="studentPhoto" [src]="studentPhoto" alt="Profile" style="width: 100%; height: 100%; object-fit: cover;" />
+        <span *ngIf="!studentPhoto">👨‍🎓</span>
+      </div>
+      <div class="user-meta-mini" style="flex: 1; display: flex; flex-direction: column; overflow: hidden;">
+        <strong class="user-name-mini" style="font-size: 12.5px; color: var(--student-text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: 700;">{{ studentName }}</strong>
+        <span class="user-roll-mini" style="font-size: 11px; color: var(--student-text-secondary);">{{ studentRoll }}</span>
+      </div>
+      <button class="logout-icon-btn" (click)="$event.stopPropagation(); logout()" title="Logout" style="background: transparent; border: none; font-size: 15px; cursor: pointer; padding: 4px; opacity: 0.7;">🚪</button>
+    </div>
+  </div>
+
+  <!-- Student Scrollable Content Area -->
+  <div class="student-content" style="flex: 1; height: 100%; box-sizing: border-box; padding: 24px 28px 40px; overflow-y: auto; display: flex; flex-direction: column; gap: 20px;">
+    
+    <div class="page-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+      <div class="header-title">
+        <h1 style="margin: 0; font-size: 1.8rem; color: var(--student-text); font-weight: 800;">🧠 Question Bank</h1>
+        <p style="margin: 4px 0 0 0; color: var(--student-text-secondary); font-size: 0.95rem;">Access outcome-aligned questions grouped by curriculum subjects.</p>
+      </div>
+    </div>
+
+    <!-- Filters Card -->
+    <div class="filter-card" style="background: var(--student-card-bg); border: 1px solid var(--student-border); padding: 18px; border-radius: 12px;">
+      <div class="filters-container" style="display: flex; flex-wrap: wrap; gap: 16px; align-items: center;">
+        <label class="filter-input" style="display: flex; flex-direction: column; gap: 6px; font-weight: 700; font-size: 0.88rem; color: var(--student-text); flex: 1; min-width: 200px;">
+          Search:
+          <input type="text" [(ngModel)]="searchTerm" (input)="applyFilters()" placeholder="🔍 Search keywords..." style="padding: 8px 12px; border: 1px solid var(--student-border); border-radius: 8px; font-size: 0.9rem; background: transparent; color: var(--student-text);" />
+        </label>
+        <label class="filter-select" style="display: flex; flex-direction: column; gap: 6px; font-weight: 700; font-size: 0.88rem; color: var(--student-text); min-width: 150px;">
+          Subject:
+          <select [(ngModel)]="subjectFilter" (change)="applyFilters()" style="padding: 8px 12px; border: 1px solid var(--student-border); border-radius: 8px; font-size: 0.9rem; background: transparent; color: var(--student-text);">
+            <option value="" style="background: var(--student-card-bg); color: var(--student-text);">All Subjects ({{ questions.length }})</option>
+            <option *ngFor="let sub of subjectsList" [value]="sub" style="background: var(--student-card-bg); color: var(--student-text);">{{ sub }}</option>
+          </select>
+        </label>
+        <label class="filter-select" style="display: flex; flex-direction: column; gap: 6px; font-weight: 700; font-size: 0.88rem; color: var(--student-text); min-width: 150px;">
+          Bloom's Level:
+          <select [(ngModel)]="bloomsFilter" (change)="applyFilters()" style="padding: 8px 12px; border: 1px solid var(--student-border); border-radius: 8px; font-size: 0.9rem; background: transparent; color: var(--student-text);">
+            <option value="" style="background: var(--student-card-bg); color: var(--student-text);">All Cognitive Levels</option>
+            <option value="L1: Remember" style="background: var(--student-card-bg); color: var(--student-text);">L1: Remember</option>
+            <option value="L2: Understand" style="background: var(--student-card-bg); color: var(--student-text);">L2: Understand</option>
+            <option value="L3: Apply" style="background: var(--student-card-bg); color: var(--student-text);">L3: Apply</option>
+            <option value="L4: Analyze" style="background: var(--student-card-bg); color: var(--student-text);">L4: Analyze</option>
+            <option value="L5: Evaluate" style="background: var(--student-card-bg); color: var(--student-text);">L5: Evaluate</option>
+            <option value="L6: Create" style="background: var(--student-card-bg); color: var(--student-text);">L6: Create</option>
+          </select>
+        </label>
+      </div>
+    </div>
+
+    <!-- Grouped Questions by Subject -->
+    <div class="qb-container" style="display: flex; flex-direction: column; gap: 16px;">
+      <div *ngFor="let group of groupedSubjectQuestions" class="subject-qb-block" style="border: 1px solid var(--student-border); border-radius: 12px; padding: 16px; background: var(--student-card-bg);">
+        <h3 style="margin: 0; color: var(--student-primary); border-bottom: 2px solid var(--student-border); padding-bottom: 8px; font-size: 1.1rem; display: flex; justify-content: space-between; align-items: center; cursor: pointer;" (click)="toggleSubjectGroup(group.subject)">
+          <span style="display: flex; align-items: center; gap: 8px;">📚 {{ group.subject }} Question Bank</span>
+          <span style="font-size: 0.85rem; color: var(--student-text-secondary); font-weight: 600;">
+            {{ collapsedSubjectGroups[group.subject] ? '▼ Show' : '▲ Hide' }} ({{ group.questions.length }} Questions)
+          </span>
+        </h3>
+        
+        <div class="questions-grid" *ngIf="!collapsedSubjectGroups[group.subject]" style="margin-top: 16px; display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px;">
+          <div class="question-card" *ngFor="let q of group.questions" style="border: 1px solid var(--student-border); border-radius: 12px; padding: 16px; background: var(--student-card-bg); display: flex; flex-direction: column; gap: 12px;">
+            <div class="card-badges" style="display: flex; flex-wrap: wrap; gap: 6px;">
+              <span class="badge blooms-badge" [style.backgroundColor]="getBloomsColor(q.bloomsLevel)" style="color: #fff; padding: 2px 6px; border-radius: 4px; font-size: 0.75rem; font-weight: 700;">
+                {{ q.bloomsLevel }}
+              </span>
+              <span class="badge diff-badge" [class.easy]="q.difficulty === 'Easy'" [class.medium]="q.difficulty === 'Medium'" [class.hard]="q.difficulty === 'Hard'" style="padding: 2px 6px; border-radius: 4px; font-size: 0.75rem; font-weight: 700;">
+                {{ q.difficulty }}
+              </span>
+              <span class="badge type-badge" style="background: rgba(var(--student-primary-rgb), 0.1); color: var(--student-primary); padding: 2px 6px; border-radius: 4px; font-size: 0.75rem; font-weight: 700;">{{ q.type }}</span>
+              <span class="badge marks-badge" style="background: #e2e8f0; color: #475569; padding: 2px 6px; border-radius: 4px; font-size: 0.75rem; font-weight: 700;">{{ q.marks }} Marks</span>
+            </div>
+            
+            <div class="card-body" style="flex: 1; display: flex; flex-direction: column; gap: 10px;">
+              <p class="question-text" style="margin: 0; font-size: 0.95rem; color: var(--student-text); font-weight: 600; line-height: 1.4;">{{ q.questionText }}</p>
+              <div class="metadata-footer" style="display: flex; gap: 12px; font-size: 0.8rem; color: var(--student-text-secondary); margin-top: auto;">
+                <span class="subject-tag">📚 {{ q.subject }}</span>
+                <span class="co-badge" style="background: rgba(var(--student-primary-rgb), 0.08); color: var(--student-primary); padding: 1px 5px; border-radius: 3px; font-weight: 700;">🎯 {{ q.coMapped }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="empty-state" *ngIf="groupedSubjectQuestions.length === 0" style="padding: 40px; text-align: center; color: var(--student-text-secondary);">
+        <h3>No questions found</h3>
+        <p>Modify the search filters to find questions.</p>
+      </div>
+    </div>
+
+    <app-footer></app-footer>
+  </div>
+</div>
+
+<ng-template #fullApp>
 <div class="container">
 	<app-sidebar></app-sidebar>
 	<div class="content">
@@ -149,37 +267,48 @@
 				</div>
 			</div>
 
-			<!-- Questions Grid -->
+			<!-- Grouped Questions by Subject for Faculty/Admin too -->
 			<div class="qb-container">
-				<div class="questions-grid" *ngIf="filteredQuestions.length > 0">
-					<div class="question-card" *ngFor="let q of filteredQuestions">
-						<div class="card-badges">
-							<span class="badge blooms-badge" [style.backgroundColor]="getBloomsColor(q.bloomsLevel)">
-								{{ q.bloomsLevel }}
+				<div style="display: flex; flex-direction: column; gap: 20px;">
+					<div *ngFor="let group of groupedSubjectQuestions" class="subject-qb-block" style="border: 1px solid #e2e8f0; border-radius: 12px; padding: 16px; background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
+						<h3 style="margin: 0; color: #1e3a8a; border-bottom: 2px solid #3b82f6; padding-bottom: 8px; font-size: 1.1rem; display: flex; justify-content: space-between; align-items: center; cursor: pointer;" (click)="toggleSubjectGroup(group.subject)">
+							<span style="display: flex; align-items: center; gap: 8px;">📚 {{ group.subject }} Question Bank</span>
+							<span style="font-size: 0.85rem; color: #64748b; font-weight: 600;">
+								{{ collapsedSubjectGroups[group.subject] ? '▼ Show' : '▲ Hide' }} ({{ group.questions.length }} Questions)
 							</span>
-							<span class="badge diff-badge" [class.easy]="q.difficulty === 'Easy'" [class.medium]="q.difficulty === 'Medium'" [class.hard]="q.difficulty === 'Hard'">
-								{{ q.difficulty }}
-							</span>
-							<span class="badge type-badge">{{ q.type }}</span>
-							<span class="badge marks-badge">{{ q.marks }} Marks</span>
-						</div>
+						</h3>
 						
-						<div class="card-body">
-							<p class="question-text">{{ q.questionText }}</p>
-							<div class="metadata-footer">
-								<span class="subject-tag">📚 {{ q.subject }}</span>
-								<span class="co-badge">🎯 {{ q.coMapped }}</span>
+						<div class="questions-grid" *ngIf="!collapsedSubjectGroups[group.subject]" style="margin-top: 16px; display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 16px;">
+							<div class="question-card" *ngFor="let q of group.questions">
+								<div class="card-badges">
+									<span class="badge blooms-badge" [style.backgroundColor]="getBloomsColor(q.bloomsLevel)">
+										{{ q.bloomsLevel }}
+									</span>
+									<span class="badge diff-badge" [class.easy]="q.difficulty === 'Easy'" [class.medium]="q.difficulty === 'Medium'" [class.hard]="q.difficulty === 'Hard'">
+										{{ q.difficulty }}
+									</span>
+									<span class="badge type-badge">{{ q.type }}</span>
+									<span class="badge marks-badge">{{ q.marks }} Marks</span>
+								</div>
+								
+								<div class="card-body">
+									<p class="question-text">{{ q.questionText }}</p>
+									<div class="metadata-footer">
+										<span class="subject-tag">📚 {{ q.subject }}</span>
+										<span class="co-badge">🎯 {{ q.coMapped }}</span>
+									</div>
+								</div>
+								
+								<div class="card-footer" *ngIf="role === 'admin' || role === 'faculty'">
+									<button class="btn btn-edit" (click)="editQuestion(q)">✎ Edit</button>
+									<button class="btn btn-delete" (click)="deleteQuestion(q)">🗑️ Delete</button>
+								</div>
 							</div>
-						</div>
-						
-						<div class="card-footer" *ngIf="role === 'admin' || role === 'faculty'">
-							<button class="btn btn-edit" (click)="editQuestion(q)">✎ Edit</button>
-							<button class="btn btn-delete" (click)="deleteQuestion(q)">🗑️ Delete</button>
 						</div>
 					</div>
 				</div>
 
-				<div class="empty-state" *ngIf="filteredQuestions.length === 0">
+				<div class="empty-state" *ngIf="groupedSubjectQuestions.length === 0">
 					<h3>No questions found</h3>
 					<p>Create a new question or modify the search filters.</p>
 				</div>
@@ -300,3 +429,4 @@
 		<app-footer></app-footer>
 	</div>
 </div>
+</ng-template>
