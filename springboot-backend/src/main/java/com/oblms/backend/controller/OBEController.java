@@ -32,36 +32,30 @@ public class OBEController {
 
     @PostConstruct
     public void seedOBEData() {
-        assessmentMappingRepository.deleteAll();
-        marksRepository.deleteAll();
-        copoMappingRepository.deleteAll();
+        if (assessmentMappingRepository.count() == 0) {
+            // 1. Seed Assessments mapped to CSV Course Codes
+            assessmentMappingRepository.save(new AssessmentCOMapping(null, "INMCA202 - Midterm 1", "Midterm", "INMCA202", "Probability and Statistics", "CO1,CO2", 50));
+            assessmentMappingRepository.save(new AssessmentCOMapping(null, "DS - Practical Lab", "Practical", "DS", "Data Structures and Analysys of Computer Algorithms", "CO1", 100));
+            assessmentMappingRepository.save(new AssessmentCOMapping(null, "MES - Quiz 1", "Quiz", "MES", "Microprocessors and Embedded Systems", "CO1", 20));
+            assessmentMappingRepository.save(new AssessmentCOMapping(null, "IT305 - Assignment 1", "Assignment", "IT305", "Operating Systems", "CO1,CO2,CO3", 25));
+            assessmentMappingRepository.save(new AssessmentCOMapping(null, "OOP - Practical Exam", "Practical", "OOP", "Object Oriented Programming with C++", "CO1", 100));
+        }
 
-        // 1. Seed Assessments mapped to CSV Course Codes
-        assessmentMappingRepository.save(new AssessmentCOMapping(null, "INMCA202 - Midterm 1", "Midterm", "INMCA202", "Probability and Statistics", "CO1,CO2", 50));
-        assessmentMappingRepository.save(new AssessmentCOMapping(null, "DS - Practical Lab", "Practical", "DS", "Data Structures and Analysys of Computer Algorithms", "CO1", 100));
-        assessmentMappingRepository.save(new AssessmentCOMapping(null, "MES - Quiz 1", "Quiz", "MES", "Microprocessors and Embedded Systems", "CO1", 20));
-        assessmentMappingRepository.save(new AssessmentCOMapping(null, "IT305 - Assignment 1", "Assignment", "IT305", "Operating Systems", "CO1,CO2,CO3", 25));
-        assessmentMappingRepository.save(new AssessmentCOMapping(null, "OOP - Practical Exam", "Practical", "OOP", "Object Oriented Programming with C++", "CO1", 100));
+        if (marksRepository.count() == 0) {
+            // 2. Seed Marks for student "Krishnavamsi"
+            marksRepository.save(new StudentMark(null, "Krishnavamsi", "INMCA202 - Midterm 1", 42, 50));
+            marksRepository.save(new StudentMark(null, "Krishnavamsi", "DS - Practical Lab", 88, 100));
+            marksRepository.save(new StudentMark(null, "Krishnavamsi", "MES - Quiz 1", 17, 20));
+            marksRepository.save(new StudentMark(null, "Krishnavamsi", "IT305 - Assignment 1", 22, 25));
+            marksRepository.save(new StudentMark(null, "Krishnavamsi", "OOP - Practical Exam", 91, 100));
 
-        // 2. Seed Marks for student "Krishnavamsi"
-        marksRepository.save(new StudentMark(null, "Krishnavamsi", "INMCA202 - Midterm 1", 42, 50));
-        marksRepository.save(new StudentMark(null, "Krishnavamsi", "DS - Practical Lab", 88, 100));
-        marksRepository.save(new StudentMark(null, "Krishnavamsi", "MES - Quiz 1", 17, 20));
-        marksRepository.save(new StudentMark(null, "Krishnavamsi", "IT305 - Assignment 1", 22, 25));
-        marksRepository.save(new StudentMark(null, "Krishnavamsi", "OOP - Practical Exam", 91, 100));
-
-        // 3. Seed Marks for student "Raj Kumar"
-        marksRepository.save(new StudentMark(null, "Raj Kumar", "INMCA202 - Midterm 1", 38, 50));
-        marksRepository.save(new StudentMark(null, "Raj Kumar", "DS - Practical Lab", 75, 100));
-        marksRepository.save(new StudentMark(null, "Raj Kumar", "MES - Quiz 1", 14, 20));
-        marksRepository.save(new StudentMark(null, "Raj Kumar", "IT305 - Assignment 1", 19, 25));
-        marksRepository.save(new StudentMark(null, "Raj Kumar", "OOP - Practical Exam", 82, 100));
-
-        // 4. Seed Mappings
-        copoMappingRepository.save(new CoPoMapping(null, "INMCA202", "CO1", "PO1", 3, 3, "Approved"));
-        copoMappingRepository.save(new CoPoMapping(null, "INMCA202", "CO2", "PO2", 2, 2, "Approved"));
-        copoMappingRepository.save(new CoPoMapping(null, "DS", "CO1", "PO1", 3, 3, "Approved"));
-        copoMappingRepository.save(new CoPoMapping(null, "MES", "CO1", "PO3", 2, 2, "Approved"));
+            // 3. Seed Marks for student "Raj Kumar"
+            marksRepository.save(new StudentMark(null, "Raj Kumar", "INMCA202 - Midterm 1", 38, 50));
+            marksRepository.save(new StudentMark(null, "Raj Kumar", "DS - Practical Lab", 75, 100));
+            marksRepository.save(new StudentMark(null, "Raj Kumar", "MES - Quiz 1", 14, 20));
+            marksRepository.save(new StudentMark(null, "Raj Kumar", "IT305 - Assignment 1", 19, 25));
+            marksRepository.save(new StudentMark(null, "Raj Kumar", "OOP - Practical Exam", 82, 100));
+        }
     }
 
     @GetMapping("/co-attainment")
