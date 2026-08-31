@@ -7,6 +7,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
@@ -20,35 +22,62 @@ public class AuthController {
 
     @PostConstruct
     public void seedUsers() {
-        if (userRepository.count() == 0) {
-            userRepository.save(new User("ADM001", "Administrator", "admin@oblms.edu", "root", "Admin", "System Administration"));
-            
-            userRepository.save(new User("FAC001", "Dr. Ramesh Babu", "Loukika310306@gmail.com", "password", "Faculty", "Computer Science"));
-            userRepository.save(new User("FAC002", "Prof. Sunita Sharma", "sunita.sharma@oblms.edu", "password", "Faculty", "Information Technology"));
-            userRepository.save(new User("FAC003", "Dr. Amit Patel", "amit.patel@oblms.edu", "password", "Faculty", "Electronics & Communication Engineering"));
-            userRepository.save(new User("FAC004", "Dr. Priya Nair", "priya.nair@oblms.edu", "password", "Faculty", "Civil Engineering"));
-            userRepository.save(new User("FAC005", "Prof. Rajesh Verma", "rajesh.verma@oblms.edu", "password", "Faculty", "Mechanical Engineering"));
-            
-            User stu1 = new User("STU001", "Raj Kumar", "raj.kumar@oblms.edu", "password", "Student", "Computer Science");
-            stu1.setEnrolledCourses("INMCA202,DS,MES,IT305,OOP");
-            userRepository.save(stu1);
-            
-            userRepository.save(new User("STU002", "Aarav Mehta", "aarav.mehta@oblms.edu", "password", "Student", "Computer Science & Engineering"));
-            userRepository.save(new User("STU003", "Aditya Sen", "aditya.sen@oblms.edu", "password", "Student", "Information Technology"));
-            
-            User stu4 = new User("STU004", "Krishnavamsi", "krishnavamsi1201@gmail.com", "password", "Student", "Computer Science & Engineering");
-            stu4.setEnrolledCourses("INMCA202,DS,MES,IT305,OOP");
-            userRepository.save(stu4);
-            userRepository.save(new User("STU005", "Ananya Iyer", "ananya.iyer@oblms.edu", "password", "Student", "Electronics & Communication Engineering"));
-            userRepository.save(new User("STU006", "Rahul Dravid", "rahul.dravid@oblms.edu", "password", "Student", "Mechanical Engineering"));
-            userRepository.save(new User("STU007", "Sneha Reddy", "sneha.reddy@oblms.edu", "password", "Student", "Civil Engineering"));
-            userRepository.save(new User("STU008", "Vikram Malhotra", "vikram.malhotra@oblms.edu", "password", "Student", "Electrical & Electronics Engineering"));
-            userRepository.save(new User("STU009", "Divya Joshi", "divya.joshi@oblms.edu", "password", "Student", "Computer Science & Engineering"));
-            userRepository.save(new User("STU010", "Siddharth Roy", "siddharth.roy@oblms.edu", "password", "Student", "Information Technology"));
-            System.out.println("[INFO] Seeded default OBLMS users into MySQL database.");
-        } else {
-            System.out.println("[INFO] Users already exist in database (" + userRepository.count() + " users). Skipping seeding to preserve custom records.");
+        List<User> standardUsers = new ArrayList<>();
+
+        // 1. Dedicated Admin Account
+        standardUsers.add(new User("ADM001", "Dr. K. S. Rao (Chief Academic Administrator & Dean)", "admin@oblms.edu", "root", "Admin", "System Administration & Dean Office"));
+
+        // 2. 15 Dedicated Faculty Accounts (FAC001 to FAC015)
+        standardUsers.add(new User("FAC001", "Dr. Ramesh Babu", "Loukika310306@gmail.com", "password", "Faculty", "Computer Science & Engineering"));
+        standardUsers.add(new User("FAC002", "Prof. Sunita Sharma", "sunita.sharma@oblms.edu", "password", "Faculty", "Computer Science & Engineering"));
+        standardUsers.add(new User("FAC003", "Dr. Amit Patel", "amit.patel@oblms.edu", "password", "Faculty", "Electronics & Communication Engineering"));
+        standardUsers.add(new User("FAC004", "Dr. Priya Nair", "priya.nair@oblms.edu", "password", "Faculty", "Information Technology"));
+        standardUsers.add(new User("FAC005", "Prof. Rajesh Verma", "rajesh.verma@oblms.edu", "password", "Faculty", "Mechanical Engineering"));
+        standardUsers.add(new User("FAC006", "Dr. S. K. Gupta", "sk.gupta@oblms.edu", "password", "Faculty", "Civil Engineering"));
+        standardUsers.add(new User("FAC007", "Prof. Anjali Deshmukh", "anjali.deshmukh@oblms.edu", "password", "Faculty", "Computer Science & Engineering"));
+        standardUsers.add(new User("FAC008", "Dr. K. V. Prasad", "kv.prasad@oblms.edu", "password", "Faculty", "Electrical & Electronics Engineering"));
+        standardUsers.add(new User("FAC009", "Prof. Meera Rao", "meera.rao@oblms.edu", "password", "Faculty", "Computer Science & Engineering"));
+        standardUsers.add(new User("FAC010", "Dr. V. C. Reddy", "vc.reddy@oblms.edu", "password", "Faculty", "Information Technology"));
+        standardUsers.add(new User("FAC011", "Prof. Sandeep Kumar", "sandeep.kumar@oblms.edu", "password", "Faculty", "Electronics & Communication Engineering"));
+        standardUsers.add(new User("FAC012", "Dr. Neha Agarwal", "neha.agarwal@oblms.edu", "password", "Faculty", "Mathematics & Computing"));
+        standardUsers.add(new User("FAC013", "Prof. Deepak Joshi", "deepak.joshi@oblms.edu", "password", "Faculty", "Computer Science & Engineering"));
+        standardUsers.add(new User("FAC014", "Dr. Kavita Menon", "kavita.menon@oblms.edu", "password", "Faculty", "Artificial Intelligence & Data Science"));
+        standardUsers.add(new User("FAC015", "Prof. Arun Roy", "arun.roy@oblms.edu", "password", "Faculty", "Mechanical Engineering"));
+
+        // 3. 30 Dedicated Student Accounts (STU001 to STU030)
+        String standardCourses = "INMCA202,DS,MES,IT305,OOP";
+        String[] studentNames = {
+            "Raj Kumar", "Aarav Mehta", "Aditya Sen", "Krishnavamsi", "Ananya Iyer",
+            "Rahul Dravid", "Sneha Reddy", "Vikram Malhotra", "Divya Joshi", "Siddharth Roy",
+            "Pooja Hegde", "Nikhil Sharma", "Kavita Nair", "Manish Pandey", "Rohan Joshi",
+            "Megha Sundaram", "Harish Chandra", "Swati Deshpande", "Varun Dhawan", "Shruti Hassan",
+            "Karthik Aryan", "Bhavna Patel", "Tanmay Bhatt", "Ishita Dutta", "Gaurav Taneja",
+            "Ritika Sen", "Abhishek Verma", "Prerna Sharma", "Sameer Khan", "Priya Prakash"
+        };
+
+        String[] departments = {
+            "Computer Science & Engineering", "Information Technology", "Electronics & Communication",
+            "Mechanical Engineering", "Civil Engineering"
+        };
+
+        for (int i = 1; i <= 30; i++) {
+            String stuId = String.format("STU%03d", i);
+            String name = studentNames[i - 1];
+            String email = (i == 4) ? "krishnavamsi1201@gmail.com" : (name.toLowerCase().replace(" ", ".") + "@oblms.edu");
+            String dept = departments[(i - 1) % departments.length];
+
+            User stu = new User(stuId, name, email, "password", "Student", dept);
+            stu.setEnrolledCourses(standardCourses);
+            standardUsers.add(stu);
         }
+
+        // Upsert all standard users safely without deleting custom created users
+        for (User u : standardUsers) {
+            if (!userRepository.existsById(u.getId())) {
+                userRepository.save(u);
+            }
+        }
+        System.out.println("[INFO] Verified and seeded 1 Admin, 15 Faculty, and 30 Student accounts in MySQL database (Total users: " + userRepository.count() + ").");
     }
 
     @PostMapping("/login")

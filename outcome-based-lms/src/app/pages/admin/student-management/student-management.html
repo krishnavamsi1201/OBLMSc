@@ -81,8 +81,19 @@
               type="email" 
               [(ngModel)]="formData.email" 
               name="email"
-              placeholder="Enter email address"
-              required
+              placeholder="Enter email address (e.g. name@oblms.edu)" 
+              required 
+            />
+          </div>
+
+          <div class="form-group">
+            <label>Login Password *</label>
+            <input 
+              type="text" 
+              [(ngModel)]="formData.password" 
+              name="password"
+              placeholder="Enter student login password (defaults to 'password')" 
+              required 
             />
           </div>
 

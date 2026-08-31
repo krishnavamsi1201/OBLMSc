@@ -38,8 +38,9 @@ export class StudentManagement implements OnInit {
     regNo: '',
     name: '',
     email: '',
-    department: '',
-    semester: ''
+    password: 'password',
+    department: 'Computer Science & Engineering',
+    semester: 'Semester 1'
   };
 
   // Filter and search
@@ -47,7 +48,14 @@ export class StudentManagement implements OnInit {
   filterDepartment = '';
   filterSemester = '';
   
-  departments = ['Computer Science', 'Electronics', 'Mechanical', 'Civil', 'Electrical'];
+  departments = [
+    'Computer Science & Engineering',
+    'Information Technology',
+    'Electronics & Communication Engineering',
+    'Mechanical Engineering',
+    'Civil Engineering',
+    'Electrical & Electronics Engineering'
+  ];
   semesters = ['Semester 1', 'Semester 2', 'Semester 3', 'Semester 4', 'Semester 5', 'Semester 6', 'Semester 7', 'Semester 8'];
 
   ngOnInit(): void {
@@ -68,8 +76,8 @@ export class StudentManagement implements OnInit {
             regNo: u.id,
             name: u.name,
             email: u.email,
-            department: u.department || 'Computer Science',
-            semester: 'Semester 1'
+            department: u.department || 'Computer Science & Engineering',
+            semester: 'Semester 3'
           }));
         this.filterStudents();
         this.cdr.detectChanges();
@@ -114,6 +122,7 @@ export class StudentManagement implements OnInit {
       regNo: student.regNo,
       name: student.name,
       email: student.email,
+      password: 'password',
       department: student.department,
       semester: student.semester
     };
@@ -129,8 +138,9 @@ export class StudentManagement implements OnInit {
       regNo: '',
       name: '',
       email: '',
-      department: '',
-      semester: ''
+      password: 'password',
+      department: 'Computer Science & Engineering',
+      semester: 'Semester 1'
     };
     this.currentId = null;
   }
@@ -142,10 +152,10 @@ export class StudentManagement implements OnInit {
     }
 
     const payload = {
-      id: this.formData.regNo,
-      name: this.formData.name,
-      email: this.formData.email,
-      password: 'password',
+      id: this.formData.regNo.trim(),
+      name: this.formData.name.trim(),
+      email: this.formData.email.trim(),
+      password: this.formData.password.trim() || 'password',
       role: 'STUDENT',
       department: this.formData.department
     };
@@ -154,7 +164,7 @@ export class StudentManagement implements OnInit {
       next: () => {
         this.loadStudents();
         this.closeForm();
-        this.toast.success(`Student "${this.formData.name}" saved successfully.`);
+        this.toast.success(`Student "${this.formData.name}" saved with login credentials! 🎉`);
       },
       error: () => {
         this.toast.error('Failed to save student to database.');
