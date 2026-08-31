@@ -1,67 +1,103 @@
 <app-navbar></app-navbar>
 
-<div class="container">
-  <app-sidebar></app-sidebar>
+<div *ngIf="role === 'student'; else fullApp" class="student-shell" [ngStyle]="themeStyles">
+  <!-- Categorized Sidebar Navigation -->
+  <div class="student-sidebar">
+    <div class="logo">
+      <h2>🎓 OBLMS</h2>
+      <p>Outcome Based LMS</p>
+    </div>
 
-  <div class="content">
-    <div class="page-header">
-      <div class="header-title">
-        <h1>🎓 PO Attainment Analysis</h1>
-        <p>Track and analyze program outcome achievement (OBE Most Important)</p>
+    <div class="nav-groups-container">
+      <div *ngFor="let group of studentNavGroups" class="nav-group-block">
+        <span class="group-title">{{ group.title }}</span>
+        <div class="group-items">
+          <button mat-button *ngFor="let item of group.items" (click)="navigate(item.path)" [class.active]="item.path === '/po-attainment'">
+            <span class="icon">{{ item.icon }}</span>
+            <span class="nav-label">{{ item.label }}</span>
+          </button>
+        </div>
       </div>
-      <button class="btn btn-primary" (click)="exportToCSV()">📥 Export CSV</button>
+    </div>
+
+    <!-- Mini Profile Card at Bottom of Sidebar -->
+    <div class="sidebar-user-card" (click)="navigate('/profile')" title="View profile details" style="margin-top: auto; padding: 10px 12px; background: var(--student-card-bg); border: 1px solid var(--student-border); border-radius: 12px; display: flex; align-items: center; gap: 10px; cursor: pointer; transition: all 0.2s ease;">
+      <div class="user-avatar-mini" style="width: 36px; height: 36px; border-radius: 50%; overflow: hidden; background: rgba(var(--student-primary-rgb), 0.1); display: flex; align-items: center; justify-content: center; flex-shrink: 0; border: 1.5px solid var(--student-primary);">
+        <img *ngIf="studentPhoto" [src]="studentPhoto" alt="Profile" style="width: 100%; height: 100%; object-fit: cover;" />
+        <span *ngIf="!studentPhoto">👨‍🎓</span>
+      </div>
+      <div class="user-meta-mini" style="flex: 1; display: flex; flex-direction: column; overflow: hidden;">
+        <strong class="user-name-mini" style="font-size: 12.5px; color: var(--student-text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: 700;">{{ studentName }}</strong>
+        <span class="user-roll-mini" style="font-size: 11px; color: var(--student-text-secondary);">{{ studentRoll }}</span>
+      </div>
+      <button class="logout-icon-btn" (click)="$event.stopPropagation(); logout()" title="Logout" style="background: transparent; border: none; font-size: 15px; cursor: pointer; padding: 4px; opacity: 0.7;">🚪</button>
+    </div>
+  </div>
+
+  <!-- Student Scrollable Content Area -->
+  <div class="student-content" style="flex: 1; height: 100%; box-sizing: border-box; padding: 24px 28px 40px; overflow-y: auto; display: flex; flex-direction: column; gap: 20px;">
+    
+    <div class="page-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+      <div class="header-title">
+        <h1 style="margin: 0; font-size: 1.8rem; color: var(--student-text); font-weight: 800;">🎓 PO Attainment Analysis</h1>
+        <p style="margin: 4px 0 0 0; color: var(--student-text-secondary); font-size: 0.95rem;">Track and analyze program outcome achievement (OBE Most Important)</p>
+      </div>
+      <button class="btn btn-primary" (click)="exportToCSV()" style="background: var(--student-primary); border-radius: 8px; font-weight: 600; padding: 10px 18px; color: #fff; border: none; cursor: pointer;">📥 Export CSV</button>
     </div>
 
     <!-- Overall Achievement Card -->
-    <div class="overall-card">
+    <div class="overall-card" style="background: var(--student-hero-bg); border-radius: 18px; padding: 24px 28px; color: #ffffff; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 20px; box-shadow: 0 10px 30px rgba(var(--student-primary-rgb), 0.22);">
       <div class="overall-content">
-        <h2>Overall Program Achievement</h2>
-        <div class="overall-value">{{ overallAchievement }}%</div>
-        <p>Average achievement across all program outcomes</p>
+        <h2 style="margin: 0; font-size: 1.4rem; font-weight: 800;">Overall Program Achievement</h2>
+        <div class="overall-value" style="font-size: 2.8rem; font-weight: 900; margin: 10px 0 6px 0;">{{ overallAchievement }}%</div>
+        <p style="margin: 0; font-size: 0.9rem; color: rgba(255, 255, 255, 0.9);">Average achievement across all program outcomes</p>
       </div>
       <div class="overall-chart">
-        <div class="progress-ring">
-          <svg viewBox="0 0 100 100" class="ring-svg">
-            <circle cx="50" cy="50" r="45" class="ring-bg"></circle>
+        <div class="progress-ring" style="position: relative; width: 100px; height: 100px; display: flex; align-items: center; justify-content: center;">
+          <svg viewBox="0 0 100 100" class="ring-svg" style="width: 100%; height: 100%; transform: rotate(-90deg);">
+            <circle cx="50" cy="50" r="45" class="ring-bg" style="fill: none; stroke: rgba(255, 255, 255, 0.2); stroke-width: 8;"></circle>
             <circle cx="50" cy="50" r="45" class="ring-progress" 
-              [style.strokeDashoffset]="282.7 - (overallAchievement / 100) * 282.7"></circle>
+              [style.strokeDashoffset]="282.7 - (overallAchievement / 100) * 282.7"
+              style="fill: none; stroke: #ffffff; stroke-width: 8; stroke-dasharray: 282.7; transition: stroke-dashoffset 0.3s ease; stroke-linecap: round;"></circle>
           </svg>
-          <div class="ring-text">{{ overallAchievement }}%</div>
+          <div class="ring-text" style="position: absolute; font-size: 1.3rem; font-weight: 800; color: #ffffff;">{{ overallAchievement }}%</div>
         </div>
       </div>
     </div>
 
     <!-- Stats Grid -->
-    <div class="stats-grid">
-      <div class="stat-card achieved">
-        <div class="stat-number">{{ getAchievedCount() }}</div>
-        <div class="stat-label">Achieved (≥{{ targetPercentage }}%)</div>
+    <div class="stats-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 18px;">
+      <div class="stat-card achieved" style="background: var(--student-card-bg); border: 1px solid var(--student-border); border-left: 5px solid #10b981; border-radius: 12px; padding: 18px; display: flex; flex-direction: column; gap: 6px;">
+        <div class="stat-number" style="font-size: 1.8rem; font-weight: 800; color: #10b981;">{{ getAchievedCount() }}</div>
+        <div class="stat-label" style="font-size: 0.85rem; font-weight: 700; color: var(--student-text-secondary); text-transform: uppercase;">Achieved (≥{{ targetPercentage }}%)</div>
       </div>
-      <div class="stat-card partial">
-        <div class="stat-number">{{ getPartialCount() }}</div>
-        <div class="stat-label">Partial (50-{{ targetPercentage }}%)</div>
+      <div class="stat-card partial" style="background: var(--student-card-bg); border: 1px solid var(--student-border); border-left: 5px solid #f59e0b; border-radius: 12px; padding: 18px; display: flex; flex-direction: column; gap: 6px;">
+        <div class="stat-number" style="font-size: 1.8rem; font-weight: 800; color: #f59e0b;">{{ getPartialCount() }}</div>
+        <div class="stat-label" style="font-size: 0.85rem; font-weight: 700; color: var(--student-text-secondary); text-transform: uppercase;">Partial (50-{{ targetPercentage }}%)</div>
       </div>
-      <div class="stat-card not-achieved">
-        <div class="stat-number">{{ getNotAchievedCount() }}</div>
-        <div class="stat-label">Not Achieved (<50%)</div>
+      <div class="stat-card not-achieved" style="background: var(--student-card-bg); border: 1px solid var(--student-border); border-left: 5px solid #ef4444; border-radius: 12px; padding: 18px; display: flex; flex-direction: column; gap: 6px;">
+        <div class="stat-number" style="font-size: 1.8rem; font-weight: 800; color: #ef4444;">{{ getNotAchievedCount() }}</div>
+        <div class="stat-label" style="font-size: 0.85rem; font-weight: 700; color: var(--student-text-secondary); text-transform: uppercase;">Not Achieved (<50%)</div>
       </div>
     </div>
 
     <!-- Search and Filter -->
-    <div class="toolbar">
-      <div class="search-box">
+    <div class="toolbar" style="display: flex; gap: 14px; align-items: center; background: var(--student-card-bg); border: 1px solid var(--student-border); padding: 12px 16px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.02);">
+      <div class="search-box" style="flex: 1; display: flex; align-items: center;">
         <input 
           type="text" 
           placeholder="🔍 Search by PO code or description..."
           [(ngModel)]="searchQuery"
           (input)="onSearchChange()"
           class="search-input"
+          style="width: 100%; border: none; outline: none; background: transparent; color: var(--student-text); font-size: 0.95rem;"
         />
       </div>
       <select 
         [(ngModel)]="filterStatus"
         (change)="onFilterChange()"
         class="filter-select"
+        style="border: 1px solid var(--student-border); border-radius: 8px; padding: 8px 14px; background: var(--student-card-bg); color: var(--student-text); outline: none; font-size: 0.9rem;"
       >
         <option value="">All Status</option>
         <option value="Achieved">Achieved</option>
@@ -71,36 +107,37 @@
     </div>
 
     <!-- PO Attainment Cards -->
-    <div class="attainment-grid">
-      <div *ngIf="filteredAttainments.length === 0" class="empty-state">
-        <p>📭 No program outcomes found</p>
-        <p class="hint">Create program outcomes and CO-PO mappings to view attainment analysis</p>
+    <div class="attainment-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 20px;">
+      <div *ngIf="filteredAttainments.length === 0" class="empty-state" style="grid-column: 1 / -1; text-align: center; color: var(--student-text-secondary); padding: 40px;">
+        <p style="font-size: 1.2rem; font-weight: 600;">📭 No program outcomes found</p>
+        <p style="font-size: 0.9rem;">Create program outcomes and CO-PO mappings to view attainment analysis</p>
       </div>
 
-      <div *ngFor="let po of filteredAttainments" class="attainment-card">
-        <div class="card-header">
-          <div class="po-info">
-            <h3>{{ po.code }}</h3>
-            <p>{{ po.description }}</p>
+      <div *ngFor="let po of filteredAttainments" class="attainment-card" style="background: var(--student-card-bg); border: 1px solid var(--student-border); border-radius: 14px; padding: 20px; display: flex; flex-direction: column; gap: 14px; transition: transform 0.2s; box-shadow: 0 4px 16px rgba(0,0,0,0.03);" onmouseover="this.style.transform='translateY(-3px)'" onmouseout="this.style.transform='none'">
+        <div class="card-header" style="display: flex; justify-content: space-between; align-items: flex-start; gap: 14px;">
+          <div class="po-info" style="display: flex; flex-direction: column; gap: 4px;">
+            <h3 style="margin: 0; font-size: 1.15rem; color: var(--student-primary); font-weight: 800;">{{ po.code }}</h3>
+            <p style="margin: 0; font-size: 0.88rem; color: var(--student-text); line-height: 1.4; font-weight: 500;">{{ po.description }}</p>
           </div>
-          <div class="status-badge" [style.backgroundColor]="getStatusBgColor(po.status)" [style.color]="getStatusColor(po.status)">
+          <div class="status-badge" style="font-size: 11px; font-weight: 700; padding: 4px 10px; border-radius: 12px;" [style.backgroundColor]="getStatusBgColor(po.status)" [style.color]="getStatusColor(po.status)">
             {{ po.status }}
           </div>
         </div>
 
-        <div class="card-body">
-          <div class="achievement-display">
-            <div class="achievement-value">{{ po.achievement }}%</div>
-            <div class="target-value">Target: {{ po.targetPercentage }}%</div>
+        <div class="card-body" style="display: flex; flex-direction: column; gap: 12px; margin-top: auto;">
+          <div class="achievement-display" style="display: flex; justify-content: space-between; align-items: baseline;">
+            <div class="achievement-value" style="font-size: 1.6rem; font-weight: 900; color: var(--student-text);">{{ po.achievement }}%</div>
+            <div class="target-value" style="font-size: 0.82rem; font-weight: 600; color: var(--student-text-secondary);">Target: {{ po.targetPercentage }}%</div>
           </div>
 
           <div class="progress-bar-container">
-            <div class="progress-bar">
+            <div class="progress-bar" style="height: 6px; background: #e2e8f0; border-radius: 4px; overflow: hidden; width: 100%;">
               <div class="progress-fill" 
                 [style.width]="getProgressWidth(po.achievement) + '%'"
-                [style.backgroundColor]="getStatusColor(po.status)"></div>
+                [style.backgroundColor]="getStatusColor(po.status)"
+                style="height: 100%; transition: width 0.3s ease;"></div>
             </div>
-            <div class="progress-labels">
+            <div class="progress-labels" style="display: flex; justify-content: space-between; font-size: 10px; color: var(--student-text-secondary); margin-top: 4px; font-weight: 600;">
               <span>0%</span>
               <span>50%</span>
               <span>{{ po.targetPercentage }}%</span>
@@ -108,11 +145,11 @@
             </div>
           </div>
 
-          <div class="po-mapping-info">
-            <div class="mapped-cos">
-              <span class="label">Mapped COs ({{ po.coCount }}):</span>
-              <div class="co-tags">
-                <span *ngFor="let coCode of po.mappedCOs" class="co-tag">{{ coCode }}</span>
+          <div class="po-mapping-info" style="border-top: 1px dashed var(--student-border); padding-top: 10px; margin-top: 4px;">
+            <div class="mapped-cos" style="display: flex; flex-direction: column; gap: 6px;">
+              <span class="label" style="font-size: 11.5px; font-weight: 700; color: var(--student-text-secondary); text-transform: uppercase; letter-spacing: 0.02em;">Mapped COs ({{ po.coCount }}):</span>
+              <div class="co-tags" style="display: flex; flex-wrap: wrap; gap: 6px;">
+                <span *ngFor="let coCode of po.mappedCOs" class="co-tag" style="background: rgba(var(--student-primary-rgb), 0.08); color: var(--student-primary); padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 600;">{{ coCode }}</span>
               </div>
             </div>
           </div>
@@ -123,3 +160,129 @@
     <app-footer></app-footer>
   </div>
 </div>
+
+<ng-template #fullApp>
+  <div class="container">
+    <app-sidebar></app-sidebar>
+
+    <div class="content">
+      <div class="page-header">
+        <div class="header-title">
+          <h1>🎓 PO Attainment Analysis</h1>
+          <p>Track and analyze program outcome achievement (OBE Most Important)</p>
+        </div>
+        <button class="btn btn-primary" (click)="exportToCSV()">📥 Export CSV</button>
+      </div>
+
+      <!-- Overall Achievement Card -->
+      <div class="overall-card">
+        <div class="overall-content">
+          <h2>Overall Program Achievement</h2>
+          <div class="overall-value">{{ overallAchievement }}%</div>
+          <p>Average achievement across all program outcomes</p>
+        </div>
+        <div class="overall-chart">
+          <div class="progress-ring">
+            <svg viewBox="0 0 100 100" class="ring-svg">
+              <circle cx="50" cy="50" r="45" class="ring-bg"></circle>
+              <circle cx="50" cy="50" r="45" class="ring-progress" 
+                [style.strokeDashoffset]="282.7 - (overallAchievement / 100) * 282.7"></circle>
+            </svg>
+            <div class="ring-text">{{ overallAchievement }}%</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Stats Grid -->
+      <div class="stats-grid">
+        <div class="stat-card achieved">
+          <div class="stat-number">{{ getAchievedCount() }}</div>
+          <div class="stat-label">Achieved (≥{{ targetPercentage }}%)</div>
+        </div>
+        <div class="stat-card partial">
+          <div class="stat-number">{{ getPartialCount() }}</div>
+          <div class="stat-label">Partial (50-{{ targetPercentage }}%)</div>
+        </div>
+        <div class="stat-card not-achieved">
+          <div class="stat-number">{{ getNotAchievedCount() }}</div>
+          <div class="stat-label">Not Achieved (<50%)</div>
+        </div>
+      </div>
+
+      <!-- Search and Filter -->
+      <div class="toolbar">
+        <div class="search-box">
+          <input 
+            type="text" 
+            placeholder="🔍 Search by PO code or description..."
+            [(ngModel)]="searchQuery"
+            (input)="onSearchChange()"
+            class="search-input"
+          />
+        </div>
+        <select 
+          [(ngModel)]="filterStatus"
+          (change)="onFilterChange()"
+          class="filter-select"
+        >
+          <option value="">All Status</option>
+          <option value="Achieved">Achieved</option>
+          <option value="Partial">Partial</option>
+          <option value="Not Achieved">Not Achieved</option>
+        </select>
+      </div>
+
+      <!-- PO Attainment Cards -->
+      <div class="attainment-grid">
+        <div *ngIf="filteredAttainments.length === 0" class="empty-state">
+          <p>📭 No program outcomes found</p>
+          <p class="hint">Create program outcomes and CO-PO mappings to view attainment analysis</p>
+        </div>
+
+        <div *ngFor="let po of filteredAttainments" class="attainment-card">
+          <div class="card-header">
+            <div class="po-info">
+              <h3>{{ po.code }}</h3>
+              <p>{{ po.description }}</p>
+            </div>
+            <div class="status-badge" [style.backgroundColor]="getStatusBgColor(po.status)" [style.color]="getStatusColor(po.status)">
+              {{ po.status }}
+            </div>
+          </div>
+
+          <div class="card-body">
+            <div class="achievement-display">
+              <div class="achievement-value">{{ po.achievement }}%</div>
+              <div class="target-value">Target: {{ po.targetPercentage }}%</div>
+            </div>
+
+            <div class="progress-bar-container">
+              <div class="progress-bar">
+                <div class="progress-fill" 
+                  [style.width]="getProgressWidth(po.achievement) + '%'"
+                  [style.backgroundColor]="getStatusColor(po.status)"></div>
+              </div>
+              <div class="progress-labels">
+                <span>0%</span>
+                <span>50%</span>
+                <span>{{ po.targetPercentage }}%</span>
+                <span>100%</span>
+              </div>
+            </div>
+
+            <div class="po-mapping-info">
+              <div class="mapped-cos">
+                <span class="label">Mapped COs ({{ po.coCount }}):</span>
+                <div class="co-tags">
+                  <span *ngFor="let coCode of po.mappedCOs" class="co-tag">{{ coCode }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <app-footer></app-footer>
+    </div>
+  </div>
+</ng-template>
