@@ -1,0 +1,6 @@
+courseId,courseName,courseStatus,coutseType,duration,openCondonation
+1001,B.Tech,1,UG,4,1
+1002,M.Tech,1,PG,2,1
+1003,MCA,1,PG,3,1
+1004,RL,1,,0,0
+1005,PhD,1,PhD,0,0

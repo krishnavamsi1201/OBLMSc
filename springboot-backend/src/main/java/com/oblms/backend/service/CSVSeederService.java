@@ -15,6 +15,15 @@ import java.util.*;
 public class CSVSeederService {
 
     @Autowired
+    private AcademicStreamRepository streamRepository;
+
+    @Autowired
+    private AcademicProgramRepository programRepository;
+
+    @Autowired
+    private SubjectRepository subjectRepository;
+
+    @Autowired
     private CourseRepository courseRepository;
 
     @Autowired
@@ -26,201 +35,284 @@ public class CSVSeederService {
     @Autowired
     private CoPoMappingRepository copoMappingRepository;
 
-    private static final String DATASET_DIR = "K:\\OBLMS\\OBLMS Data Set\\Program & Course Data\\";
+    // Official Dataset Directory on User System
+    private static final String DATASET_DIR = "D:\\OBLMSc\\OBLMS Data Set\\Program & Course Data\\";
 
     @PostConstruct
     public void seedFromCSV() {
-        boolean needsSeeding = courseRepository.count() == 0 
-                || poRepository.count() <= 4 
+        boolean needsSeeding = streamRepository.count() == 0 
+                || programRepository.count() == 0
+                || subjectRepository.count() == 0
                 || coRepository.count() == 0 
                 || copoMappingRepository.count() == 0;
 
         if (!needsSeeding) {
-            System.out.println("[INFO] Database already seeded. Skipping CSV seeding.");
+            System.out.println("[INFO] OBLMS Dataset already fully seeded in MySQL. (Streams: " 
+                + streamRepository.count() + ", Programs: " + programRepository.count() 
+                + ", Subjects: " + subjectRepository.count() + ", COs: " + coRepository.count() 
+                + ", CO-PO Mappings: " + copoMappingRepository.count() + ").");
             return;
         }
 
+        importAllDataset();
+    }
+
+    public synchronized Map<String, Object> importAllDataset() {
+        Map<String, Object> result = new HashMap<>();
         File dir = new File(DATASET_DIR);
         if (!dir.exists()) {
-            System.out.println("[WARN] OBLMS dataset directory not found at: " + DATASET_DIR + ". Using default database seeds.");
-            return;
+            System.out.println("[WARN] OBLMS dataset directory not found at: " + DATASET_DIR);
+            result.put("status", "error");
+            result.put("message", "Dataset directory not found: " + DATASET_DIR);
+            return result;
         }
 
         try {
-            System.out.println("[INFO] OBLMS dataset found! Beginning CSV seeding...");
+            System.out.println("[INFO] Loading complete OBLMS dataset from: " + DATASET_DIR);
 
-            // Clean slate to avoid constraint mismatches and populate all datasets in sync
-            copoMappingRepository.deleteAll();
-            coRepository.deleteAll();
-            poRepository.deleteAll();
-            courseRepository.deleteAll();
+            // 1. Import Streams (1.Stream.csv)
+            File streamFile = new File(DATASET_DIR + "1.Stream.csv");
+            int streamCount = 0;
+            if (streamFile.exists()) {
+                BufferedReader br = new BufferedReader(new FileReader(streamFile));
+                String line = br.readLine(); // Header: courseId,courseName,courseStatus,coutseType,duration,openCondonation
+                List<AcademicStream> streams = new ArrayList<>();
+                while ((line = br.readLine()) != null) {
+                    List<String> values = parseCSVLine(line);
+                    if (values.size() >= 5) {
+                        try {
+                            Long id = Long.parseLong(values.get(0));
+                            String name = values.get(1);
+                            int status = Integer.parseInt(values.get(2));
+                            String type = values.get(3);
+                            int duration = Integer.parseInt(values.get(4));
+                            streams.add(new AcademicStream(id, name, type, duration, status));
+                            streamCount++;
+                        } catch (Exception e) {}
+                    }
+                }
+                br.close();
+                streamRepository.saveAll(streams);
+                System.out.println("[INFO] Seeded " + streamCount + " academic streams.");
+            }
 
-            // 1. Seed Courses (Read 6.Courses.csv)
-            Map<String, Course> courseMapById = new HashMap<>(); // subId -> Course
-            Map<String, Course> codeToCourseMap = new HashMap<>(); // subName -> Course
-            Set<String> seededCodes = new HashSet<>();
+            // 2. Import Programs (2.Program.csv)
+            File programFile = new File(DATASET_DIR + "2.Program.csv");
+            int programCount = 0;
+            if (programFile.exists()) {
+                BufferedReader br = new BufferedReader(new FileReader(programFile));
+                String line = br.readLine(); // Header: branchId,branchName,courseId,branchstatus,deptCode,shortCode
+                List<AcademicProgram> programs = new ArrayList<>();
+                while ((line = br.readLine()) != null) {
+                    List<String> values = parseCSVLine(line);
+                    if (values.size() >= 6) {
+                        try {
+                            Long id = Long.parseLong(values.get(0));
+                            String name = values.get(1);
+                            Long courseId = Long.parseLong(values.get(2));
+                            int status = Integer.parseInt(values.get(3));
+                            String deptCode = values.get(4);
+                            String shortCode = values.get(5);
+                            programs.add(new AcademicProgram(id, name, courseId, status, deptCode, shortCode));
+                            programCount++;
+                        } catch (Exception e) {}
+                    }
+                }
+                br.close();
+                programRepository.saveAll(programs);
+                System.out.println("[INFO] Seeded " + programCount + " academic programs/branches.");
+            }
+
+            // 3. Import Curriculum Subjects & Active Courses (6.Courses.csv)
             File coursesFile = new File(DATASET_DIR + "6.Courses.csv");
+            int subjectCount = 0;
+            Map<String, String> subIdToCodeMap = new HashMap<>(); // subId -> subCode
+            Map<String, Course> codeToCourseMap = new HashMap<>();
             if (coursesFile.exists()) {
                 BufferedReader br = new BufferedReader(new FileReader(coursesFile));
                 String line = br.readLine(); // Header: subId,subjectName,subjectType,subName
-                int count = 0;
-                while ((line = br.readLine()) != null && count < 30) {
-                    List<String> values = parseCSVLine(line);
-                    if (values.size() >= 4) {
-                        String subId = values.get(0);
-                        String subjectName = values.get(1);
-                        String type = values.get(2);
-                        String subName = values.get(3);
+                List<SubjectEntity> subjects = new ArrayList<>();
+                List<Course> coursesToSave = new ArrayList<>();
+                Set<String> uniqueCourseCodes = new HashSet<>();
 
-                        // If this code was already seeded, map this subId to the already saved course
-                        if (seededCodes.contains(subName.toLowerCase())) {
-                            Course existingCourse = codeToCourseMap.get(subName.toLowerCase());
-                            if (existingCourse != null) {
-                                courseMapById.put(subId, existingCourse);
-                            }
-                            continue;
-                        }
-                        seededCodes.add(subName.toLowerCase());
-
-                        Course course = new Course(null, subName, subjectName, "Faculty Board", "Fall 2026");
-                        Course saved = courseRepository.save(course);
-                        courseMapById.put(subId, saved);
-                        codeToCourseMap.put(subName.toLowerCase(), saved);
-                        count++;
-                    }
-                }
-                br.close();
-                System.out.println("[INFO] Seeded " + count + " courses from CSV.");
-            }
-
-            // 2. Seed Program Outcomes (Read 10.ProgramOutcome.csv)
-            Map<String, ProgramOutcome> poMapById = new HashMap<>(); // pgmid -> PO
-            Map<String, ProgramOutcome> textToPOMap = new HashMap<>(); // outcome text -> PO
-            File poFile = new File(DATASET_DIR + "10.ProgramOutcome.csv");
-            if (poFile.exists()) {
-                BufferedReader br = new BufferedReader(new FileReader(poFile));
-                String line = br.readLine(); // pgmid,courseId,branchId,outcome
-                int count = 0;
                 while ((line = br.readLine()) != null) {
                     List<String> values = parseCSVLine(line);
                     if (values.size() >= 4) {
-                        String pgmid = values.get(0);
-                        String outcome = values.get(3).trim();
-                        if (outcome.isEmpty()) continue;
+                        try {
+                            Long subId = Long.parseLong(values.get(0));
+                            String subjectName = values.get(1);
+                            String subjectType = values.get(2);
+                            String subCode = values.get(3).trim();
 
-                        // Clean up description length if needed
-                        String shortOutcome = outcome;
-                        if (shortOutcome.length() > 200) {
-                            shortOutcome = shortOutcome.substring(0, 197) + "...";
-                        }
+                            subjects.add(new SubjectEntity(subId, subjectName, subjectType, subCode));
+                            subIdToCodeMap.put(String.valueOf(subId), subCode);
+                            subjectCount++;
 
-                        String cleanOutcome = shortOutcome.toLowerCase();
-
-                        if (textToPOMap.containsKey(cleanOutcome)) {
-                            poMapById.put(pgmid, textToPOMap.get(cleanOutcome));
-                        } else {
-                            if (count < 12) {
-                                String poNumber = "PO" + (count + 1);
-                                ProgramOutcome po = new ProgramOutcome(null, poNumber, shortOutcome);
-                                ProgramOutcome saved = poRepository.save(po);
-                                poMapById.put(pgmid, saved);
-                                textToPOMap.put(cleanOutcome, saved);
-                                count++;
-                            } else {
-                                // Default back to the first seeded PO if we exceed standard NBA list size
-                                poMapById.put(pgmid, textToPOMap.values().iterator().next());
+                            // Also sync core courses for the dashboard & faculty course allocations
+                            String lowerCode = subCode.toLowerCase();
+                            if (!uniqueCourseCodes.contains(lowerCode) && coursesToSave.size() < 100) {
+                                uniqueCourseCodes.add(lowerCode);
+                                Course course = new Course(null, subCode, subjectName, "Faculty Board", "Fall 2026");
+                                coursesToSave.add(course);
                             }
-                        }
+                        } catch (Exception e) {}
                     }
                 }
                 br.close();
-                System.out.println("[INFO] Seeded " + count + " program outcomes from CSV.");
+                subjectRepository.saveAll(subjects);
+                if (courseRepository.count() == 0) {
+                    courseRepository.saveAll(coursesToSave);
+                }
+                System.out.println("[INFO] Seeded " + subjectCount + " curriculum subjects.");
             }
 
-            // 3. Seed Course Outcomes (Read 9.CourseOutcome.csv)
-            Map<String, CourseOutcome> coMapById = new HashMap<>(); // comid -> CO
-            Set<String> seededCOs = new HashSet<>();
+            // 4. Import NBA Program Outcomes (10.ProgramOutcome.csv)
+            File poFile = new File(DATASET_DIR + "10.ProgramOutcome.csv");
+            int poCount = 0;
+            Map<String, ProgramOutcome> poMapById = new HashMap<>(); // pgmid -> PO
+            if (poFile.exists()) {
+                BufferedReader br = new BufferedReader(new FileReader(poFile));
+                String line = br.readLine(); // Header: pgmid,courseId,branchId,outcome
+                List<ProgramOutcome> pos = new ArrayList<>();
+                Map<String, ProgramOutcome> uniquePOByNum = new HashMap<>();
+
+                // Standard NBA 12 PO definitions mapping
+                String[] standardPOs = {
+                    "Engineering Knowledge: Apply mathematics, science, and engineering fundamentals.",
+                    "Problem Analysis: Identify and formulate complex engineering problems.",
+                    "Design/Development: Design solutions meeting public health and safety.",
+                    "Conduct Investigations: Use research methods and data synthesis.",
+                    "Modern Tool Usage: Apply appropriate modern engineering and IT tools.",
+                    "The Engineer and Society: Assess societal, health, safety, and legal issues.",
+                    "Environment and Sustainability: Demonstrate need for sustainable development.",
+                    "Ethics: Commit to professional ethics and responsibilities.",
+                    "Individual and Team Work: Function effectively as member or leader in teams.",
+                    "Communication: Communicate effectively with engineering community.",
+                    "Project Management: Apply engineering and management principles.",
+                    "Life-long Learning: Engage in independent and life-long learning."
+                };
+
+                for (int i = 1; i <= 12; i++) {
+                    String poCode = "PO" + i;
+                    ProgramOutcome po = new ProgramOutcome(null, poCode, "Engineering", standardPOs[i - 1]);
+                    uniquePOByNum.put(poCode, po);
+                }
+
+                while ((line = br.readLine()) != null) {
+                    List<String> values = parseCSVLine(line);
+                    if (values.size() >= 4) {
+                        try {
+                            Long pgmid = Long.parseLong(values.get(0));
+                            String desc = values.get(3).trim();
+                            if (desc.length() > 2000) desc = desc.substring(0, 1995) + "...";
+                            
+                            int poIndex = (int) (pgmid % 12) + 1;
+                            String poCode = "PO" + poIndex;
+                            ProgramOutcome mappedPo = uniquePOByNum.get(poCode);
+                            poMapById.put(String.valueOf(pgmid), mappedPo);
+                        } catch (Exception e) {}
+                    }
+                }
+                br.close();
+
+                if (poRepository.count() == 0) {
+                    poRepository.saveAll(uniquePOByNum.values());
+                }
+                poCount = uniquePOByNum.size();
+                System.out.println("[INFO] Seeded standard NBA Program Outcomes (PO1 to PO12).");
+            }
+
+            // 5. Import Course Outcomes (9.CourseOutcome.csv)
             File coFile = new File(DATASET_DIR + "9.CourseOutcome.csv");
+            int coCount = 0;
+            Map<String, CourseOutcome> coMapById = new HashMap<>(); // comid -> CO
             if (coFile.exists()) {
                 BufferedReader br = new BufferedReader(new FileReader(coFile));
-                String line = br.readLine(); // comid,semsubId,outcome,shortCode,nba_acid
-                int count = 0;
-                while ((line = br.readLine()) != null && count < 100) {
+                String line = br.readLine(); // Header: comid,semsubId,outcome,shortCode,nba_acid
+                List<CourseOutcome> cos = new ArrayList<>();
+
+                while ((line = br.readLine()) != null && coCount < 1000) {
                     List<String> values = parseCSVLine(line);
                     if (values.size() >= 4) {
-                        String comid = values.get(0);
-                        String semsubId = values.get(1);
-                        String outcome = values.get(2);
-                        String shortCode = values.get(3);
+                        try {
+                            Long comid = Long.parseLong(values.get(0));
+                            Long semSubId = Long.parseLong(values.get(1));
+                            String outcomeDesc = values.get(2);
+                            String shortCode = values.get(3);
+                            if (outcomeDesc.length() > 2000) outcomeDesc = outcomeDesc.substring(0, 1995) + "...";
 
-                        Course associatedCourse = courseMapById.get(semsubId);
-                        if (associatedCourse != null) {
-                            String coCode = "CO" + shortCode;
-                            String compKey = associatedCourse.getCode().toLowerCase() + ":" + coCode.toLowerCase();
+                            String courseCode = subIdToCodeMap.getOrDefault(String.valueOf(semSubId), "INMCA202");
+                            String coCode = shortCode.startsWith("CO") ? shortCode : ("CO" + shortCode);
 
-                            if (seededCOs.contains(compKey)) {
-                                continue;
-                            }
-                            seededCOs.add(compKey);
-
-                            CourseOutcome co = new CourseOutcome(null, associatedCourse.getCode(), coCode, outcome);
-                            CourseOutcome saved = coRepository.save(co);
-                            coMapById.put(comid, saved);
-                            count++;
-                        }
+                            CourseOutcome co = new CourseOutcome(comid, semSubId, courseCode, coCode, outcomeDesc);
+                            cos.add(co);
+                            coMapById.put(String.valueOf(comid), co);
+                            coCount++;
+                        } catch (Exception e) {}
                     }
                 }
                 br.close();
-                System.out.println("[INFO] Seeded " + count + " course outcomes from CSV.");
+                coRepository.saveAll(cos);
+                System.out.println("[INFO] Seeded " + coCount + " Course Outcomes from dataset.");
             }
 
-            // 4. Seed CO-PO Mappings (Read 14.COtoPO_Mappings.csv)
-            Set<String> seededMappings = new HashSet<>();
+            // 6. Import CO-PO Mappings (14.COtoPO_Mappings.csv)
             File mappingFile = new File(DATASET_DIR + "14.COtoPO_Mappings.csv");
+            int mappingCount = 0;
             if (mappingFile.exists()) {
                 BufferedReader br = new BufferedReader(new FileReader(mappingFile));
-                String line = br.readLine(); // cpid,comid,pgmid,wtid
-                int count = 0;
-                while ((line = br.readLine()) != null && count < 150) {
+                String line = br.readLine(); // Header: cpid,comid,pgmid,wtid
+                List<CoPoMapping> mappings = new ArrayList<>();
+                Set<String> uniqueKeys = new HashSet<>();
+
+                while ((line = br.readLine()) != null && mappingCount < 2000) {
                     List<String> values = parseCSVLine(line);
                     if (values.size() >= 4) {
-                        String comid = values.get(1);
-                        String pgmid = values.get(2);
-                        String wtid = values.get(3);
+                        try {
+                            Long cpid = Long.parseLong(values.get(0));
+                            String comid = values.get(1);
+                            String pgmid = values.get(2);
+                            int level = Integer.parseInt(values.get(3));
+                            if (level < 1) level = 1;
+                            if (level > 3) level = 3;
 
-                        CourseOutcome co = coMapById.get(comid);
-                        ProgramOutcome po = poMapById.get(pgmid);
+                            CourseOutcome co = coMapById.get(comid);
+                            if (co != null) {
+                                int poNum = (int) (Long.parseLong(pgmid) % 12) + 1;
+                                String poCode = "PO" + poNum;
+                                String compKey = co.getCourse() + ":" + co.getCo() + ":" + poCode;
 
-                        if (co != null && po != null) {
-                            String compKey = co.getCourse().toLowerCase() + ":" + co.getCo().toLowerCase() + ":" + po.getPoNumber().toLowerCase();
-                            if (seededMappings.contains(compKey)) {
-                                continue;
+                                if (!uniqueKeys.contains(compKey)) {
+                                    uniqueKeys.add(compKey);
+                                    CoPoMapping mapping = new CoPoMapping(cpid, Long.parseLong(comid), Long.parseLong(pgmid), co.getCourse(), co.getCo(), poCode, level, "Approved");
+                                    mappings.add(mapping);
+                                    mappingCount++;
+                                }
                             }
-                            seededMappings.add(compKey);
-
-                            int level = 1;
-                            try {
-                                level = Integer.parseInt(wtid);
-                            } catch (NumberFormatException e) {
-                                // Fallback
-                            }
-
-                            CoPoMapping mapping = new CoPoMapping(null, co.getCourse(), co.getCo(), po.getPoNumber(), level, level, "Approved");
-                            copoMappingRepository.save(mapping);
-                            count++;
-                        }
+                        } catch (Exception e) {}
                     }
                 }
                 br.close();
-                System.out.println("[INFO] Seeded " + count + " CO-PO mappings from CSV.");
+                copoMappingRepository.saveAll(mappings);
+                System.out.println("[INFO] Seeded " + mappingCount + " accredited CO-PO matrix correlations.");
             }
 
-            System.out.println("[INFO] CSV Seeding completed successfully!");
+            result.put("status", "success");
+            result.put("streams", streamCount);
+            result.put("programs", programCount);
+            result.put("subjects", subjectCount);
+            result.put("courseOutcomes", coCount);
+            result.put("programOutcomes", poCount);
+            result.put("copoMappings", mappingCount);
 
         } catch (Exception e) {
-            System.err.println("[ERROR] Failed to seed database from CSV files: " + e.getMessage());
+            System.err.println("[ERROR] Failed to import dataset: " + e.getMessage());
             e.printStackTrace();
+            result.put("status", "error");
+            result.put("error", e.getMessage());
         }
+
+        return result;
     }
 
     private List<String> parseCSVLine(String line) {

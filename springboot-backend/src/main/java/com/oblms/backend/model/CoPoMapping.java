@@ -10,22 +10,25 @@ public class CoPoMapping {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false)
-    private String course;
+    private Long cpid;  // ID from dataset 14.COtoPO_Mappings.csv
+    private Long comid; // Reference to CourseOutcome
+    private Long pgmid; // Reference to ProgramOutcome
 
     @Column(nullable = false)
-    private String co;
+    private String course; // Course / Subject Code (e.g. INMCA202, DS, MES)
 
     @Column(nullable = false)
-    private String po;
+    private String co; // CO1, CO2, CO3...
+
+    @Column(nullable = false)
+    private String po; // PO1, PO2, PO3...
 
     private int contribution;
 
-    private int mappingLevel; // 1, 2, or 3
+    private int mappingLevel; // 1 (Low), 2 (Medium), 3 (High)
 
     private String status; // Pending, Approved
 
-    // Constructors
     public CoPoMapping() {}
 
     public CoPoMapping(Long id, String course, String co, String po, int contribution, int mappingLevel, String status) {
@@ -38,9 +41,29 @@ public class CoPoMapping {
         this.status = status;
     }
 
-    // Getters and Setters
+    public CoPoMapping(Long cpid, Long comid, Long pgmid, String course, String co, String po, int mappingLevel, String status) {
+        this.cpid = cpid;
+        this.comid = comid;
+        this.pgmid = pgmid;
+        this.course = course;
+        this.co = co;
+        this.po = po;
+        this.contribution = mappingLevel * 33;
+        this.mappingLevel = mappingLevel;
+        this.status = status;
+    }
+
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
+
+    public Long getCpid() { return cpid; }
+    public void setCpid(Long cpid) { this.cpid = cpid; }
+
+    public Long getComid() { return comid; }
+    public void setComid(Long comid) { this.comid = comid; }
+
+    public Long getPgmid() { return pgmid; }
+    public void setPgmid(Long pgmid) { this.pgmid = pgmid; }
 
     public String getCourse() { return course; }
     public void setCourse(String course) { this.course = course; }

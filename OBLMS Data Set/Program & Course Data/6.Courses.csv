@@ -1,0 +1,1874 @@
+subId,subjectName,subjectType,subName
+1,Probability and Statistics,Theory,INMCA202
+2,Data Structures and Analysys of Computer Algorithms,Theory,DS
+3,Microprocessors and Embedded Systems,Theory,MES
+4,Operating Systems,Theory,IT305
+5,Object Oriented Programming with C++,Theory,OOP
+6,C++ Lab,Lab,C++ Lab
+7,Data Structures Lab in C,Lab,DS Lab
+8,Operations Research,Theory,RLMCA108
+9,Computer Networks,Theory,RLMCA201
+10,Linux and Shell Programming,Theory,Linux
+11,Object Oriented Modeling and Design,Theory,OOMD
+12,Soft Computing,Theory,CS361
+13,Linux Lab,Lab,Linux Lab
+14,Open Source Lab,Lab,Open Lab
+15,Technical Communication,Theory,INMCA102
+16,Digital Systems & Logic Designs,Theory,DSLD
+17,Data Structures- C,Theory,DS
+18,Software Lab- III( Data Structures lab in C),Lab,DS Lab
+19,Software Lab-1V(C ++Lab),Lab,C++ Lab
+20,Statistics- II,Theory,Statistics
+21,Other Activities,Theory,Other
+22,High Performance Computing,Theory,HPC
+23,ENGINEERING MATHEMATICS II,Theory,EMII
+24,ECONOMICS AND COMMUNICATION SKILLS,Theory,ECS
+25,FLUID MECHANICS AND HYDRAULIC MACHINERY,Theory,FMHM
+26,Metallurgy & Materials Engineering,Theory,ME210
+27,PROGRAMMING IN C,Theory,C
+28,STRENGTH OF MATERIALS AND STRUCTURAL ENGINEERING,Theory,SMSE
+29,COMPUTER LAB,Lab,COMPUTER LAB
+30,Fluid Mechanics Lab,Lab,CE234
+31,ENGINEERING MATHEMATICS IV,Theory,EM IV
+32,COMPUTER AIDED DESIGN AND MANUFACTURING,Theory,04ME6512
+33,Auto Chassis,Theory,AU203
+34,KINEMATICS OF MACHINERY,Theory,KM
+35,I C ENGINES AND COMBUSTION,Theory,IC
+36,Economics and Communication skills,Theory,ECS
+37,Problem Solving and Computer Programming,Theory,RLMCA101
+38,Computer Organization,Theory,EC206
+39,Switching Theory and Logic Design,Theory,CS203
+40,Electronics Devices & Circuits,Theory,CS207
+41,Programming Lab,Theory,EE233
+42,Logic Design Lab,Lab,LD LAB
+43,Principles of Management,Theory,HS300
+44,Database Management Systems,Theory,RLMCA205
+45,Digital Signal Processing,Theory,EE407
+46,Advanced Microprocessors & Peripherals,Theory,AMP
+47,Database Lab,Lab,RLMCA231
+48,Hardware & Microprocessors Lab,Lab,HARDWARE LAB
+49,Web Technologies,Theory,WT
+50,Compiler Construction,Theory,CC
+51,Computer Graphics,Theory,CS401
+52,Object Oriented Modelling & Design,Theory,OOMD
+53,Principles of Programming,Theory,INMCA203
+54,Elective II,Elective,EL II
+55,System ProgrammingLab,Lab,SP LAB
+56,Networking Lab,Lab,NETWORK LAB
+57,Seminar,Theory,SEMINAR
+58,Project,Theory,CH492
+60,English,Theory,INMCA101
+61,Thermodynamics,Theory,ME205
+62,COMPUTER GRAPHICS AND DRAFTING,Theory,CGAD
+63,Electrical and Electronics Lab,Lab,EE335
+64,DESIGN OF MACHINE ELEMENTS,Theory,DOM
+65,ADVANCED AUTOMOTIVE TECHNOLOGY,Theory,AAT
+66,AUTO ELECTRICAL AND ELECTRONICS,Theory,AEE
+67,Refrigeration and Air Conditioning,Theory,ME405
+68,Industrial Engineering,Theory,ME404
+69,MECHANICAL MEASUREMENTS LABORATORY,Lab,MM Lab
+70,AUTOMOBILE WORKSHOP II,Lab,AU WS
+71,Fluid Mechanicsâ€“ I,Theory,CE203
+72,Mechanics of Solids,Theory,ME201
+73,Surveying,Theory,CE207
+74,ENGINEERING GEOLOGY,Theory,EG
+75,Materials Testing Lab I,Lab,CE232
+76,Surveying Lab,Lab,CE233
+77,COMPUTER PROGRAMMING,Lab,CP
+78,Design of Concrete Structures I,Theory,CE301
+79,Geotechnical Engineering-I,Theory,CE208
+80,Quantity Surveying and Valuation,Theory,CE409
+81,Structural Analysis- I,Theory,CE202
+82,COMPUTING TECHNIQUES LAB,Lab,CT LAB
+83,Geotechnical Engineering Lab,Lab,CE333
+84,Design of Hydraulic Structures,Theory,CE302
+85,Environmental Engineering- I,Theory,CE405
+86,Design of Concrete Structures II,Theory,CE304
+87,ARCHITECTURE AND TOWN PLANNING,Theory,ATP
+88,TRANSPORTATION ENGINEERING - II ,Theory,TE
+89,Prestressed Concrete,Elective,CE368
+90,COMPUTER APPLICATIONS LAB,Theory,CA LAB
+91,TRANSPORTATION ENGINEERING LAB,Lab,CE332
+92,Discrete and Integrated Electronic  Circuits,Theory,DAIEC
+93,Principles of Communication Engineering,Theory,PCE
+94,Electronics Circuits and Communication   Lab,Lab,ECCL
+95,Micoprocessors and Microcontrollers,Theory,MMC
+96,Data Communication,Theory,CS307
+97,Language Translators,Theory,LT
+98,PC Hardware & Microprocessors Lab,Lab,PCHL
+99,Systems Lab - UNIX,Lab,SLU
+100,Systems Lab - DBMS,Lab,SLD
+101,FINANCIAL MANAGEMENT AND E-  BANKING,Theory,FMEB
+102,COMPUTER GRAPHICS & MULTIMEDIA   SYSTEMS,Theory,CGAMS
+103,INTERNETWORKING,Theory,IN
+104,WEB APPLICATIONS DEVELOPMENT,Theory,WAD
+105,Operating System Kernel Design,Elective,OSKD
+106,Data mining,Elective,DM
+107,INTERNETWORKING LAB,Lab,INL
+108,Computer Aided Software Engineering Lab,Lab,CASEL
+109,Advanced Mechanics of  Materials,Theory,AMM
+110,CAD-CAM Lab,Lab,CCL
+111,Introduction to Mechanical Sciences,Theory,INS
+112,Engineering Graphics,Theory,BE110
+113,Sustainable Engineering,Theory,SE
+114,ENGINEERING MATHEMATICS ,Theory,EM
+115,Electrical and Electronic Engineering,Theory,EEE
+116,Physical Metallurgy,Theory,MT202
+117,Mineral Dressing,Theory,MB
+118,Computer Programming LAB,Lab,CS120
+119,Electrical Engineering Workshop,Lab,EE110
+120,Dynamics of Machinery,Theory,ME304
+121,Gas Dynamics and Jet Propulsion,Theory,GDJP
+122,Metal Joining Technology,Theory,MJT
+123,Iron and Steel Making,Theory,ISM
+124,"Pyro, Hydro, Electro Metallurgy",Theory,PHEM
+125,"Fuels, Furnace and Refractories",Theory,MT308
+126,Metallurgical Thermodynamics,Theory,MTTH
+127,Welding Laboratory,Lab,WL
+128,Sales and Marketing Management,Theory,SMM
+129,Heat Treatment of non-ferrous metals Laboratory,Lab,HTL
+130,Corrosion Engineering,Theory,MT302
+131,Non Destructive Testing and Failure Analysis,Theory,NDT
+132,"Ceramics, Polymers and Composite Materials",Theory,MT402
+133,Theory of Metal Forming,Theory,TMF
+134,Powder Metallurgy,Theory,PM
+135,Advanced Machine Tool Lab,Lab,AMTL
+136,High Temperature Materials,Theory,HTM
+137,Electro-metallurgy Laboratory,Lab,EML
+138,Metal Forming Laboratory,Lab,MFL
+139,Design of Machine Elements I,Theory,ME401
+140,Electric Circuit Theroy,Theory,ECT
+141,Electrical Measurements and Measuring instruments,Theory,EM & MI
+142,Electronic Circuit ,Theory,EC
+143,Mechanical Technology,Theory,MT
+144,Electrical measurement Lab,Lab,EM Lab
+145,Mechanical Laboratory,Lab,ML
+146,Signals & Systems,Theory,EC202
+147,Power Electronics,Theory,EE305
+148,Linear Integrated Circuits,Theory,LIC
+149,Microporcessor and Application,Theory,MA
+150,Electrical Machines Lab I,Lab,EE232
+151,Integrated Circuits Lab,Lab,IC Lab
+152,Electric Power transmission,Theory,EPT
+153,Synchronous machines,Theory,SM
+154,Drives and control,Theory,DC
+155,Modern control theory,Theory,MCT
+156,Communication engineerig,Theory,CE
+157,Elective II(PowerQuality),Theory,PQ
+158,E Cad Lab,Theory,E Cad
+159,Control and simulation Lab,Lab,CS Lab
+160,Seminar,Lab,04EC6391
+161,Aptitude - Communication,Lab,APT
+162,Network Theory,Theory,EC201
+163,Solid State Devices,Theory,EC203
+164,Analog Circuits - I,Theory,AC I
+165,Analog Circuits Lab,Lab,AC Lab
+166,Control Systems,Theory,EC409
+167,Digital System Design,Theory,EE365
+168,Electric Drives & Control,Theory,EDC
+169,Applied Electromagnetic Theory,Theory,EC303
+170,Microprocessors and Applications,Theory,MA
+171,Digital Electronics Lab,Lab,DE Lab
+172,Electric Drives and Control Lab,Lab,EDC Lab
+173,VLSI,Theory,EC304
+174,Information Theory and Coding,Theory,ITC
+175,Microwave Engineering,Theory,ME
+176,Electronic Instrumentation,Theory,EI
+177,Embedded Systems,Theory,CS404
+178,Elective II-Digital Image Processing,Theory,DIP
+179,Elective II-Anteena Theory & Design,Theory,ATD
+180,Advanced Communication Lab,Theory,AC Lab
+181,Signal Processing Lab,Lab,SP Lab
+182,INTRODUCTION TO CHEMCIAL ENGINEERING,Theory,ICE
+183,Introduction to Sustainable Engineering,Theory,BE103
+184,CHEMICAL ENGINEERING WORKSHOP,Theory,CEW
+185,PHYSICAL AND ANALYTICAL CHEMISTRY,Theory,PAC
+186,PROCESS CALCULATION,Theory,PC
+187,Fluid and Particle Mechanics - I,Theory,CH205
+188,ANALYTICAL CHEMISTRY LAB ,Lab,AC Lab
+189,Chemical Reaction Engineering I,Theory,CH305
+190,HEAT TRANSFER II,Theory,HT II
+191,CHEMICAL TECHNOLOGY I,Theory,CT I
+192,Mass Transfer Operations I,Theory,CH303
+193,CHEMICAL ENGINEERING THERMODYAMICS II,Theory,CET II
+194,CHEMICAL TECHNOLOGY LAB,Lab,CT Lab
+195,MECHANICAL OPERATIONS LAB,Lab,MO Lab
+196,Software Lab,Lab,SL
+197,Computer Aided Drafting Lab,Lab,CAD Lab
+198,COMPUTER GRAPHICS AND DRAFTING,Lab,CGD
+199,Placement & Training,Lab,P&T
+200,Mini Project Report,Lab,MPR
+201,Discrete and Integrated Electronic Circuits,Theory,DIE
+202,Systems Lab-UNIX,Lab,SLab-Unix
+203,Power Quality,Elective,EE465
+204,PC Hardware ,Theory,PCH
+205,Soft Skill,Theory,SOS
+206,Aptitude,Theory,APT
+207,Value for Life,Theory,Value for Life
+208,Report Writing,Lab,RPW
+209,CALCULUS,Theory,MA
+210,Engineering Chemistry,Theory,CY100
+211,INTRODUCTION TO MECHANICAL ENGINEERING,Theory,IME
+212,Basics of Electrical Engineering,Theory,EE100
+213,VALUE EDUCATION,Theory,VE
+214,Basics of Electronics Engineering,Theory,EC100
+215,INTRODUCTION TO CIVIL ENGINEERING,Theory,ICE
+216,Introduction to computing and problem solving,Theory,ICS
+217,Engineering Physics,Theory,PH100
+218,Engineering Mechanics,Theory,BE100
+219,INTRODUCTION TO ELECTRONICS ENGINEERING,Theory,IEC
+220,Basics of Mechanical Engineering,Theory,ME100
+221,MICRO PROJECT,Lab,MICRO PROJECT
+222,INTRODUCTION TO ELECTRICAL ENGINEERING ,Theory,IEE
+223,C-E WORKSHOP,Lab,EWS
+224,Mechanical Engineering Workshop,Lab,ME110
+225,Civil Engineering Workshop,Lab,CE110
+226,Physics-Electrical lab,Lab,PE Lab
+227,Chemical worshop,Lab,CW
+228,Library,Lab,Library
+229,Engineering Chemistry Lab,Lab,CY110
+230,Computer Science Workshop,Lab,CSWorkshop
+231,Basic electronics workshop,Lab,ECWorkshop
+232,Mathematical Foundations of Computer Science,Theory,INMCA103
+233,Statistics I,Theory,Stat I
+234,Integrated Circuites & PC Hardware,Theory,IC & PCH
+235,Library,Theory,LIB
+236,EL-Physics Lab,Lab,EL/Physics Lab
+237,Programming methodology & C Programming,Theory,PM & CP
+238,C Lab,Lab,CLAB
+239,PC hardware Lab,Lab,INMCA133
+240,Computer Organization and Architecture,Theory,EE363
+241,Principles of Management and Accounting ,Theory,PMA
+242,Structured  Programming in C ,Theory,C
+243,Java and Web Programming,Theory,JWP
+244,System Software,Theory,CS303
+245,Software Engineering,Theory,RLMCA203
+246,Java Programming Lab,Lab,Java Lab
+247,Engineering Physics Lab,Theory,PH110
+248,MM LAb,Lab,MM LAb
+249,Basic Electronics Workshop,Lab,BEW
+250,ANALYTICAL FOUNDATION FOR COMMUNICATION ENGINEERING,Theory,AFCE
+251,ADVANCED DIGITAL COMMUNICATION TECHNIQUES,Theory,ADCT
+252,ALGEBRAIC CODING THEORY,Theory,ACT
+253,HIGH FREQUENCY CIRCUIT DESIGN,Theory,HFCD
+254,SIGNAL PROCESSING FOR SPEECH AND IMAGE,Theory,SPFS
+255,Research Methodology,Theory,04GN6001
+256,Seminar,Lab,RLMCA341
+257,Communication Engineering Lab 1,Lab,04EC6393
+258,Optimization Techniques for Engineering Applications,Theory,04EE6001
+259,NonConventional Energy Sources,Theory,MCES
+260,Energy Resources Economics & Enviornment,Theory,EREE
+261,Power Electronic Circuits,Theory,04EE6303
+262,Industrial Thermal Systems,Theory,04EE6505
+263,Energy Systems Lab,Lab,ES LAB
+264,Power Electronic Devices & Circuits,Theory,04EE6301
+265,Computer Application in PowerSystems,Theory,CAPS
+266,Power System Operation and  Control,Theory,PSOC
+267,Elective I- Electric Drives & Systems,Theory,EDS
+268,"Power System Simulation laboratory	",Lab,PSS LAB
+269,Mathematical Methods,Theory,MM
+270,Introduction to Nanotechnology,Theory,INT
+271,Physics of Nanomaterials,Theory,PN
+272,Engineering Principles for Nanotechnology,Theory,PNT
+273,Elective 1-Carbon Nanomaterial Science and Technology,Theory,CNST
+274,Nanotechnology. Lab,Lab,Nanotechnology. Lab
+275,Electronics Engg Lab,Lab,E110
+276,Advanced Engineering Mathematics,Theory,04ME6501
+277,Theory of Vibrations(TOV),Theory,ME374
+278,Advanced Mechanics of Solids,Theory,ME202
+279,Design of Power Transmission Elements,Theory,04ME6507
+280,ADDITIVE MANUFACTURING,Theory,04ME6511
+281,Advanced measurements laboratory,Lab,04ME6593
+282,Computational Intelligence,Theory,04CS6101
+283,Advanced Data Structures and Algorithms,Theory,04CS6103
+284,Computer Security and Applied Cryptography,Theory,04CS6105
+285,Modern Computer Networks,Theory,04CS6107
+286,Object Oriented Software Engineering,Theory,04CS6111
+287,Network Simulation Lab,Theory,04CS6193
+288,Analytical methods in Engineering,Theory,04CE6401
+289,Theory of Elasticity,Theory,04CE6403
+290,Structural Dynamics,Theory,04CE6411
+291,Advanced Design of Concrete Structures,Theory,04CE6407
+292,Advanced Concrete Technology,Theory,CE361
+293,Computer Applications Lab,Theory,CA Lab
+294,Construction Management,Theory,04CE6405
+295,"Construction Planning, Scheduling and Control",Theory,CPSC
+296,Electronics Engineering Workshop,Lab,EC110
+297,Introduction to Civil Engineering  - Tutorial,Theory,ICE T
+298,ENGINEERING MECHANICS - Tutorial,Theory,EM T
+299,Introduction to  Chemical Engineering - Tutorial,Theory,ICH T
+300,Introduction to Electronics Engineering - Tutorial,Theory,IEE T
+301,Engineering Graphics - Tutorial,Theory,EG T
+302,Engineering Chemistry - Tutorial,Theory,EC T
+303,Calculus - Tutorial,Theory,C T
+304,Engineering Chemistry - Tutorial,Theory,EC T
+305,Introduction to Mechanical Engineering - Tutorial,Theory,IME T
+306,Introduction to Sustainable Engineering - Tutorial,Theory,ISE T
+307,BASIC ELECTRICAL ENGINEERING-Tutorial,Theory,BEE
+308,Introduction to Nanotechnology-Tutorial,Theory,INT
+309,Introduction to computing and problem solving Tutorial,Theory,ICT
+310,Mathematical Methods for NanotechnologyTutorial,Theory,MMNT
+311,CALCULUS TUTORIAL ,Theory,CT
+312,ELECTRICAL ENGINEERING TUTORIAL ,Theory,EET
+313,Physics-Tutorial,Theory,PSYT
+314,Basic Electronices-Tutorial,Theory,BET
+315,BASIC MECHANICAL ENGINEERING - Tutorial,Theory,BME T
+316,Introduction to electrical Engineering - Tutotial,Theory,IEE T
+317,Big Data Processing,Theory,BDP
+318,Mini Project-Masters Thesis Phase -I,Theory,Miniproject
+319,DESIGN OF MACHINE ELEMENTS - TUTORIAL,Theory,DME T
+320,Dynamics Of Machinery - Tutorial,Theory,DM T
+321,Gas Dynamics And Jet Propulsion - Tutorial,Theory,GDJP T
+322,Refrigeration And Air Conditioning - Tutorial,Theory,RAC T
+323,Industrial Engineering - Tutorial,Theory,IT T
+324,Sales And Marketing Tutorial,Theory,SM T
+325,Engg. Mathematics IV - Tutorial,Theory,EM IV T
+326,Advanced Mechanics Of Materials Tutorial,Theory,AMM T
+327,Kinematics Of Machinery Tutorial,Theory,KM T
+328,I.C Engines & Combustion Tutorial,Theory,ICECT
+329,Thermodynamics Tutorial,Theory,T T
+330,Computer Aided Design & Manufacturing Tutorial,Theory,CAD T
+331,Engg. Mathematics II - Tutorial,Theory,EM II T
+332,Economics And Communication Skills - Tutorial,Theory,EC T
+333,Fluid Mechanics - Tutorial,Theory,FM T
+334,Metallurgy And Material Science - Tutorial,Theory,MMS T
+335,Programming In C - Tutorial,Theory,C T
+336,Strength Of Materials And Structural Engineering - Tutorial,Theory,SMS T
+337,MECHANICS OF SOLIDS -Tutorial,Theory,MS T
+338,FLUID MECHANICS -Tutorial,Theory,FM T
+339,GEOLOGY -Tutorial,Theory,G T
+340,SURVEYING 1 -Tutorial,Theory,S1 T
+341,ENGINEERING MATHEMATICS -Tutorial,Theory,EM  T
+342,STRUCTURAL ANALYSIS I -Tutorial,Theory,SA T
+343,DESIGN OF CONCRETE STRUCTURES I -Tutorial,Theory,DCS T
+344,GEOTECHNICAL ENGINEERING I -Tutorial,Theory,GE 1
+345,QUALITY SURVEYING -Tutorial,Theory,QS T
+346,COMPUTER PROGRAMMING -Tutorial,Theory,CP T
+347,DESIGN OF HYDRAULIC STRUCTURES -Tutorial,Theory,DHS T
+348,ARCHITECTURE AND TOWN PLANNING -Tutorial,Theory,ATT T
+349,TRANSPORTATION ENGINEERING II -Tutorial,Theory,TE T
+350,PRESTRESSED CONCRETE -Tutorial,Theory,PC T
+351,ENVIRONMENTAL ENGINEERING II -Tutorial,Theory,EE 2
+352,DESIGN OF CONCRETE STRUCTURES II -Tutorial,Theory,DCS T
+353,Theory of Vibration - Tutorial,Theory,TV T
+354,Advanced Mechanics of Solids - Tutorial,Theory,AMS T
+355,Research Methodology - Tutorial,Theory,RM T
+356,Engineering Mathematics II - Tutorial,Theory,EM II T
+357,English - Tutorial,Theory,Eng T
+358,Solid State Devices - Tutorial,Theory,SSD T
+359,Analog Circuits - I - Tutorial,Theory,AC I T
+360,Control Systems - Tutorial,Theory,CS T
+361,Digital System Design - Tutorial,Theory,DSD T
+362,Electrical Drives and Power Electronics - Tutorial,Theory,EDPE T
+363,Applied Electromagnetic Theory - Tutorial,Theory,AET
+364,Microprocessors and Applications - Tutorial,Theory,MA T
+365,VLSI Design - Tutorial,Theory,VLSI T
+366,Information Theory and Coding - Tutorial,Theory,ITC T
+367,Microwave Engineering - Tutorial,Theory,ME T
+368,Electronic Instrumentation - Tutorial,Theory,EI T
+369,Embedded Systems - Tutorial,Theory,ES T
+370,Elective II - Tutorial,Theory,Elective II - T
+371,Network Theory - Tutorial,Theory,NT T
+372,Problem Solving and Computer Programming-Tutorial,Lab,PSC
+373,Switching Theory and Logic Design Tutorial,Theory,STLD
+374,"Electronic Devices and Circuits 	Tutorial",Theory,EDC
+375,Computer Organization Tutorial,Theory,CO
+376,ENGINEERING MATHEMATICS IV TUTORIAL,Theory,EM IV
+377,Principles of  Management Tutorial,Theory,POM
+378,Database Management Systems Tutorial,Theory,DBMS
+379,Digital Signal Processing Tutorial,Theory,DSP
+380,Operating Systems Tutorial,Theory,OS
+381,Advanced Microprocessors & Peripherals Tutorial,Theory,AMP
+382,Web Technologies Tutorial,Theory,WT
+383,Compiler Construction Tutorial,Theory,CC
+384,Computer Graphics Tutorial,Theory,CG
+385,Object Oriented Modeling and Design Tutorial,Theory,OOMD
+386,Principles of Programming Languages Tutorialal,Theory,PPL
+387,Elective II Tutorial,Elective,EL-II
+388,Computer Security,Theory,CS
+389,InT AND DISTRIBUTED APPLICATIONS ,Theory,ITDA
+390,DATA MINING,Theory,DM
+391,COMPUTER GRAPHICS Lab (using OpenGL),Theory,OpenGL
+392,USER INTERFACE DESIGN,Theory,UID
+393,Mini Project,Theory,RLMCA351
+394,Advanced Communication Networks,Theory,04EC6302
+395,Multicarrier and MIMO Communication Systems,Theory,04EC6304
+396,Adaptive Signal Processing Techniques,Theory,04EC6306
+397,Advanced Wireless & Mobile Communication system,Theory,04EC6308
+398,Elective 2- Neural Networks and applications,Theory,NNA
+399,Communication Engineering Lab 2,Theory,04EC6394
+400,Accounting and Financial Management,Theory,INMCA207
+401,Visual Programming(VB),Theory,VB
+402,Software Lab-V1(Visual Programming Lab),Theory,VB LAb
+403,Software Lab-V(DBMS Lab),Theory,DBMS Lab
+404,DESIGN ENGINEERING,Theory,04ME6504
+405,Basics of Civil Engineering,Theory,CE100
+406,PHYSICS LAB,Theory,Ph lab
+407,CIVIL WORKSHOP,Theory,CW
+408,CHEMISTRY LAB,Theory,CH LAB
+409,Electrical Workshop,Theory,EWS
+410,Advanced Communication Systems,Theory,EC404
+411,Maters Thesis Phase-I,Theory,Maters Thesis Phase-I
+412,Miniproject-Industrail Training,Theory,Miniproject/ Industrail Training
+413,Differential Equations,Theory,MA102
+414,ENGINEERING MATHEMATICS III,Theory,EM3
+415,Object Oriented Programming,Theory,EE361
+416,DATA STRUCTURES AND ALGORITHMS,Theory,DSA
+417,Structural Analysis- III,Theory,CE403
+418,Theory of Computation,Theory,IT303
+419,MICROPROCESSOR SYSTEMS,Theory,MS
+420,Design and Analysis of Algorithm,Theory,RLMCA207
+421,INTERNET COMPUTING,Theory,IC
+422,UNIX Shell Programming,Theory,IT363
+423,OPERATING SYSTEM LAB,Theory,OS Lab
+424,ARTIFICIAL INTELLIGENCE,Theory,AI
+425,SECURITY IN COMPUTING,Theory,SIC
+426,ELECTIVE III,Theory,EL III
+427,ELECTIVE IV,Theory,EL IV
+428,COMPUTER GRAPHICS LAB,Theory,CG Lab
+429,Advanced Database Management,Theory,04CS6102
+430,Automata Theory and Computability,Theory,04CS6104
+431,High Performance Computer Architecture,Theory,04CS6106
+432,Web Security,Theory,04CS6114
+433,Digital Image Processing,Theory,04CS6122
+434,Advanced Computing Lab,Theory,04CS6194
+435,HEAT TRANSFER I ,Theory,HTI
+436,ORGANIC CHEMISTRY ,Theory,OC
+437,MECHANICAL OPERATIONS,Theory,MO
+438,MACHINE DRAWING,Theory,MD
+439,CHEMICAL ENGINEERING THERMODYNAMICSI ,Theory,CETD I
+440,Fluid and Particle Mechanics Lab,Theory,CH232
+441,PHYSICAL &ORGANIC CHEMISTRY LAB,Theory,POC LAB
+442,Mass transfer operations II,Theory,CH306
+443,Environmental Engineering,Theory,CH301
+444,CHEMICAL TECHNOLOGY II,Theory,CT II
+445,Process dynamics and control,Theory,CH302
+446,CHEMCIAL REACTION ENGINEERING II,Theory,CRE II
+447,MATERIAL SCIENCE AND ENGINEERING ,Theory,ELECTIVE
+448,MODELING AND SIMULATION FOR PROCESS INDUSTRIES,Theory,ELECTIVE
+449,ENVIRONMENTAL ENGINERERING LAB,Lab,ENV LAB
+450,Heat Transfer Operations Lab,Theory,CH331
+451,Materials Characterisation,Theory,MT312
+452,"Creep, Fatigue and Fracture Mechanics",Theory,CFF
+453,Alloy design and applications,Theory,ADA
+454,Operations Management,Theory,OM
+455,Industrial Safety,Theory,IS
+456,Non Destructive Testing Laboratory,Theory,ADTL
+457,Non-Ferrous Physical Metallurgy,Theory,MT306
+458,Advanced and Secondary Steel Making,Theory,MT304
+459,Foundry Technology,Theory,FT
+460,Metallography and X-ray diffraction,Theory,MXD
+461,Non-ferrous extractive metallurgy,Theory,NFEM
+462,Nuclear Metallurgy,Theory,MT362
+463,Metallography Laboratory,Theory,ML
+464,Foundry Laboratory,Theory,FL
+465,Mechanical Behaviour and Testing,Theory,MT208
+466,Phase Transformation and heat treatment,Theory,FTHT
+467,"Electrical, Electronic, optical and magnetic materials",Theory,EEOM
+468,Transport Phenomenon,Theory,TP
+469,Heat treatment of ferrous metals laboratory,Theory,HTFML
+470,Mechanical Testing Lab,Theory,MT234
+471,Design of Transmission Elements,Theory,DTE
+472,Special Type of Vehicles,Theory,STV
+473,Automobile Workshop 3,Theory,Automobile Workshop 3
+474,Mechanics of Machines,Theory,MM
+475,Heat and Mass Transfer,Theory,ME302
+476,Auto Transmission,Theory,AU206
+477,Metrology and Machine Tools,Theory,MMT
+478,Mechatronics and Control Systems,Theory,MCS
+479,Heat Engines Laboratory,Theory,HEL
+480,Machine Tool Laboratory,Theory,MTL
+481,Auto Power Plant,Theory,APP
+482,Manufacturing Processes,Theory,ME311
+483,Electrical Technology,Theory,ET
+484,Automobile Workshop I,Theory,Automobile Workshop I
+485,Strength of Materials Lab,Theory,SML
+486,Wireless Communication,Theory,WC
+487,Communication Networks,Theory,CN
+488,Light Wave Communication,Theory,LWC
+489,VLSI and Embedded Systems lab,Theory,VLSI LAB
+490,Digital Communication Techniques,Theory,DCT
+491,Radiation and Propagation,Theory,RP
+492,Computer Architecture and Parallel Processing,Theory,CAPP
+493,Microcontrollers and Applications,Theory,MA 102
+494,Medical Electronics,Theory,ME
+495,Television & Radar Engineering,Theory,TRE
+496,Microprocessor & Microcontroller Lab,Theory,MMC
+497,Cryptography and Cyber Security,Theory,RLMCA305
+498,WAD Lab,Theory,WAD
+499,Construction Engineering and Management,Theory,CEM
+500,Mechanics of Solids II,Theory,MS II
+501,Open Channel Flow and Hydraulic Machines,Theory,OCFHM
+502,Surveying II,Theory,Surveying II
+503,Civil Engineering Drafting Lab,Theory,CE231
+504,Survey Practical II,Theory,Survey Practical II
+505,Hydraulics Lab,Theory,Hydraulics Lab
+506,Economics ,Theory,Economics 
+507,Design of Steel Structures,Theory,CE401
+508,Geotechnical Engineering II,Theory,GEII
+509,Structural Analysis II,Theory,SA II
+510,Transportation Engineering-I,Theory,CE308
+511,Water Resources Engineering,Theory,CE309
+512,Concrete Technology,Theory,CT
+513,Computer aided Design and Drafting Lab,Theory,CAD
+514,Material Testing Lab II,Theory,MT II
+515,Advanced Structural Design,Theory,CE471
+516,Building Technology And Management,Theory,BTM
+517,Environmental Engineering II,Theory,CE402
+518,Highway and Airfield Pavements,Theory,HAP
+519,Finite Element Analysis,Theory,ME469
+520,Environmental Pollution Control Techniques,Theory,EPCT
+521,Environmental Engineering Lab,Theory,CE431
+522,Digital Electronics,Theory,DE
+523,Analog Communication,Theory,AC
+524,Analog Circuits -II,Theory,AC II
+525,Analog Circuits -II Lab,Theory,ACII LAB
+526,Analog Communication Lab,Theory,AC LAB
+527,Thermal Systems & Applications,Theory,TSA
+528,Mechatronics & Control Systems,Theory,MCS
+529,Composite Materials Technology,Theory,CMT
+530,Metrology & Machine Tools,Theory,MMT
+531,Project Management,Theory,PM
+532,Heat Engines Lab,Theory,ME333
+533,Machine Tool Lab,Theory,MTL
+534,Hydraulic Machines,Theory,HM
+535,Hydraulic Machines Lab,Theory,HML
+536,MECHANICAL SYSTEMS LABORATORY ,Theory,MSL
+537,PRODUCTION ENGINEERING ,Theory,PM
+538,NON DESTRUCTIVE TESTING,Theory,NDT
+539,INDUSTRIAL SAFTEY ,Theory,IS
+540,ADVANCED THEORY OF MACHINES,Theory,ATM
+541,NUMERICAL METHODS,Theory,04ME6518
+542,DC Machines and Transformers,Theory,EE205
+543,Linear System Analysis,Theory,LSA
+544,Electromagnetic Theory,Theory,ET
+545,Digital Systems and Computer Organisations,Theory,DSCO
+546,Computer Programming,Theory,AU208
+547,Computer Programming LAB,Theory,AU232
+548,Electronics Circuits Lab,Theory,CS233
+549,Power Generation & Distribution ,Theory,PGD
+550,Induction Machines,Theory,IM
+551,Micro  Controllers & Embedded Systems ,Theory,MCES
+552,Renewable energy sources,Theory,RES
+553,Power Electronics Lab,Theory,04EE6390
+554,Micro processor And Microcontroller Lab,Theory,MICRO LAB
+555,Power System Analysis,Theory,EE306
+556,Switch Gear and Protection,Theory,SGP
+557,Electrical system design,Theory,EE405
+558,Advanced Power Systems,Theory,APS
+559,Computer Network,Theory,CN
+560,Distributed Power Systems,Theory,DPS
+561,Electrical Machines Lab II,Theory,EE333
+562,Design of Steel Structures - Tutorial,Theory,Design of Steel Structures - Tutorial
+563,Geotechnical Engineering II - Tutorial,Theory,Geotechnical Engineering II - Tutorial
+564,Structural Analysis II - Tutorial,Theory,Structural Analysis II - Tutorial
+565,Transportation Engineering I - Tutorial,Theory,Transportation Engineering I - Tutorial
+566,Water Resources Engineering - Tutorial,Theory,Water Resources Engineering - Tutorial
+567,Concrete Technology - Tutorial,Theory,Concrete Technology - Tutorial
+568,Engineering Mathematics III - Tutorial,Theory,Engineering Mathematics III - Tutorial
+569,Construction Engineering and Management - Tutorial,Theory,Construction Engineering and Management - Tutorial
+570,Mechanics of Solids II - Tutorial,Theory,Mechanics of Solids II - Tutorial
+571,Open Channel Flow and Hydraulic Machines - Tutorial,Theory,Open Channel Flow and Hydraulic Machines - Tutorial
+572,Surveying II - Tutorial,Theory,Surveying II - Tutorial
+573,Advanced Structural Design - Tutorial,Theory,Advanced Structural Design - Tutorial
+574,Building Technology And Management - Tutorial,Theory,Building Technology And Management - Tutorial
+575,Environmental Engineering II - Tutorial,Theory,Environmental Engineering II - Tutorial
+576,Highway and Airfield Pavements - Tutorial,Theory,Highway and Airfield Pavements - Tutorial
+577,Finite Element Analysis - Tutorial,Theory,Finite Element Analysis - Tutorial
+578,Environmental Pollution Control Techniques - Tutorial,Theory,Environmental Pollution Control Techniques - Tutorial
+579,DESIGN ENGINEERING - Practical,Theory,DESIGN ENGINEERING - Practical
+580,Wireless Communication - Tutorial,Theory,Wireless Communication - Tutorial
+581,Communication Networks - Tutorial,Theory,Communication Networks - Tutorial
+582,Light Wave Communication - Tutorial,Theory,Light Wave Communication - Tutorial
+583,Elective III  Micro Electro Mechanical Systems - Tutorial,Theory,Elective III  Micro Electro Mechanical Systems - Tutorial
+584,Elective III Secure Communication - Tutorial,Theory,Elective III Secure Communication - Tutorial
+585,Digital Communication Techniques - Tutorial,Theory,Digital Communication Techniques - Tutorial
+586,Digital Signal Processing - Tutorial,Theory,Digital Signal Processing - Tutorial
+587,Radiation and Propagation - Tutorial,Theory,Radiation and Propagation - Tutorial
+588,Computer Architecture and Parallel Processing - Tutorial,Theory,Computer Architecture and Parallel Processing - Tutorial
+589,Microcontrollers and Applications - Tutorial,Theory,Microcontrollers and Applications - Tutorial
+590,Medical Electronics - Tutorial,Theory,Medical Electronics - Tutorial
+591,Television & Radar Engineering - Tutorial,Theory,Television & Radar Engineering - Tutorial
+592,Principles of Management - Tutorial,Theory,Principles of Management - Tutorial
+593,Signals and Systems - Tutorial,Theory,Signals and Systems - Tutorial
+594,Digital Electronics - Tutorial,Theory,Digital Electronics - Tutorial
+595,Analog Communication - Tutorial,Theory,Analog Communication - Tutorial
+596,Analog Circuits -II - Tutorial,Theory,Analog Circuits -II - Tutorial
+597,Probability and Statistics - Tutorial,Theory,PS
+598,Data Structures and Analysys of Computer Algorithms - Tutorial,Theory,DS
+599,Microprocessors and Embedded Systems - Tutorial,Theory,MES
+600,Operating Systems - Tutorial,Theory,OS
+601,Object Oriented Programming with C++ - Tutorial,Theory,OOP
+602,Operations Research - Tutorial,Theory,OR
+603,Computer Networks - Tutorial,Theory,CN-Tutorial
+604,Linux and Shell Programming - Tutorial,Theory,Linux
+605,Object Oriented Modeling and Design - Tutorial,Theory,OOMD
+606,Elective- I - Tutorial,Theory,Elective
+607,Technical Communication - Tutorial,Theory,Commn
+608,Digital Systems & Logic Designs - Tutorial,Theory,DSLD
+609,Data Structures- C - Tutorial,Theory,DS
+610,Software Lab-1V(C ++Lab) - Tutorial,Lab,C++ Lab
+611,Statistics- II - Tutorial,Theory,Statistics
+612,High Performance Computing - Tutorial,Theory,HPC
+613,FLUID MECHANICS AND HYDRAULIC MACHINERY - Tutorial,Theory,FMHM
+614,FLUID MECHANICS LAB - Tutorial,Lab,FM LAB
+615,ENGINEERING MATHEMATICS IV - Tutorial,Theory,EM IV
+616,COMPUTER AIDED DESIGN AND MANUFACTURING - Tutorial,Theory,CADM
+617,AUTO CHASSIS - Tutorial,Theory,AC
+618,KINEMATICS OF MACHINERY - Tutorial,Theory,KM
+619,I C ENGINES AND COMBUSTION - Tutorial,Theory,IC
+620,Problem Solving and Computer Programming - Tutorial,Theory,PSCP
+621,Computer Organization - Tutorial,Theory,CO
+622,Switching Theory and Logic Design - Tutorial,Theory,STLD
+623,Electronic Devices and Circuits - Tutorial,Theory,EDC
+624,Database Management Systems - Tutorial,Theory,DMS
+625,Advanced Microprocessors & Peripherals - Tutorial,Theory,AMP
+626,Web Technologies - Tutorial,Theory,WT
+627,Compiler Construction - Tutorial,Theory,CC
+628,Computer Graphics - Tutorial,Theory,CG
+629,Principles of Programming Languages - Tutorial,Theory,PPL
+630,System ProgrammingLab - Tutorial,Lab,SP LAB
+631,Seminar - Tutorial,Theory,SEMINAR
+632,THERMODYNAMICS - Tutorial,Theory,TD
+633,ADVANCED AUTOMOTIVE TECHNOLOGY - Tutorial,Theory,AAT
+634,AUTO ELECTRICAL AND ELECTRONICS - Tutorial,Theory,AEE
+635,MECHANICS OF SOLIDS I - Tutorial,Theory,MOS
+636,SURVEYING I  - Tutorial,Theory,SUR-I
+637,ENGINEERING GEOLOGY - Tutorial,Theory,EG
+638,COMPUTER PROGRAMMING - Tutorial,Lab,CP
+639,DESIGN OF CONCRETE STRUCTURES I  - Tutorial,Theory,DCS
+640,GEOTECHNICAL ENGINEERING â€“ I  - Tutorial,Theory,GTE
+641,QUANTITY SURVEYING AND VALUATION - Tutorial,Theory,QS
+642,STRUCTURAL ANALYSIS I  - Tutorial,Theory,SA-I
+643,DESIGN OF HYDRAULIC STRUCTURES - Tutorial,Theory,DHS
+644,ENVIRONMENTAL ENGINEERING - I  - Tutorial,Theory,EE
+645,ARCHITECTURE AND TOWN PLANNING - Tutorial,Theory,ATP
+646,TRANSPORTATION ENGINEERING - II  - Tutorial,Theory,TE
+647,PRESTRESSED CONCRETE (Elective II )  - Tutorial,Elective,PC EL-II
+648,Discrete and Integrated Electronic  Circuits - Tutorial,Theory,DAIEC
+649,Principles of Communication Engineering - Tutorial,Theory,PCE
+650,Micoprocessors and Microcontrollers - Tutorial,Theory,MMC
+651,Data Communication - Tutorial,Theory,DC
+652,Language Translators - Tutorial,Theory,LT
+653,FINANCIAL MANAGEMENT AND E-  BANKING - Tutorial,Theory,FMEB
+654,COMPUTER GRAPHICS & MULTIMEDIA   SYSTEMS - Tutorial,Theory,CGAMS
+655,INTERNETWORKING - Tutorial,Theory,IN
+656,WEB APPLICATIONS DEVELOPMENT - Tutorial,Theory,WAD
+657,Data mining - Tutorial,Elective,DM
+658,Advanced Mechanics of  Materials - Tutorial,Theory,AMM
+659,Introduction to Mechanical Sciences - Tutorial,Theory,INS
+660,Sustainable Engineering - Tutorial,Theory,SE
+661,ENGINEERING MATHEMATICS  - Tutorial,Theory,EM
+662,Electrical and Electronic Engineering - Tutorial,Theory,EEE
+663,Physical Metallurgy - Tutorial,Theory,PM
+664,Mineral Dressing - Tutorial,Theory,MB
+665,Dynamics of Machines - Tutorial,Theory,DOM
+666,Metal Joining Technology - Tutorial,Theory,MJT
+667,Iron and Steel Making - Tutorial,Theory,ISM
+668,"Pyro, Hydro, Electro Metallurgy - Tutorial",Theory,PHEM
+669,"Fuels, Furnaces and Refractories - Tutorial",Theory,FFR
+670,Metallurgical Thermodynamics - Tutorial,Theory,MTTH
+671,Sales and Marketing Management - Tutorial,Theory,SMM
+672,Corrosion Science and Engineering - Tutorial,Theory,CSE
+673,Non Destructive Testing and Failure Analysis - Tutorial,Theory,NDT
+674,"Ceramics, Polymers and Composites Materials - Tutorial",Theory,CPC
+675,Theory of Metal Forming - Tutorial,Theory,TMF
+676,Powder Metallurgy - Tutorial,Theory,PM
+677,High Temperature Materials - Tutorial,Theory,HTM
+678,DESIGN OF MACHINE ELEMENTS 1 - Tutorial,Theory,DME1
+679,Electric Circuit Theroy - Tutorial,Theory,ECT
+680,Electrical Measurements and Measuring instruments - Tutorial,Theory,EM & MI
+681,Electronic Circuit  - Tutorial,Theory,EC
+682,Mechanical Technology - Tutorial,Theory,MT
+683,Signals & Systems - Tutorial,Theory,SS
+684,Power Electronics - Tutorial,Theory,PE
+685,Linear Integrated Circuits - Tutorial,Theory,LIC
+686,Microporcessor and Application - Tutorial,Theory,MA
+687,Electric Power transmission - Tutorial,Theory,EPT
+688,Synchronous machines - Tutorial,Theory,SM
+689,Drives and control - Tutorial,Theory,DC
+690,Modern control theory - Tutorial,Theory,MCT
+691,Communication engineerig - Tutorial,Theory,CE
+692,Electric Drives & Control - Tutorial,Theory,EDC
+693,INTRODUCTION TO CHEMCIAL ENGINEERING - Tutorial,Theory,ICE
+694,PHYSICAL AND ANALYTICAL CHEMISTRY - Tutorial,Theory,PAC
+695,PROCESS CALCULATION - Tutorial,Theory,PC
+696,FLUID AND PARTICLE MECHANICS - Tutorial,Theory,FPM
+697,CHEMICAL REACTION ENGINEERING I  - Tutorial,Theory,CRE
+698,HEAT TRANSFER II - Tutorial,Theory,HT II
+699,CHEMICAL TECHNOLOGY I - Tutorial,Theory,CT I
+700,MASS TRANSFER OPERATIONS I - Tutorial,Theory,MTO I
+701,CHEMICAL ENGINEERING THERMODYAMICS II - Tutorial,Theory,CET II
+702,PC Hardware  - Tutorial,Theory,PCH
+703,BASIC ELECTRICAL ENGINEERING - Tutorial,Theory,EE
+704,VALUE EDUCATION - Tutorial,Theory,VE
+705,"BASIC ELECTRONICS ENGINEERING	 - Tutorial",Theory,EL
+706,INTRODUCTION TO CIVIL ENGINEERING - Tutorial,Theory,ICE
+707,Introduction to computing and problem solving - Tutorial,Theory,ICS
+708,ENGINEERING PHYSICS - Tutorial,Theory,PH
+709,INTRODUCTION TO ELECTRICAL ENGINEERING  - Tutorial,Theory,IEE
+710,MECHANICAL WORKSHOP - Tutorial,Lab,ME
+711,Mathematical Foundation of Computer Science - Tutorial,Theory,MFCS
+712,Statistics I - Tutorial,Theory,Stat I
+713,Integrated Circuites & PC Hardware - Tutorial,Theory,IC & PCH
+714,Programming methodology & C Programming - Tutorial,Theory,PM & CP
+715,Computer Organization and Architecture  - Tutorial,Theory,COA
+716,Principles of Management and Accounting  - Tutorial,Theory,PMA
+717,Structured  Programming in C  - Tutorial,Theory,C
+718,Java and Web Programming - Tutorial,Theory,JWP
+719,System Software - Tutorial,Theory,SS
+720,Software Engineering  - Tutorial,Theory,SE
+721,ANALYTICAL FOUNDATION FOR COMMUNICATION ENGINEERING - Tutorial,Theory,AFCE
+722,ADVANCED DIGITAL COMMUNICATION TECHNIQUES - Tutorial,Theory,ADCT
+723,ALGEBRAIC CODING THEORY - Tutorial,Theory,ACT
+724,HIGH FREQUENCY CIRCUIT DESIGN - Tutorial,Theory,HFCD
+725,SIGNAL PROCESSING FOR SPEECH AND IMAGE - Tutorial,Theory,SPFS
+726,Optimization Techniques  for Engineering Applications - Tutorial,Theory,OTEA
+727,NonConventional Energy Sources - Tutorial,Theory,MCES
+728,Energy Resources Economics & Enviornment - Tutorial,Theory,EREE
+729,Power Electronic Circuits - Tutorial,Theory,PEC
+730,Elective I (Industrial Thermal Systems) - Tutorial,Theory,ITS
+731,"Power Electronic Devices & Circuits	 - Tutorial",Theory,PEDC
+732,Computer Application in PowerSystems-Tutorial,Theory,CAPS
+733,"Power System Operation and  Control	 - Tutorial",Theory,PSOC
+734,"Elective I- Electric Drives & Systems	 - Tutorial",Theory,EDS
+735,Mathematical Methods - Tutorial,Theory,MM
+736,Introduction to Nanotechnology - Tutorial,Theory,INT
+737,Physics of Nanomaterials - Tutorial,Theory,PN
+738,Engineering Principles for Nanotechnology - Tutorial,Theory,PNT
+739,Elective 1-Carbon Nanomaterial Science and Technology - Tutorial,Theory,CNST
+740,Advanced Engineering Mathematics(MATHS) - Tutorial,Theory,Maths
+741,Theory of Vibrations(TOV) - Tutorial,Theory,TOV
+742,Advanced Mechanics  of Solids - Tutorial,Theory,AMOS
+743,Design of Power Transmission Elements - Tutorial,Theory,DPTE
+744,Elective I /ADDITIVE MANUFACTURING - Tutorial,Theory,AM
+745,Computational Intelligence - Tutorial,Theory,CI
+746,Advanced Data Structures and Algorithms - Tutorial,Theory,ADSA
+747,Computer Security and Applied Cryptography - Tutorial,Theory,CSAC
+748,Modern Computer Networks - Tutorial,Theory,MCN
+749,Object Oriented Software Engineering - Tutorial,Theory,OOSE
+750,Analytical Methods in Engineering - Tutorial,Theory,AME
+751,Theory of Elasticity - Tutorial,Theory,TE
+752,Structural Dynamics - Tutorial,Theory,SD
+753,Advanced Design of Concrete Structures - Tutorial,Theory,ADCS
+754,Advanced Concrete Technology - Tutorial,Theory,ACT
+755,Construction Management - Tutorial,Theory,CM
+756,"Construction Planning, Scheduling and Control - Tutorial",Theory,CPSC
+757,Engineering Chemistry - Tutorial,Theory,EC T
+758,Big Data Processing - Tutorial,Theory,BDP
+759,Computer Security - Tutorial,Theory,CS
+760,InT AND DISTRIBUTED APPLICATIONS  - Tutorial,Theory,ITDA
+761,USER INTERFACE DESIGN - Tutorial,Theory,UID
+762,Advanced Communication Networks - Tutorial,Theory,ACN
+763,Multicarrier and MIMO Communication Systems - Tutorial,Theory,MMCS
+764,Adaptive Signal Processing  Techniques - Tutorial,Theory,ASPT
+765,Elective 1-Advanced Wireless &  Mobile Communication  system  - Tutorial,Theory,AWMC
+766,Elective 2- Neural Networks and applications - Tutorial,Theory,NNA
+767,Accounting and Financial Management - Tutorial,Theory,AFM
+768,Visual Programming(VB) - Tutorial,Theory,VB
+769,BASIC CIVIL ENGINEERING - Tutorial,Theory,BCE
+770,Advanced Communication Systems - Tutorial,Theory,ADS
+771,Maters Thesis Phase-I - Tutorial,Theory,Maters Thesis Phase-I
+772,Differential Equation  - Tutorial,Theory,Differential Equation 
+773,OBJECT ORIENTED PROGRAMMING - Tutorial,Theory,OOP
+774,DATA STRUCTURES AND ALGORITHMS - Tutorial,Theory,DSA
+775,SIGNALS AND COMMUNICATION SYSTEMS - Tutorial,Theory,SCS
+776,THEORY OF COMPUTATION - Tutorial,Theory,TOC
+777,MICROPROCESSOR SYSTEMS - Tutorial,Theory,MS
+778,DESIGN AND ANALYSIS OF ALGORITHM - Tutorial,Theory,DAA-Tutorial
+779,INTERNET COMPUTING - Tutorial,Theory,IC
+780,UNIX SHELL PROGRAMMING - Tutorial,Theory,UNIX
+781,ARTIFICIAL INTELLIGENCE - Tutorial,Theory,AI
+782,SECURITY IN COMPUTING - Tutorial,Theory,SIC
+783,ADVANCED DATABASE MANAGEMENT - Tutorial,Theory,ADM
+784,AUTOMATA THEORY AND COMPUTABILITY - Tutorial,Theory,ATAC
+785,HIGH PERFORMANCE COMPUTER ARCHITECTURE - Tutorial,Theory,HPCA
+786,ELECTIVE 2 - WEB SECURITY - Tutorial,Theory,EL2- WS
+787,ELECTIVE 3 - DIGITAL IMAGE PROCESSING - Tutorial,Theory,El3-DIP
+788,HEAT TRANSFER I  - Tutorial,Theory,HTI
+789,ORGANIC CHEMISTRY  - Tutorial,Theory,OC
+790,MECHANICAL OPERATIONS - Tutorial,Theory,MO
+791,MACHINE DRAWING - Tutorial,Theory,MD
+792,CHEMICAL ENGINEERING THERMODYNAMICSI  - Tutorial,Theory,CETD I
+793,MASS TRANSFER OPERATIONS II  - Tutorial,Theory,MTII
+794,ENVIRONMENTAL ENGINERERING - Tutorial,Theory,ENV
+795,CHEMICAL TECHNOLOGY II - Tutorial,Theory,CT II
+796,PROCESS DYNAMICS AND CONTROL - Tutorial,Theory,PDC
+797,CHEMCIAL REACTION ENGINEERING II - Tutorial,Theory,CRE II
+798,Advanced Material Characterization - Tutorial,Theory,AMC
+799,"Creep, Fatigue and Fracture Mechanics - Tutorial",Theory,CFF
+800,Alloy design and applications - Tutorial,Theory,ADA
+801,Operations Management - Tutorial,Theory,OM
+802,Industrial Safety - Tutorial,Theory,IS
+803,Non-Ferrous Physical Metallurgy - Tutorial,Theory,NFPM
+804,Secondary and advanced steel making - Tutorial,Theory,SASM
+805,Foundry Technology - Tutorial,Theory,FT
+806,Metallography and X-ray diffraction - Tutorial,Theory,MXD
+807,Non-ferrous extractive metallurgy - Tutorial,Theory,NFEM
+808,Nuclear Metallurgy - Tutorial,Theory,NM
+809,Mechanical Behaviour and Testing - Tutorial,Theory,MBT
+810,Phase Transformation and heat treatment - Tutorial,Theory,FTHT
+811,"Electrical, Electronic, optical and magnetic materials - Tutorial",Theory,EEOM
+812,Transport Phenomenon - Tutorial,Theory,TP
+813,Design of Transmission Elements - Tutorial,Theory,DTE
+814,Special Type of Vehicles - Tutorial,Theory,STV
+815,Mechanics of Machines - Tutorial,Theory,MM
+816,Heat and Mass Transfer - Tutorial,Theory,HMT
+817,Automotive Transmission - Tutorial,Theory,AT
+818,Metrology and Machine Tools - Tutorial,Theory,MMT
+819,Mechatronics and Control Systems - Tutorial,Theory,MCS
+820,Auto Power Plant - Tutorial,Theory,APP
+821,Manufacturing Process - Tutorial,Theory,MP
+822,Electrical Technology - Tutorial,Theory,ET
+823,"Cryptography and Netwrok Security		 - Tutorial",Theory,CNS
+824,Civil Engineering Drawing - Tutorial,Theory,CED
+825,Thermal Systems & Applications - Tutorial,Theory,TSA
+826,Metrology & Machine Tools - Tutorial,Theory,MMT
+827,Hydraulic Machines - Tutorial,Theory,HM
+828,PRODUCTION ENGINEERING  - Tutorial,Theory,PM
+829,ADVANCED THEORY OF MACHINES - Tutorial,Theory,ATM
+830,NUMERICAL METHODS - Tutorial,Theory,NM
+831,DC Machines and Transformers - Tutorial,Theory,DCMT
+832,Linear System Analysis - Tutorial,Theory,LSA
+833,Electromagnetic Theory - Tutorial,Theory,ET
+834,Digital Systems and Computer Organisations - Tutorial,Theory,DSCO
+835,Power Generation & Distribution  - Tutorial,Theory,PGD
+836,Induction Machines - Tutorial,Theory,IM
+837,Micro  Controllers & Embedded Systems  - Tutorial,Theory,MCES
+838,Power System Analysis  - Tutorial,Theory,PSA
+839,Switch Gear and Protection - Tutorial,Theory,SGP
+840,Electrical System Design - Tutorial,Theory,ESD
+841,Elective III - Tutorial,Theory,Elective III - Tutorial
+842,Elective IV - Tutorial,Theory,Elective IV - Tutorial
+843,Projcet Planning and Implementation,Theory,04CE6402
+844,Theory of Plates and Shells,Theory,04CE6406
+845,Construction Methods and Equipments,Theory,04CE6416
+846,Quantitative Methods in Construction,Theory,04CE6424
+847,Structural Engineering Lab,Theory,04CE6494
+848,Bridge Engineering,Theory,04CE6102
+849,Microstructure and Innovations in Structural Concrete,Theory,04CE6116
+850,Earthquake Resistant Design,Theory,04CE6118
+851,Computer Aided Engineering Design,Theory,04ME6594
+852,Switch Mode Power Converters,Theory,04EE6302
+853,Embedded controllers for power converters,Theory,04EE6602
+854,Power System Dynamics and Stability,Theory,04EE6418
+855,Computational Intelligent Techniques,Theory,04EE6002
+856,FACTS and Power Quality,Theory,04EE6444
+857,Grid Integration of Solar PV System,Theory,04EE6304
+858,Wind and Hybrid Energy Systems,Theory,04EE6504
+859,Utilization of Solar Thermal Energy,Theory,04EE6508
+860,Advanced Renewable Energy Lab,Theory,04EE6594
+861,Power Electronics Lab,Theory,PE Lab
+862,Energy Management and Audit,Theory,04EE6502
+863,Industrial Training,Theory,Industrial Training
+864,Object Oriented Programming with java,Theory,oop
+865,Object Oriented Programming with Java - Tutorial,Theory,Object Oriented Programming with Java - Tutorial
+866,MATERIAL SCIENCE AND ENGINEERING TUTORIAL,Elective,MSE
+867,Energy Efficient Buildings,Theory,04EE7505
+868,Microcontroller Applications in Power Convertors,Theory,MAP
+869,MODELLING AND SIMULATION FOR PROCESS INDUSTRIES - TUTORIAL,Theory,MODELLING AND SIMULATION FOR PROCESS INDUSTRIES - TUTORIAL
+870,INDUSTRIAL NANOTECHNOLOGY,Theory,04CH6102
+871,Experimental And Characterization Techniques For Nanotechnology,Theory,04CH6106
+872,NANO TOXICOLOGY,Theory,NT
+873,Polymer Nanocomposites,Theory,04CH6118
+874,INDUSTRIAL NANOTECHNOLOGY - TUTORIAL,Theory,IN
+875,ADVANCED NANOMATERIALS,Theory,04CH6104
+876,LAB II,Theory,04CH6194
+877,Masters Thesis Phase-II,Theory,Masters Thesis Phase-II
+878,Communication Skills,Theory,CS
+879,Teaching Assistance,Theory,TA
+880,Multimedia Systems,Theory,MS
+881,Management Information Systems,Theory,MIS
+882,Software Lab-VII(Java Lab),Theory,Java Lab
+883,Viva voce,Theory,Viva voce
+884,MCA S6 Project,Final Project,Main Project
+885,Linear Algebra & Complex Analysis,Theory,MA201
+886,Fluid Mechanics & Machinery,Theory,ME200
+887,S I Engines & Combustion,Theory,AU201
+888,Business Economics_Life Skills,Theory,BE
+889,Fluid Mechanics & Machines Lab,Lab,ME230
+890,Material Testing Lab,Lab,MTL
+891,PROJECT PRELIMINARIES,Lab,PP
+892,Metallurgical Thermodynamics and Kinetics,Theory,MTK
+893,Mineral Beneficiation,Theory,MB
+894,Computer Programming in C,Theory,CP
+895,Mineral Dressing Lab,Lab,MD
+896,Computer Programming in C Laboratory,Lab,CP lab
+897,CHEMICAL ENGINEERING DESIGN AND DRAWING I,Theory,CED
+898,Process Instrumentation,Theory,CH403
+899,PETROLEUM REFINERY ENGINEERING ANDPETROCHEMICALS,Theory,PRE
+900,ECONOMICS AND MANAGEMENT FOR PROCESS INDUSTRIES,Theory,EAMPI
+901,FOOD TECHNOLOGY AND ENGINEERING,Theory,FTE
+902,BIOCHEMICAL ENGINEERING,Theory,BCE
+903,CHEMICAL ENGINEERING DESIGN SOFTWARE LAB,Lab,CEDS
+904,Mass transfer operations lab,Lab,CH332
+905,SEMINAR AND MAJOR PROJECT,Lab,SP
+906,Life Skills/Business Economics,Theory,HS210
+907,Chemical Process Calculations,Theory,CH201
+908,Discrete Computational Structures,Theory,DCS
+909,Particle Technology,Theory,CH203
+910,Chemistry for Process Engineering â€“I,Theory,CH207
+911,Chemistry Lab for Process Engineering,Lab,CH231
+912,Data Structures,Theory,CS205
+913,Chemical Technology and Environmental Engg Lab,Lab,CH233
+914,Business Economics,Theory,BE
+915,Data Structures Lab,Lab,CS231
+916,Digital Circuits Lab,Lab,IT231
+917,Microprocessor Lab,Lab,CS332
+918,"Circuits ,Networks & Systems",Theory,CNAS
+919,Analog Electronic Circuits,Theory,EE203
+920,Electronic Circuits Lab,Lab,EE231
+921,Electrical CAD Lab,Lab,ECL
+922,Project,Lab,CS492
+923,Logic Circuit Design,Theory,EC207
+924,Electronic Devices & Circuits Lab,Lab,EC231
+925,EDA Lab,Lab,EC 223
+926,Electrical Drives and Power Electronics,Theory,EC010 504 (EE)
+927,Electrical Drives and Power Electronics Lab,Lab,EC010 508(EE)
+928,Digital Image Processing,Theory,CS463
+929,Anteena Theory & Design,Theory,EC010 706Lxx
+930,Aptitude - Activity,Lab,Aptitude
+931,Mechanics of Solids,Theory,CE201
+932,Mechanics of Fluids,Theory,ME203
+933,Metullurgy and Materials Engineering,Theory,ME 207
+934,Computer Aided Machine Drawing Lab,Theory,ME231
+935,Linear Algebra and Complex Analysis-tutorial,Lab,MA 201 
+936,Mechanics of Fluids-TUTORIAL ,Lab,ME203
+937,Metullurgy and Materials Engineering- Tutorial,Lab,ME 207 
+938,Basics of Electrical Engineering,Theory,EE100
+939,English - Softskills,Lab,ES
+940,Web Application Development Lab,Lab,IT431
+941,Remedial Class,Lab,RC
+942, Complex Analysis linear algebra and integral Transforms,Theory,CALAIT
+943,Chemical Process Calculations-Tutorial,Lab,CPC
+944,Particle Technology-Tutorial,Theory,PT
+945,Chemistry for Process Engineers/Tutorial ,Theory,CFPE
+946,CALCULUS (MA) - Tutorial,Theory,C
+947,ENGINEERING PHYSICS (PH) - Tutorial,Theory,EP
+948,ENGINEERING MECHANICS (EM) - Tutorial,Theory,EM
+949,INTRODUCTION TO CHEMICAL ENGINEERING (ICH) - Tutorial,Theory,IC
+950,BASIC ELECTRICAL ENGINEERING (BEE) - Tutorial,Theory,BEE
+951,Personality Development,Lab,PD
+952,Mango Waves,Lab,MW
+953,Mentoring- Library,Lab,ML
+954,"Technical Session 	",Lab,TS
+955,INTRODUCTION TO COMPUTER SCIENCE ENGINEERING ,Theory,ICS
+956,PHP Programming,Theory,PHP
+957,Software Lab-IX(PHP Lab),Lab,PHP Lab
+958, Software Lab-X(Linux & Shell Pgm Lab),Lab,Linux
+959,Introduction to Computers and PC hardware,Theory,INMCA107
+960,Fundamentals of Accountancy,Theory,INMCA109
+961,Office Automation Lab,Lab,INMCA131
+962,Digital Fundamentals,Theory,RLMCA109
+963,Applied Statistics Lab,Lab,RLMCA133
+964,Discrete Mathematics,Theory,RLMCA103
+965,Applied Probability and Statistics,Theory,RLMCA105
+966,Communication & Soft skills,Lab,COMSS
+967,Web Programming,Theory,RLMCA209
+968,Web Programming Lab,Lab,RLMCA233
+969,Elective IV (Cyber Forensics),Theory,CY
+970,Big Data Processing,Theory,04CS7109
+971,Design of Tall Buildings,Theory,04CE7107
+972,Maintenance and Rehab. of Structures,Theory,MRS
+973,Seminar 2,Theory,Seminar
+974,Electricity Deregulation,Theory,04 EE 7421
+975,Cloud Computing,Theory,04EC7305
+976,Communication Network Security,Theory,04EC7311
+977,Coding Theory,Theory,CT
+978,Advanced Optical Communication,Theory,AOC
+979,Introduction to Computer Science Tutorial,Theory,ICS
+980,Power Electronic Applications in Renewable Energy,Theory,04EE7303
+981,Visual Programming(VB.NET),Theory,VB.NET
+982,Visual Programming LAB(VB.NET),Lab,VB.NET Lab
+983,Photonics and Plasmonics,Elective,04CH7107
+984,GREEN MANUFACTURING TECHNOLOGIES,Elective,04  CH 7111
+985,PROJECT PHASE I,Lab,04  CH  6192
+986,Engineering Geology,Lab,CE205
+987,Elective I /ADDITIVE MANUFACTURING(AM),Theory,AM
+988,SENSORS FOR INDUSTRIAL APPLICATIONS,Theory,04ME7503
+989,ADVANCED MATERIALS AND PROCESSES,Theory,04ME7511
+990,Software Engineering Tutorial,Theory,SE Tutorial
+991,Computer Networks-Tutorial,Theory,CN  Tutorial
+992,Database Management Systems-Tutorial,Theory,DBMS Tutorial
+993,Web Programming-tutorial,Theory,WP-tutorial
+994,Problem Solving and Computer Programming-Tutorial,Theory,P&C Tutorial
+995,Principles of Management-Tutorial,Theory,PM-Tutorial
+996,Digital Fundamentals-Tutorial,Theory,DF Tutorial
+997,Applied Probabilty and Statistics-Tutorial,Theory,APS  Tutorial
+998,Discrete Mathematics-Tutorial,Theory,DM Tutorial
+999,Introduction to Computers & PC hardware-Tutorial,Theory,Tutorial
+1000,Fundamentals of Accountancy Tutorial,Theory,FAC  Tutorial
+1001,Digital systems and logic designs Tutorial,Theory,Ds and LD tutorial
+1002,SI engines and Combustion-Tutorial,Theory,SI engines and Combustion
+1003,Basics Of Electrical Engineering-Tutorial,Theory,EE100
+1004,Internet And Distributed Applications,Theory,ITDA
+1005,Discrete Computational Structures,Elective,CS201
+1006,Discrete Computational Structures-Tutorial,Theory,DCS
+1007,"Circuits ,Networks & Systems-Tutorial",Theory,CNS
+1008,Analog Electronic Circuits-Tutorial,Theory,AEC
+1009,Object Oriented Programming Lab,Lab,IT232
+1010,Application Development and Maintenance,Theory,RLMCA202
+1011,Big Data Technologies,Theory,RLMCA204
+1012,Mobile Computing,Theory,IT403
+1013,Introduction to Machine Learning,Theory,RLMCA208
+1014,Application Development and Maintenance Tutorial,Theory,ADMT
+1015,Big Data Technologies Tutorial,Theory,BDTT
+1016,Introduction to Machine Learning Tutorial,Theory,MLT
+1017,Mobile Computing Tutorial,Theory,MCT
+1018,System Design Lab,Theory,RLMCA232
+1019,Mobile Application Development Lab,Lab,RLMCA234
+1020,Problem Solving and Structured Programming,Theory,INMCA108
+1021,Problem Solving and Structured Programming Lab,Lab,INMCA132
+1022,Problem Solving and Structured Programming Tutorial,Theory,PSCPT
+1023,Personality Development and Soft Skills,Theory,INMCA112
+1024,Personality Development and Soft Skills Tutorial,Theory,PDSST
+1025,Technical Communication Lab,Lab,INMCA134
+1026,Microprocessors,Theory,MP
+1027,IT Infrastructure Management,Theory,INMCA307
+1028,E-Commerce,Theory,RLMCA303
+1029,Software Development- Project I,Lab,SDP
+1030,Civil Engineering Workshop,Lab,CEW
+1031,"Probability Distributions, Transforms and Numerical Methods",Theory,MA202
+1032,Advanced Thermodynamics,Theory,AU202
+1033,C I Engine and Combustion,Theory,AU204
+1034,Vehicle Systems Lab,Lab,AU234
+1035,Vehicle Transport Management,Elective,VTM
+1036,Alternate Fuels and Energy Systems,Elective,AFES
+1037,Transport Refrigeration and Air Conditioning,Elective,TRAC
+1038,Engineering Economics and Cost Estimation,Elective,EECE
+1039,Farm Machinery and Equipment,Elective,FME
+1040,Probability & Statistics and Numerical Methods,Theory,MA206
+1041,"Heat, Mass and Momentum Transport",Theory,MT204
+1042,Metallurgical Heat Treatments,Theory,MT206
+1043,Design & Engineering,Theory,BE102
+1044,Basics of Electronics Engineering,Theory,EC100
+1045,Mechanical Systems Lab,Lab,MSL
+1046,Composite materials technology/ME010 606L06 Project Management,Elective,CMT/PM
+1047,Heat Engines Laboratory,Lab,HEL
+1048,Thermal Engineering,Theory,ME204
+1049,Fluid Machinery,Theory,ME206
+1050,Manufacturing Technology,Theory,ME220
+1051,Thermal Engineering Lab,Lab,ME232
+1052,MATHS,Theory,MA
+1053,PHYSICS,Theory,PH
+1054,High Speed Networks ,Theory,E1
+1055,Electronic Business and Services,Elective,E2
+1056,Network Programming Lab,Lab,CS334
+1057,Algorithm Analysis & Design,Theory,IT202
+1058,Object Oriented Techniques,Theory,IT204
+1059,Principles of Data Base Design,Theory,IT_CS208
+1060,Algorithm Design Lab,Lab,IT234
+1061,HTML & CSS,Lab,WD
+1062,Synchronous and Induction Machines,Theory,EE202
+1063,Digital Electronics and Logic Design,Theory,EE204
+1064,Material Science,Theory,EE206
+1065,Measurements and Instrumentation,Theory,EE208
+1066,Life Skills/Business Economics,Theory,HS210
+1067,Circuits and Measurements Lab,Lab,EE234
+1068,Microcontrollers and Embedded Systems,Theory,MES
+1069,Elective III Micro Electro Mechanical Systems,Theory,MEMS
+1070,Elective III Secure Communication,Theory,SC
+1071,Elective IV E-Learning,Theory,EL
+1072,Elective IVProfessional Ethics,Theory,PE
+1073,"Probability distributions, Random Processes and Numerical Methods",Theory,MA204
+1074,Analog Integrated Circuits,Theory,EC204
+1075,Analogue Communication Engineering,Theory,EC208
+1076,Logic Circuit Design Lab,Lab,EC230
+1077,Analogue Integrated Circuits Lab,Lab,EC232
+1078,Object Oriented Design and Programming,Theory,CS206
+1079,Free and Open Source Software Lab,Lab,CS232
+1080,Digital Systems Lab,Lab,CS234
+1081,Elective IV - Software Architecture,Elective,EL -IV SA
+1082,Computer Aided Design-1 Lab,Lab,CAD
+1083,Construction Technology,Theory,CE204
+1084,Fluid Mechanics-II,Theory,CE206
+1085,Electrical Engineering workshop,Lab,EEW
+1086,Process Heat Transfer,Theory,CH202
+1087,Fluid and Particle Mechanics II,Theory,CH206
+1088,Chemistry for Process Engineering II,Theory,CH208
+1089,Particle Technology Lab,Lab,CH234
+1090,chemical reaction engineering II,Theory,CH308
+1091,Energy Engineering,Elective,CH361
+1092,Process Modelling and Simulation,Elective,CH467
+1093,Heat Transfer Lab,Lab,HT LAB
+1094,Chemical Engineering Design and Drawing II,Theory,CEDD II
+1095,Nano Technology,Theory,NT
+1096,Chemical Process Optimization ,Theory,CPO
+1097,Numerical Methods for Chemical Engineers,Elective,NMC
+1098,Water & waste water Engg,Elective,WWE
+1099,Safety in Chemical Industries,Elective,SCI
+1100,Project Engineering,Elective,PE
+1101,Chemical Reaction Engineering  & Process Control Lab,Lab,CRE &PDC LAB
+1102,Nanotechnology in Energy Conversion and Storage,Elective,04CH6112
+1103,Probablity Distributions Transforms and Numerical Methods-Tutorial,Theory,PDM
+1104,Design and Engineering-Tutorial,Theory,DE
+1105,Process Heat Transfer -Tutorial,Theory,PHT
+1106,Chemistry for Process Engineering II-Tutorial,Theory,CPE-II
+1107,Business Economics -Tutorial,Theory,BE
+1108,Construction Technology-Tutorial,Theory,CT
+1109,FLUID MECHANICS-II-Tutorial,Theory,FM
+1110,chemical reaction engineering II-Tutorial,Theory,CRE II
+1111,Energy Engineering-Tutorial,Elective,EE
+1112,Process Modelling and Simulation-Tutorial,Elective,PMS
+1113,Nano Technology-Tutorial,Theory,NT
+1114,Chemical Process Optimization -Tutorial,Theory,CPO
+1115,Chemical Engineering Design and Drawing II-Tutorial,Theory,CEDD II
+1116,Numerical Methods for Chemical Engineers-Tutorial,Theory,NMC
+1117,Water & waste water Engg-Tutorial,Theory,WWE
+1118,Safety in Chemical Industries-Tutorial,Theory,SCI
+1119,Project Engineering-Tutorial,Theory,PE
+1120,Advanced Thermodynamics-Tutorial,Theory,ATD
+1121,CI Engine and Combustion-Tutorial,Theory,CIEC
+1122,Vehicle Transport Management-Tutorial,Elective,VTM
+1123,Alternate Fuels and Energy Systems-Tutorial,Elective,AFES
+1124,Transport Refrigeration and Air Conditioning-Tutorial,Theory,TRAC
+1125,Engineering Economics and Cost Estimation-Tutorial,Theory,EECE
+1126,Farm Machinery and Equipment-Tutorial,Theory,FME
+1127,Project (Phase -II),Lab,04CH7194
+1128,Object Oriented Design and Programming-Tutorial,Theory,OODP
+1129,Principles of Database Design-Tutorial,Theory,PDD
+1132,High Voltage DC Transmission,Elective,04EE6432
+1133,"Analysis, Design and Grid Integration of Solar Photovoltaic System",Elective,04EE6308
+1134, E-Commerce-Tutorial,Elective,EC
+1135,Elective IV - Software Architecture-Tutorial,Elective, SA
+1136,Advanced Theory Of Mechanisms,Theory,04ME6506
+1137,COMPUTER INTEGRATED MANUFACTURING,Theory,04ME7501
+1138,Elective IV E-Learning-Tutorial,Elective,EL
+1139,Elective IVProfessional Ethics-Tutorial,Elective,PE
+1140,Analog Integrated Circuits-Tutorial,Theory,AIC
+1141,ANALOG COMMUNICATION ENGINEERING-Tutorial,Theory,ACE
+1142,Synchronous and Induction Machines-Tutorial,Theory,SIM
+1143,Digital Electronics and Logic Design-Tutorial,Theory,DELD
+1144,Material Science-Tutorial,Theory,MS
+1145,Measurements and Instrumentation-Tutorial,Theory,MI
+1146,Renewable energy Sources-Tutorial,Theory,RES 
+1147,Advanced Power System-Tutorial,Theory,APS
+1148,Distributed Power Systems-Tutorial,Theory,DPS
+1149,High Speed Networks -Tutorial,Theory,E1
+1150,Electronic Business and Services-Tutorial,Theory,E2
+1151,Algorithm Analysis & Design-Tutorial,Theory,AAD
+1152,Object Oriented Techniques-Tutorial,Theory,OOT
+1153,NON DESTRUCTIVE TESTING-Tutorial,Theory,NDT
+1154,Thermal Engineering-Tutorial,Theory,TE
+1155,Fluid Machinery-Tutorial,Theory,FM
+1156,Manufacturing Technology-Tutorial,Theory,MT
+1157,MATHS-Tutorial,Theory,MA
+1158,Project Management-Tutorial,Theory,PM
+1159,"Heat, Mass and MomentumTransport-Tutorial",Theory,HMMT
+1160,Metallurgical Heat Treatments-Tutorial,Theory,MHT
+1161,Advanced Theory Of Mechanisms-Tutorial,Theory,ATOM
+1162,COMPUTER INTEGRATED MANUFACTURING-Tutorial,Theory,CIM
+1163,Computer Aided Engineering Design-Tutorial,Theory,CAED L
+1164,Bridge Engineering-Tutorial,Theory,BE
+1165,Theory of Plates and Shells-Tutorial,Theory,TPS
+1166,Microstructure and Innovations in Structural Concrete-Tutorial,Theory,MIS
+1167,Earthquake Resistant Design-Tutorial,Theory,ERD
+1168,Projcet Planning and Implementation-Tutorial,Theory,PPI
+1169,Construction Methods and Equipment-Tutorial,Theory,CME
+1170,Quantitative Methods in Construction-Tutorial,Theory,QM
+1171,ADVANCED NANOMATERIALS-Tutorial,Theory,AN
+1172,EXPERIMENTAL AND CHARACTERIZATION TECHNIQUES FOR NANOTECHNOLOGY-Tutorial,Theory,ECTN
+1173,POLYMER NANOCOMPOSITES-Tutorial,Theory,PN
+1174,Nanotechnology in Energy Conversion and Storage-Tutorial,Theory,NECS
+1175,Switch Mode Power Converters-Tutorial,Theory,SMPC
+1176,Power System Dynamics and Stability-Tutorial,Theory,ECPC
+1177,High Voltage DC Transmission-Tutorial,Theory,HVDC
+1178,"Analysis, Design and Grid Integration of Solar Photovoltaic System-Tutorial",Theory,ADGISPV
+1179,Energy Management and Audit-Tutorial,Theory,EMA
+1180,Grid Integration of Solar PV System-Tutorial,Theory,GISPV
+1181,Wind and Hybrid Energy Systems-Tutorial,Theory,WHES
+1182,"Utilization of Solar Thermal Energy-Tutorial	",Theory,UST
+1183,Elective III - FACTS and Power Quality-Tutorial,Elective,FPQ
+1184,Basics of Mechanical Engineering,Theory,BME
+1185,Basics of Mechanical Engineering - Tutorial,Theory,BME -T
+1186,field visit,Lab,FV
+1187,IT Infrastructure Management-Tutorial,Theory,ITIM
+1188,E Commerce-Tutorial,Elective,EC
+1189,Probability Random Process and Numerical Methods,Theory,PRPNM
+1190,Probability Random Process and Numerical Methods-Tutorial,Theory,PRPNM
+1191,Metallography and Heat treatment Lab,Lab,MT232
+1192,Chemical Engineering Thermodynamics,Theory,CH204
+1193,CHEMICAL ENGINEERING THERMODYNAMICS-Tutorial,Theory,CET
+1194,Introduction To Discrete Mathematics,Theory,INMCA104
+1195,Introduction To Discrete Mathematics-Tutorial,Theory,ITDM
+1196,Softcomputing,Elective,SC
+1197,cokklsjj,Lab,94102
+1198,eyciosxo,Theory,94102
+1199,mdlbqxby,Elective,94102
+1200,tflmhkvp,select,94102
+1201,Operations Research,Theory,CH369
+1202,Linux and Shell Programming,Theory,LASP
+1203,MEASUREMENTS LAB,Lab,ML
+1204,Geomatics,Theory,CE307
+1205,Design Project,Theory,IT341
+1206,Mechanics of Machinery,Theory,ME301
+1207,MACHINE TOOL &DIGITAL MANUFACTURING ,Theory,MTDM
+1208,Computer Programming & Numerical Methods,Theory,ME305
+1209,Composite Materials and Mechanics,Theory,ME363
+1210,Tribology,Theory,ME369
+1211,Microprocessors and Microcontrollers,Theory,IT_CS305
+1212,System Software Lab,Lab,CS331
+1213,Application Software Development Lab,Lab,CS333
+1214,Graph Theory and Combinatorics,Theory,CS309
+1215,"Power Generation, Transmission & Protection",Theory,PGT
+1216,Linear Control System,Theory,LCS
+1217,Renewable Energy Systems,Theory,04EE7503
+1218,Digital Circuits & Embedded Systems Lab,Lab,DCES LAB
+1219,Electronic Design Automation Lab,Lab,EC233
+1220,Power Electronics & Instrumentation ,Theory,PEAI
+1221,Biomedical Engineering,Theory,EC365
+1222,Digital Signal Processing Lab ,Lab,DSP Lab
+1223,Power Electronics & Instrumentation Lab,Lab,EC335
+1224,Electrical Drives and Control for Automation,Theory,EE311
+1225,Introduction to Object Oriented Programming,Theory,INMCA205
+1226,Introduction to Data Structures,Theory,INMCA209
+1227,Basic Data Structures Lab,Lab,INMCA231
+1228,Basic Object Oriented Programming Lab,Lab,INMCA233
+1229,Mentoring,Lab,MH
+1231,Machine Design-I,Theory,ME307
+1232,Vehicle Body Engineering,Theory,AU307
+1233,AUTOMOBILE POLLUTION AND TESTING ,Theory,APAT
+1234,Production Engineering Lab,Lab,ME335
+1235,AUTOMOTIVE ELECTRICAL AND ELECTRONICS,Theory,AU302
+1236,Vehicle Performance and Testing,Elective,AU364
+1237,Network Simulation Lab,Lab,NS LAB
+1238,Cyber Forensics,Elective,04CS7101
+1239,Data Mining & Warehousing,Theory,DMCA703
+1240,PYTHON Programming,Theory,DMCA705
+1241,Software Lab-XI(Python Lab),Lab,SL
+1242,Web Technologies,Lab,DMCA704
+1243,Web Data Mining,Theory,RLMCA301
+1244,Computer Programming in C++,Theory,CH307
+1245,Principles of Nano Materials and Nano Technology,Elective,CH363
+1246,EL-1-NUMERICAL METHODS FOR PROCESS ENGINEERS,Elective,NMPE
+1247,CHEMICAL REACTION ENGINEERING LAB,Lab,CRE LAB
+1248,Introduction to Digital Systems and Logic Design,Theory,INMCA105
+1249,Software Architecture and Design Patterns,Theory,SADP
+1250,Microcontroller Lab,Lab,EC334
+1251,C Programming - Advanced,Theory,CP
+1252,C Programming - Remedial,Theory,CP
+1253, NDT and failure analysis,Theory,NDT&F
+1254, NDT and failure analysis - Tutorial,Theory,NDT&F-Tutorial
+1255," Ceramics, composites and polymers ",Theory,CCP
+1256," Ceramics, composites and polymers  - Tutorial",Theory,CCP-Tutorial
+1257,Elective - IV( Renewable Energy Systems),Elective,RES
+1258,Elective - V (Electricity Deregulation),Elective,ED
+1259,Elective - IV(Energy Efficient Buildings),Elective,EEB
+1260,ELECTRICAL DRIVES AND CONTROL FOR AUTOMATION-Tutorial,Theory,EDAC
+1261,VEHICLE BODY ENGINEERING-Tutorial,Theory,VBE
+1262,AUTOMOBILE POLLUTION AND TESTING-Tutorial,Theory,APT
+1263,AUTOMOTIVE ELECTRICAL AND ELECTRONICS-Tutorial,Theory,AEE
+1264,VEHICLE PERFORMANCE AND TESTING-Tutorial,Theory,VPT
+1265,PROCESS INSTRUMENTATION-Tutorial,Theory,PI
+1266,PETROLEUM REFINERY ENGINEERING ANDPETROCHEMICALS-Tutorial,Theory,PFE
+1267,ECONOMICS AND MANAGEMENT FOR PROCESS INDUSTRIES-Tutorial,Theory,EMP
+1268,FOOD TECHNOLOGY AND ENGINEERING-Tutorial,Theory,FTE
+1269,BIOCHEMICAL ENGINEERING-Tutorial,Theory,BE
+1270,COMPUTER PROGRAMMING IN C++-Tutorial,Theory,CPP
+1271,EL-1 -PRINCIPLES OF NANO MATERIALS AND NANO TECHNOLOGY-Tutorial,Elective,PNT
+1272,EL-1-NUMERICAL METHODS FOR PROCESS ENGINEERS-Tutorial,Elective,NM
+1273,Metallurgical Thermodynamics and Kinetics - Tutorial,Theory,MT 201
+1274,Mineral Beneficiation - Tutorial,Theory,MT203
+1275,Multimedia Systems - Tutorial,Theory,MS
+1276,Web Data Mining - Tutorial,Theory,WDM
+1277,Python Programming - Tutorial,Theory,PYTHON
+1278,Cloud Computing - Tutorial,Elective,CC
+1279,Introduction to Digital Systems & Logic Designs - Tutorial,Theory,DSLD
+1280,Introduction to Object Oriented Programming -  Tutorial,Theory,OOP
+1281,Introduction to Data Structures - Tutorial,Theory,DS
+1282,PHP Programming - Tutorial,Theory,PHP
+1283,Data Mining & Warehousing - Tutorial,Theory,DMW
+1284,MECHANICS OF MACHINERY - Tutorial,Theory,MOM
+1285,MACHINE TOOL &DIGITAL MANUFACTURING - Tutorial,Theory,MTDM
+1286,ELECTIVES -1(COMPOSITE MATERIALS AND MECHANICS ) - Tutorial,Elective,CMM
+1287,ELECTIVES -1(TRIBOLOGY ) - Tutorial,Elective,TBY
+1288,COMPUTER PROGRAMMING AND NUMERICAL METHODS - Tutorial,Theory,CPNM
+1289,Mathematical foundations of Computer Security,Theory,MFCS
+1290,Principles of Management & Marketing,Theory,DMCA702
+1291,Particle Technology - Tutorial,Theory,CH203
+1292,CHEMISTRY FOR PROCESS ENGINEERS- I - Tutorial,Theory,CH207
+1293,Self Assembling Nanostructured Molecular Material and Devices,Theory,SANM
+1294,Composite Materials and Mechanics,Theory,CMM
+1295,ELECTIVE II(MT 010706 L03 HIGH TEMPERATURE MATERIALS),Theory,HTM
+1296,Civil Engineering Drawing Lab,Lab,CED LAB
+1297,Logic Circuit Design - Tutorial,Theory,LCD
+1298,Microprocessors and Microcontrollers - Tutorial,Theory,EC305
+1299,Power Electronics & Instrumentation - Tutorial,Theory,PEI
+1300,Biomedical Engineering - Tutorial,Elective,BME
+1301,Power Electronics & Instrumentation Lab - Tutorial,Lab,PEIL
+1302,PHP Lab,Lab,PHP
+1303,Software Architecture and Design Patterns - Tutorial,Theory,SA
+1304,Design Project - Tutorial,Lab,D.PROJ
+1305,ADDITIVE MANUFACTURING,Elective,AM
+1306,Data Structures - Tutorial,Theory,DS
+1307,Gate Coaching,Lab,GC
+1308,Graph Theory and Combinatorics -Tutorial,Theory,GTC
+1309,Power System Operation and Control,Theory,04EE6405
+1310,Construction Application Lab,Lab,CA Lab
+1311,MACHINE DESIGN I TUTORIAL,Theory,MDT
+1312,English - Lab,Lab,ENG LAB
+1313,Manufacturing Technology,Lab,MTL
+1314,Manufacturing Technology Lab I,Lab,ME331
+1315,"Power generation, transmission & protection - Tutorial",Theory,PGTP
+1316,Linear Control System- Tutorial,Theory,LCS
+1317,Introduction to Visual Programming,Theory,INMCA202
+1318,Applied Statistics,Theory,INMCA204
+1319,Introduction to Operating Systems,Theory,INMCA206
+1320,Elements of Business Management,Theory,INMCA208
+1321,Internet Concepts and Web Design,Theory,INMCA212
+1322,Visual Programming Lab,Lab,INMCA232
+1323,Statistics Lab,Lab,INMC234
+1324,Mathematics for Computer Applications,Theory,INMCA301
+1325,Introduction to E-Commerce,Theory,INMCA303
+1326,Introduction to RDBMS and SQL,Theory,INMCA305
+1327,IT Infrastructure Management,Theory,INMCA307
+1328,Introduction to Operations Research,Theory,INMCA309
+1329,RDBMS Lab,Lab,INMCA331
+1330,Scripting Lab,Lab,INMCA333
+1331,Introduction to Software Engineering,Theory,INMCA302
+1332,Numerical Methods,Theory,INMCA304
+1333,Computational Sustainability,Theory,INMCA306
+1334,Open Source Platforms,Theory,INMCA308
+1335,Advanced Object Oriented Programming,Theory,INMCA312
+1336,Advanced Object Oriented Programming Lab,Lab,INMCA332
+1337,Open Source Platforms Lab,Lab,INMCA334
+1338,Project and Viva Voce,Final Project,RLMCA352
+1339,,,
+1340,Project and Viva Voce,Final Project,RLMCA352
+1341,Life Skills/Business Economics,Theory,HS200
+1342,Life Skills/Business Economics,Theory,HS210
+1343,Life Skills/Business Economics,Theory,HS200
+1344,Life Skills/Business Economics,Theory,HS210
+1345,Life Skills/Business Economics,Theory,HS200
+1346,Life Skills/Business Economics,Theory,HS210
+1347,Life Skills/Business Economics,Theory,HS200
+1348,Life Skills/Business Economics,Theory,HS210
+1349,Computer Aided DesignÂ  and Analysis Lab,Lab,ME332
+1350,Auto ElectricalÂ  and Electronics Lab,Lab,AU332
+1351,MACHINE DESIGN-II,Theory,ME314
+1352,Comprehensive Exam,,AU352
+1353,Marketing Management,Elective,ME368
+1354,Hybrid and Fuel Cell Vehicles,Elective,AU362
+1355,Vehicle Performance & Testing,Elective,AU364
+1356,Vehicle Aerodynamics,Elective,AU366
+1357,Computer Programming and Computational Techniques,Theory,CE306
+1358,Ground Improvement Techniques,Elective,CE362
+1359,Advanced Foundation Engineering,Elective,CE364
+1360,Traffic Engineering and Management,Elective,CE366
+1361,Engineering Hydrology,Elective,CE372
+1362,Air Quality Management,Elective,CE374
+1363,Computer Aided Civil Engineering Lab,Lab,CE334
+1364,Comprehensive Exam,,CH352
+1365,Comprehensive Exam,,CH352
+1366,Inorganic chemical technology,Theory,CH304
+1367,Chemical engineering design- I,Theory,CH312
+1368,Non-Conventional Petroleum Resources,Elective,CH362
+1369,Bioprocess Engineering,Elective,CH364
+1370,Corrosion Engineering,Elective,CH366
+1371,Computational Fluid Dynamics,Elective,CH368
+1372,Catalyst Science and Catalytic Processes,Elective,CH372
+1373,Process Design for Pollution Control,Elective,CH374
+1374,Programming and process simulation lab,Lab,CH334
+1375,Comprehensive Exam,,CS352
+1376,Compiler Design,Theory,CS304
+1377,Design and Analysis of Algorithms,Theory,CS302
+1378,Software Engineering and Project Management,Theory,CS 308
+1379,Computer Vision,Elective,CS362
+1380,Mobile Computing,Elective,CS364
+1381,Natural Language Processing,Elective,CS366
+1382,Web Technologies,Elective,CS368
+1383,High Performance Computing,Elective,CS372
+1384,Comprehensive Exam,,EC352
+1385,Digital Communication,Theory,EC302
+1386,Antenna & Wave Propagation,Theory,EC306
+1387,Embedded System,Theory,EC308
+1388,Object Oriented Programming,Theory,EC312
+1389,Modelling & Simulation of Communication Systems,Elective,EC362
+1390,Computer Vision,Elective,EC364
+1391,Real Time Operating Systems,Elective,EC366
+1392,Robotics,Elective,EC368
+1393,Digital Image Processing,Elective,EC370
+1394,Communication Engg Lab (Analog and Digital),Lab,EC332
+1395,Comprehensive Exam,,EE352
+1396,Electromagnetics,Theory,EE302
+1397,Advanced Control Theory,Theory,EE304
+1398,Electric Drives,Theory,EE308
+1399,Data Structures and Algorithms,Elective,EE362
+1400,Switched Mode Power Converters,Elective,EE364
+1401,Illumination Technology,Elective,EE366
+1402,Soft Computing,Elective,EE368
+1403,Biomedical Instrumentation,Elective,EE372
+1404,Systems and Control Lab,Lab,EE332
+1405,Power Electronics and DrivesÂ Lab,Lab,EE334
+1406,Comprehensive Exam,,IT352
+1407,Computer Networks Lab,Lab,IT334
+1408,Internet Technology Lab,Lab,IT332
+1409,Internet Technology,Theory,IT302
+1410,Compiler Design,Theory,CS304
+1411,Data Warehousing & Mining,Theory,IT304
+1412,Distributed Systems,Theory,IT306
+1413,Information Retrieval,Elective,IT362
+1414,Software Project Management,Elective,IT364
+1415,Advanced DBMS,Elective,IT366
+1416,Information Theory & Coding,Elective,IT368
+1417,Abstract Algebra and Number Theory,Elective,MA362
+1418,Computer Aided Design and Analysis Lab,Lab,ME332
+1419,Manufacturing Technology Lab II,Lab,ME334
+1420,Comprehensive Exam,,ME352
+1421,Computer Aided Design and Analysis,Theory,ME308
+1422,Marketing Management,Elective,ME368
+1423,Control System Engineering,Elective,ME362
+1424,Turbo Machinery,Elective,ME364
+1425,Advanced Metal Joining Technology,Elective,ME366
+1426,Operations Research,Elective,ME372
+1427,Maintenance Engineering,Elective,ME376
+1428,Advanced Manufacturing Technology,Theory,ME306
+1429,Metrology and Instrumentation,Theory,ME312
+1430,Non-Ferrous Physical Metallurgy Lab,Lab,MT332
+1431,Corrosion Lab,Lab,MT334
+1432,Nano-materials and Applications,Elective,MT364
+1433,Semiconductor Materials and Devices,Elective,MT366
+1434,Ceramic Processing,Elective,MT368
+1435,Polymer Science and Technology,Elective,MT372
+1436,Comprehensive Exam,,ME352
+1437,Object Oriented Modeling & Designing,Theory,DMCA601
+1438,Elective I - E-Commerce,Elective,DMCA603
+1439,Seminar- I,Seminar,DMCA604
+1440,Cryptography and Network Security,Theory,DMCA801
+1441,Data Analysis & Algorithms,Theory,DMCA803
+1442,Elective- II,Elective,DMCA804
+1443,Computer Graphics and Open GL,Theory,DMCA805
+1444,Seminar- II,Seminar,DMCA806
+1445,Software Lab-XII(Graphics Lab),Lab,DMCA807
+1446,Special Types of Vehicles,Theory,AU010803
+1447,Elective III (Transort Refrigeration and Air Conditioning),Theory,AU010804L01
+1448,Elective IV (Farm Machinery and Equipments),Theory,AU010805G03
+1449,Elective IV (Management Information System),Theory,AU010805G05
+1450,Auto Workshop III,Lab,AU010806
+1451,PROJECT WORK,Final Project,CE010807
+1452,Water and Waste water Engineering,Elective,CH010804L02
+1453,Chemical Reaction Engineering and Process Control Lab,Lab,CH010806
+1454,Bioinformatics,Elective,CS010804L03
+1455,Advanced Networking Trends,Elective,CS010804L06
+1456,Neural Networks,Elective,CS010805G02
+1457,Software Architecture,Elective,CS010805G04
+1458,Advanced Power System,Elective,EE010804L01
+1459,Elective 3: High Speed Networks,Elective,IT010804L03
+1460,Elective 4:Electronic Business & Sevices,Elective,IT010805G04
+1461,Advanced Materials Characterization,Theory,MT010801
+1462,Elective - III OPERATIONS MANAGEMENT,Theory,MT010804
+1463,805 Elective - IV INDUSTRIAL SAFETY,Theory,MT010
+1464,Advanced Analysis of Structures,Elective,04CE6108
+1465,Computer Aided Design,Elective,04CE6112
+1466,Structural Optimization,Elective,04CE6114
+1467,Advanced Steel Structures,Elective,04CE6122
+1468,Design of substructure,Elective,04CE6124
+1469,Experimental Stress Analysis,Elective,04CE6126
+1470,Modern Satellite Systems,Elective,04EC6312
+1471,RF Microelectronics,Elective,04EC6314
+1472,Multimedia compression techniques,Elective,04EC6316
+1473,Electromagnetic Compatibility and Interference,Elective,04EC6318
+1474,Estimation and Detection,Elective,04EC6322
+1475,Neural Networks and Applications,Elective,04EC6324
+1476,Computational Electromagnetic,Elective,04EC6326
+1477,Information Retrieval and Data Mining,Elective,04CS6108
+1478,Virtualizing Techniques,Elective,04CS6112
+1479,Agent Based Systems,Elective,04CS6116
+1480,Operating System Design Concepts,Elective,04CS6124
+1481,Electric Drive Systems,Elective,04EE6200
+1482,Computer Aided Power System Analysis,Elective,04EE6434
+1483,Digital Controllers for Power Applications,Elective,04EE6604
+1484,Fuel Cells and Hydrogen,Elective,04EE6512
+1485,Bio-Energy Engineering,Elective,04EE6514
+1486,Nuclear Reactor Theory,Elective,04EE6516
+1487,Industrial Instrumentation,Elective,04ME6508
+1488,PRINCIPLES OF ROBOTICS AND APPLICATIONS,Elective,04 ME 6514
+1489,OIL HYDRAULICS AND PNEUMATICS,Elective,04ME6522
+1490,ADVANCED MACHINE TOOL DESIGN,Elective,04ME6524
+1491,FRACTURE MECHANICS AND DESIGN,Elective,04ME6526
+1492,Nanoelectronics,Elective,04CH6108
+1493,Nano biotechnology,Elective,04CH6114
+1494,Nanosensors and Transducers,Elective,04CH6122
+1495,Nanomedicine,Elective,04CH6124
+1496,Environmental Nanotechnology,Elective,04CH6126
+1497,Stochastic Modelling and Applications,Elective,04EE6106
+1498,Energy Conservation and Management,Elective,04EE6506
+1499,Advanced Digital Signal Processing,Elective,04EE6118
+1500,Applications of Special Electrical Machines,Elective,04EE6212
+1501,Design of Reinforced Concrete Foundations,Elective,04CE6412
+1502,Earthquake Analysis and Design of Structures,Elective,04CE6414
+1503,Project Formulation and Appraisal,Elective,04CE6426
+1504,Computer integrated Manufacturing,Theory,04ME7501
+1505,Platform independent controller designÂ ,Theory,16PhDE017
+1506,ENERGY CONSERVATION AND MANAGEMENTÂ ,Theory,04EE6506
+1507,IPR and Cyber Law,Elective,RLMCA363
+1508,Internet of Things,Elective,RLMCA367
+1509,Social Network Analysis,Elective,RLMCA371
+1510,Human Computer Interactio,Elective,RLMCA383
+1511,Parallel and Distributed Computing,Elective,RLMCA389
+1512,Mathematical Foundation Of Computer Security,Theory,DMCA701
+1513,Software Lab XI- PYTHON Lab,Lab,DMCA706
+1514,Software Lab XII -Web Technologies Lab,Lab,DMCA707
+1515,Distributed Computing,Theory,DMCA903
+1516,Modeling & Simulation,Theory,DMCA904
+1517,Distributed Processing,Elective,DMCA905(A)
+1518,Embedded System Design,Elective,DMCA905(B)
+1519,Internet Technology and Applications,Elective,DMCA905(C)
+1520,Software Lab-XIV (Compiler Design Lab),Lab,DMCA906
+1521,Software Lab-XV (Cloud Computing Lab),Lab,DMCAP07
+1522,Mechanical Engineering Workshops,Lab,CE110/ME110/EE110/EC110/CS110/CH110
+1523,Language lab/CAD Practice/Bridge courses/Micro Projects etc,Lab,U100
+1524,Entrepreneurship/TBI/NCC/NSS/Physical Edn. etc,Lab,V100
+1525,"Circuits and, Networks",Theory,EE201
+1526,Electronic Circuits,Theory,EC205
+1527,"Power Generation, Transmission and Protection",Theory,EE301
+1528,Linear Control Systems,Theory,EE303
+1529,Signals and Systems,Theory,EE307
+1530,Microprocessor and Embedded Systems,Theory,EE309
+1531,Digital Circuits and Embedded Systems Lab,Lab,EE331
+1532,Machine Tools and Digital Manufacturing,Theory,ME303
+1533,Electrical Drives &Control for Automation,Theory,EE311
+1534,Structural Analysis- II,Theory,CE303
+1535,Geotechnical Engineering- II,Theory,CE305
+1536,Materials Testing Lab II,Lab,CE331
+1537,Microprocessors & Microcontrollers,Theory,EC305
+1538,Metallurgy & Material Science,Theory,ME309
+1539,Software Architecture & Design Patterns,Theory,IT301
+1540,Geotechnical Investigation,Elective 1,CE363
+1541,Functional Design of Buildings,Elective 1,CE365
+1542,Water Conveyance Systems,Elective 1,CE367
+1543,Disaster Management,Elective,CE369
+1544,Environment and Pollution,Elective 1,CE371
+1545,Advanced Mechanics of Materials,Elective 1,CE373
+1546,Advanced Fluid Mechanics,Elective 1,ME361
+1547,Advanced Metal Casting,Elective 1,ME365
+1548,Non-Destructive Testing,Elective 1,ME367
+1549,Nuclear Engineering,Elective 1,ME371
+1550,Human Relations Management,Elective 1,ME373
+1551,New and Renewable Energy Systems,Elective 1,EE367
+1552,High Voltage Engineering,Elective 1,EE369
+1553,Optimization Techniques,Elective 1,EC363
+1554,Logic for Computer Science,Elective 1,CS367
+1555,Digital System Testing & Testable Design,Elective 1,CS369
+1556,Polymer Technology,Elective 1,CH365
+1557,Numerical Methods for Process Engineers,Elective 1,CH367
+1558,Novel Separation Process,Elective 1,CH371
+1559,Alternative Fuels and Energy Sources,Elective 1,AU361
+1560,Plastics & Composites in Automobile,Elective 1,AU363
+1561,Automotive Pollution and Testing,Elective 1,AU365
+1562,Graph Theory,Elective 1,IT361
+1563,Computer Architecture & Parallel Processing,Elective 1,IT365
+1564,Computer Graphics & Multimedia,Elective 1,IT367
+1565,Random Process and Queuing Theory,Elective 1,MA361
+1566,Electronic communication,Theory,EE401
+1567,Distributed generation and smart grids,Theory,EE403
+1568,Electrical Machine Design,Lab,EE409
+1569,Seminar & Project Preliminary,Lab,EE451
+1570,Power system Lab,Lab,EE431
+1571,Advanced Energy Engineering,Theory,ME403
+1572,Mechatronics,Theory,ME407
+1573,Compressible Fluid Flow,Theory,ME409
+1574,Mechanical Engineering Lab,Lab,ME431
+1575,Transportation Engineering -II,Theory,CE407
+1576,Microwave & Radar Engg,Theory,EC403
+1577,Optical Communication,Theory,EC405
+1578,Computer Communication,Theory,EC407
+1579,Communication Systems Lab (Optical & Microwave),Lab,EC431
+1580,Programming Paradigms,Theory,CS403
+1581,Computer System Architecture,Theory,CS405
+1582,Compiler Design Lab,Lab,CS431
+1583,Transport Phenomena in Processes,Theory,CH401
+1584,Chemical Engineering Design - II,Theory,CH405
+1585,Organic Chemical Technology,Theory,CH409
+1586,Process Control Lab,Lab,CH431
+1587,Automotive System Design,Theory,AU401
+1588,Vehicle Dynamics,Theory,AU403
+1589,Automotive Refrigeration & Air Conditioning,Theory,AU405
+1590,Advanced I C Engines,Theory,AU407
+1591,Simulation & Analysis of IC Engine Processes,Theory,AU409
+1592,Autotronics Lab,Lab,AU431
+1593,Internet Working with TCP/IP,Theory,IT405
+1594,Knowledge Engineering,Theory,IT407
+1595,Web Application Development,Theory,IT409
+1596,Wave Hydrodynamics and Coastal Engineering,Elective 3,CE461
+1597,Geo-Environmental Engineering,Elective 3,CE465
+1598,Highway Pavement Design,Elective 3,CE467
+1599,Environmental Impact Assessment,Elective 3,CE469
+1600,Advanced Computational Techniques and Optimization,Elective 3,CE473
+1601,Aerospace Engineering,Elective 3,ME461
+1602,Automobile Engineering,Elective 3,ME463
+1603,Industrial Hydraulics,Elective 3,ME465
+1604,Supply Chain and Logistics Management,Elective 3,IE306
+1605,Cryogenic Engineering,Elective 3,ME467
+1606,Modern Operating Systems,Elective 3,EE461
+1607,Computer Aided Power Systems Analysis,Elective 3,EE463
+1608,Nonlinear Control Systems,Elective 3,EE467
+1609,Electric and Hybrid Vehicles,Elective 3,EE469
+1610,Microwave Devices and Circuits,Elective 3,EC461
+1611,Speech and Audio Signal Processing,Elective 3,EC463
+1612,MEMS,Elective 3,EC465
+1613,Pattern Recognition,Elective 3,EC467
+1614,Opto Electronic Devices,Elective 3,EC469
+1615,Computational Geometry,Elective 3,CS461
+1616,Bio Informatics,Elective 3,CS465
+1617,Machine Learning,Elective 3,CS467
+1618,Computational complexity,Elective 3,CS469
+1619,Petroleum Refinery Engineering,Elective 3,CH461
+1620,Enzyme Engineering,Elective 3,CH463
+1621,Process Optimization,Elective 3,CH465
+1622,Mathematical Methods in Process Engineering,Elective 3,CH469
+1623,Solid Waste Management,Elective 3,CH471
+1624,Automotive Comfort & Safety Engineering,Elective 3,AU461
+1625,Operation Management in Auto Industry,Elective 3,AU463
+1626,Product Design & Life Cycle Management,Elective 3,AU465
+1627,Vehicle Transport & Fleet Management,Elective 3,AU410
+1628,Software Testing & Quality Assurance,Elective 3,IT461
+1629,Semantic Web,Elective 3,IT463
+1630,MATHEMATICAL METHODS FOR NANOTECHNOLOGY,Theory,04CH6101
+1631,PHYSICS OF MATERIALS,Theory,04CH6105
+1632,LAB I,Lab,04CH6193
+1633,Nano Chemistry,Elective,04CH6109
+1634,Carbon Nanomaterial Science and Technology,Elective,04CH6111
+1635,Nanocomposites,Elective,04CH6113
+1636,Semiconductor Nanostructures& Nano-particles,Elective,04CH6115
+1637,Pre-stressed Concrete Structures,Elective,04CE6109
+1638,Structural Reliability,Elective,04CE6111
+1639,Construction and Contracts Management,Elective,04CE6409
+1640,Prestressed Concrete Structures,Elective,04CE6415
+1641,Computer Application Lab,Lab,04CE6493
+1642,Advanced Optical  Communication,Elective,04EC6309
+1643,Real Time Embedded System Design,Elective,04EC6313
+1644,Antenna Theory and Design,Elective,04EC6315
+1645,Web Services,Elective,04CS6109
+1646,Logic in computer Science,Elective,04CS6113
+1647,Social Network Analytics,Elective,04CS6115
+1648,Seminar -1,Lab,04CS6191
+1649,Non Conventional Energy Sources,Theory,04EE6501
+1650,Energy Resources Economics and Environment,Theory,04EE6503
+1651,Chemical Process Technology,Elective,04EE6507
+1652,Integrated Lighting System,Elective,04EE6509
+1653,Energy System Modeling and Analysis,Elective,04EE6511
+1654,Seminar-1,Lab,04EE6591
+1655,Energy System Lab,Lab,04EE6593
+1656,Computer Applications in Power Systems,Theory,04EE6403
+1657,System Theory,Elective,04EE6103
+1658,Modelling and Analysis of Electrical Machines,Elective,04EE6205
+1659,Advanced Power Semicondudtor Devices,Elective,04EE6300
+1660,Seminar - 1,Lab,04EE6491
+1661,Power Systems Simulation Lab,Lab,04EE6493
+1662,INDUSTRIAL TRIBOLOGY,Elective,04ME6509
+1663,ENGINEERING OPTIMIZATION,Elective,04ME6515
+1664,Self Assembling nanostructured molecular materials and devices,Elective 4,04CH7101
+1665,Societal Implications of Nanotechnology,Elective 4,04CH7103
+1666,Computational Nanosciences,Elective 4,04CH7105
+1667,Nanodevice Technology,Elective 5,04CH7109
+1668,Green Manufacturing Technology,Elective 5,04CH7111
+1669,Nanotechnology in Business Applications and Intellectual Property Rights,Elective 5,04CH7113
+1670,Drug delivery Systems,Elective 5,04CH7115
+1671,PROJECT (PHASE I),Lab,04CH7193
+1672,Design of Steel concrete composite structures,Elective 4,04CE7101
+1673,Experimental Techniques & Instrumentation,Elective 4,04CE7103
+1674,Design of Cylindrical shell and Folded Plates,Elective 4,04CE7105
+1675,Numerical Methods in Civil Engineering,Elective 5,04CE7109
+1676,Engineering Fracture Mechanics,Elective 5,04CE7111
+1677,Maintenance & Rehabilitation of Structures,Elective 5,04CE7113
+1678,Prefabricated structures,Elective 5,04CE7115
+1679,Seminar -II,Lab,04CE7191
+1680,Project (Phase 1),Lab,04CE7193
+1681,Design of Steel â€“ Concrete Composite Structures,Elective,04CE7401
+1682,Design of Bridges,Elective,04CE7403
+1683,Construction Economics and Finance,Elective,04CE7405
+1684,Construction Project Management,Elective,04CE7411
+1685,Construction Personnel Management,Elective,04CE7415
+1686,Seminar - II,Lab,04CE7491
+1687,Project (Phase - I),Lab,04CE7493
+1688,Wireless ADHOC and Sensor Networks,Elective,04EC7301
+1689,Communication Switching & Multiplexing,Elective,04EC7303
+1690,Microwave Integrated Circuit Design,Elective,04EC7307
+1691,Adaptive and Smart Antennas,Elective,04EC7309
+1692,Modern Trends in communication,Elective,04EC7315
+1693,Project(Phase 1),Lab,04EC7393
+1694,Dicrtibuted Computing Systems,Elective,04CS7103
+1695,Wireless Sensor Networks,Elective,04CS7105
+1696,Text Mining and Language Processing,Elective,04CS7107
+1697,Parellel Algorithms,Elective,04CS7115
+1698,Seminar-2,Seminar,04CS7191
+1699,Project (Phase - 1),Lab,04CS7193
+1700,Energy and Climate,Elective,04EE7501
+1701,Waste Management and Energy Generation Technologies,Elective,04EE7507
+1702,Energy Effiency in Thermal Utilities,Elective,04EE7509
+1703,Bio-inspired Algorithms,Elective,04EE7001
+1704,Data Acquisition and Signal Conditioning,Elective,04EE7113
+1705,Power Generationand System Planning,Elective,04EE7423
+1706,Seminar -2,Lab,04EE7591
+1707,Robotics and Automation,Elective,04EE7105
+1708,Digital Protection of Power Systems,Elective,04EE7409
+1709,Industrial Control Electronics,Elective,04EE7113
+1710,Numerical Simulation of Power Electronic Systems,Elective,04EE7307
+1711,Advanced Controllers for Embedded Systems,Elective,04EE7603
+1712,Seminar - 2,Lab,04EE7491
+1713,ACOUSTICS AND NOISE CONTROL FOR ENGINEERS,Elective,04ME7505
+1714,MECHANICAL BEHAVIOUR OF MATERIALS,Elective,04ME7509
+1715,DESIGN FOR PRODUCTION,Elective,04ME7513
+1716,VIBRATION CONTOL AND CONDITION MONITORING,Elective,04ME7515
+1717,Software Lab-XV(Cloud Computing Lab),Lab,DMCA907
+1718,Placement and Aptitude Training,Other,P100 
+1719,English(additional),Other,EA100 
+1720,Civil Engineering Workshops,Lab,CE110
+1721,Electrical and Electronic Engineering Workshop,Lab,EE110
+1722,Electronics Engineering Workshops,Lab,EC110
+1723,Computer Science Workshops,Lab,CS110
+1724,Chemical Engineering Workshops,Lab,CH110
+1725,Computer programming in C lab,Lab,MT233
+1726,Iron and steel making,Elective 1,MT303
+1727,Nonferrous extractive metallurgy,Elective 1,MT305
+1728,Special steels and cast irons,Elective 1,MT361
+1729,Design and selection of materials,Elective 1,MT363
+1730,Measurements and control,Elective 1,MT367
+1731,Welding Lab,Lab,MT331
+1732,Foundry lab,Lab,MT333
+1733,"Creep, fatigue and fracture",Elective 5,MT403
+1734,Metallurgical failure analysis,Elective 6,MT405
+1735,Deformation processing,Elective 8,MT409
+1736,Vacuum Science and deposition techniques,Elective 10,MT463
+1737,Sensors for engineering applications,Elective 11,MT465
+1738,Metallurgy of tool materials,Elective 12,MT467
+1739,Surface engineering,Elective 13,MT469
+1740,NDT Lab,Lab,MT431
+1741,Seminar and Project Preliminary,Lab,MT451
+1742,Two and Three Wheelers,Theory,AU402
+1743,Vehicle Maintenance,Elective,AU462
+1744,AGV and Autonomous Vehicles,Elective,AU468
+1745,Automobile Manufacturing Technology,Elective,AU466
+1746,EngineÂ And Vehicle Management Systems,Theory,AU404
+1747,Town and Country Planning,Elective,CE462
+1748,Reinforced Soil Structures and Geosynthetics,Elective,CE464
+1749,Finite Element Methods,Elective,CE466
+1750,Structural Dynamics and Earthquake Resistant Design,Elective,CE468
+1751,Transportation Planning,Elective,CE472
+1752,Municipal Solid Waste Management,Elective,CE474
+1753,Civil Engineering Project Management,Theory,CE404
+1754,Project Engineering and Process Plant Economics,Theory,CH402
+1755,Safety Engineering of Process Plants,Theory,CH404
+1756,Natural Gas Engineering,Elective,CH462
+1757,Composite Materials,Elective,CH466
+1758,Food Processing and Technology,Elective,CH468
+1759,Process Integration,Elective,CH472
+1760,Data Mining and Ware Housing,Theory,CS402
+1761,Fuzzy Set Theory and Applications,Elective,CS462
+1762,Data Science,Elective,CS466
+1763,Principles of Information Security,Elective,CS472
+1764,Nano electronics,Theory,EC402
+1765,Mixed Signal Circuit Design,Elective,EC462
+1766,Low Power VLSI Design,Elective,EC464
+1767,Cyber Security,Elective,EC466
+1768,Secure Communication,Elective,EC468
+1769,Integrated Optics & Photonic Systems,Elective,EC472
+1770,Design of Digital Control Systems,Elective,EE462
+1771,FACTS,Elective,EE464
+1772,Energy Management and Auditing,Elective,EE474
+1773,Industrial Instrumentation and Automation,Theory,EE404
+1774,Special Electric Machines,Theory,EE402
+1775,Cryptography & Cyber Security,Theory,IT402
+1776,Data Analytics,Theory,IT404
+1777,Evolutionary Computing,Elective,IT464
+1778,Adhoc & Sensor Networks,Elective,IT466
+1779,Service Oriented Architecture,Elective,IT468
+1780,Design of Machine Elements II,Theory,ME402
+1781,Propulsion Engineering,Elective,ME462
+1782,Nanotechnology,Elective,ME468
+1783,Failure Analysis and Design,Elective,ME472
+1784,Micro and Nano Manufacturing,Elective,ME474
+1785,Material Handling & Facilities Planning,Elective,ME476
+1786,Fracture Mechanics,Theory,MT404
+1787,Advances in Metal Forming,Elective,MT462
+1788,Energy Storing Devices and Fuel Cells,Elective,MT464
+1789,Non Traditional machining,Elective,MT468
+1790,Emerging materials,Elective,MT472
+1791,Introduction to Mechanical Engineering Sciences,Theory,BE 101-02
+1792,Introduction to Chemical Engineering,Theory,BE 101-06
+1793,Advanced Database Systems,Theory,ADS
+1794,Research Project,,DMCAX01
+1796,Instrumentation system design ,Elective,AE484 
+1797,Flight against gravity ,Elective,AO482 
+1798,"Noise, vibration and harshness ",Elective,AU486 
+1799,Medical imaging & image processing techniques ,Elective,BM484 
+1800,Sustainable energy processes ,Elective,BT362 
+1801,Design of biological wastewater treatment systems ,Elective,BT461 
+1802,Applied earth systems ,Elective,CE484 
+1803,Geoinformatics for infrastructure management ,Elective,CE486 
+1804,Environmental health and safety ,Elective,CE494 
+1805,Process utilities and pipe line design ,Elective,CH482  
+1806,Fuel cell technology ,Elective,CH484 
+1807,Industrial automation ,Elective,EE488 
+1808,Instrumentation systems ,Elective,EE494 
+1809,Responsible engineering ,Elective,FS482 
+1810,Food process engineering ,Elective,FT482 
+1811,Food storage engineering ,Elective,FT484 
+1812,Food additives and flavorings ,Elective,FT486 
+1813,Biomedical signal processing ,Elective,IC482 
+1814,Financial management ,Elective,IE482 
+1815,Introduction to business analytics ,Elective,IE484 
+1816,Design and analysis of experiments ,Elective,IE486 
+1817,Total quality management ,Elective,IE488 
+1818,Information storage management ,Elective,IT482 
+1819,Industrial psychology and organisational behavior ,Elective,MP469 
+1820,Product development and design ,Elective,MP482 
+1821,Dredgers and harbour crafts,Elective,SB482 
+1822,C# AND .NET PROGRAMMING,Elective,CS488
+1823,DMCA101,Theory,ENGLISH
+1824,DMCA102,Theory,MATHEMATICAL FOUNDATION OF COMPUTER SCIENCE
+1825,DMCA103,Theory,STATISTICS-I
+1826,DMCA104,Theory,INTRODUCTION TO COMPUTERS & PC HARDWARE
+1827,DMCA105,Theory,PROGRAMMING METHODOLOGY & C PROGRAMMING
+1828,DMCA106,Lab,SOFTWARE LAB-1(PC HARDWARE LAB-OFFICE DOCUMENTS)
+1829,DMCA107,Lab,SOFTWARE LAB-11(C LAB)
+1830,DMCA201,Theory,TECHNICAL COMMUNICATION
+1831,DMCA202,Theory,STATISTICS-II
+1832,DMCA203,Theory,DIGITAL SYSTEMS & LOGIC DESIGNS
+1833,DMCA204,Theory,DATA STRUCTURES-C
+1834,DMCA205,Theory,OBJECT ORIENTED PROGRAMMING WITH C++
+1835,DMCA206,Lab,SOFTWARE LAB-III(DATA STRUCTURES LAB IN C)
+1836,DMCA207,Lab,SOFTWARE LAB-IV(C++ LAB)
+1837,DMCA301,Theory,COMPUTER ORGANIZATION AND ARCHITECTURE
+1838,DMCA302,Theory,OPERATING SYSTEMS
+1839,DMCA303,Theory,DATABASE MANAGEMENT SYSTEMS
+1840,DMCA304,Theory,ACCOUNTING AND FINANTIAL MANAGEMENT
+1841,DMCA305,Theory,VISUAL PROGRAMMING(VB)
+1842,DMCA306,Lab,SOFTWARE LAB-V(DBMS LAB)
+1843,DMCA307,Lab,SOFTWARE LAB-VI(VISUAL PROGRAMMING LAB)
+1844,DMCA401,Theory,JAVA PROGRAMMING
+1845,DMCA402,Theory,MICROPROCESSORS
+1846,DMCA403,Theory,MULTIMEDIA SYSTEMS
+1847,DMCA404,Theory,DATA COMMUNICATIONS
+1848,DMCA405,Theory,MANAGEMENT INFORMATION SYSTEMS
+1849,DMCA406,Lab,SOFTWARE LAB-VII(JAVA LAB)
+1850,DMCA407,Lab,SOFTWARE LAB-VIII(MICROPROCESSOR LAB) 
+1851,DMCA501,Theory,OPERATIONS RESEARCH
+1852,DMCA502,Theory,PHP PROGRAMMING
+1853,DMCA503,Theory,LINUX & SHELL PROGRAMMING
+1854,DMCA504,Theory,COMPUTER NETWORKS
+1855,DMCA505,Theory,SOFTWARE ENGINEERING
+1856,DMCA506,Lab,SOFTWARE LAB-IX(PHP LAB)
+1857,DMCA507,Lab,SOFTWARE LAB-X(LINUX &SHELL PROGRAMMING LAB)
+1858,LINEAR ALGEBRA AND CALCULUS,Theory,MAT101
+1859,ENGINEERING PHYSICS A,Theory,PHT100
+1860,ENGINEERING PHYSICS B,Theory,PHT110
+1861,ENGINEERING CHEMISTRY,Theory,CYT100
+1862,ENGINEERING MECHANICS,Theory,EST100
+1863,ENGINEERING GRAPHICS,Theory,EST110
+1864,BASICS OF CIVIL & MECHANICAL ENGINEERING,Theory,EST120
+1865,BASICS OF ELECTRICAL & ELECTRONICS ENGINEERING,Theory,EST130
+1866,LIFE SKILLS,Theory,HUN101
+1867,ENGINEERING PHYSICS LAB,Lab,PHL120
+1868,ENGINEERING CHEMISTRY LAB,Lab,CYL120
+1869,CIVIL & MECHANICAL WORKSHOP,Lab,ESL120
+1870,"ELECTRICAL & ELECTRONICS
+WORKSHOP",Lab,ESL130
+1871,"VECTOR CALCULUS, DIFFERENTIAL
+EQUATIONS AND TRANSFORMS",Theory,MAT102
+1872,PROFESSIONAL COMMUNICATION,Theory,HUT102
+1873,PROGRAMMING IN C,Theory,EST102
+1874,AUTOMOTIVE CHASSIS,Theory,AU205
+1875,Computer Aided M/C & Auto Components Drafting Lab,Lab,AU231
+1876,Induction Course,Theory,Other

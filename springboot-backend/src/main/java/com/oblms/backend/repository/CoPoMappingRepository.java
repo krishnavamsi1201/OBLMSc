@@ -9,4 +9,5 @@ import java.util.List;
 @Repository
 public interface CoPoMappingRepository extends JpaRepository<CoPoMapping, Long> {
     List<CoPoMapping> findByCourse(String course);
+    List<CoPoMapping> findByCourseIgnoreCase(String course);
 }

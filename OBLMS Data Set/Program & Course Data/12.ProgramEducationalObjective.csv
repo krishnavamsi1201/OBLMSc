@@ -1,0 +1,72 @@
+peoid,courseId,branchId,outcome,shid
+22,1003,69,Be successfully employed in computing profession as well as multidisciplinary domains in supportive and leadership roles. ,11
+23,1003,68,Be successfully employed in computing profession as well as multidisciplinary domains in supportive and leadership roles.,11
+24,1003,70,Be successfully employed in computing profession as well as multidisciplinary domains in supportive and leadership roles.,11
+25,1003,69,"Participate in life-long learning through the successful completion of advanced degrees, continuing education, certifications and/or other professional developments.",12
+26,1003,69,"Participate in life-long learning through the successful completion of advanced degrees, continuing education, certifications and/or other professional developments.",19
+27,1003,68,"Participate in life-long learning through the successful completion of advanced degrees, continuing education, certifications and/or other professional developments.",12
+28,1003,70,"Participate in life-long learning through the successful completion of advanced degrees, continuing education, certifications and/or other professional developments.",12
+29,1003,69,"Promote design, research, product implementation and services in the field of Computer Science and Applications through strong technical, communication and entrepreneurial skills.",19
+30,1003,68,"Promote design, research, product implementation and services in the field of Computer Science and Applications through strong technical, communication and entrepreneurial skills.",19
+31,1003,70,"Promote design, research, product implementation and services in the field of Computer Science and Applications through strong technical, communication and entrepreneurial skills.",19
+32,1001,38,"To prepare graduates to achieve successful careers in IT/related industries by well-conceived, sustainable and engineered solutions meeting the growing demands of the society.",11
+33,1001,38,"To prepare graduates to develop individually & actively contribute for the organizational and societal growth by continuous learning, sustaining research and entrepreneurial activities.",12
+34,1001,38,"To prepare graduates to inculcate professional attitudes and ethics, and effectively communicate IT concepts globally as a team or individual.",19
+35,1001,34,Be competent engineers who shall provide successful solutions to problems faced by the manufacturing sector in automobile and allied industries,11
+36,1001,34,Be a part of a professionally ethical society who shall provide services to common man in a positive and helpful manner,12
+37,1001,34,Be successful entrepreneurs who can identify and provide best solutions to solve societal issues,19
+38,1001,34,"Aim for continuous unlearn and relearn practices to improve their knowledge and competence, along with the development of the Organization they serve",20
+39,1001,34,"Engage in life-long learning by being active members of professional bodies like ICI, ISCE, ASCE etc. and obtain professional licensure.",21
+40,1001,36,Electronics and Communication Engineering graduates have successful careers in industry / Entrepreneurship ,11
+41,1001,36,our graduate Show excellence in technical higher education and research.,12
+42,1001,36,Our graduate show  good competency and social commitment in their work culture.,19
+43,1001,39,Perform as best professional engineers or pursue higher studies with strong knowledge gained during undergraduate education.,11
+44,1001,47,Our graduates shall excel as engineers or pursue higher studies in Chemical Engineering with a strong fundamental knowledge laid during undergraduate education.,11
+45,1001,47,Our graduates shall practice as entrepreneurs with ethical attitude and social responsibility.,12
+46,1001,47,Our graduates shall exhibit an innovative approach for facing the current technical and environmental challenges faced by the society.,19
+47,1001,39,Perform successfully as individuals or as team leaders/members keeping utmost professional ethics and social commitment.,12
+48,1001,39,Use the state of art tools and techniques to face the current technical and environmental challenges faced by the society,19
+49,1001,39,Adopt professional growth as their motto by engaging in lifelong learning to meet latest demands of technological changes related to engineering.,20
+50,1001,35,Be successfully employed in computing profession as well as multidisciplinary domains in supportive and leadership roles.,11
+51,1001,35,"Participate in life-long learning through successful completion of advanced degrees, continuing education, certifications and/or other professional development.",12
+52,1001,35,"Promote design, research, product implementation and services in the field of Computer Science and Engineering through strong technical, communication and entrepreneurial skills.",19
+53,1001,33,Be competent engineers who shall provide successful solutions to problems faced by the manufacturing sector in automobile and allied industries,11
+54,1001,33,Be a part of a professionally ethical society who shall provide services to common man in a positive and helpful manner,12
+55,1001,33,Be successful entrepreneurs who can identify and provide best solutions to solve societal issues,19
+56,1001,33,"Aim for continuous unlearn and relearn practices to improve their knowledge and competence, along with the development of the Organization they serve",20
+57,1001,43,Perform as best professional engineers or pursue higher studies with strong knowledge gained during undergraduate education.,11
+58,1001,43,Engineering graduates will strive to improve their knowledge and potential  efficiently in their preferred profession and to serve for the society,12
+59,1001,43,Engineering graduates will exhibit technical and entrepreneurial skills for further progress in metallurgical Engineering career,19
+60,1002,41,Apply the fundamental and advanced knowledge of  Communication Engineering to demonstrate the active participation in research work.,11
+61,1002,41,"Demonstrate competency to pursue successful career in business, industry and/or academia with high ethical standards.",12
+62,1002,41,Exhibit life-long learning skills through constant knowledge up-gradation.,19
+63,1002,42,"Have a successful career in industry/academia/research/government, induced with fundamental and advanced knowledge in their respective domains.",11
+64,1002,42,Engage in professional practice to promote the development of novel systems/products and optimized solutions to meet the societal needs.,12
+65,1002,42,"Contribute significantly to contemporary research domains in Computer Science and Engineering through publications, innovative projects or patents.",19
+66,1001,37,"Our graduates will be able to apply their technical knowledge and take on higher responsibilities in industry, academics and diverse fields of Electrical engineering.",11
+67,1001,37,"They will be in a position to pursue a continual path of professional development, interspersed with advanced education and continuing enhancement programs, relevant to their specific career goals.",12
+68,1001,37,"They will be able to channelize their knowledge base, business links and social contacts into socially beneficial activities.",19
+69,1002,44,"Our graduates will be able to work productively in supportive and leadership roles, creating sustainable solutions and to take on higher responsibilities in industry and academia.",11
+70,1002,48,"Our graduates will be able to work productively in supportive and leadership roles, creating sustainable solutions and to take on higher responsibilities in industry and academia.",11
+71,1002,44,"Graduates will be in a position to pursue a path of life-long learning, interspersed with advanced education, research and development.",12
+72,1002,48,"Graduates will be in a position to pursue a path of life-long learning, interspersed with advanced education, research and development.",12
+73,1002,44,"Graduates will be able to apply their technical knowledge innovatively with entrepreneurial, social, environmental and ethical considerations.",19
+74,1002,48,"Graduates will be able to apply their technical knowledge innovatively with entrepreneurial, social, environmental and ethical considerations.",19
+75,1002,45,"Be the best professional engineers or pursue higher studies with strong knowledge gained
+during graduate education.",11
+76,1002,45,"Perform successfully as individuals or as team leaders/members keeping utmost professional
+ethics and social commitment.",12
+77,1002,45,"Use the state of art tools and techniques to face the current technical and environmental
+challenges faced by the society.",19
+78,1002,45,"Adopt professional growth as their motto by engaging in lifelong learning to meet latest
+demands of technological changes related to engineering.",20
+79,1001,34,Graduates shall have the ability,11
+80,1001,34,To proactively work as responsible professionals effectively discharging their duties in an independent or team environment in civil engineering or related fields,11
+81,1001,34,To pursue lifelong learning in furtherance of research or other specific career programs,12
+82,1001,34,To effectively address challenging problems in civil engineering or  related fields by providing sustainable solutions using modern tools,19
+83,1002,46,Demonstrate competency to lead and discharge their duties in an independent or team environment in structural engineering and construction management or related fields,11
+84,1002,46,To exhibit skills for lifelong learning in furtherance of research or other specific career programs through constant knowledge up-gradation,12
+85,1002,46,Apply  fundamental and advanced knowledge in structural engineering  and construction management to effectively address challenging problems in civil engineering or related fields  and provide sustainable solutions using modern tools.,19
+86,1002,72,Demonstrate competency to lead and discharge their duties in an independent or team environment in structural engineering or related fields,11
+87,1002,72,To exhibit skills for lifelong learning in furtherance of research or other specific career programs through constant knowledge up-gradation ,12
+88,1002,72,Apply  fundamental and advanced knowledge in structural engineering to effectively address challenging problems in civil engineering or related fields  and provide sustainable solutions using modern tools.,19

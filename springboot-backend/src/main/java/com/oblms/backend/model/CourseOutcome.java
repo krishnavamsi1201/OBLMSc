@@ -10,16 +10,17 @@ public class CourseOutcome {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false)
-    private String course;
+    private Long comid; // ID from dataset 9.CourseOutcome.csv
 
-    @Column(nullable = false)
-    private String co;
+    private Long semSubId;
 
-    @Column(length = 1000)
+    private String course; // Course / Subject code (e.g. INMCA202, DS, MES)
+
+    private String co; // CO1, CO2, CO3, CO4, CO5, CO6
+
+    @Column(length = 2048)
     private String description;
 
-    // Constructors
     public CourseOutcome() {}
 
     public CourseOutcome(Long id, String course, String co, String description) {
@@ -29,9 +30,22 @@ public class CourseOutcome {
         this.description = description;
     }
 
-    // Getters and Setters
+    public CourseOutcome(Long comid, Long semSubId, String course, String co, String description) {
+        this.comid = comid;
+        this.semSubId = semSubId;
+        this.course = course;
+        this.co = co;
+        this.description = description;
+    }
+
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
+
+    public Long getComid() { return comid; }
+    public void setComid(Long comid) { this.comid = comid; }
+
+    public Long getSemSubId() { return semSubId; }
+    public void setSemSubId(Long semSubId) { this.semSubId = semSubId; }
 
     public String getCourse() { return course; }
     public void setCourse(String course) { this.course = course; }
