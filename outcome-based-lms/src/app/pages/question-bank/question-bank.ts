@@ -88,8 +88,22 @@ export class QuestionBank implements OnInit {
     this.isLoading = true;
     this.http.get<QuestionItem[]>('http://localhost:8080/api/questions').subscribe({
       next: (data) => {
-        this.questions = data;
-        const subjects = data.map(q => q.subject);
+        let list = data;
+        if (this.role === 'faculty') {
+          let assigned: string[] = [];
+          try {
+            const stored = localStorage.getItem('userAssignedCourses');
+            if (stored) assigned = JSON.parse(stored);
+          } catch {}
+          if (assigned.length > 0) {
+            list = data.filter(q => 
+              assigned.includes(q.subject) || 
+              assigned.some(a => q.subject && q.subject.toLowerCase().includes(a.toLowerCase()))
+            );
+          }
+        }
+        this.questions = list;
+        const subjects = list.map(q => q.subject);
         this.subjectsList = Array.from(new Set(subjects));
         this.applyFilters();
         this.isLoading = false;

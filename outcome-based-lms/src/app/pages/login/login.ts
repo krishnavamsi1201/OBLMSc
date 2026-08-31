@@ -77,7 +77,8 @@ export class Login implements OnInit {
           name: u.name,
           email: u.email,
           department: u.department || 'Computer Science',
-          semester: 'Semester 1'
+          semester: 'Semester 1',
+          enrolledCourses: u.enrolledCourses || ''
         }));
         localStorage.setItem('obslmsStudents', JSON.stringify(students));
         

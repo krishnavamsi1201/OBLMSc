@@ -1110,7 +1110,8 @@ export class AttendancePage implements OnInit, OnDestroy {
             regNo: p.regNo || p.id || `2401011200${idx + 1}`,
             name: p.name,
             department: p.department || 'Computer Science',
-            semester: p.semester || 'Semester 3'
+            semester: p.semester || 'Semester 3',
+            enrolledCourses: p.enrolledCourses || ''
           }));
         }
       }
@@ -1118,12 +1119,22 @@ export class AttendancePage implements OnInit, OnDestroy {
 
     if (rawRoster.length === 0) {
       rawRoster = [
-        { id: 'STU004', regNo: 'STU004', name: 'Krishnavamsi', department: 'Computer Science & Engineering', semester: 'Semester 3' },
-        { id: 'STU001', regNo: 'STU001', name: 'Raj Kumar', department: 'Computer Science', semester: 'Semester 3' },
-        { id: 'STU002', regNo: 'STU002', name: 'Aarav Mehta', department: 'Computer Science & Engineering', semester: 'Semester 3' },
-        { id: 'STU003', regNo: 'STU003', name: 'Aditya Sen', department: 'Information Technology', semester: 'Semester 3' },
-        { id: 'STU005', regNo: 'STU005', name: 'Ananya Iyer', department: 'Electronics & Communication Engineering', semester: 'Semester 3' }
+        { id: 'STU004', regNo: 'STU004', name: 'Krishnavamsi', department: 'Computer Science & Engineering', semester: 'Semester 3', enrolledCourses: 'INMCA202,DS,MES,IT305,OOP' },
+        { id: 'STU001', regNo: 'STU001', name: 'Raj Kumar', department: 'Computer Science', semester: 'Semester 3', enrolledCourses: 'INMCA202,DS,MES,IT305,OOP' },
+        { id: 'STU002', regNo: 'STU002', name: 'Aarav Mehta', department: 'Computer Science & Engineering', semester: 'Semester 3', enrolledCourses: 'INMCA202,DS,MES,IT305,OOP' },
+        { id: 'STU003', regNo: 'STU003', name: 'Aditya Sen', department: 'Information Technology', semester: 'Semester 3', enrolledCourses: 'INMCA202,DS,MES,IT305,OOP' },
+        { id: 'STU005', regNo: 'STU005', name: 'Ananya Iyer', department: 'Electronics & Communication Engineering', semester: 'Semester 3', enrolledCourses: 'INMCA202,DS,MES,IT305,OOP' }
       ];
+    }
+
+    if (this.selectedCourse) {
+      rawRoster = rawRoster.filter(student => {
+        const courses = student.enrolledCourses ? student.enrolledCourses.split(',') : [];
+        return courses.some((c: string) => 
+          c.trim().toLowerCase() === this.selectedCourse.toLowerCase() ||
+          this.selectedCourse.toLowerCase().includes(c.trim().toLowerCase())
+        );
+      });
     }
 
     // Map every student with dynamic attendance calculations

@@ -98,7 +98,21 @@ export class CopoMapping implements OnInit {
   private loadCourseOutcomes() {
     this.http.get<CourseOutcome[]>('http://localhost:8080/api/copo/co').subscribe({
       next: (data) => {
-        this.courseOutcomes = data;
+        let list = data;
+        if (this.role === 'faculty') {
+          let assigned: string[] = [];
+          try {
+            const stored = localStorage.getItem('userAssignedCourses');
+            if (stored) assigned = JSON.parse(stored);
+          } catch {}
+          if (assigned.length > 0) {
+            list = data.filter(item => 
+              assigned.includes(item.course) || 
+              assigned.some(a => item.course && item.course.toLowerCase().includes(a.toLowerCase()))
+            );
+          }
+        }
+        this.courseOutcomes = list;
         this.cdr.detectChanges();
       }
     });
@@ -107,7 +121,21 @@ export class CopoMapping implements OnInit {
   private loadMappings() {
     this.http.get<CoMapping[]>('http://localhost:8080/api/copo/mappings').subscribe({
       next: (data) => {
-        this.mappings = data;
+        let list = data;
+        if (this.role === 'faculty') {
+          let assigned: string[] = [];
+          try {
+            const stored = localStorage.getItem('userAssignedCourses');
+            if (stored) assigned = JSON.parse(stored);
+          } catch {}
+          if (assigned.length > 0) {
+            list = data.filter(item => 
+              assigned.includes(item.course) || 
+              assigned.some(a => item.course && item.course.toLowerCase().includes(a.toLowerCase()))
+            );
+          }
+        }
+        this.mappings = list;
         this.cdr.detectChanges();
       }
     });
@@ -312,9 +340,21 @@ export class CopoMapping implements OnInit {
   private loadCourses() {
     this.http.get<Array<{ code: string; title: string }>>('http://localhost:8080/api/courses').subscribe({
       next: (data) => {
-        this.courses = data
-          .map(c => c.code)
-          .filter(Boolean);
+        let list = data;
+        if (this.role === 'faculty') {
+          let assigned: string[] = [];
+          try {
+            const stored = localStorage.getItem('userAssignedCourses');
+            if (stored) assigned = JSON.parse(stored);
+          } catch {}
+          if (assigned.length > 0) {
+            list = data.filter(c => 
+              assigned.includes(c.title) || 
+              assigned.includes(c.code)
+            );
+          }
+        }
+        this.courses = list.map(c => c.code).filter(Boolean);
         this.cdr.detectChanges();
       },
       error: () => {

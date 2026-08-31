@@ -33,6 +33,7 @@ interface StudentMark {
 
 interface COAttainment {
   code: string;
+  course?: string;
   description: string;
   achievement: number;
   targetPercentage: number;
@@ -96,7 +97,21 @@ export class CoAttainment implements OnInit {
   loadCourses(): void {
     try {
       const stored = localStorage.getItem('obslmsCourses');
-      this.courses = stored ? JSON.parse(stored) : [];
+      let list = stored ? JSON.parse(stored) : [];
+      if (this.role === 'faculty') {
+        let assigned: string[] = [];
+        try {
+          const storedAssigned = localStorage.getItem('userAssignedCourses');
+          if (storedAssigned) assigned = JSON.parse(storedAssigned);
+        } catch {}
+        if (assigned.length > 0) {
+          list = list.filter((c: any) => 
+            assigned.includes(c.title) || 
+            assigned.includes(c.code)
+          );
+        }
+      }
+      this.courses = list;
     } catch {
       this.courses = [];
     }
@@ -105,11 +120,27 @@ export class CoAttainment implements OnInit {
   calculateCOAttainment(): void {
     this.http.get<COAttainment[]>('http://localhost:8080/api/obe/co-attainment?target=' + this.targetPercentage).subscribe({
       next: (data) => {
-        this.coAttainments = data;
-        if (data.length > 0) {
+        let list = data;
+        if (this.role === 'faculty') {
+          let assigned: string[] = [];
+          try {
+            const storedAssigned = localStorage.getItem('userAssignedCourses');
+            if (storedAssigned) assigned = JSON.parse(storedAssigned);
+          } catch {}
+          if (assigned.length > 0) {
+            list = data.filter(item => 
+              assigned.includes(item.course || '') || 
+              assigned.some(a => item.course && item.course.toLowerCase().includes(a.toLowerCase()))
+            );
+          }
+        }
+        this.coAttainments = list;
+        if (list.length > 0) {
           this.overallAchievement = Math.round(
-            data.reduce((sum, co) => sum + co.achievement, 0) / data.length
+            list.reduce((sum, co) => sum + co.achievement, 0) / list.length
           );
+        } else {
+          this.overallAchievement = 0;
         }
         this.filterAttainments();
       },

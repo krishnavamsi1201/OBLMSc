@@ -76,6 +76,7 @@ public class OBEService {
             Map<String, Object> map = new HashMap<>();
             map.put("code", co.getCo());
             map.put("description", co.getDescription());
+            map.put("course", co.getCourse());
             map.put("achievement", finalAchievement);
             map.put("targetPercentage", (int) targetThreshold);
             map.put("status", status);
