@@ -13,9 +13,6 @@
 				<p>Real-time outcome analytics, live attendance, quick grading, syllabus delivery, and NBA accreditation tools for <strong>{{ facultyName }}</strong>.</p>
 			</div>
 			<div class="header-actions">
-				<button class="action-btn secondary" (click)="openQuickAttendanceModal()">
-					📅 Quick Attendance
-				</button>
 				<button class="action-btn primary" (click)="openMarkEntryModal()">
 					📝 Quick Marks Entry
 				</button>
@@ -87,7 +84,7 @@
 						<small class="stat-hint">Target threshold: 75%</small>
 					</div>
 				</div>
-				<div class="stat-card stat-attendance" (click)="openQuickAttendanceModal()">
+				<div class="stat-card stat-attendance">
 					<div class="stat-icon">📈</div>
 					<div class="stat-content">
 						<span class="stat-label">Avg Attendance</span>
