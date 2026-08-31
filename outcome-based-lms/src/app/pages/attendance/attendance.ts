@@ -785,6 +785,7 @@ export class AttendancePage implements OnInit, OnDestroy {
   filteredLogs: AttendanceRecord[] = [];
   searchTerm: string = '';
   statusFilter: string = '';
+  isLocalChange = false;
 
   private toast = inject(ToastService);
   private syncService = inject(SyncService);
@@ -829,7 +830,9 @@ export class AttendancePage implements OnInit, OnDestroy {
           this.calculateSubjectSummaries();
           this.loadDaySchedule();
         } else {
-          this.loadEnrolledStudents();
+          if (!this.isLocalChange) {
+            this.loadEnrolledStudents();
+          }
         }
         this.cdr.detectChanges();
       }
@@ -1221,7 +1224,9 @@ export class AttendancePage implements OnInit, OnDestroy {
       status: newStatus
     }).subscribe({ error: () => {} });
 
+    this.isLocalChange = true;
     this.syncService.emit('ATTENDANCE_CHANGED');
+    this.isLocalChange = false;
 
     if (newStatus === 'Present') {
       this.toast.success(`${student.name} marked Present. (Attendance: ${student.attendancePercentage}%) 📈`);
@@ -1244,7 +1249,9 @@ export class AttendancePage implements OnInit, OnDestroy {
       localStorage.setItem('obslmsAttendance', JSON.stringify(this.allLogs));
     } catch {}
 
+    this.isLocalChange = true;
     this.syncService.emit('ATTENDANCE_CHANGED');
+    this.isLocalChange = false;
     if (!this.isStudent) {
       this.loadEnrolledStudents();
     }
