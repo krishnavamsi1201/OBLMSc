@@ -344,7 +344,11 @@ export class Students implements OnInit, OnDestroy {
       const storedAttendance = localStorage.getItem('obslmsAttendance');
       let attendance = storedAttendance ? JSON.parse(storedAttendance) : [];
       let myAttendance = attendance.filter((a: any) => 
-        a.student && a.student.toLowerCase() === this.studentName.toLowerCase()
+        a.student && a.student.toLowerCase() === this.studentName.toLowerCase() &&
+        a.course && courses.some((c: any) => 
+          a.course.toLowerCase() === c.code.toLowerCase() || 
+          a.course.toLowerCase() === c.title.toLowerCase()
+        )
       );
 
       // Only generate mock attendance for seed students if empty to avoid cluttering newly created students
@@ -366,7 +370,11 @@ export class Students implements OnInit, OnDestroy {
         attendance = [...attendance, ...generated];
         localStorage.setItem('obslmsAttendance', JSON.stringify(attendance));
         myAttendance = attendance.filter((a: any) => 
-          a.student && a.student.toLowerCase() === this.studentName.toLowerCase()
+          a.student && a.student.toLowerCase() === this.studentName.toLowerCase() &&
+          a.course && courses.some((c: any) => 
+            a.course.toLowerCase() === c.code.toLowerCase() || 
+            a.course.toLowerCase() === c.title.toLowerCase()
+          )
         );
       }
 
