@@ -1,7 +1,8 @@
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { HttpClient } from '@angular/common/http';
 import { MatCardModule } from '@angular/material/card';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
@@ -31,6 +32,9 @@ interface ChatMessage {
   styleUrls: ['./chatbot.css'],
 })
 export class Chatbot {
+  private router = inject(Router);
+  private http = inject(HttpClient);
+
   userMessage = '';
   isOpen = false;
 
@@ -54,8 +58,6 @@ export class Chatbot {
   voiceStatus = 'Click mic to speak';
   private recognition: any;
 
-  constructor(private router: Router) {}
-
   toggleChat(): void {
     this.isOpen = !this.isOpen;
   }
@@ -69,19 +71,32 @@ export class Chatbot {
       this.userMessage = '';
     }
 
-    const response = this.processCommand(message);
-    this.messages.push({
-      from: 'bot',
-      text: response.text,
-      quickAction: response.quickAction
-    });
-    this.suggestions = response.suggestions || [];
+    const payload = {
+      message: message,
+      userName: localStorage.getItem('userName') || 'Student',
+      userId: localStorage.getItem('userId') || ''
+    };
 
-    if (response.navigateTo && !response.suggestions) {
-      setTimeout(() => {
-        this.router.navigate([response.navigateTo]);
-      }, 700);
-    }
+    this.http.post<any>('http://localhost:8080/api/chatbot/query', payload).subscribe({
+      next: (response) => {
+        this.messages.push({
+          from: 'bot',
+          text: response.text,
+          quickAction: response.quickAction
+        });
+        this.suggestions = response.suggestions || [];
+      },
+      error: () => {
+        // Fallback to local processing if API fails
+        const response = this.processCommand(message);
+        this.messages.push({
+          from: 'bot',
+          text: response.text,
+          quickAction: response.quickAction
+        });
+        this.suggestions = response.suggestions || [];
+      }
+    });
   }
 
   clickSuggestion(route: string): void {
@@ -175,22 +190,17 @@ export class Chatbot {
     }
   }
 
-  /**
-   * Advanced Academic NLP Processor
-   */
   private processCommand(input: string): { text: string; navigateTo?: string; quickAction?: { label: string; route: string }; suggestions?: Array<{ label: string; route: string }> } {
     const lower = input.toLowerCase();
     const userName = localStorage.getItem('userName') || 'Student';
     const role = (localStorage.getItem('userRole') || 'student').toLowerCase();
 
-    // 1. Attendance & Bunk Margin Inquiries
     if (lower.includes('bunk') || lower.includes('skip') || lower.includes('can i miss')) {
       const logs = this.getSafeJson('obslmsAttendance');
       const totalLectures = logs.length > 0 ? logs.length : 20;
       const totalPresent = logs.length > 0 ? logs.filter((l: any) => l.status === 'Present').length : 16;
       const pct = Math.round((totalPresent / totalLectures) * 100);
 
-      // Safe bunk formula: (Present - 0.75 * Total) / 0.75
       const safeBunks = Math.floor((totalPresent - 0.75 * totalLectures) / 0.75);
 
       if (safeBunks > 0) {
@@ -224,7 +234,6 @@ export class Chatbot {
       };
     }
 
-    // 2. OBE Concepts: CO, PO, Bloom's Taxonomy, Attainment
     if (lower.includes('what is co') || lower.includes('course outcome') || lower.includes('explain co')) {
       return {
         text: `🎯 Course Outcomes (COs) are measurable statements describing the knowledge and practical skills a student achieves by completing a specific course.\n\nExample: In DBMS, CO1 represents formulating relational algebra queries, and CO3 represents BCNF normal form decomposition.`,
@@ -260,26 +269,13 @@ export class Chatbot {
       };
     }
 
-    // 3. Exams & Schedule
     if (lower.includes('exam') || lower.includes('test') || lower.includes('schedule') || lower.includes('midterm')) {
-      const exams = this.getSafeJson('obslmsExams');
-      if (exams.length > 0) {
-        const scheduled = exams.filter(e => e.status === 'Scheduled' || e.status === 'Ongoing');
-        if (scheduled.length > 0) {
-          const list = scheduled.map(e => `${e.title || e.course} on ${e.date}`).join(', ');
-          return {
-            text: `📝 You have upcoming exam(s) scheduled:\n\n${list}.\n\nPlease review the syllabus and Course Outcomes (COs) mapped to each test.`,
-            quickAction: { label: 'View Exam Hall Tickets', route: '/examination' }
-          };
-        }
-      }
       return {
         text: '📝 Midterm Examination 1 is scheduled for next month. Check your assessments and course outcomes to prepare.',
         quickAction: { label: 'View Assessment Schedule', route: '/assessments' }
       };
     }
 
-    // 4. Grades & CGPA
     if (lower.includes('cgpa') || lower.includes('gpa') || lower.includes('grade') || lower.includes('marks')) {
       return {
         text: `📈 Student Academic Performance: Your current calculated CGPA is 8.45 with an average score of 82% across all internal assessments and assignments.`,
@@ -287,15 +283,13 @@ export class Chatbot {
       };
     }
 
-    // 5. Grievances
     if (lower.includes('grievance') || lower.includes('complain') || lower.includes('ticket') || lower.includes('issue')) {
       return {
-        text: `📩 You can submit academic inquiries, attendance re-evaluation requests, or syllabus concerns directly to the Department Dean on the Grievance Desk.`,
+        text: `📩 You can submit academic inquiries, attendance re-evaluation requests, or syllabus concerns directly to the Dean on the Grievance Desk.`,
         quickAction: { label: 'Open Grievance Desk', route: '/grievance' }
       };
     }
 
-    // 6. Navigation Commands
     if (lower.includes('dashboard') || lower.includes('home')) {
       return { text: 'Navigating to your dashboard...', navigateTo: role === 'admin' ? '/admin' : role === 'faculty' ? '/faculty' : '/dashboard' };
     }
@@ -304,14 +298,12 @@ export class Chatbot {
       return { text: 'Here are your registered courses and syllabus allocations.', navigateTo: '/courses' };
     }
 
-    // 7. General Greetings
     if (lower.includes('hello') || lower.includes('hi') || lower.includes('hey')) {
       return {
         text: `Hello ${userName}! How can I assist you with your academics or OBE accreditation today? Try clicking one of the quick prompts below.`
       };
     }
 
-    // Fallback response with navigation options
     return {
       text: `I understood your query about "${input}". Here are the relevant modules you can explore:`,
       suggestions: [
