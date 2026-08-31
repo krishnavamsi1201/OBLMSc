@@ -20,6 +20,7 @@ export class Login implements OnInit {
   password = '';
   role: 'admin' | 'faculty' | 'student' | '' = '';
   showPassword = false;
+  isLoading = false;
 
   stats = {
     courses: 0,
@@ -171,35 +172,24 @@ export class Login implements OnInit {
     this.showPassword = !this.showPassword;
   }
 
-  private parseUserName(input: string): string {
-    if (!input) return '';
-    const trimmed = input.trim();
-    if (trimmed.includes('@')) {
-      const namePart = trimmed.split('@')[0] || trimmed;
-      return namePart
-        .split(/[^a-zA-Z]+/)
-        .filter(Boolean)
-        .map(part => part.charAt(0).toUpperCase() + part.slice(1).toLowerCase())
-        .join(' ');
-    }
-    return '';
-  }
-
   login(): void {
     const cleanId = this.identifier ? this.identifier.trim() : '';
     if (!cleanId || !this.password || !this.role) {
-      this.toast.warning('Please enter your email, password, and select a role.');
+      this.toast.warning('Please enter your Email/User ID, Password, and select a Role.');
       return;
     }
 
+    this.isLoading = true;
     const payload = {
       email: cleanId,
+      identifier: cleanId,
       password: this.password,
       role: this.role
     };
 
     this.http.post<any>('http://localhost:8080/api/auth/login', payload).subscribe({
       next: (response) => {
+        this.isLoading = false;
         try {
           localStorage.setItem('userRole', response.role.toLowerCase());
           localStorage.setItem('userEmail', response.email);
@@ -228,54 +218,67 @@ export class Login implements OnInit {
             this.router.navigate(['/login']);
         }
       },
-      error: () => {
-        // Local Client Authentication Fallback
-        let matchedUser: any = null;
+      error: (err) => {
+        this.isLoading = false;
 
+        // 1. If backend returned explicit HTTP 403 (Role Mismatch) or 401 (Wrong Password / Account Not Found)
+        if (err.status === 403) {
+          const msg = err.error?.message || 'Access Denied: Requested role does not match this account profile.';
+          this.toast.error(msg);
+          return;
+        }
+
+        if (err.status === 401) {
+          const msg = err.error?.message || 'Invalid credentials: Email/User ID or Password is incorrect.';
+          this.toast.error(msg);
+          return;
+        }
+
+        // 2. Strict Offline / Local Fallback Validation (Only when backend server is totally unreachable)
+        let matchedUser: any = null;
         try {
           const storedUsers = localStorage.getItem('obslmsUsersDatabase');
           if (storedUsers) {
             const users = JSON.parse(storedUsers);
             matchedUser = users.find((u: any) =>
               (u.email && u.email.toLowerCase() === cleanId.toLowerCase()) ||
+              (u.id && u.id.toLowerCase() === cleanId.toLowerCase()) ||
               (u.name && u.name.toLowerCase() === cleanId.toLowerCase())
             );
           }
-
-          if (!matchedUser && this.role === 'faculty') {
-            const storedFac = localStorage.getItem('obslmsFaculty');
-            if (storedFac) {
-              const facList = JSON.parse(storedFac);
-              matchedUser = facList.find((f: any) =>
-                (f.email && f.email.toLowerCase() === cleanId.toLowerCase()) ||
-                (f.name && f.name.toLowerCase() === cleanId.toLowerCase())
-              );
-            }
-          }
         } catch {}
 
-        const userName = matchedUser ? matchedUser.name : (this.parseUserName(cleanId) || (this.role === 'admin' ? 'Administrator' : (this.role === 'faculty' ? 'Faculty Member' : 'Student')));
-        const userDept = matchedUser?.department || (this.role === 'admin' ? 'Administration' : 'Computer Science');
-        const userAssignedCourses = matchedUser?.courses || matchedUser?.assignedCourses || [];
-
-        try {
-          localStorage.setItem('userRole', this.role.toLowerCase());
-          localStorage.setItem('userEmail', cleanId);
-          localStorage.setItem('userName', userName);
-          localStorage.setItem('userId', matchedUser?.id || (this.role === 'admin' ? 'ADM001' : (this.role === 'faculty' ? 'FAC001' : 'STU001')));
-          localStorage.setItem('userDept', userDept);
-          if (userAssignedCourses.length > 0) {
-            localStorage.setItem('userAssignedCourses', JSON.stringify(userAssignedCourses));
+        if (matchedUser) {
+          // STRICT ROLE CHECK
+          if (matchedUser.role.toLowerCase() !== this.role.toLowerCase()) {
+            this.toast.error(`⛔ Access Denied: This account ('${matchedUser.name}') is registered as '${matchedUser.role}'. You cannot log in as '${this.role}'.`);
+            return;
           }
-        } catch (e) {}
 
-        this.toast.success(`Welcome, ${userName}! 🎉`);
-        if (this.role === 'admin') {
-          this.router.navigate(['/admin']);
-        } else if (this.role === 'faculty') {
-          this.router.navigate(['/faculty']);
+          if (matchedUser.password && matchedUser.password !== this.password) {
+            this.toast.error('❌ Incorrect password. Please try again.');
+            return;
+          }
+
+          // Role and password matched
+          try {
+            localStorage.setItem('userRole', matchedUser.role.toLowerCase());
+            localStorage.setItem('userEmail', matchedUser.email);
+            localStorage.setItem('userName', matchedUser.name);
+            localStorage.setItem('userId', matchedUser.id);
+            localStorage.setItem('userDept', matchedUser.department || 'Computer Science');
+          } catch (e) {}
+
+          this.toast.success(`Welcome back, ${matchedUser.name}! 🎉`);
+          if (this.role === 'admin') {
+            this.router.navigate(['/admin']);
+          } else if (this.role === 'faculty') {
+            this.router.navigate(['/faculty']);
+          } else {
+            this.router.navigate(['/students']);
+          }
         } else {
-          this.router.navigate(['/students']);
+          this.toast.error(`❌ No account found with Email/ID '${cleanId}'. Please check your credentials.`);
         }
       }
     });

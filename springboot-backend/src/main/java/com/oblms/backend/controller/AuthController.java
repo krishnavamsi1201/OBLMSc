@@ -53,26 +53,39 @@ public class AuthController {
 
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody Map<String, String> credentials) {
-        String email = credentials.get("email");
-        String password = credentials.get("password");
-        String requestedRole = credentials.get("role");
+        String identifier = credentials.get("email") != null ? credentials.get("email").trim() : 
+                           (credentials.get("identifier") != null ? credentials.get("identifier").trim() : "");
+        String password = credentials.get("password") != null ? credentials.get("password").trim() : "";
+        String requestedRole = credentials.get("role") != null ? credentials.get("role").trim() : "";
 
-        if (email == null || password == null || requestedRole == null) {
-            return ResponseEntity.badRequest().body(Map.of("message", "Email, password and role are required."));
+        if (identifier.isEmpty() || password.isEmpty() || requestedRole.isEmpty()) {
+            return ResponseEntity.badRequest().body(Map.of("message", "Email/User ID, password and role are required."));
         }
 
-        Optional<User> userOpt = userRepository.findByEmail(email);
+        // Search by email or ID (case-insensitive)
+        Optional<User> userOpt = userRepository.findByEmailIgnoreCase(identifier);
         if (userOpt.isEmpty()) {
-            return ResponseEntity.status(401).body(Map.of("message", "Invalid email credentials."));
+            userOpt = userRepository.findByIdIgnoreCase(identifier);
+        }
+
+        if (userOpt.isEmpty()) {
+            return ResponseEntity.status(401).body(Map.of(
+                "message", "No registered account found with Email/ID: '" + identifier + "'. Please check your credentials."
+            ));
         }
 
         User user = userOpt.get();
         if (!user.getPassword().equals(password)) {
-            return ResponseEntity.status(401).body(Map.of("message", "Invalid password credentials."));
+            return ResponseEntity.status(401).body(Map.of(
+                "message", "Incorrect password. Please verify and try again."
+            ));
         }
 
+        // Strict Role Validation: Registered Role MUST match the Requested Role!
         if (!user.getRole().equalsIgnoreCase(requestedRole)) {
-            return ResponseEntity.status(403).body(Map.of("message", "Access denied. Requested role does not match user account profile."));
+            return ResponseEntity.status(403).body(Map.of(
+                "message", "Access Denied: This account ('" + user.getName() + "') is registered as '" + user.getRole() + "'. You cannot log in under the '" + requestedRole + "' role."
+            ));
         }
 
         return ResponseEntity.ok(Map.of(
