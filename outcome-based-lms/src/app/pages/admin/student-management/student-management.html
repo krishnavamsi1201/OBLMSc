@@ -23,7 +23,7 @@
       </div>
     </div>
 
-    <!-- Active Tab Switcher (Students vs Faculty) -->
+    <!-- Active Tab Switcher (Students vs Faculty vs Requests) -->
     <div class="tab-nav-bar">
       <button 
         class="tab-btn" 
@@ -37,10 +37,16 @@
         (click)="switchTab('faculty')">
         👨‍🏫 Faculty Accounts ({{ facultyList.length }})
       </button>
+      <button 
+        class="tab-btn" 
+        [class.active]="activeTab === 'requests'"
+        (click)="switchTab('requests')">
+        ⚖️ Enrollment Requests ({{ courseRequests.length }})
+      </button>
     </div>
 
-    <!-- Search & Filter Controls -->
-    <div class="controls-section">
+    <!-- Search & Filter Controls (only shown for user lists) -->
+    <div class="controls-section" *ngIf="activeTab !== 'requests'">
       <div class="search-box">
         <input 
           type="text" 
@@ -309,13 +315,13 @@
       </div>
     </div>
 
-    <!-- Course Enrollment Approval Dashboard -->
-    <div class="table-section" style="margin-top: 30px;">
+    <!-- ==================== TAB 3: COURSE ENROLLMENT REQUESTS ==================== -->
+    <div class="table-section" *ngIf="activeTab === 'requests'">
       <div class="table-header">
         <h3>Pending Course Enrollment Requests ({{ courseRequests.length }})</h3>
       </div>
 
-      <div *ngIf="courseRequests.length === 0" class="empty-state" style="padding: 24px;">
+      <div *ngIf="courseRequests.length === 0" class="empty-state" style="padding: 30px;">
         <p>📭 No pending course enrollment requests.</p>
       </div>
 

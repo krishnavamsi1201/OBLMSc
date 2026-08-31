@@ -38,7 +38,7 @@ export class StudentManagement implements OnInit {
   private http = inject(HttpClient);
   private cdr = inject(ChangeDetectorRef);
 
-  activeTab: 'students' | 'faculty' = 'students';
+  activeTab: 'students' | 'faculty' | 'requests' = 'students';
 
   studentList: Student[] = [];
   filteredStudentList: Student[] = [];
@@ -160,7 +160,7 @@ export class StudentManagement implements OnInit {
     this.filterUsers();
   }
 
-  switchTab(tab: 'students' | 'faculty'): void {
+  switchTab(tab: 'students' | 'faculty' | 'requests'): void {
     this.activeTab = tab;
     this.filterUsers();
   }
@@ -169,7 +169,7 @@ export class StudentManagement implements OnInit {
     const pwd = password || 'password';
     const text = `User ID: ${id}\nEmail: ${email}\nRole: ${role}\nPassword: ${pwd}`;
     navigator.clipboard.writeText(text).then(() => {
-      this.toast.success(`Copied login credentials for ID ${id}! 📋`);
+      this.toast.success(`Copied credentials for ${id}! 📋`);
     }).catch(() => {
       this.toast.info(`ID: ${id} | Email: ${email} | Password: ${pwd}`);
     });
