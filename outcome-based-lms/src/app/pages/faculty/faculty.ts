@@ -377,9 +377,27 @@ export class Faculty implements OnInit {
    */
   private loadWorkbenchData(): void {
     try {
-      this.examinationItems = this.getSafeJson('obslmsExams');
+      const allExams = this.getSafeJson('obslmsExams') as ExaminationItem[];
+      this.examinationItems = allExams.filter(exam => {
+        return this.courses.some(c =>
+          (exam.course || '').toLowerCase().includes(c.code.toLowerCase()) ||
+          (exam.course || '').toLowerCase().includes(c.name.toLowerCase()) ||
+          c.code.toLowerCase().includes((exam.course || '').toLowerCase()) ||
+          c.name.toLowerCase().includes((exam.course || '').toLowerCase())
+        );
+      });
+
       this.grievanceItems = this.getSafeJson('obslmsGrievances');
-      this.questionBankItems = this.getSafeJson('obslmsQuestionBank');
+
+      const allQB = this.getSafeJson('obslmsQuestionBank') as QuestionBankItem[];
+      this.questionBankItems = allQB.filter(q => {
+        return this.courses.some(c =>
+          (q.subject || '').toLowerCase().includes(c.code.toLowerCase()) ||
+          (q.subject || '').toLowerCase().includes(c.name.toLowerCase()) ||
+          c.code.toLowerCase().includes((q.subject || '').toLowerCase()) ||
+          c.name.toLowerCase().includes((q.subject || '').toLowerCase())
+        );
+      });
     } catch (e) {
       console.error('Error loading workbench data:', e);
     }
