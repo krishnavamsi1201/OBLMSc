@@ -166,63 +166,8 @@ export class FacultyDataService {
    * Fetch complete real-time dashboard analytics for currently logged in faculty
    */
   getFacultyDashboardData(): Observable<FacultyDashboardData> {
-    const facultyName = this.getCurrentFacultyName();
-    const courses = this.getRealTimeCourses(facultyName);
-    const assessments = this.getRealTimeAssessments(courses);
-    const studentProgressSummary = this.getRealTimeStudentProgress(courses);
-    const atRiskStudents = this.calculateAtRiskStudents(courses, studentProgressSummary);
-    const courseCOAttainments = this.calculateCourseCOAttainments(courses);
-    const gradeDistribution = this.calculateGradeDistribution(courses);
-    const notifications = this.generateRealTimeNotifications(courses, assessments, atRiskStudents, courseCOAttainments);
-    const syllabusUnits = this.getSyllabusUnitsForCourses(courses);
-
-    // Compute unique total students across faculty courses
-    const uniqueStudents = new Set<string>();
-    studentProgressSummary.forEach(sp => uniqueStudents.add(sp.studentName.toLowerCase()));
-    
-    // Also include students enrolled in these courses
-    const allStudents = this.getSafeJson('obslmsStudents');
-    allStudents.forEach((st: any) => {
-      if (st.course && courses.some(c => c.name.toLowerCase().includes(st.course.toLowerCase()) || c.code.toLowerCase().includes(st.course.toLowerCase()))) {
-        uniqueStudents.add((st.name || st.studentName || '').toLowerCase());
-      }
-    });
-
-    const totalStudents = uniqueStudents.size || courses.reduce((sum, c) => sum + c.studentCount, 0);
-
-    // Calculate overall averages
-    const validAttainments = courseCOAttainments.filter(co => co.attainmentPercentage > 0);
-    const overallAttainment = validAttainments.length > 0
-      ? Math.round(validAttainments.reduce((sum, co) => sum + co.attainmentPercentage, 0) / validAttainments.length)
-      : (studentProgressSummary.length > 0
-          ? Math.round(studentProgressSummary.reduce((sum, sp) => sum + sp.coAttainment, 0) / studentProgressSummary.length)
-          : 0);
-
-    const validAttendances = studentProgressSummary.filter(sp => sp.attendance > 0);
-    const averageAttendance = validAttendances.length > 0
-      ? Math.round(validAttendances.reduce((sum, sp) => sum + sp.attendance, 0) / validAttendances.length)
-      : this.calculateOverallAttendanceForCourses(courses);
-
-    const activeAssessmentsCount = assessments.filter(a => a.status === 'ongoing' || a.status === 'pending').length;
-
-    const data: FacultyDashboardData = {
-      courses,
-      activeAssessments: assessments,
-      studentProgressSummary,
-      atRiskStudents,
-      courseCOAttainments,
-      gradeDistribution,
-      notifications,
-      syllabusUnits,
-      totalCourses: courses.length,
-      totalStudents,
-      overallAttainment,
-      averageAttendance,
-      activeAssessmentsCount,
-      atRiskCount: atRiskStudents.length
-    };
-
-    return of(data);
+    const facultyId = localStorage.getItem('userId') || this.getCurrentFacultyName() || 'FAC001';
+    return this.http.get<FacultyDashboardData>(`http://localhost:8080/api/stats/faculty-dashboard?facultyId=${encodeURIComponent(facultyId)}`);
   }
 
   /**
