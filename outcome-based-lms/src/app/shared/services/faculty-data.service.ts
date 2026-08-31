@@ -624,11 +624,36 @@ export class FacultyDataService {
         return [];
       }
 
-      return coList.map((co: any) => {
+      // Filter coList to only include Course Outcomes for courses assigned to this faculty
+      const facultyCourseCodes = new Set(courses.map(c => c.code.toLowerCase()));
+      const facultyCourseNames = courses.map(c => c.name.toLowerCase());
+
+      const filteredCoList = coList.filter((co: any) => {
+        const coCourseLower = (co.course || '').toLowerCase().trim();
+        if (!coCourseLower) return false;
+        
+        // Direct code match (e.g. "cs101" === "cs101")
+        if (facultyCourseCodes.has(coCourseLower)) return true;
+
+        // Code matches parts of the course name or vice versa
+        return facultyCourseNames.some(name => 
+          name.includes(coCourseLower) || coCourseLower.includes(name)
+        );
+      });
+
+      return filteredCoList.map((co: any) => {
         const coCode = co.code || co.co || 'CO1';
         const description = co.description || '';
         const targetPercentage = Number(co.targetPercentage) || 75;
-        const courseName = co.course || (courses.length > 0 ? courses[0].name : 'Course');
+        
+        // Find matching course to get full title
+        const coCourseLower = (co.course || '').toLowerCase().trim();
+        const matchedCourse = courses.find(c => 
+          c.code.toLowerCase() === coCourseLower || 
+          c.name.toLowerCase().includes(coCourseLower) || 
+          coCourseLower.includes(c.name.toLowerCase())
+        );
+        const courseName = matchedCourse ? matchedCourse.name : (co.course || 'Course');
 
         // Find assessment mappings linked to this CO
         const linkedMappings = coMappings.filter((m: any) =>
