@@ -548,20 +548,43 @@ export class Faculty implements OnInit {
 
     const allStudents = this.getSafeJson('obslmsStudents');
     const existingAttendance = this.getSafeJson('obslmsAttendance');
+    const allCourses = this.getSafeJson('obslmsCourses');
 
-    // Get unique student names
+    const matchedCourse = allCourses.find((c: any) => 
+      c.title === this.attendanceCourse || 
+      c.code === this.attendanceCourse || 
+      c.name === this.attendanceCourse
+    );
+    const courseCode = matchedCourse ? matchedCourse.code : this.attendanceCourse;
+    const courseTitle = matchedCourse ? matchedCourse.title : this.attendanceCourse;
+
+    // Get unique student names enrolled in the course
     const studentsSet = new Set<string>();
     allStudents.forEach((s: any) => {
-      if (s.name || s.studentName) studentsSet.add(s.name || s.studentName);
+      const courses = s.enrolledCourses ? s.enrolledCourses.split(',') : [];
+      const isEnrolled = courses.some((c: string) => {
+        const cleanC = c.trim().toLowerCase();
+        return cleanC === courseCode.toLowerCase() || 
+               cleanC === courseTitle.toLowerCase() ||
+               courseCode.toLowerCase().includes(cleanC) ||
+               courseTitle.toLowerCase().includes(cleanC);
+      });
+      if (isEnrolled && (s.name || s.studentName)) {
+        studentsSet.add(s.name || s.studentName);
+      }
     });
-    this.studentProgressList.forEach(s => studentsSet.add(s.studentName));
+
+    this.studentProgressList.forEach(s => {
+      if (s.courseName.toLowerCase().includes(this.attendanceCourse.toLowerCase()) || 
+          this.attendanceCourse.toLowerCase().includes(s.courseName.toLowerCase())) {
+        studentsSet.add(s.studentName);
+      }
+    });
 
     if (studentsSet.size === 0) {
-      studentsSet.add('Aditya Sharma');
-      studentsSet.add('Pooja Reddy');
-      studentsSet.add('Rahul Verma');
-      studentsSet.add('Sneha Rao');
-      studentsSet.add('Vikas Gupta');
+      studentsSet.add('Raj Kumar');
+      studentsSet.add('Aarav Mehta');
+      studentsSet.add('Aditya Sen');
     }
 
     // Check if attendance already recorded today for this course
@@ -590,24 +613,42 @@ export class Faculty implements OnInit {
   onQuickAttendanceCourseChanged(): void {
     const allStudents = this.getSafeJson('obslmsStudents');
     const existingAttendance = this.getSafeJson('obslmsAttendance');
+    const allCourses = this.getSafeJson('obslmsCourses');
+
+    const matchedCourse = allCourses.find((c: any) => 
+      c.title === this.attendanceCourse || 
+      c.code === this.attendanceCourse || 
+      c.name === this.attendanceCourse
+    );
+    const courseCode = matchedCourse ? matchedCourse.code : this.attendanceCourse;
+    const courseTitle = matchedCourse ? matchedCourse.title : this.attendanceCourse;
 
     const studentsSet = new Set<string>();
     allStudents.forEach((s: any) => {
-      if (s.name || s.studentName) studentsSet.add(s.name || s.studentName);
+      const courses = s.enrolledCourses ? s.enrolledCourses.split(',') : [];
+      const isEnrolled = courses.some((c: string) => {
+        const cleanC = c.trim().toLowerCase();
+        return cleanC === courseCode.toLowerCase() || 
+               cleanC === courseTitle.toLowerCase() ||
+               courseCode.toLowerCase().includes(cleanC) ||
+               courseTitle.toLowerCase().includes(cleanC);
+      });
+      if (isEnrolled && (s.name || s.studentName)) {
+        studentsSet.add(s.name || s.studentName);
+      }
     });
-    this.studentProgressList.forEach(s => studentsSet.add(s.studentName));
+
+    this.studentProgressList.forEach(s => {
+      if (s.courseName.toLowerCase().includes(this.attendanceCourse.toLowerCase()) || 
+          this.attendanceCourse.toLowerCase().includes(s.courseName.toLowerCase())) {
+        studentsSet.add(s.studentName);
+      }
+    });
 
     if (studentsSet.size === 0) {
-      studentsSet.add('Krishnavamsi');
-      studentsSet.add('Aditya Sharma');
-      studentsSet.add('Ananya Deshmukh');
-      studentsSet.add('Pooja Reddy');
-      studentsSet.add('Rahul Verma');
-      studentsSet.add('Sneha Rao');
-      studentsSet.add('Vikas Gupta');
-      studentsSet.add('Manish Chawla');
-      studentsSet.add('Kavita Iyer');
-      studentsSet.add('Rohan Joshi');
+      studentsSet.add('Raj Kumar');
+      studentsSet.add('Aarav Mehta');
+      studentsSet.add('Aditya Sen');
     }
 
     this.attendanceStudentList = Array.from(studentsSet).map(sName => {
