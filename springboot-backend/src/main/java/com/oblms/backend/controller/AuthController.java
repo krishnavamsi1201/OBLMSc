@@ -27,8 +27,8 @@ public class AuthController {
         // 1. Dedicated Admin Account
         standardUsers.add(new User("ADM001", "Dr. K. S. Rao (Chief Academic Administrator & Dean)", "admin@oblms.edu", "root", "Admin", "System Administration & Dean Office"));
 
-        // 2. 15 Dedicated Faculty Accounts (FAC001 to FAC015)
-        User fac1 = new User("FAC001", "Dr. Ramesh Babu", "Loukika310306@gmail.com", "password", "Faculty", "Computer Science & Engineering");
+        // 2. 16 Dedicated Faculty Accounts (FAC001 to FAC016)
+        User fac1 = new User("FAC001", "Prof. Loukika", "Loukika310306@gmail.com", "password", "Faculty", "Computer Science & Engineering");
         fac1.setEnrolledCourses("Database Management Systems,Object Oriented Programming with Java");
         standardUsers.add(fac1);
 
@@ -87,6 +87,10 @@ public class AuthController {
         User fac15 = new User("FAC015", "Prof. Arun Roy", "arun.roy@oblms.edu", "password", "Faculty", "Mechanical Engineering");
         fac15.setEnrolledCourses("Metallurgy & Materials Engineering,Strength of Materials");
         standardUsers.add(fac15);
+
+        User fac16 = new User("FAC016", "Dr. Ramesh Babu", "ramesh.babu@oblms.edu", "password", "Faculty", "Computer Science & Engineering");
+        fac16.setEnrolledCourses("Database Management Systems,Object Oriented Programming with Java");
+        standardUsers.add(fac16);
 
         // 3. 30 Dedicated Student Accounts (STU001 to STU030)
         String standardCourses = "INMCA202,DS,MES,IT305,OOP";
