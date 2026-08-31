@@ -6,6 +6,7 @@ import { Sidebar } from '../../shared/sidebar/sidebar';
 import { Footer } from '../../shared/footer/footer';
 import { ToastService } from '../../shared/services/toast.service';
 import { HttpClient } from '@angular/common/http';
+import { Router } from '@angular/router';
 
 interface ProgramOutcome {
   id: number;
@@ -41,7 +42,65 @@ export class CopoMapping implements OnInit {
   private toast = inject(ToastService);
   private http = inject(HttpClient);
   private cdr = inject(ChangeDetectorRef);
+  private router = inject(Router);
+
   role: string | null = null;
+
+  studentName = 'Student';
+  studentEmail = '';
+  studentPhoto: string | null = null;
+  studentRoll = 'CUTM2026CSE042';
+  studentDept = 'Computer Science & Engineering';
+
+  appearance = {
+    theme: 'light',
+    colorScheme: 'blue',
+    layout: 'comfortable',
+    showSidebar: true,
+    fontSize: 'medium'
+  };
+
+  themeStyles: { [key: string]: string } = {};
+
+  studentNavGroups = [
+    {
+      title: 'ACADEMICS',
+      items: [
+        { label: 'Student Dashboard', path: '/students', icon: '🏠' },
+        { label: 'Enrolled Courses', path: '/courses', icon: '📚' },
+        { label: 'Subject List', path: '/subjects', icon: '📖' },
+        { label: 'Weekly Timetable', path: '/timetable', icon: '📆' }
+      ]
+    },
+    {
+      title: 'OBE & OUTCOMES',
+      items: [
+        { label: 'Course Outcomes (CO)', path: '/course-outcomes', icon: '🎯' },
+        { label: 'Program Outcomes (PO)', path: '/program-outcomes', icon: '🎯' },
+        { label: 'CO-PO Mapping', path: '/copo-mapping', icon: '🔗' },
+        { label: 'CO Attainment', path: '/co-attainment', icon: '📊' },
+        { label: 'PO Attainment', path: '/po-attainment', icon: '📈' }
+      ]
+    },
+    {
+      title: 'EXAMINATIONS & MARKS',
+      items: [
+        { label: 'Upcoming Exams', path: '/assessments', icon: '📝' },
+        { label: 'Attendance %', path: '/attendance', icon: '📅' },
+        { label: 'Marks Summary', path: '/performance', icon: '📈' },
+        { label: 'Semester Results', path: '/results', icon: '📄' }
+      ]
+    },
+    {
+      title: 'STUDENT SERVICES',
+      items: [
+        { label: 'Feedback Form', path: '/feedback', icon: '💬' },
+        { label: 'File Grievance', path: '/grievance', icon: '📩' },
+        { label: 'Notifications', path: '/notifications', icon: '🔔' },
+        { label: 'Student Details', path: '/profile', icon: '👤' }
+      ]
+    }
+  ];
 
   programOutcomes: ProgramOutcome[] = [];
   courseOutcomes: CourseOutcome[] = [];
@@ -71,9 +130,15 @@ export class CopoMapping implements OnInit {
   constructor() {
     try {
       this.role = localStorage.getItem('userRole')?.toLowerCase() || null;
+      this.studentName = localStorage.getItem('userName') || 'Student';
+      this.studentEmail = localStorage.getItem('userEmail') || 'student@centurionuniv.edu.in';
+      this.studentPhoto = localStorage.getItem('userProfilePicture') || null;
+      this.studentDept = localStorage.getItem('userDepartment') || 'Computer Science & Engineering';
+      this.studentRoll = localStorage.getItem('userRoll') || 'CUTM2026CSE042';
     } catch {
       this.role = null;
     }
+    this.loadAppearance();
   }
 
   ngOnInit(): void {
@@ -415,10 +480,25 @@ export class CopoMapping implements OnInit {
     window.print();
   }
 
+  getCourseFullName(courseCode: string): string {
+    try {
+      const stored = localStorage.getItem('obslmsCourses');
+      const storedCourses = stored ? JSON.parse(stored) : [];
+      const found = storedCourses.find((c: any) => 
+        c.code?.toLowerCase() === courseCode?.toLowerCase() || 
+        c.title?.toLowerCase() === courseCode?.toLowerCase()
+      );
+      return found ? `${found.code} - ${found.title}` : courseCode;
+    } catch {
+      return courseCode;
+    }
+  }
+
   groupMappings() {
     const groups = new Map<string, CoMapping[]>();
     this.mappings.forEach(m => {
-      const cName = m.course || 'General';
+      const rawName = m.course || 'General';
+      const cName = this.getCourseFullName(rawName);
       if (!groups.has(cName)) {
         groups.set(cName, []);
       }
@@ -446,5 +526,82 @@ export class CopoMapping implements OnInit {
       mappingLevel: 0,
       status: 'Pending'
     };
+  }
+
+  loadAppearance(): void {
+    try {
+      const stored = localStorage.getItem('oblmsAppearance');
+      if (stored) {
+        this.appearance = JSON.parse(stored);
+      }
+    } catch {}
+    this.applyThemeStyleMapping();
+  }
+
+  private applyThemeStyleMapping(): void {
+    const isDark = this.appearance.theme === 'dark' || 
+      (this.appearance.theme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+
+    const bg = isDark ? '#0f172a' : 'rgba(240, 249, 255, 0.92)';
+    const cardBg = isDark ? '#1e293b' : 'rgba(255, 255, 255, 0.98)';
+    const text = isDark ? '#f8fafc' : '#1e293b';
+    const textSecondary = isDark ? '#94a3b8' : '#64748b';
+    const border = isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(74, 140, 234, 0.16)';
+    const sidebarBg = isDark ? '#1e293b' : 'rgba(255, 255, 255, 0.98)';
+
+    let primary = '#1976d2';
+    let primaryRgb = '25, 118, 210';
+    let heroBg = 'linear-gradient(135deg, #1e3a8a 0%, #1e40af 50%, #2563eb 100%)';
+
+    switch (this.appearance.colorScheme) {
+      case 'purple':
+        primary = '#8b5cf6';
+        primaryRgb = '139, 92, 246';
+        heroBg = 'linear-gradient(135deg, #4c1d95 0%, #5b21b6 50%, #7c3aed 100%)';
+        break;
+      case 'green':
+        primary = '#10b981';
+        primaryRgb = '16, 185, 129';
+        heroBg = 'linear-gradient(135deg, #064e3b 0%, #065f46 50%, #10b981 100%)';
+        break;
+      case 'red':
+        primary = '#ef4444';
+        primaryRgb = '239, 68, 68';
+        heroBg = 'linear-gradient(135deg, #7f1d1d 0%, #991b1b 50%, #ef4444 100%)';
+        break;
+      case 'orange':
+        primary = '#f97316';
+        primaryRgb = '249, 115, 22';
+        heroBg = 'linear-gradient(135deg, #7c2d12 0%, #9a3412 50%, #f97316 100%)';
+        break;
+      default:
+        primary = '#1976d2';
+        primaryRgb = '25, 118, 210';
+        heroBg = 'linear-gradient(135deg, #1e3a8a 0%, #1e40af 50%, #2563eb 100%)';
+    }
+
+    this.themeStyles = {
+      '--student-primary': primary,
+      '--student-primary-rgb': primaryRgb,
+      '--student-hero-bg': heroBg,
+      '--student-bg': bg,
+      '--student-card-bg': cardBg,
+      '--student-text': text,
+      '--student-text-secondary': textSecondary,
+      '--student-border': border,
+      '--student-sidebar-bg': sidebarBg
+    };
+  }
+
+  logout(): void {
+    try {
+      localStorage.removeItem('userRole');
+      localStorage.removeItem('userEmail');
+    } catch {}
+    this.router.navigate(['/login']);
+  }
+
+  navigate(path: string): void {
+    this.router.navigate([path]);
   }
 }
