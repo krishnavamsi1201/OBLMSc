@@ -181,7 +181,7 @@ interface DayLectureEntry {
                             </tr>
                         </thead>
                         <tbody>
-                            <tr *ngFor="let log of filteredLogs; let i = index">
+                            <tr *ngFor="let log of filteredLogs; let i = index; trackBy: trackByLogId">
                                 <td><span class="row-index">{{ i + 1 }}</span></td>
                                 <td><strong>{{ log.course }}</strong></td>
                                 <td>{{ log.date }}</td>
@@ -453,7 +453,7 @@ interface DayLectureEntry {
                             <tr *ngIf="students.length === 0">
                                 <td colspan="6" class="no-data">No students enrolled in this course.</td>
                             </tr>
-                            <tr *ngFor="let s of students; let i = index" 
+                            <tr *ngFor="let s of students; let i = index; trackBy: trackByStudentId" 
                                 [class.marked-present]="s.status === 'Present'"
                                 [class.marked-absent]="s.status === 'Absent'">
                                 
@@ -539,7 +539,7 @@ interface DayLectureEntry {
                         </tr>
                     </thead>
                     <tbody>
-                        <tr *ngFor="let log of filteredLogs">
+                        <tr *ngFor="let log of filteredLogs; trackBy: trackByLogId">
                             <td><strong>{{ log.student }}</strong></td>
                             <td><span class="reg-pill">{{ log.regNo || '-' }}</span></td>
                             <td><strong>{{ log.course }}</strong></td>
@@ -838,6 +838,14 @@ export class AttendancePage implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.syncSub?.unsubscribe();
+  }
+
+  trackByStudentId(index: number, student: EnrolledStudent): string {
+    return student.id;
+  }
+
+  trackByLogId(index: number, log: AttendanceRecord): number {
+    return log.id;
   }
 
   setStudentTab(tab: 'overall' | 'daywise' | 'subjectwise'): void {
