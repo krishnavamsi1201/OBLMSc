@@ -1,6 +1,7 @@
-import { Component, inject } from '@angular/core';
+import { Component, OnInit, inject, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { HttpClient } from '@angular/common/http';
 import { MatButtonModule } from '@angular/material/button';
 import { Navbar } from '../../shared/navbar/navbar';
 import { Sidebar } from '../../shared/sidebar/sidebar';
@@ -11,6 +12,7 @@ interface SubjectRecord {
   id: number;
   code: string;
   name: string;
+  type: string;
   credits: number;
   semester: string;
 }
@@ -19,225 +21,286 @@ interface SubjectRecord {
   selector: 'app-subjects',
   standalone: true,
   imports: [CommonModule, FormsModule, Navbar, Sidebar, Footer, MatButtonModule],
-  template: `<app-navbar></app-navbar>
+  template: `
+    <app-navbar></app-navbar>
 
-<div class="container">
+    <div class="container">
+      <app-sidebar></app-sidebar>
 
-    <app-sidebar></app-sidebar>
-
-    <div class="content">
-
+      <div class="content">
         <div class="page-header">
-            <h1>📖 Subjects</h1>
-            <p>Manage subject definitions, credits, and curriculum links for your program.</p>
+          <div class="header-text-group">
+            <span class="header-pill">📚 Master Curriculum Registry</span>
+            <h1>Curriculum Subjects Repository</h1>
+            <p>Accredited syllabus subjects, lecture/lab types, credits, and semester associations from MySQL database.</p>
+          </div>
+          <div class="stats-badge-card" *ngIf="subjects.length > 0">
+            <span class="count-num">{{ subjects.length }}</span>
+            <span class="count-lbl">Total Subjects</span>
+          </div>
         </div>
 
-        <div class="subject-actions" *ngIf="role === 'admin'">
-            <button mat-raised-button color="primary" (click)="openSubjectForm()">Add Subject</button>
+        <!-- Filter and Search Toolbar -->
+        <div class="subjects-toolbar">
+          <div class="search-input-wrap">
+            <span class="search-icon">🔍</span>
+            <input 
+              type="text" 
+              [(ngModel)]="searchQuery" 
+              placeholder="Search by code (e.g. DS, IT305, INMCA202) or subject name..." 
+            />
+          </div>
+
+          <div class="filter-group">
+            <button 
+              type="button" 
+              class="filter-pill-btn" 
+              [class.active]="selectedType === ''" 
+              (click)="selectedType = ''">
+              All Types ({{ subjects.length }})
+            </button>
+            <button 
+              type="button" 
+              class="filter-pill-btn" 
+              [class.active]="selectedType === 'Theory'" 
+              (click)="selectedType = 'Theory'">
+              📖 Theory
+            </button>
+            <button 
+              type="button" 
+              class="filter-pill-btn" 
+              [class.active]="selectedType === 'Lab'" 
+              (click)="selectedType = 'Lab'">
+              🔬 Lab / Practical
+            </button>
+            <button 
+              type="button" 
+              class="filter-pill-btn" 
+              [class.active]="selectedType === 'Elective'" 
+              (click)="selectedType = 'Elective'">
+              🎯 Electives
+            </button>
+          </div>
         </div>
 
-        <div class="subject-form-card" *ngIf="showSubjectForm">
-            <h2>{{ editingIndex >= 0 ? 'Edit Subject' : 'Add Subject' }}</h2>
-            <form (ngSubmit)="saveSubject()" class="subject-form">
-                <label>
-                    Subject Code
-                    <input type="text" [(ngModel)]="currentSubject.code" name="code" required />
-                </label>
-                <label>
-                    Subject Name
-                    <input type="text" [(ngModel)]="currentSubject.name" name="name" required />
-                </label>
-                <label>
-                    Credits
-                    <input type="number" min="0" [(ngModel)]="currentSubject.credits" name="credits" required />
-                </label>
-                <label>
-                    Semester
-                    <input type="text" [(ngModel)]="currentSubject.semester" name="semester" required />
-                </label>
-                <div class="form-actions">
-                    <button mat-raised-button color="primary" type="submit">{{ editingIndex >= 0 ? 'Save Subject' : 'Create Subject' }}</button>
-                    <button mat-button type="button" (click)="resetSubjectForm()">Cancel</button>
-                </div>
-            </form>
-        </div>
-
+        <!-- Subjects Master Table -->
         <div class="subjects-table-card">
-            <!-- Search & Filter Toolbar -->
-            <div class="table-filter-toolbar">
-                <div class="search-input-wrap">
-                    <span class="search-icon-badge">🔍</span>
-                    <input type="text" [(ngModel)]="searchQuery" placeholder="Search by subject code, name..." />
-                </div>
-                <div class="filter-controls" *ngIf="semesters.length > 0">
-                    <select [(ngModel)]="selectedSemester" class="filter-select">
-                        <option value="">All Semesters</option>
-                        <option *ngFor="let sem of semesters" [value]="sem">{{ sem }}</option>
-                    </select>
-                </div>
+          <div class="table-meta-bar">
+            <span class="showing-text">
+              Showing <strong>{{ paginatedSubjects.length }}</strong> of <strong>{{ filteredSubjects.length }}</strong> filtered subjects
+            </span>
+            <div class="pagination-controls" *ngIf="totalPages > 1">
+              <button 
+                type="button" 
+                class="page-btn" 
+                [disabled]="currentPage === 1" 
+                (click)="currentPage = currentPage - 1">
+                ◀ Prev
+              </button>
+              <span class="page-indicator">Page {{ currentPage }} of {{ totalPages }}</span>
+              <button 
+                type="button" 
+                class="page-btn" 
+                [disabled]="currentPage === totalPages" 
+                (click)="currentPage = currentPage + 1">
+                Next ▶
+              </button>
             </div>
+          </div>
 
+          <div class="table-responsive">
             <table>
-                <thead>
-                    <tr>
-                        <th>Subject Code</th>
-                        <th>Subject Name</th>
-                        <th>Credits</th>
-                        <th>Semester</th>
-                        <th *ngIf="role === 'admin'">Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr *ngIf="filteredSubjects.length === 0">
-                        <td [attr.colspan]="role === 'admin' ? 5 : 4">
-                            {{ subjects.length === 0 ? 'No subjects created yet.' : 'No subjects matching search/filter criteria.' }}
-                        </td>
-                    </tr>
-                    <tr *ngFor="let subject of filteredSubjects; index as i">
-                        <td><span class="obe-badge obe-badge-co">{{ subject.code }}</span></td>
-                        <td><strong>{{ subject.name }}</strong></td>
-                        <td>{{ subject.credits }}</td>
-                        <td>{{ subject.semester }}</td>
-                        <td class="actions-cell" *ngIf="role === 'admin'">
-                            <button mat-button color="primary" (click)="editSubject(subject, i)">Edit</button>
-                            <button mat-button color="warn" (click)="deleteSubject(subject)">Delete</button>
-                        </td>
-                    </tr>
-                </tbody>
+              <thead>
+                <tr>
+                  <th style="width: 80px;">ID</th>
+                  <th style="width: 150px;">Subject Code</th>
+                  <th>Subject Title & Curriculum Name</th>
+                  <th style="width: 140px;">Type</th>
+                  <th style="width: 100px; text-align: center;">Credits</th>
+                  <th style="width: 120px; text-align: center;">Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngIf="filteredSubjects.length === 0">
+                  <td colspan="6" class="empty-state">
+                    📭 No subjects found matching "<strong>{{ searchQuery }}</strong>"
+                  </td>
+                </tr>
+                <tr *ngFor="let subject of paginatedSubjects">
+                  <td class="sub-id-cell">#{{ subject.id }}</td>
+                  <td>
+                    <span class="obe-badge code-badge">{{ subject.code }}</span>
+                  </td>
+                  <td>
+                    <strong class="subject-title">{{ subject.name }}</strong>
+                  </td>
+                  <td>
+                    <span class="type-badge" [ngClass]="getTypeClass(subject.type)">
+                      {{ subject.type || 'Theory' }}
+                    </span>
+                  </td>
+                  <td style="text-align: center;">
+                    <span class="credits-badge">{{ subject.credits }}</span>
+                  </td>
+                  <td style="text-align: center;">
+                    <span class="status-badge active">Accredited</span>
+                  </td>
+                </tr>
+              </tbody>
             </table>
+          </div>
+
+          <!-- Bottom Pagination -->
+          <div class="table-bottom-bar" *ngIf="totalPages > 1">
+            <span class="showing-text">Showing page {{ currentPage }} of {{ totalPages }}</span>
+            <div class="pagination-controls">
+              <button 
+                type="button" 
+                class="page-btn" 
+                [disabled]="currentPage === 1" 
+                (click)="currentPage = 1">
+                ⏮ First
+              </button>
+              <button 
+                type="button" 
+                class="page-btn" 
+                [disabled]="currentPage === 1" 
+                (click)="currentPage = currentPage - 1">
+                ◀ Prev
+              </button>
+              <span class="page-indicator">Page {{ currentPage }} / {{ totalPages }}</span>
+              <button 
+                type="button" 
+                class="page-btn" 
+                [disabled]="currentPage === totalPages" 
+                (click)="currentPage = currentPage + 1">
+                Next ▶
+              </button>
+              <button 
+                type="button" 
+                class="page-btn" 
+                [disabled]="currentPage === totalPages" 
+                (click)="currentPage = totalPages">
+                Last ⏭
+              </button>
+            </div>
+          </div>
         </div>
-
-        <app-footer></app-footer>
+      </div>
     </div>
-
-</div>`,
+    <app-footer></app-footer>
+  `,
   styles: [
-    `.page{padding:24px}`,
-    `.subject-actions { display: flex; justify-content: flex-end; margin-bottom: 24px; }`,
-    `.subject-form-card, .subjects-table-card { background: rgba(255, 255, 255, 0.96); border: 1px solid rgba(174, 202, 241, 0.34); border-radius: 22px; box-shadow: 0 18px 40px rgba(47, 101, 195, 0.10); padding: 24px; margin-bottom:24px; }`,
-    `.subjects-table-card table { width: 100%; border-collapse: collapse; }`,
-    `.subjects-table-card th, .subjects-table-card td { padding: 16px 12px; text-align: left; border-bottom: 1px solid rgba(72, 101, 145, 0.12); }`,
-    `.subjects-table-card th { color: #1f3d7a; font-weight: 700; }`,
-    `.subjects-table-card td { color: #455d82; }`,
-    `.actions-cell button { margin-right: 8px; }`,
-    `.subject-form { display: grid; gap: 20px; max-width: 820px; }`,
-    `.subject-form label { display: grid; gap: 6px; font-weight: 600; }`,
-    `.subject-form input { padding: 10px 12px; border: 1px solid #d8e3f1; border-radius: 8px; }`,
-    `.form-actions { display: flex; gap: 12px; flex-wrap: wrap; }`
+    `.page-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 24px; }`,
+    `.header-pill { display: inline-block; background: #e0e7ff; color: #3730a3; padding: 4px 10px; border-radius: 999px; font-size: 0.8rem; font-weight: 700; margin-bottom: 6px; }`,
+    `.page-header h1 { margin: 0 0 6px; font-size: 1.8rem; color: #0f172a; }`,
+    `.page-header p { margin: 0; color: #64748b; font-size: 0.95rem; }`,
+    `.stats-badge-card { background: linear-gradient(135deg, #1e3a8a, #2563eb); color: white; padding: 14px 22px; border-radius: 14px; display: flex; flex-direction: column; align-items: center; justify-content: center; box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2); }`,
+    `.count-num { font-size: 1.8rem; font-weight: 800; line-height: 1; }`,
+    `.count-lbl { font-size: 0.75rem; text-transform: uppercase; font-weight: 600; letter-spacing: 0.5px; opacity: 0.9; margin-top: 4px; }`,
+    `.subjects-toolbar { background: white; padding: 16px; border-radius: 12px; border: 1px solid #e2e8f0; margin-bottom: 20px; display: flex; flex-wrap: wrap; gap: 16px; align-items: center; justify-content: space-between; }`,
+    `.search-input-wrap { display: flex; align-items: center; background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 8px; padding: 6px 12px; flex: 1; min-width: 280px; }`,
+    `.search-icon { margin-right: 8px; font-size: 1rem; }`,
+    `.search-input-wrap input { border: none; background: transparent; width: 100%; outline: none; font-size: 0.95rem; color: #1e293b; }`,
+    `.filter-group { display: flex; gap: 8px; flex-wrap: wrap; }`,
+    `.filter-pill-btn { border: 1px solid #cbd5e1; background: white; color: #475569; padding: 6px 14px; border-radius: 999px; font-size: 0.85rem; font-weight: 600; cursor: pointer; transition: all 0.2s ease; }`,
+    `.filter-pill-btn:hover { background: #f1f5f9; border-color: #94a3b8; }`,
+    `.filter-pill-btn.active { background: #1e3a8a; color: white; border-color: #1e3a8a; }`,
+    `.subjects-table-card { background: white; border-radius: 14px; border: 1px solid #e2e8f0; overflow: hidden; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04); }`,
+    `.table-meta-bar { padding: 14px 20px; background: #f8fafc; border-bottom: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }`,
+    `.table-bottom-bar { padding: 14px 20px; background: #f8fafc; border-top: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }`,
+    `.showing-text { font-size: 0.85rem; color: #64748b; }`,
+    `.pagination-controls { display: flex; align-items: center; gap: 8px; }`,
+    `.page-btn { background: white; border: 1px solid #cbd5e1; color: #334155; padding: 4px 10px; border-radius: 6px; font-size: 0.85rem; font-weight: 600; cursor: pointer; transition: background 0.15s; }`,
+    `.page-btn:hover:not(:disabled) { background: #e2e8f0; }`,
+    `.page-btn:disabled { opacity: 0.4; cursor: not-allowed; }`,
+    `.page-indicator { font-size: 0.85rem; font-weight: 600; color: #1e293b; padding: 0 4px; }`,
+    `.table-responsive { overflow-x: auto; }`,
+    `table { width: 100%; border-collapse: collapse; text-align: left; }`,
+    `th { background: #f8fafc; padding: 12px 18px; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.5px; color: #475569; font-weight: 700; border-bottom: 1px solid #e2e8f0; }`,
+    `td { padding: 14px 18px; border-bottom: 1px solid #f1f5f9; font-size: 0.9rem; vertical-align: middle; }`,
+    `tr:hover td { background: #f8fafc; }`,
+    `.sub-id-cell { color: #94a3b8; font-weight: 600; font-family: monospace; }`,
+    `.code-badge { background: #eff6ff; color: #1d4ed8; font-weight: 700; font-family: monospace; padding: 4px 8px; border-radius: 6px; border: 1px solid #bfdbfe; }`,
+    `.subject-title { color: #0f172a; font-weight: 600; }`,
+    `.type-badge { display: inline-block; padding: 3px 8px; border-radius: 6px; font-size: 0.8rem; font-weight: 600; text-transform: capitalize; }`,
+    `.type-theory { background: #ecfdf5; color: #047857; border: 1px solid #a7f3d0; }`,
+    `.type-lab { background: #fef3c7; color: #b45309; border: 1px solid #fde68a; }`,
+    `.type-elective { background: #f3e8ff; color: #7e22ce; border: 1px solid #e9d5ff; }`,
+    `.credits-badge { background: #f1f5f9; color: #334155; font-weight: 700; padding: 2px 8px; border-radius: 6px; display: inline-block; }`,
+    `.status-badge { display: inline-block; padding: 3px 8px; border-radius: 999px; font-size: 0.75rem; font-weight: 700; }`,
+    `.status-badge.active { background: #dcfce7; color: #15803d; }`,
+    `.empty-state { text-align: center; padding: 40px; color: #64748b; font-size: 1rem; }`
   ]
 })
-export class Subjects {
-  private toast = inject(ToastService);
-  role: string | null = null;
+export class Subjects implements OnInit {
+  private http = inject(HttpClient);
+  private cdr = inject(ChangeDetectorRef);
 
   subjects: SubjectRecord[] = [];
-  showSubjectForm = false;
-  editingIndex = -1;
-  currentSubject: SubjectRecord = this.createEmptySubject();
-
-  // Search & Filter
   searchQuery = '';
-  selectedSemester = '';
+  selectedType = '';
+  currentPage = 1;
+  pageSize = 25;
 
-  get semesters(): string[] {
-    const sems = new Set(this.subjects.map(s => s.semester).filter(Boolean));
-    return Array.from(sems).sort();
+  ngOnInit(): void {
+    this.loadSubjectsFromBackend();
   }
 
-  get filteredSubjects(): SubjectRecord[] {
-    return this.subjects.filter(s => {
-      const q = this.searchQuery.toLowerCase().trim();
-      const matchesSearch = !q || s.code.toLowerCase().includes(q) || s.name.toLowerCase().includes(q);
-      const matchesSem = !this.selectedSemester || s.semester === this.selectedSemester;
-      return matchesSearch && matchesSem;
+  loadSubjectsFromBackend(): void {
+    this.http.get<any[]>('http://localhost:8080/api/dataset/subjects').subscribe({
+      next: (data) => {
+        if (Array.isArray(data) && data.length > 0) {
+          this.subjects = data.map(item => ({
+            id: item.subId || 0,
+            code: item.subCode || '',
+            name: item.subjectName || '',
+            type: item.subjectType || 'Theory',
+            credits: item.subjectType === 'Lab' ? 2 : (item.subjectType === 'Elective' ? 3 : 4),
+            semester: 'Accredited'
+          }));
+          this.cdr.detectChanges();
+        } else {
+          this.loadFallbackSubjects();
+        }
+      },
+      error: () => {
+        this.loadFallbackSubjects();
+      }
     });
   }
 
-  constructor() {
-    try {
-      this.role = localStorage.getItem('userRole')?.toLowerCase() || null;
-    } catch {
-      this.role = null;
-    }
-    this.loadSubjects();
-  }
-
-  createEmptySubject(): SubjectRecord {
-    return { id: 0, code: '', name: '', credits: 0, semester: '' };
-  }
-
-  loadSubjects(): void {
+  private loadFallbackSubjects(): void {
     try {
       const stored = localStorage.getItem('obslmsSubjects');
-      this.subjects = stored ? JSON.parse(stored) as SubjectRecord[] : [];
+      this.subjects = stored ? JSON.parse(stored) : [];
     } catch {
       this.subjects = [];
     }
   }
 
-  saveSubjects(): void {
-    try {
-      localStorage.setItem('obslmsSubjects', JSON.stringify(this.subjects));
-    } catch {}
+  get filteredSubjects(): SubjectRecord[] {
+    const q = this.searchQuery.toLowerCase().trim();
+    return this.subjects.filter(s => {
+      const matchesSearch = !q || s.code.toLowerCase().includes(q) || s.name.toLowerCase().includes(q);
+      const matchesType = !this.selectedType || s.type.toLowerCase() === this.selectedType.toLowerCase();
+      return matchesSearch && matchesType;
+    });
   }
 
-  openSubjectForm(): void {
-    if (this.role !== 'admin') {
-      this.toast.error('Only admins can add subjects.');
-      return;
-    }
-    this.showSubjectForm = true;
-    this.editingIndex = -1;
-    this.currentSubject = this.createEmptySubject();
+  get totalPages(): number {
+    return Math.ceil(this.filteredSubjects.length / this.pageSize) || 1;
   }
 
-  saveSubject(): void {
-    if (this.role !== 'admin') {
-      this.toast.error('Only admins can save subjects.');
-      return;
-    }
-
-    if (!this.currentSubject.code.trim() || !this.currentSubject.name.trim() || !this.currentSubject.semester.trim()) {
-      this.toast.warning('Please fill all required subject fields.');
-      return;
-    }
-
-    if (this.editingIndex >= 0) {
-      this.subjects[this.editingIndex] = { ...this.currentSubject };
-      this.toast.success(`Subject "${this.currentSubject.code}" updated successfully.`);
-    } else {
-      const nextId = this.subjects.length ? Math.max(...this.subjects.map(s => s.id)) + 1 : 1;
-      this.subjects = [...this.subjects, { ...this.currentSubject, id: nextId }];
-      this.toast.success(`Subject "${this.currentSubject.code}" created successfully.`);
-    }
-
-    this.saveSubjects();
-    this.resetSubjectForm();
+  get paginatedSubjects(): SubjectRecord[] {
+    const startIndex = (this.currentPage - 1) * this.pageSize;
+    return this.filteredSubjects.slice(startIndex, startIndex + this.pageSize);
   }
 
-  editSubject(subject: SubjectRecord, index: number): void {
-    if (this.role !== 'admin') {
-      this.toast.error('Only admins can edit subjects.');
-      return;
-    }
-    this.currentSubject = { ...subject };
-    this.editingIndex = index;
-    this.showSubjectForm = true;
-  }
-
-  deleteSubject(subject: SubjectRecord): void {
-    if (this.role !== 'admin') {
-      this.toast.error('Only admins can delete subjects.');
-      return;
-    }
-    this.subjects = this.subjects.filter(s => s.id !== subject.id);
-    this.saveSubjects();
-    this.toast.info(`Subject "${subject.code}" removed.`);
-  }
-
-  resetSubjectForm(): void {
-    this.showSubjectForm = false;
-    this.editingIndex = -1;
-    this.currentSubject = this.createEmptySubject();
+  getTypeClass(type: string): string {
+    const t = (type || '').toLowerCase();
+    if (t.includes('lab') || t.includes('practical')) return 'type-lab';
+    if (t.includes('elective')) return 'type-elective';
+    return 'type-theory';
   }
 }

@@ -52,6 +52,7 @@ export class CopoMapping implements OnInit {
   newPoDescription = '';
   newCoCourse = '';
   newCoCode = '';
+  newCoDescription = '';
 
   mappingLevels = [
     { value: 1, label: '1 - Low (Slight focus <30%)' },
@@ -289,7 +290,7 @@ export class CopoMapping implements OnInit {
       id: null,
       course: this.newCoCourse.trim(),
       co: coCode,
-      description: ''
+      description: this.newCoDescription.trim()
     };
 
     this.http.post<CourseOutcome>('http://localhost:8080/api/copo/co', payload).subscribe({
@@ -312,7 +313,7 @@ export class CopoMapping implements OnInit {
     this.http.get<Array<{ code: string; title: string }>>('http://localhost:8080/api/courses').subscribe({
       next: (data) => {
         this.courses = data
-          .map(c => `${c.code ? c.code : ''}${c.code && c.title ? ' - ' : ''}${c.title ? c.title : ''}`)
+          .map(c => c.code)
           .filter(Boolean);
         this.cdr.detectChanges();
       },
@@ -330,14 +331,15 @@ export class CopoMapping implements OnInit {
   resetCoForm() {
     this.newCoCourse = '';
     this.newCoCode = '';
+    this.newCoDescription = '';
   }
 
   getMappingLevelLabel(level: number): string {
     return this.mappingLevels.find(item => item.value === level)?.label ?? 'Unknown';
   }
 
-  getMatrixLevel(co: string, po: string): number | undefined {
-    return this.mappings.find(mapping => mapping.co === co && mapping.po === po)?.mappingLevel;
+  getMatrixLevel(course: string, co: string, po: string): number | undefined {
+    return this.mappings.find(mapping => mapping.course === course && mapping.co === co && mapping.po === po)?.mappingLevel;
   }
 
   exportMatrixCsv(): void {
@@ -349,7 +351,7 @@ export class CopoMapping implements OnInit {
     const rows = this.courseOutcomes.map(outcome => {
       const row = [`"${outcome.course} - ${outcome.co}"`];
       this.programOutcomes.forEach(po => {
-        const level = this.getMatrixLevel(outcome.co, po.poNumber);
+        const level = this.getMatrixLevel(outcome.course, outcome.co, po.poNumber);
         row.push(level !== undefined ? `"${level}"` : '""');
       });
       return row.join(',');

@@ -94,6 +94,12 @@
                         <input type="text" name="coCode" [(ngModel)]="newCoCode" placeholder="CO1" />
                     </label>
                 </div>
+                <div class="grid-row">
+                    <label>
+                        CO Description
+                        <textarea name="coDescription" [(ngModel)]="newCoDescription" rows="2" placeholder="e.g. Recall and outline fundamental data structures..."></textarea>
+                    </label>
+                </div>
                 <div class="form-actions">
                     <button type="submit">Add CO</button>
                 </div>
@@ -218,10 +224,10 @@
                                     <small style="display:block; color:var(--text-secondary); margin-top:2px;">{{ outcome.course }}</small>
                                 </td>
                                 <td *ngFor="let po of programOutcomes">
-                                    <span *ngIf="getMatrixLevel(outcome.co, po.poNumber) as level" class="obe-badge" [ngClass]="level === 3 ? 'obe-badge-co' : 'obe-badge-po'">
-                                        {{ getMappingLevelLabel(level) }}
+                                    <span *ngIf="getMatrixLevel(outcome.course, outcome.co, po.poNumber) as level" class="obe-badge" [ngClass]="level === 3 ? 'obe-badge-co' : 'obe-badge-po'">
+                                        {{ level }}
                                     </span>
-                                    <span *ngIf="!getMatrixLevel(outcome.co, po.poNumber)" style="color: #94a3b8;">—</span>
+                                    <span *ngIf="!getMatrixLevel(outcome.course, outcome.co, po.poNumber)" style="color: #94a3b8;">—</span>
                                 </td>
                             </tr>
                         </tbody>
