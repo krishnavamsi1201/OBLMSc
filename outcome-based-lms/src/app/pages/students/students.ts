@@ -86,6 +86,16 @@ export class Students implements OnInit, OnDestroy {
   studentDept = 'Computer Science & Engineering';
   studentSemester = 'Semester 6 • B.Tech CSE';
   
+  appearance = {
+    theme: 'light',
+    colorScheme: 'blue',
+    layout: 'comfortable',
+    showSidebar: true,
+    fontSize: 'medium'
+  };
+
+  themeStyles: { [key: string]: string } = {};
+  
   stats: DashboardStats = {
     enrolledCourses: 0,
     attendancePercentage: 0,
@@ -249,6 +259,7 @@ export class Students implements OnInit, OnDestroy {
     } catch {
       this.role = null;
     }
+    this.loadAppearance();
   }
 
   logout(): void {
@@ -560,6 +571,73 @@ export class Students implements OnInit, OnDestroy {
     link.click();
     document.body.removeChild(link);
     this.toast.success('Course Outcomes Mastery Report downloaded.');
+  }
+
+  loadAppearance(): void {
+    try {
+      const stored = localStorage.getItem('oblmsAppearance');
+      if (stored) {
+        this.appearance = JSON.parse(stored);
+      }
+    } catch {}
+    this.applyThemeStyleMapping();
+  }
+
+  private applyThemeStyleMapping(): void {
+    const isDark = this.appearance.theme === 'dark' || 
+      (this.appearance.theme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+
+    // 1. Map Theme Colors
+    const bg = isDark ? '#0f172a' : 'rgba(240, 249, 255, 0.92)';
+    const cardBg = isDark ? '#1e293b' : 'rgba(255, 255, 255, 0.98)';
+    const text = isDark ? '#f8fafc' : '#1e293b';
+    const textSecondary = isDark ? '#94a3b8' : '#64748b';
+    const border = isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(74, 140, 234, 0.16)';
+    const sidebarBg = isDark ? '#1e293b' : 'rgba(255, 255, 255, 0.98)';
+
+    // 2. Map Color Scheme
+    let primary = '#1976d2';
+    let primaryRgb = '25, 118, 210';
+    let heroBg = 'linear-gradient(135deg, #1e3a8a 0%, #1e40af 50%, #2563eb 100%)';
+
+    switch (this.appearance.colorScheme) {
+      case 'purple':
+        primary = '#8b5cf6';
+        primaryRgb = '139, 92, 246';
+        heroBg = 'linear-gradient(135deg, #4c1d95 0%, #5b21b6 50%, #7c3aed 100%)';
+        break;
+      case 'green':
+        primary = '#10b981';
+        primaryRgb = '16, 185, 129';
+        heroBg = 'linear-gradient(135deg, #064e3b 0%, #065f46 50%, #10b981 100%)';
+        break;
+      case 'red':
+        primary = '#ef4444';
+        primaryRgb = '239, 68, 68';
+        heroBg = 'linear-gradient(135deg, #7f1d1d 0%, #991b1b 50%, #ef4444 100%)';
+        break;
+      case 'orange':
+        primary = '#f97316';
+        primaryRgb = '249, 115, 22';
+        heroBg = 'linear-gradient(135deg, #7c2d12 0%, #9a3412 50%, #f97316 100%)';
+        break;
+      default: // blue
+        primary = '#1976d2';
+        primaryRgb = '25, 118, 210';
+        heroBg = 'linear-gradient(135deg, #1e3a8a 0%, #1e40af 50%, #2563eb 100%)';
+    }
+
+    this.themeStyles = {
+      '--student-primary': primary,
+      '--student-primary-rgb': primaryRgb,
+      '--student-hero-bg': heroBg,
+      '--student-bg': bg,
+      '--student-card-bg': cardBg,
+      '--student-text': text,
+      '--student-text-secondary': textSecondary,
+      '--student-border': border,
+      '--student-sidebar-bg': sidebarBg
+    };
   }
 
   navigate(path: string): void {

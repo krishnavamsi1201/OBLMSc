@@ -1,6 +1,6 @@
 <app-navbar></app-navbar>
 
-<div *ngIf="role === 'student'; else fullApp" class="student-shell">
+<div *ngIf="role === 'student'; else fullApp" class="student-shell" [ngStyle]="themeStyles">
 
   <!-- Categorized Sidebar Navigation -->
   <div class="student-sidebar">
