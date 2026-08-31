@@ -6,8 +6,8 @@
   <div class="content">
     <div class="page-header">
       <div class="header-title">
-        <h1>✅ Approval Workflow</h1>
-        <p>Review and approve pending mappings and configurations</p>
+        <h1>✅ Institutional Approval Workflow</h1>
+        <p>Review and authorize pending student enrollments, faculty assessments, and CO-PO curriculum mappings</p>
       </div>
     </div>
 
@@ -15,7 +15,7 @@
     <div class="stats-grid">
       <div class="stat-card pending">
         <div class="stat-number">{{ getPendingCount() }}</div>
-        <div class="stat-label">Pending</div>
+        <div class="stat-label">Pending Review</div>
       </div>
       <div class="stat-card approved">
         <div class="stat-number">{{ getApprovedCount() }}</div>
@@ -32,7 +32,7 @@
       <div class="search-box">
         <input 
           type="text" 
-          placeholder="🔍 Search approvals..."
+          placeholder="🔍 Search by student name, reg no, faculty, or course..."
           [(ngModel)]="searchQuery"
           (input)="onSearchChange()"
           class="search-input"
@@ -43,7 +43,7 @@
         (change)="onFilterChange()"
         class="filter-select"
       >
-        <option value="">All Status</option>
+        <option value="">All Statuses</option>
         <option value="Pending">Pending</option>
         <option value="Approved">Approved</option>
         <option value="Rejected">Rejected</option>
@@ -60,14 +60,19 @@
     <!-- Approval Items -->
     <div class="approvals-container">
       <div *ngIf="filteredItems.length === 0" class="empty-state">
-        <p>📭 No approval items found</p>
+        <p>📭 No approval items found matching the selected filters.</p>
       </div>
 
       <div *ngFor="let item of filteredItems" class="approval-card" [style.borderLeftColor]="getStatusColor(item.status)">
         <div class="card-header">
           <div class="item-info">
+            <div class="type-pill-wrap">
+              <span class="role-badge" [ngClass]="item.requesterRole === 'Student' ? 'badge-student' : 'badge-faculty'">
+                {{ item.requesterRole === 'Student' ? '🎓 Student Request' : '👨‍🏫 Faculty Proposal' }}
+              </span>
+              <span class="category-tag">{{ item.type | titlecase }}</span>
+            </div>
             <h3>{{ item.title }}</h3>
-            <p class="item-type">{{ item.type | titlecase }}</p>
           </div>
           <div class="status-badge" [style.backgroundColor]="getStatusBgColor(item.status)" [style.color]="getStatusColor(item.status)">
             {{ item.status }}
@@ -76,9 +81,31 @@
 
         <div class="card-body">
           <p class="description">{{ item.description }}</p>
-          <div class="meta-info">
-            <span class="meta-item">📅 {{ item.createdDate }}</span>
-            <span class="meta-item">👤 {{ item.createdBy }}</span>
+
+          <!-- Requester Details Information Box -->
+          <div class="requester-box">
+            <div class="requester-grid">
+              <div class="req-col">
+                <span class="req-label">👤 {{ item.requesterRole === 'Student' ? 'Student Name' : 'Faculty Member' }}:</span>
+                <span class="req-val highlight-name">{{ item.createdBy }}</span>
+              </div>
+              <div class="req-col">
+                <span class="req-label">🆔 {{ item.requesterRole === 'Student' ? 'Registration / Roll No' : 'Faculty ID' }}:</span>
+                <span class="req-val code-badge">{{ item.requesterId }}</span>
+              </div>
+              <div class="req-col" *ngIf="item.department">
+                <span class="req-label">🏛️ Department:</span>
+                <span class="req-val">{{ item.department }}</span>
+              </div>
+              <div class="req-col" *ngIf="item.requesterEmail">
+                <span class="req-label">📧 Email:</span>
+                <span class="req-val email-val">{{ item.requesterEmail }}</span>
+              </div>
+              <div class="req-col">
+                <span class="req-label">📅 Submitted Date:</span>
+                <span class="req-val">{{ item.createdDate }}</span>
+              </div>
+            </div>
           </div>
         </div>
 
@@ -88,8 +115,8 @@
         </div>
         <div class="card-footer" *ngIf="item.status !== 'Pending'">
           <span class="status-info">
-            <strong>{{ item.status }}</strong>
-            <span *ngIf="item.status === 'Rejected' && item.details.rejectionReason">
+            <strong>Decision: {{ item.status }}</strong>
+            <span *ngIf="item.status === 'Rejected' && item.details?.rejectionReason">
               - Reason: {{ item.details.rejectionReason }}
             </span>
           </span>
@@ -97,28 +124,19 @@
       </div>
     </div>
 
-    <app-footer></app-footer>
-  </div>
-</div>
+    <!-- Rejection Reason Modal Dialog -->
+    <div class="modal-overlay" *ngIf="showRejectReason">
+      <div class="modal-card">
+        <h3>Reason for Rejection</h3>
+        <p>Please enter the specific reason why this proposal/request is being rejected:</p>
+        <textarea [(ngModel)]="rejectionReasonText" rows="4" placeholder="Enter rejection comments or revision guidelines..." class="reason-textarea"></textarea>
+        <div class="modal-actions">
+          <button type="button" class="btn btn-secondary" (click)="cancelReject()">Cancel</button>
+          <button type="button" class="btn btn-danger" (click)="confirmReject()">Confirm Rejection</button>
+        </div>
+      </div>
+    </div>
 
-<!-- Reject Reason Modal -->
-<div class="modal" *ngIf="showRejectReason">
-  <div class="modal-content">
-    <div class="modal-header">
-      <h2>Reject Approval</h2>
-      <button class="close-btn" (click)="cancelReject()">✕</button>
-    </div>
-    <div class="modal-body">
-      <p>Please provide a reason for rejection:</p>
-      <textarea 
-        [(ngModel)]="rejectionReasonText" 
-        placeholder="Enter rejection reason..."
-        class="reason-input"
-      ></textarea>
-    </div>
-    <div class="modal-footer">
-      <button class="btn btn-secondary" (click)="cancelReject()">Cancel</button>
-      <button class="btn btn-reject" (click)="confirmReject()">Reject</button>
-    </div>
+    <app-footer></app-footer>
   </div>
 </div>

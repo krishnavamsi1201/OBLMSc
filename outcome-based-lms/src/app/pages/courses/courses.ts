@@ -395,11 +395,18 @@ export class Courses implements OnInit, OnDestroy {
   requestEnrollment(course: Course): void {
     const storedRequests = localStorage.getItem('obslmsCourseRequests');
     const requests = storedRequests ? JSON.parse(storedRequests) : [];
-    const currentStudentName = localStorage.getItem('userName') || 'Student';
+    const currentStudentName = localStorage.getItem('userName') || 'Krishnavamsi';
+    const currentStudentId = localStorage.getItem('userId') || 'STU004';
+    const currentStudentEmail = localStorage.getItem('userEmail') || 'krishnavamsi1201@gmail.com';
+    const currentStudentDept = localStorage.getItem('userDept') || 'Computer Science & Engineering';
 
     const newRequest = {
       id: 'REQ-' + Date.now(),
       studentName: currentStudentName,
+      studentId: currentStudentId,
+      regNo: currentStudentId,
+      studentEmail: currentStudentEmail,
+      department: currentStudentDept,
       courseCode: course.code,
       courseTitle: course.title,
       status: 'Pending',

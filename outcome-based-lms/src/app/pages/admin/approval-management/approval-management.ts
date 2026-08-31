@@ -7,28 +7,19 @@ import { Footer } from '../../../shared/footer/footer';
 import { ToastService } from '../../../shared/services/toast.service';
 import { SyncService } from '../../../shared/services/sync.service';
 
-interface ApprovalItem {
+export interface ApprovalItem {
   id: string;
   type: string; // 'assessment-co-mapping', 'copo-mapping', 'course-enrollment', 'course-subject-assignment', 'faculty-allocation'
   title: string;
   description: string;
   createdBy: string;
+  requesterId?: string;
+  requesterRole?: 'Student' | 'Faculty' | 'Admin';
+  requesterEmail?: string;
+  department?: string;
   createdDate: string;
   status: 'Pending' | 'Approved' | 'Rejected';
   details: any;
-}
-
-interface AssessmentCOMapping {
-  id: string;
-  assessmentName: string;
-  assessmentType: string;
-  courseName: string;
-  courseOutcomes: string[];
-  maxMarks: number;
-  approvalStatus?: 'Pending' | 'Approved' | 'Rejected';
-  approvalDate?: string;
-  approvedBy?: string;
-  rejectionReason?: string;
 }
 
 @Component({
@@ -79,8 +70,43 @@ export class ApprovalManagement implements OnInit {
         courseRequests = JSON.parse(localStorage.getItem('obslmsCourseRequests') || '[]');
       } catch {}
 
+      if (courseRequests.length === 0) {
+        courseRequests = [
+          {
+            id: 'REQ-101',
+            studentName: 'Krishnavamsi',
+            studentId: 'STU004',
+            regNo: '240101120001',
+            studentEmail: 'krishnavamsi1201@gmail.com',
+            department: 'Computer Science & Engineering',
+            courseCode: 'CS101',
+            courseTitle: 'Database Management Systems',
+            status: 'Pending',
+            requestedAt: new Date().toISOString()
+          },
+          {
+            id: 'REQ-102',
+            studentName: 'Raj Kumar',
+            studentId: 'STU001',
+            regNo: '240101120002',
+            studentEmail: 'raj.kumar@oblms.edu',
+            department: 'Computer Science',
+            courseCode: 'CS102',
+            courseTitle: 'Data Structures & Algorithms',
+            status: 'Pending',
+            requestedAt: new Date().toISOString()
+          }
+        ];
+        try {
+          localStorage.setItem('obslmsCourseRequests', JSON.stringify(courseRequests));
+        } catch {}
+      }
+
       courseRequests.forEach((req: any) => {
-        const sName = req.studentName || req.student || 'Student';
+        const sName = req.studentName || req.student || 'Krishnavamsi';
+        const sId = req.studentId || req.regNo || 'STU004';
+        const sEmail = req.studentEmail || (sName.toLowerCase().replace(/\s+/g, '') + '@gmail.com');
+        const sDept = req.department || 'Computer Science & Engineering';
         const cTitle = req.courseTitle || req.courseName || req.courseCode || req.course || 'Course';
         const cCode = req.courseCode || req.course || '';
 
@@ -88,15 +114,19 @@ export class ApprovalManagement implements OnInit {
           id: (req.id || Math.random()).toString(),
           type: 'course-enrollment',
           title: `Enrollment: ${sName} → ${cTitle}`,
-          description: `Student: ${sName} requested enrollment in ${cTitle} ${cCode ? '(' + cCode + ')' : ''}`,
+          description: `Student ${sName} (${sId}) requested formal enrollment for course ${cTitle} ${cCode ? '[' + cCode + ']' : ''}.`,
           createdBy: sName,
+          requesterId: sId,
+          requesterRole: 'Student',
+          requesterEmail: sEmail,
+          department: sDept,
           createdDate: req.requestedAt ? req.requestedAt.split('T')[0] : new Date().toISOString().split('T')[0],
           status: req.status || 'Pending',
           details: req
         });
       });
 
-      // 2. Assessment-CO Mappings
+      // 2. Assessment-CO Mappings (Faculty Proposals)
       let rawAssessmentMappings: any[] = [];
       try {
         rawAssessmentMappings = JSON.parse(localStorage.getItem('obslmsAssessmentCOMappings') || '[]');
@@ -104,23 +134,31 @@ export class ApprovalManagement implements OnInit {
 
       if (!Array.isArray(rawAssessmentMappings) || rawAssessmentMappings.length === 0) {
         rawAssessmentMappings = [
-          { id: '1', assessmentName: 'INMCA202 - Midterm 1', assessmentType: 'Midterm', courseName: 'Probability and Statistics', courseOutcomes: ['CO1', 'CO2'], approvalStatus: 'Pending' },
-          { id: '2', assessmentName: 'DS - Practical Lab Exam', assessmentType: 'Practical', courseName: 'Data Structures and Analysis of Computer Algorithms', courseOutcomes: ['CO1'], approvalStatus: 'Pending' },
-          { id: '3', assessmentName: 'MES - Quiz 1', assessmentType: 'Quiz', courseName: 'Microprocessors and Embedded Systems', courseOutcomes: ['CO1', 'CO2'], approvalStatus: 'Pending' },
-          { id: '4', assessmentName: 'IT305 - Assignment 1', assessmentType: 'Assignment', courseName: 'Operating Systems', courseOutcomes: ['CO1', 'CO2', 'CO3'], approvalStatus: 'Pending' },
-          { id: '5', assessmentName: 'OOP - Practical Exam', assessmentType: 'Practical', courseName: 'Object Oriented Programming with C++', courseOutcomes: ['CO1'], approvalStatus: 'Pending' }
+          { id: '1', assessmentName: 'INMCA202 - Midterm 1', assessmentType: 'Midterm', courseName: 'Probability and Statistics', courseOutcomes: ['CO1', 'CO2'], approvalStatus: 'Pending', facultyName: 'Dr. Ramesh Babu', facultyId: 'FAC001', department: 'Mathematics & Computer Science', email: 'Loukika310306@gmail.com' },
+          { id: '2', assessmentName: 'DS - Practical Lab Exam', assessmentType: 'Practical', courseName: 'Data Structures and Analysis of Computer Algorithms', courseOutcomes: ['CO1'], approvalStatus: 'Pending', facultyName: 'Prof. Sunita Sharma', facultyId: 'FAC002', department: 'Computer Science & Engineering', email: 'sunita.sharma@oblms.edu' },
+          { id: '3', assessmentName: 'MES - Quiz 1', assessmentType: 'Quiz', courseName: 'Microprocessors and Embedded Systems', courseOutcomes: ['CO1', 'CO2'], approvalStatus: 'Pending', facultyName: 'Dr. Amit Patel', facultyId: 'FAC003', department: 'Electronics & Communication', email: 'amit.patel@oblms.edu' },
+          { id: '4', assessmentName: 'IT305 - Assignment 1', assessmentType: 'Assignment', courseName: 'Operating Systems', courseOutcomes: ['CO1', 'CO2', 'CO3'], approvalStatus: 'Pending', facultyName: 'Dr. Ramesh Babu', facultyId: 'FAC001', department: 'Computer Science & Engineering', email: 'Loukika310306@gmail.com' },
+          { id: '5', assessmentName: 'OOP - Practical Exam', assessmentType: 'Practical', courseName: 'Object Oriented Programming with C++', courseOutcomes: ['CO1'], approvalStatus: 'Pending', facultyName: 'Prof. Sunita Sharma', facultyId: 'FAC002', department: 'Information Technology', email: 'sunita.sharma@oblms.edu' }
         ];
         try {
           localStorage.setItem('obslmsAssessmentCOMappings', JSON.stringify(rawAssessmentMappings));
         } catch {}
       }
 
+      // Faculty mapping helper lookup
+      const facultyMap: { [course: string]: { name: string; id: string; email: string; dept: string } } = {
+        'Probability and Statistics': { name: 'Dr. Ramesh Babu', id: 'FAC001', email: 'Loukika310306@gmail.com', dept: 'Mathematics & CSE' },
+        'Data Structures and Analysis of Computer Algorithms': { name: 'Prof. Sunita Sharma', id: 'FAC002', email: 'sunita.sharma@oblms.edu', dept: 'Computer Science & Engineering' },
+        'Microprocessors and Embedded Systems': { name: 'Dr. Amit Patel', id: 'FAC003', email: 'amit.patel@oblms.edu', dept: 'Electronics & Communication' },
+        'Operating Systems': { name: 'Dr. Ramesh Babu', id: 'FAC001', email: 'Loukika310306@gmail.com', dept: 'Computer Science & Engineering' },
+        'Object Oriented Programming with C++': { name: 'Prof. Sunita Sharma', id: 'FAC002', email: 'sunita.sharma@oblms.edu', dept: 'Information Technology' }
+      };
+
       rawAssessmentMappings.forEach((mapping: any) => {
         let aType = mapping.assessmentType || mapping.type || 'Assessment';
         let cName = mapping.courseName || mapping.course || mapping.courseTitle || 'Curriculum Course';
         let aName = mapping.assessmentName || mapping.name || mapping.assessment || mapping.title || '';
 
-        // Clean out any legacy corrupted "undefined" strings
         if (!aName || aName.toLowerCase().includes('undefined')) {
           aName = `${cName} - ${aType !== 'Assessment' ? aType : 'Midterm / Evaluation'}`;
         }
@@ -132,12 +170,23 @@ export class ApprovalManagement implements OnInit {
           ? mapping.courseOutcomes.join(', ')
           : (typeof mapping.courseOutcomes === 'string' && mapping.courseOutcomes.length > 0 && !mapping.courseOutcomes.toLowerCase().includes('undefined') ? mapping.courseOutcomes : 'CO1, CO2');
 
+        const fac = facultyMap[cName] || {
+          name: mapping.facultyName || mapping.createdBy || 'Dr. Ramesh Babu',
+          id: mapping.facultyId || 'FAC001',
+          email: mapping.email || 'Loukika310306@gmail.com',
+          dept: mapping.department || 'Computer Science & Engineering'
+        };
+
         items.push({
           id: (mapping.id || Math.random()).toString(),
           type: 'assessment-co-mapping',
           title: `${aName} → ${coList}`,
           description: `Assessment: ${aName} (${aType}) | Course: ${cName} | CO(s): ${coList}`,
-          createdBy: mapping.createdBy || 'Faculty',
+          createdBy: fac.name,
+          requesterId: fac.id,
+          requesterRole: 'Faculty',
+          requesterEmail: fac.email,
+          department: fac.dept,
           createdDate: mapping.approvalDate || mapping.createdDate || new Date().toISOString().split('T')[0],
           status: mapping.approvalStatus || mapping.status || 'Pending',
           details: mapping
@@ -156,12 +205,23 @@ export class ApprovalManagement implements OnInit {
         const course = mapping.course || mapping.courseName || 'Course';
         const contrib = mapping.contribution || mapping.weight || '3';
 
+        const fac = facultyMap[course] || {
+          name: mapping.facultyName || mapping.createdBy || 'Dr. Ramesh Babu',
+          id: mapping.facultyId || 'FAC001',
+          email: mapping.email || 'Loukika310306@gmail.com',
+          dept: mapping.department || 'Computer Science & Engineering'
+        };
+
         items.push({
           id: (mapping.id || `${course}-${co}-${po}`).toString(),
           type: 'copo-mapping',
           title: `Curriculum: ${co} → ${po} (${course})`,
-          description: `Course: ${course} | CO: ${co} mapped to ${po} | Contribution Level: ${contrib}`,
-          createdBy: mapping.createdBy || 'Faculty',
+          description: `Course: ${course} | CO: ${co} mapped to ${po} | Contribution Weight: ${contrib}`,
+          createdBy: fac.name,
+          requesterId: fac.id,
+          requesterRole: 'Faculty',
+          requesterEmail: fac.email,
+          department: fac.dept,
           createdDate: mapping.createdDate || new Date().toISOString().split('T')[0],
           status: mapping.status || 'Pending',
           details: mapping
@@ -182,7 +242,9 @@ export class ApprovalManagement implements OnInit {
       const matchType = this.filterType === '' || item.type === this.filterType;
       const matchSearch = this.searchQuery === '' || 
         item.title.toLowerCase().includes(this.searchQuery.toLowerCase()) ||
-        item.description.toLowerCase().includes(this.searchQuery.toLowerCase());
+        item.description.toLowerCase().includes(this.searchQuery.toLowerCase()) ||
+        item.createdBy.toLowerCase().includes(this.searchQuery.toLowerCase()) ||
+        (item.requesterId && item.requesterId.toLowerCase().includes(this.searchQuery.toLowerCase()));
 
       return matchStatus && matchType && matchSearch;
     });
@@ -198,8 +260,48 @@ export class ApprovalManagement implements OnInit {
 
   approveItem(item: ApprovalItem): void {
     item.status = 'Approved';
-    this.updateApprovalInStorage(item);
-    this.toast.success(`Approved: ${item.title}`);
+
+    if (item.type === 'course-enrollment') {
+      try {
+        const stored = localStorage.getItem('obslmsCourseRequests');
+        if (stored) {
+          const list = JSON.parse(stored);
+          const req = list.find((r: any) => r.id === item.details?.id || r.studentName === item.details?.studentName);
+          if (req) {
+            req.status = 'Approved';
+            localStorage.setItem('obslmsCourseRequests', JSON.stringify(list));
+          }
+        }
+
+        // Add to official student courses
+        const storedStudentCourses = localStorage.getItem('obslmsStudentCourses');
+        const studentCourses = storedStudentCourses ? JSON.parse(storedStudentCourses) : [];
+        if (!studentCourses.some((sc: any) => sc.studentName === item.details?.studentName && sc.courseCode === item.details?.courseCode)) {
+          studentCourses.push({
+            studentName: item.details?.studentName,
+            courseCode: item.details?.courseCode,
+            enrolledAt: new Date().toISOString()
+          });
+          localStorage.setItem('obslmsStudentCourses', JSON.stringify(studentCourses));
+        }
+
+        this.syncService.emit('ENROLLMENTS_CHANGED', item.details);
+      } catch {}
+    } else if (item.type === 'assessment-co-mapping') {
+      try {
+        const stored = localStorage.getItem('obslmsAssessmentCOMappings');
+        if (stored) {
+          const list = JSON.parse(stored);
+          const mapping = list.find((m: any) => m.id === item.details?.id || m.assessmentName === item.details?.assessmentName);
+          if (mapping) {
+            mapping.approvalStatus = 'Approved';
+            localStorage.setItem('obslmsAssessmentCOMappings', JSON.stringify(list));
+          }
+        }
+      } catch {}
+    }
+
+    this.toast.success(`"${item.title}" approved successfully!`);
     this.filterApprovals();
   }
 
@@ -211,152 +313,85 @@ export class ApprovalManagement implements OnInit {
 
   confirmReject(): void {
     if (!this.rejectionReasonText.trim()) {
-      this.toast.warning('Please provide a rejection reason');
+      this.toast.warning('Please enter a reason for rejection.');
       return;
     }
 
     const item = this.approvalItems.find(i => i.id === this.selectedApprovalId);
     if (item) {
       item.status = 'Rejected';
-      if (item.details) {
-        item.details.rejectionReason = this.rejectionReasonText;
+      if (!item.details) item.details = {};
+      item.details.rejectionReason = this.rejectionReasonText;
+
+      if (item.type === 'course-enrollment') {
+        try {
+          const stored = localStorage.getItem('obslmsCourseRequests');
+          if (stored) {
+            const list = JSON.parse(stored);
+            const req = list.find((r: any) => r.id === item.details?.id);
+            if (req) {
+              req.status = 'Rejected';
+              req.rejectionReason = this.rejectionReasonText;
+              localStorage.setItem('obslmsCourseRequests', JSON.stringify(list));
+            }
+          }
+          this.syncService.emit('ENROLLMENTS_CHANGED', item.details);
+        } catch {}
+      } else if (item.type === 'assessment-co-mapping') {
+        try {
+          const stored = localStorage.getItem('obslmsAssessmentCOMappings');
+          if (stored) {
+            const list = JSON.parse(stored);
+            const mapping = list.find((m: any) => m.id === item.details?.id);
+            if (mapping) {
+              mapping.approvalStatus = 'Rejected';
+              mapping.rejectionReason = this.rejectionReasonText;
+              localStorage.setItem('obslmsAssessmentCOMappings', JSON.stringify(list));
+            }
+          }
+        } catch {}
       }
-      this.updateApprovalInStorage(item);
-      this.toast.error(`Rejected: ${item.title}`);
-      this.showRejectReason = false;
-      this.rejectionReasonText = '';
-      this.selectedApprovalId = '';
-      this.filterApprovals();
+
+      this.toast.info(`"${item.title}" was rejected.`);
     }
+
+    this.showRejectReason = false;
+    this.selectedApprovalId = '';
+    this.rejectionReasonText = '';
+    this.filterApprovals();
   }
 
   cancelReject(): void {
     this.showRejectReason = false;
-    this.rejectionReasonText = '';
     this.selectedApprovalId = '';
+    this.rejectionReasonText = '';
   }
 
-  updateApprovalInStorage(item: ApprovalItem): void {
-    if (item.type === 'course-enrollment') {
-      try {
-        const requests = JSON.parse(localStorage.getItem('obslmsCourseRequests') || '[]');
-        const reqIdx = requests.findIndex((r: any) => r.id === item.id);
-        if (reqIdx !== -1) {
-          requests[reqIdx].status = item.status;
-          if (item.details?.rejectionReason) {
-            requests[reqIdx].rejectionReason = item.details.rejectionReason;
-          }
-          localStorage.setItem('obslmsCourseRequests', JSON.stringify(requests));
-        }
-
-        if (item.status === 'Approved' && item.details) {
-          // Add to student's enrolled courses
-          const studentCourses = JSON.parse(localStorage.getItem('obslmsStudentCourses') || '[]');
-          const exists = studentCourses.some((sc: any) =>
-            sc.studentName.toLowerCase() === item.details.studentName.toLowerCase() &&
-            sc.courseCode.toLowerCase() === item.details.courseCode.toLowerCase()
-          );
-          if (!exists) {
-            studentCourses.push({
-              studentName: item.details.studentName,
-              courseCode: item.details.courseCode,
-              courseTitle: item.details.courseTitle,
-              enrolledAt: new Date().toISOString()
-            });
-            localStorage.setItem('obslmsStudentCourses', JSON.stringify(studentCourses));
-          }
-
-          // Send approval notification to student
-          const notifs = JSON.parse(localStorage.getItem('obslmsNotifications') || '[]');
-          notifs.unshift({
-            id: 'NOTIF-' + Date.now(),
-            title: 'Course Enrollment Approved! 🎉',
-            message: `Your enrollment request for "${item.details.courseTitle || item.details.courseCode}" has been approved. You can now access syllabus, attendance, and study materials.`,
-            type: 'announcement',
-            date: new Date().toISOString(),
-            read: false,
-            recipient: item.details.studentName
-          });
-          localStorage.setItem('obslmsNotifications', JSON.stringify(notifs));
-        }
-
-        this.syncService.emit('ENROLLMENTS_CHANGED', item.details);
-      } catch (error) {
-        console.error('Error updating course enrollment approval:', error);
-      }
-    } else if (item.type === 'assessment-co-mapping') {
-      try {
-        const mappings = JSON.parse(localStorage.getItem('obslmsAssessmentCOMappings') || '[]');
-        const index = mappings.findIndex((m: any) => m.id === item.id);
-        if (index !== -1) {
-          mappings[index].approvalStatus = item.status;
-          mappings[index].approvalDate = new Date().toISOString().split('T')[0];
-          mappings[index].approvedBy = localStorage.getItem('userName') || 'Admin';
-          if (item.details?.rejectionReason) {
-            mappings[index].rejectionReason = item.details.rejectionReason;
-          }
-          localStorage.setItem('obslmsAssessmentCOMappings', JSON.stringify(mappings));
-        }
-        this.syncService.emit('MARKS_CHANGED');
-      } catch (error) {
-        console.error('Error updating approval:', error);
-      }
-    } else if (item.type === 'copo-mapping') {
-      try {
-        const mappings = JSON.parse(localStorage.getItem('obslmsCoMappings') || '[]');
-        const index = mappings.findIndex((m: any) => m.id.toString() === item.id.toString() || `${m.course}-${m.co}-${m.po}` === item.id);
-        if (index !== -1) {
-          mappings[index].status = item.status;
-          localStorage.setItem('obslmsCoMappings', JSON.stringify(mappings));
-        }
-        this.syncService.emit('MARKS_CHANGED');
-      } catch (error) {
-        console.error('Error updating copo mapping approval:', error);
-      }
-    }
+  getPendingCount(): number {
+    return this.approvalItems.filter(i => i.status === 'Pending').length;
   }
 
-  getTypeLabel(type: string): string {
-    const found = this.approvalTypes.find(t => t.value === type);
-    return found ? found.label : type;
+  getApprovedCount(): number {
+    return this.approvalItems.filter(i => i.status === 'Approved').length;
   }
 
-  getStatusBadgeClass(status: string): string {
-    switch (status) {
-      case 'Approved': return 'badge-approved';
-      case 'Rejected': return 'badge-rejected';
-      case 'Pending': return 'badge-pending';
-      default: return '';
-    }
+  getRejectedCount(): number {
+    return this.approvalItems.filter(i => i.status === 'Rejected').length;
   }
 
   getStatusColor(status: string): string {
     switch (status) {
       case 'Approved': return '#10b981';
       case 'Rejected': return '#ef4444';
-      case 'Pending': return '#f59e0b';
-      default: return '#6b7280';
+      default: return '#f59e0b';
     }
   }
 
   getStatusBgColor(status: string): string {
     switch (status) {
-      case 'Approved': return 'rgba(16, 185, 129, 0.1)';
-      case 'Rejected': return 'rgba(239, 68, 68, 0.1)';
-      case 'Pending': return 'rgba(245, 158, 11, 0.1)';
-      default: return 'rgba(107, 114, 128, 0.1)';
+      case 'Approved': return '#ecfdf5';
+      case 'Rejected': return '#fef2f2';
+      default: return '#fffbeb';
     }
-  }
-
-  getPendingCount(): number {
-    return this.approvalItems.filter(item => item.status === 'Pending').length;
-  }
-
-  getApprovedCount(): number {
-    return this.approvalItems.filter(item => item.status === 'Approved').length;
-  }
-
-  getRejectedCount(): number {
-    return this.approvalItems.filter(item => item.status === 'Rejected').length;
   }
 }
