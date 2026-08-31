@@ -56,7 +56,10 @@ public class CourseController {
     }
 
     @GetMapping
-    public List<Course> getAllCourses() {
+    public List<Course> getAllCourses(@RequestParam(required = false) String faculty) {
+        if (faculty != null && !faculty.trim().isEmpty()) {
+            return courseRepository.findByFacultyContainingIgnoreCase(faculty.trim());
+        }
         return courseRepository.findAll();
     }
 
