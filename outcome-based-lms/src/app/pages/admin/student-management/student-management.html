@@ -152,7 +152,7 @@
     <div class="modal-overlay" *ngIf="showFacultyForm">
       <div class="modal-content">
         <div class="modal-header">
-          <h2>Add New Faculty Account</h2>
+          <h2>{{ isFacultyEditMode ? 'Edit Faculty Profile' : 'Add New Faculty Account' }}</h2>
           <button class="close-btn" (click)="closeFacultyForm()">✕</button>
         </div>
 
@@ -163,6 +163,7 @@
               type="text" 
               [(ngModel)]="facultyFormData.id" 
               name="facultyId"
+              [readonly]="isFacultyEditMode"
               placeholder="e.g. FAC016"
               required
             />
@@ -210,7 +211,7 @@
 
           <div class="form-actions">
             <button type="button" class="btn btn-secondary" (click)="closeFacultyForm()">Cancel</button>
-            <button type="submit" class="btn btn-faculty">Add Faculty Member</button>
+            <button type="submit" class="btn btn-faculty">{{ isFacultyEditMode ? 'Update Faculty' : 'Add Faculty Member' }}</button>
           </div>
         </form>
       </div>
@@ -303,6 +304,9 @@
                 <div class="actions-btn-wrap">
                   <button type="button" class="btn-action-pill copy" (click)="copyCredentials(fac.id, fac.email, 'faculty', fac.password)" title="Copy Credentials">
                     📋 Copy
+                  </button>
+                  <button type="button" class="btn-action-pill edit" (click)="openEditFacultyForm(fac)" title="Edit Faculty">
+                    ✎ Edit
                   </button>
                   <button type="button" class="btn-action-pill delete" (click)="deleteFaculty(fac.id)" title="Delete Faculty">
                     🗑️ Delete

@@ -65,6 +65,7 @@ export class StudentManagement implements OnInit {
 
   // Faculty Form data
   showFacultyForm = false;
+  isFacultyEditMode = false;
   facultyFormData = {
     id: '',
     name: '',
@@ -253,6 +254,7 @@ export class StudentManagement implements OnInit {
 
   openAddFacultyForm(): void {
     this.showFacultyForm = true;
+    this.isFacultyEditMode = false;
     this.facultyFormData = {
       id: `FAC${String(this.facultyList.length + 1).padStart(3, '0')}`,
       name: '',
@@ -263,8 +265,22 @@ export class StudentManagement implements OnInit {
     };
   }
 
+  openEditFacultyForm(fac: FacultyUser): void {
+    this.showFacultyForm = true;
+    this.isFacultyEditMode = true;
+    this.facultyFormData = {
+      id: fac.id,
+      name: fac.name,
+      email: fac.email,
+      password: fac.password || 'password',
+      department: fac.department || 'Computer Science & Engineering',
+      designation: fac.designation || 'Assistant Professor'
+    };
+  }
+
   closeFacultyForm(): void {
     this.showFacultyForm = false;
+    this.isFacultyEditMode = false;
   }
 
   saveFacultyUser(): void {
