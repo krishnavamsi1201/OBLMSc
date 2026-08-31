@@ -108,6 +108,7 @@ export class Students implements OnInit, OnDestroy {
 
   searchQuery = '';
   deadlineTab: 'all' | 'mid' | 'assignment' | 'project' = 'all';
+  activeTab: 'overview' | 'co' | 'marks' = 'overview';
 
   todaySchedule: TimetableEntry[] = [];
   notifications: any[] = [];

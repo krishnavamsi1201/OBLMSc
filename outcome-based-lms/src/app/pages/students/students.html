@@ -203,6 +203,19 @@
       </p>
     </div>
 
+    <!-- Dashboard Tabs -->
+    <div class="dashboard-tabs">
+      <button class="tab-btn" [class.active]="activeTab === 'overview'" (click)="activeTab = 'overview'">
+        📊 Overview & Schedule
+      </button>
+      <button class="tab-btn" [class.active]="activeTab === 'co'" (click)="activeTab = 'co'">
+        🎯 Course Outcomes (CO)
+      </button>
+      <button class="tab-btn" [class.active]="activeTab === 'marks'" (click)="activeTab = 'marks'">
+        📈 Marks & Grades
+      </button>
+    </div>
+
     <!-- Main Dashboard Content Grid -->
     <div class="student-details-grid">
       
@@ -210,7 +223,7 @@
       <div class="details-left">
 
         <!-- OBE Course Outcomes (CO) Mastery Progress Card -->
-        <div class="dashboard-card obe-card">
+        <div class="dashboard-card obe-card" *ngIf="activeTab === 'co'">
           <div class="card-header" style="margin-bottom: 20px;">
             <div>
               <h2>🎯 My Course Outcomes (CO) Mastery</h2>
@@ -263,7 +276,7 @@
         </div>
         
         <!-- Today's Schedule Timeline Card -->
-        <div class="dashboard-card">
+        <div class="dashboard-card" *ngIf="activeTab === 'overview'">
           <div class="card-header">
             <div>
               <h2>📆 Today's Schedule ({{ filteredSchedule.length }})</h2>
@@ -291,7 +304,7 @@
         </div>
 
         <!-- Recent Assessment Marks & Grades -->
-        <div class="dashboard-card">
+        <div class="dashboard-card" *ngIf="activeTab === 'marks'">
           <div class="card-header">
             <div>
               <h2>📈 Recent Assessment Marks ({{ filteredGrades.length }})</h2>
@@ -332,7 +345,7 @@
       <div class="details-right">
 
         <!-- Upcoming Deadlines & Evaluations Tracker -->
-        <div class="dashboard-card deadlines-card">
+        <div class="dashboard-card deadlines-card" *ngIf="activeTab === 'overview'">
           <div class="card-header">
             <div>
               <h2>⏱️ Upcoming Deadlines</h2>
@@ -367,7 +380,7 @@
         </div>
         
         <!-- Recent Notifications Card -->
-        <div class="dashboard-card">
+        <div class="dashboard-card" *ngIf="activeTab === 'overview'">
           <div class="card-header">
             <div>
               <h2>🔔 Recent Notifications</h2>

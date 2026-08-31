@@ -1246,6 +1246,36 @@
   padding: 24px;
 }
 
+/* Tab Styles */
+.dashboard-tabs {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 24px;
+  border-bottom: 2px solid var(--student-border);
+  padding-bottom: 0;
+}
+
+.tab-btn {
+  background: transparent;
+  border: none;
+  padding: 10px 20px;
+  font-weight: 600;
+  font-size: 0.95rem;
+  cursor: pointer;
+  color: var(--student-text-secondary);
+  border-bottom: 3px solid transparent;
+  transition: all 0.2s ease;
+}
+
+.tab-btn:hover {
+  color: var(--student-primary);
+}
+
+.tab-btn.active {
+  color: var(--student-primary);
+  border-bottom: 3px solid var(--student-primary);
+}
+
 /* ==========================================================================
    RESPONSIVE DESIGN
    ========================================================================== */
