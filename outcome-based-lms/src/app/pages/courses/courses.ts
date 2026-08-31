@@ -360,6 +360,39 @@ export class Courses implements OnInit, OnDestroy {
     this.currentCourse = this.createEmptyCourse();
   }
 
+  isStudentCs(): boolean {
+    const dept = (localStorage.getItem('userDepartment') || localStorage.getItem('userDept') || 'Computer Science & Engineering').toLowerCase();
+    return dept.includes('computer') || dept.includes('cs') || dept.includes('cse') || dept.includes('it') || dept.includes('information');
+  }
+
+  isCsCourse(course: Course): boolean {
+    const code = (course.code || '').toLowerCase();
+    const title = (course.title || '').toLowerCase();
+    
+    // 1. Direct code/title keyword check
+    const csKeywords = [
+      'cs', 'cse', 'it', 'mca', 'inmca', 'ds', 'oop', 'comp', 'data', 
+      'programming', 'network', 'software', 'database', 'dbms', 'web', 
+      'system', 'security', 'structure', 'java', 'python', 'c++', 'algorithm'
+    ];
+    if (csKeywords.some(kw => code.includes(kw) || title.includes(kw))) {
+      return true;
+    }
+
+    // 2. Assigned faculty department check
+    if (course.faculty && course.faculty !== 'Faculty Board') {
+      const faculty = this.facultyList.find(f => f.name?.toLowerCase() === course.faculty.toLowerCase());
+      if (faculty && faculty.department) {
+        const dept = faculty.department.toLowerCase();
+        if (dept.includes('computer') || dept.includes('information') || dept.includes('cs') || dept.includes('it')) {
+          return true;
+        }
+      }
+    }
+    
+    return false;
+  }
+
   isEnrolled(courseCode: string): boolean {
     const storedStudentCourses = localStorage.getItem('obslmsStudentCourses');
     const studentCourses = storedStudentCourses ? JSON.parse(storedStudentCourses) : [];
