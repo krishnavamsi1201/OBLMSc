@@ -130,10 +130,9 @@ interface AuditLog {
 
     </div>
 
+    <app-footer></app-footer>
   </div>
-</div>
-
-<app-footer></app-footer>`,
+</div>`,
   styles: [
     `.system-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 20px; margin-top: 24px; }
     .system-card { background: #ffffff; border-radius: 14px; padding: 22px; box-shadow: 0 2px 14px rgba(0,0,0,0.08); }

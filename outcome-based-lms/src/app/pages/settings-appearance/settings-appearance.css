@@ -1,14 +1,8 @@
 /* Settings Appearance Page */
-.container {
-  display: grid;
-  grid-template-columns: auto 1fr;
-  min-height: 100vh;
-  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-}
-
-.content {
-  padding: 24px;
-  overflow-y: auto;
+.settings-form {
+  max-width: 800px;
+  margin: 0 auto 32px auto;
+  width: 100%;
 }
 
 .page-header {
@@ -198,10 +192,6 @@
 
 /* Responsive */
 @media (max-width: 768px) {
-  .container {
-    grid-template-columns: 1fr;
-  }
-
   .page-header {
     flex-direction: column;
     gap: 16px;

@@ -50,10 +50,9 @@ import { Footer } from '../../shared/footer/footer';
         <button type="button" class="secondary" (click)="downloadReport()">Download Report</button>
       </div>
     </form>
+    <app-footer></app-footer>
   </div>
-</div>
-
-<app-footer></app-footer>`,
+</div>`,
   styles: [
     `.settings-form { max-width: 620px; display: grid; gap: 18px; margin-top: 24px; }
     .form-group { display: grid; gap: 8px; }
