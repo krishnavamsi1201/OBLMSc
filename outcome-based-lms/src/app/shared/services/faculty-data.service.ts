@@ -267,27 +267,41 @@ export class FacultyDataService {
 
       let filteredCourses: Array<{ id: string; name: string; code: string; semester: string; faculty: string }> = [];
 
-      // Check if this faculty has specific allocations
-      if (facultyName && facultyName.toLowerCase() !== 'faculty' && facultyName.toLowerCase() !== 'faculty member') {
-        const matchingAllocations = allocations.filter(a =>
-          (a.facultyName && a.facultyName.toLowerCase().includes(facultyName.toLowerCase())) ||
-          (facultyName.toLowerCase().includes(a.facultyName ? a.facultyName.toLowerCase() : ''))
-        );
+      // Try to load assigned courses from localStorage (saved on login)
+      let assigned: string[] = [];
+      try {
+        const storedAssigned = localStorage.getItem('userAssignedCourses');
+        if (storedAssigned) {
+          assigned = JSON.parse(storedAssigned);
+        }
+      } catch {}
 
-        if (matchingAllocations.length > 0) {
-          filteredCourses = matchingAllocations.map(a => ({
-            id: a.courseId || `ALLOC-${a.id}`,
-            name: a.subjectName ? `${a.courseName} - ${a.subjectName}` : a.courseName,
-            code: a.subjectId || a.courseId || 'CRS',
-            semester: a.semester || 'Semester 1',
-            faculty: a.facultyName
-          }));
-        } else {
-          // Check matching faculty field on course object
+      const isFaculty = facultyName && facultyName.toLowerCase() !== 'faculty' && facultyName.toLowerCase() !== 'faculty member';
+
+      if (isFaculty) {
+        if (assigned && assigned.length > 0) {
+          const matchingCourses = allCourses.filter(c =>
+            assigned.includes(c.title) ||
+            assigned.includes(c.code) ||
+            assigned.some(a => c.title && c.title.toLowerCase().includes(a.toLowerCase())) ||
+            assigned.some(a => c.code && c.code.toLowerCase().includes(a.toLowerCase()))
+          );
+          if (matchingCourses.length > 0) {
+            filteredCourses = matchingCourses.map(c => ({
+              id: c.id.toString(),
+              name: c.title,
+              code: c.code,
+              semester: c.semester || 'Semester 1',
+              faculty: c.faculty || facultyName
+            }));
+          }
+        }
+
+        // If still no courses found, filter by faculty name check in course.faculty
+        if (filteredCourses.length === 0) {
           const matchingCourses = allCourses.filter(c =>
             c.faculty && (c.faculty.toLowerCase().includes(facultyName.toLowerCase()) || facultyName.toLowerCase().includes(c.faculty.toLowerCase()))
           );
-
           if (matchingCourses.length > 0) {
             filteredCourses = matchingCourses.map(c => ({
               id: c.id.toString(),
@@ -300,8 +314,8 @@ export class FacultyDataService {
         }
       }
 
-      // If no faculty-specific filtered courses found (or general/all view), return all existing courses from database
-      if (filteredCourses.length === 0) {
+      // If not faculty (or admin/general view), return all existing courses
+      if (filteredCourses.length === 0 && !isFaculty) {
         filteredCourses = allCourses.map(c => ({
           id: c.id.toString(),
           name: c.title,
