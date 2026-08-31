@@ -79,6 +79,8 @@ export class Faculty implements OnInit {
   filteredProgressList: StudentProgress[] = [];
   atRiskStudents: AtRiskStudent[] = [];
   courseCOAttainments: CourseCOAttainmentSummary[] = [];
+  groupedCOAttainments: Array<{ courseName: string; cos: CourseCOAttainmentSummary[] }> = [];
+  collapsedCoGroups: { [courseName: string]: boolean } = {};
   gradeDistribution: GradeDistribution = { distinction: 0, firstClass: 0, pass: 0, fail: 0, totalEvaluated: 0 };
   notifications: Notification[] = [];
   syllabusUnits: SyllabusUnit[] = [];
@@ -294,6 +296,24 @@ export class Faculty implements OnInit {
       // Recalculate Grade Distribution for selected subject
       this.recalculateGradeDistributionForSubject(filter);
     }
+
+    // Regroup Course Outcomes by Course Name
+    const groups = new Map<string, CourseCOAttainmentSummary[]>();
+    this.courseCOAttainments.forEach(co => {
+      const cName = co.courseName || 'General Course';
+      if (!groups.has(cName)) {
+        groups.set(cName, []);
+      }
+      groups.get(cName)!.push(co);
+    });
+    this.groupedCOAttainments = Array.from(groups.keys()).map(cName => ({
+      courseName: cName,
+      cos: groups.get(cName)!
+    }));
+  }
+
+  toggleCoGroup(courseName: string): void {
+    this.collapsedCoGroups[courseName] = !this.collapsedCoGroups[courseName];
   }
 
   private getDynamicSyllabusUnits(courseName: string): any[] {
@@ -561,23 +581,8 @@ export class Faculty implements OnInit {
     // Get unique student names enrolled in the course
     const studentsSet = new Set<string>();
     allStudents.forEach((s: any) => {
-      const courses = s.enrolledCourses ? s.enrolledCourses.split(',') : [];
-      const isEnrolled = courses.some((c: string) => {
-        const cleanC = c.trim().toLowerCase();
-        return cleanC === courseCode.toLowerCase() || 
-               cleanC === courseTitle.toLowerCase() ||
-               courseCode.toLowerCase().includes(cleanC) ||
-               courseTitle.toLowerCase().includes(cleanC);
-      });
-      if (isEnrolled && (s.name || s.studentName)) {
+      if (this.isStudentEnrolledInCourse(s.enrolledCourses || '', this.attendanceCourse) && (s.name || s.studentName)) {
         studentsSet.add(s.name || s.studentName);
-      }
-    });
-
-    this.studentProgressList.forEach(s => {
-      if (s.courseName.toLowerCase().includes(this.attendanceCourse.toLowerCase()) || 
-          this.attendanceCourse.toLowerCase().includes(s.courseName.toLowerCase())) {
-        studentsSet.add(s.studentName);
       }
     });
 
@@ -625,23 +630,8 @@ export class Faculty implements OnInit {
 
     const studentsSet = new Set<string>();
     allStudents.forEach((s: any) => {
-      const courses = s.enrolledCourses ? s.enrolledCourses.split(',') : [];
-      const isEnrolled = courses.some((c: string) => {
-        const cleanC = c.trim().toLowerCase();
-        return cleanC === courseCode.toLowerCase() || 
-               cleanC === courseTitle.toLowerCase() ||
-               courseCode.toLowerCase().includes(cleanC) ||
-               courseTitle.toLowerCase().includes(cleanC);
-      });
-      if (isEnrolled && (s.name || s.studentName)) {
+      if (this.isStudentEnrolledInCourse(s.enrolledCourses || '', this.attendanceCourse) && (s.name || s.studentName)) {
         studentsSet.add(s.name || s.studentName);
-      }
-    });
-
-    this.studentProgressList.forEach(s => {
-      if (s.courseName.toLowerCase().includes(this.attendanceCourse.toLowerCase()) || 
-          this.attendanceCourse.toLowerCase().includes(s.courseName.toLowerCase())) {
-        studentsSet.add(s.studentName);
       }
     });
 
@@ -912,6 +902,28 @@ export class Faculty implements OnInit {
     } catch {
       return [];
     }
+  }
+
+  isStudentEnrolledInCourse(enrolledString: string, courseNameOrCode: string): boolean {
+    if (!enrolledString || !courseNameOrCode) return false;
+
+    const enrolled = enrolledString.split(',').map(s => s.trim().toLowerCase());
+    const target = courseNameOrCode.toLowerCase();
+
+    // Direct match
+    if (enrolled.includes(target)) return true;
+
+    // Check mapping abbreviations
+    return enrolled.some(c => {
+      if (c === 'inmca202' && (target.includes('database') || target.includes('cs101'))) return true;
+      if (c === 'ds' && (target.includes('structures') || target.includes('algorithms') || target.includes('cs102'))) return true;
+      if (c === 'oop' && (target.includes('programming') || target.includes('java') || target.includes('cs103'))) return true;
+      if (c === 'mes' && (target.includes('microprocessors') || target.includes('cs104') || target.includes('embedded'))) return true;
+      if (c === 'it305' && (target.includes('operating') || target.includes('cs201') || target.includes('systems'))) return true;
+      
+      // General substring checks
+      return target.includes(c) || c.includes(target);
+    });
   }
 }
 

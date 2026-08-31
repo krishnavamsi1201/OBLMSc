@@ -155,38 +155,47 @@
 						<button class="view-all-btn" (click)="goToCOAttainment()">Detailed OBE Matrix →</button>
 					</div>
 				</div>
-				<div class="co-attainment-grid">
-					<div *ngFor="let co of courseCOAttainments" class="co-card">
-						<div class="co-card-header">
-							<div>
-								<span class="co-badge">{{ co.coCode }}</span>
-								<strong class="co-course">{{ co.courseName }}</strong>
+				<div *ngFor="let group of groupedCOAttainments" class="co-group-block" style="margin-bottom: 24px; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 8px; padding: 16px; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
+					<h3 style="margin: 0; color: #1e3a8a; border-bottom: 2px solid #3b82f6; padding-bottom: 8px; font-size: 1.1rem; display: flex; justify-content: space-between; align-items: center; cursor: pointer;" (click)="toggleCoGroup(group.courseName)">
+						<span style="display: flex; align-items: center; gap: 8px;">📖 {{ group.courseName }} Outcomes</span>
+						<span style="font-size: 0.85rem; color: #64748b; font-weight: 600; display: flex; align-items: center; gap: 4px;">
+							{{ collapsedCoGroups[group.courseName] ? '▼ Show' : '▲ Hide' }} ({{ group.cos.length }} COs)
+						</span>
+					</h3>
+					
+					<div class="co-attainment-grid" *ngIf="!collapsedCoGroups[group.courseName]" style="display: grid; gap: 16px; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); margin-top: 16px;">
+						<div *ngFor="let co of group.cos" class="co-card" style="margin-bottom: 0;">
+							<div class="co-card-header">
+								<div>
+									<span class="co-badge">{{ co.coCode }}</span>
+									<strong class="co-course">{{ co.courseName }}</strong>
+								</div>
+								<span class="status-pill" [class.achieved]="co.status === 'Achieved'" [class.partial]="co.status === 'Partial'" [class.not-achieved]="co.status === 'Not Achieved'">
+									{{ co.status }}
+								</span>
 							</div>
-							<span class="status-pill" [class.achieved]="co.status === 'Achieved'" [class.partial]="co.status === 'Partial'" [class.not-achieved]="co.status === 'Not Achieved'">
-								{{ co.status }}
-							</span>
-						</div>
-						<p class="co-description">{{ co.description || 'Applies core concepts and analytical methodologies to engineering problems.' }}</p>
-						<div class="co-progress-block">
-							<div class="co-progress-labels">
-								<span>Live Attainment: <strong>{{ co.attainmentPercentage }}%</strong></span>
-								<span>Target: <strong>{{ co.targetPercentage }}%</strong></span>
+							<p class="co-description">{{ co.description || 'Applies core concepts and analytical methodologies to engineering problems.' }}</p>
+							<div class="co-progress-block">
+								<div class="co-progress-labels">
+									<span>Live Attainment: <strong>{{ co.attainmentPercentage }}%</strong></span>
+									<span>Target: <strong>{{ co.targetPercentage }}%</strong></span>
+								</div>
+								<div class="co-progress-track">
+									<div class="co-progress-fill" [style.width.%]="co.attainmentPercentage"
+										[class.fill-achieved]="co.status === 'Achieved'"
+										[class.fill-partial]="co.status === 'Partial'"
+										[class.fill-failed]="co.status === 'Not Achieved'"></div>
+									<div class="co-target-marker" [style.left.%]="co.targetPercentage" title="Target Benchmark ({{co.targetPercentage}}%)"></div>
+								</div>
 							</div>
-							<div class="co-progress-track">
-								<div class="co-progress-fill" [style.width.%]="co.attainmentPercentage"
-									[class.fill-achieved]="co.status === 'Achieved'"
-									[class.fill-partial]="co.status === 'Partial'"
-									[class.fill-failed]="co.status === 'Not Achieved'"></div>
-								<div class="co-target-marker" [style.left.%]="co.targetPercentage" title="Target Benchmark ({{co.targetPercentage}}%)"></div>
+							<div class="co-footer">
+								<small>{{ co.assessedStudentsCount }} Student Assessments Evaluated</small>
+								<button *ngIf="co.status !== 'Achieved'" class="cqi-mini-btn" (click)="openCqiModal(co)">Plan Remedial Action</button>
 							</div>
-						</div>
-						<div class="co-footer">
-							<small>{{ co.assessedStudentsCount }} Student Assessments Evaluated</small>
-							<button *ngIf="co.status !== 'Achieved'" class="cqi-mini-btn" (click)="openCqiModal(co)">Plan Remedial Action</button>
 						</div>
 					</div>
 				</div>
-				<p *ngIf="courseCOAttainments.length === 0" class="empty-state">No Course Outcome mappings configured yet.</p>
+				<p *ngIf="groupedCOAttainments.length === 0" class="empty-state">No Course Outcome mappings configured yet.</p>
 			</section>
 
 			<!-- 4. Real-Time Grade & Performance Distribution -->
