@@ -67,6 +67,9 @@ export class Sidebar implements AfterViewInit {
 
   adminNav: NavItem[] = [
     { icon: '🏠', label: 'Dashboard', path: '/admin', exact: true },
+    { icon: '👥', label: 'User Directory & Logins', path: '/admin/student-management', exact: true },
+    { icon: '👨‍🏫', label: 'Faculty Management', path: '/admin/faculty-management', exact: true },
+    { icon: '🎓', label: 'Student Management', path: '/admin/student-management', exact: true },
     { icon: '📚', label: 'Courses', path: '/courses', exact: true },
     { icon: '📖', label: 'Subjects', path: '/subjects', exact: true },
     { icon: '🎯', label: 'Outcomes', path: '/outcomes', exact: true },

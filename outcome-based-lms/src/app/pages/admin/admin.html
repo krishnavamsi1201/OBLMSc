@@ -157,6 +157,7 @@
 							<th>Faculty Name</th>
 							<th>Department</th>
 							<th>Email Address</th>
+							<th>🔑 Password</th>
 							<th>Access Role</th>
 							<th>Actions</th>
 						</tr>
@@ -167,6 +168,7 @@
 							<td><strong>{{ f.name }}</strong></td>
 							<td>{{ f.department || 'Computer Science & Engineering' }}</td>
 							<td><span class="email-text">{{ f.email }}</span></td>
+							<td><code style="background:#f1f5f9;padding:3px 8px;border-radius:6px;font-weight:700;color:#0f172a;">{{ f.password || 'password' }}</code></td>
 							<td><span class="role-pill fac-pill">👨‍🏫 Faculty</span></td>
 							<td>
 								<button class="btn-copy-cred" (click)="copyCredentials(f)" title="Copy login credentials to clipboard">
@@ -187,6 +189,7 @@
 							<th>Student Name</th>
 							<th>Department</th>
 							<th>Email Address</th>
+							<th>🔑 Password</th>
 							<th>Access Role</th>
 							<th>Actions</th>
 						</tr>
@@ -197,6 +200,7 @@
 							<td><strong>{{ s.name }}</strong></td>
 							<td>{{ s.department || 'Computer Science & Engineering' }}</td>
 							<td><span class="email-text">{{ s.email }}</span></td>
+							<td><code style="background:#f1f5f9;padding:3px 8px;border-radius:6px;font-weight:700;color:#0f172a;">{{ s.password || 'password' }}</code></td>
 							<td><span class="role-pill stu-pill">🎓 Student</span></td>
 							<td>
 								<button class="btn-copy-cred" (click)="copyCredentials(s)" title="Copy login credentials to clipboard">

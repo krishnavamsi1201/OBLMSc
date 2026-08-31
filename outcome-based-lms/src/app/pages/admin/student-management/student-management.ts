@@ -12,8 +12,18 @@ interface Student {
   regNo: string;
   name: string;
   email: string;
+  password?: string;
   department: string;
   semester: string;
+}
+
+interface FacultyUser {
+  id: string;
+  name: string;
+  email: string;
+  password?: string;
+  department: string;
+  designation?: string;
 }
 
 @Component({
@@ -25,10 +35,20 @@ interface Student {
 })
 export class StudentManagement implements OnInit {
   private toast = inject(ToastService);
+  private http = inject(HttpClient);
+  private cdr = inject(ChangeDetectorRef);
+
+  activeTab: 'students' | 'faculty' = 'students';
+
   studentList: Student[] = [];
   filteredStudentList: Student[] = [];
+
+  facultyList: FacultyUser[] = [];
+  filteredFacultyList: FacultyUser[] = [];
+
+  courseRequests: any[] = [];
   
-  // Form fields
+  // Student Form fields
   showForm = false;
   isEditMode = false;
   currentId: string | null = null;
@@ -40,7 +60,18 @@ export class StudentManagement implements OnInit {
     email: '',
     password: 'password',
     department: 'Computer Science & Engineering',
-    semester: 'Semester 1'
+    semester: 'Semester 3'
+  };
+
+  // Faculty Form data
+  showFacultyForm = false;
+  facultyFormData = {
+    id: '',
+    name: '',
+    email: '',
+    password: 'password',
+    department: 'Computer Science & Engineering',
+    designation: 'Assistant Professor'
   };
 
   // Filter and search
@@ -59,14 +90,11 @@ export class StudentManagement implements OnInit {
   semesters = ['Semester 1', 'Semester 2', 'Semester 3', 'Semester 4', 'Semester 5', 'Semester 6', 'Semester 7', 'Semester 8'];
 
   ngOnInit(): void {
-    this.loadStudents();
+    this.loadUsers();
     this.loadCourseRequests();
   }
 
-  private http = inject(HttpClient);
-  private cdr = inject(ChangeDetectorRef);
-
-  private loadStudents(): void {
+  loadUsers(): void {
     this.http.get<any[]>('http://localhost:8080/api/users').subscribe({
       next: (users) => {
         this.studentList = users
@@ -76,36 +104,75 @@ export class StudentManagement implements OnInit {
             regNo: u.id,
             name: u.name,
             email: u.email,
+            password: u.password || 'password',
             department: u.department || 'Computer Science & Engineering',
             semester: 'Semester 3'
           }));
-        this.filterStudents();
+
+        this.facultyList = users
+          .filter(u => u.role?.toUpperCase() === 'FACULTY')
+          .map(u => ({
+            id: u.id,
+            name: u.name,
+            email: u.email,
+            password: u.password || 'password',
+            department: u.department || 'Computer Science & Engineering',
+            designation: 'Professor / Instructor'
+          }));
+
+        this.filterUsers();
         this.cdr.detectChanges();
       },
       error: () => {
         this.studentList = [];
-        this.filterStudents();
+        this.facultyList = [];
+        this.filterUsers();
       }
     });
   }
 
-  private filterStudents(): void {
+  filterUsers(): void {
+    const q = this.searchQuery.toLowerCase().trim();
+
     this.filteredStudentList = this.studentList.filter(s => {
-      const matchSearch = s.name.toLowerCase().includes(this.searchQuery.toLowerCase()) ||
-                         s.email.toLowerCase().includes(this.searchQuery.toLowerCase()) ||
-                         s.regNo.toLowerCase().includes(this.searchQuery.toLowerCase());
-      const matchDept = this.filterDepartment === '' || s.department === this.filterDepartment;
-      const matchSem = this.filterSemester === '' || s.semester === this.filterSemester;
+      const matchSearch = !q || s.name.toLowerCase().includes(q) ||
+                         s.email.toLowerCase().includes(q) ||
+                         s.regNo.toLowerCase().includes(q);
+      const matchDept = !this.filterDepartment || s.department === this.filterDepartment;
+      const matchSem = !this.filterSemester || s.semester === this.filterSemester;
       return matchSearch && matchDept && matchSem;
+    });
+
+    this.filteredFacultyList = this.facultyList.filter(f => {
+      const matchSearch = !q || f.name.toLowerCase().includes(q) ||
+                         f.email.toLowerCase().includes(q) ||
+                         f.id.toLowerCase().includes(q);
+      const matchDept = !this.filterDepartment || f.department === this.filterDepartment;
+      return matchSearch && matchDept;
     });
   }
 
   onSearchChange(): void {
-    this.filterStudents();
+    this.filterUsers();
   }
 
   onFilterChange(): void {
-    this.filterStudents();
+    this.filterUsers();
+  }
+
+  switchTab(tab: 'students' | 'faculty'): void {
+    this.activeTab = tab;
+    this.filterUsers();
+  }
+
+  copyCredentials(id: string, email: string, role: string, password?: string): void {
+    const pwd = password || 'password';
+    const text = `User ID: ${id}\nEmail: ${email}\nRole: ${role}\nPassword: ${pwd}`;
+    navigator.clipboard.writeText(text).then(() => {
+      this.toast.success(`Copied login credentials for ID ${id}! 📋`);
+    }).catch(() => {
+      this.toast.info(`ID: ${id} | Email: ${email} | Password: ${pwd}`);
+    });
   }
 
   openAddForm(): void {
@@ -122,7 +189,7 @@ export class StudentManagement implements OnInit {
       regNo: student.regNo,
       name: student.name,
       email: student.email,
-      password: 'password',
+      password: student.password || 'password',
       department: student.department,
       semester: student.semester
     };
@@ -146,8 +213,8 @@ export class StudentManagement implements OnInit {
   }
 
   saveStudent(): void {
-    if (!this.validateForm()) {
-      this.toast.warning('Please fill all required fields');
+    if (!this.validateStudentForm()) {
+      this.toast.warning('Please fill all required student fields');
       return;
     }
 
@@ -162,7 +229,7 @@ export class StudentManagement implements OnInit {
 
     this.http.post('http://localhost:8080/api/users', payload).subscribe({
       next: () => {
-        this.loadStudents();
+        this.loadUsers();
         this.closeForm();
         this.toast.success(`Student "${this.formData.name}" saved with login credentials! 🎉`);
       },
@@ -175,7 +242,7 @@ export class StudentManagement implements OnInit {
   deleteStudent(id: string): void {
     this.http.delete('http://localhost:8080/api/users/' + id).subscribe({
       next: () => {
-        this.loadStudents();
+        this.loadUsers();
         this.toast.info('Student removed.');
       },
       error: () => {
@@ -184,20 +251,111 @@ export class StudentManagement implements OnInit {
     });
   }
 
-  downloadStudentListCsv(): void {
-    if (this.studentList.length === 0) {
-      this.toast.warning('No student records to export.');
+  openAddFacultyForm(): void {
+    this.showFacultyForm = true;
+    this.facultyFormData = {
+      id: `FAC${String(this.facultyList.length + 1).padStart(3, '0')}`,
+      name: '',
+      email: '',
+      password: 'password',
+      department: 'Computer Science & Engineering',
+      designation: 'Assistant Professor'
+    };
+  }
+
+  closeFacultyForm(): void {
+    this.showFacultyForm = false;
+  }
+
+  saveFacultyUser(): void {
+    if (!this.facultyFormData.id || !this.facultyFormData.name || !this.facultyFormData.email) {
+      this.toast.warning('Please fill ID, Name, and Email for faculty.');
       return;
     }
 
-    const headers = ['Student ID', 'Register No', 'Full Name', 'Department', 'Semester', 'Email Address'];
-    const rows = this.studentList.map(s => [
+    const payload = {
+      id: this.facultyFormData.id.trim(),
+      name: this.facultyFormData.name.trim(),
+      email: this.facultyFormData.email.trim(),
+      password: this.facultyFormData.password.trim() || 'password',
+      role: 'FACULTY',
+      department: this.facultyFormData.department
+    };
+
+    this.http.post('http://localhost:8080/api/users', payload).subscribe({
+      next: () => {
+        this.loadUsers();
+        this.closeFacultyForm();
+        this.toast.success(`Faculty member "${this.facultyFormData.name}" saved with login credentials! 🎉`);
+      },
+      error: () => {
+        this.toast.error('Failed to save faculty to database.');
+      }
+    });
+  }
+
+  deleteFaculty(id: string): void {
+    this.http.delete('http://localhost:8080/api/users/' + id).subscribe({
+      next: () => {
+        this.loadUsers();
+        this.toast.info('Faculty removed.');
+      },
+      error: () => {
+        this.toast.error('Failed to delete faculty.');
+      }
+    });
+  }
+
+  loadCourseRequests(): void {
+    try {
+      const stored = localStorage.getItem('obslmsCourseRequests');
+      this.courseRequests = stored ? JSON.parse(stored) : [];
+    } catch {
+      this.courseRequests = [];
+    }
+  }
+
+  approveEnrollment(request: any): void {
+    request.status = 'Approved';
+    try {
+      localStorage.setItem('obslmsCourseRequests', JSON.stringify(this.courseRequests));
+
+      const storedStudentCourses = localStorage.getItem('obslmsStudentCourses');
+      const studentCourses = storedStudentCourses ? JSON.parse(storedStudentCourses) : [];
+      if (!studentCourses.some((sc: any) => sc.studentName === request.studentName && sc.courseCode === request.courseCode)) {
+        studentCourses.push({
+          studentName: request.studentName,
+          courseCode: request.courseCode,
+          enrolledAt: new Date().toISOString()
+        });
+        localStorage.setItem('obslmsStudentCourses', JSON.stringify(studentCourses));
+      }
+      this.toast.success(`Enrollment approved for ${request.studentName}`);
+    } catch {}
+  }
+
+  rejectEnrollment(request: any): void {
+    request.status = 'Rejected';
+    try {
+      localStorage.setItem('obslmsCourseRequests', JSON.stringify(this.courseRequests));
+      this.toast.info(`Enrollment rejected for ${request.studentName}`);
+    } catch {}
+  }
+
+  downloadUserListCsv(): void {
+    const list = this.activeTab === 'students' ? this.studentList : this.facultyList;
+    if (list.length === 0) {
+      this.toast.warning('No records to export.');
+      return;
+    }
+
+    const headers = ['User ID', 'Full Name', 'Department', 'Email Address', 'Login Password'];
+    const rows = list.map(s => [
       `"${s.id}"`,
-      `"${s.regNo}"`,
       `"${s.name}"`,
       `"${s.department}"`,
-      `"${s.semester}"`,
-      `"${s.email}"`
+      `"${s.email}"`,
+      `"${s.password || 'password'}"`
     ].join(','));
 
     const csvContent = [headers.join(','), ...rows].join('\n');
@@ -205,14 +363,14 @@ export class StudentManagement implements OnInit {
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.setAttribute('href', url);
-    link.setAttribute('download', `Student_Roster_${new Date().toISOString().split('T')[0]}.csv`);
+    link.setAttribute('download', `${this.activeTab === 'students' ? 'Student_Roster' : 'Faculty_Directory'}_${new Date().toISOString().split('T')[0]}.csv`);
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
-    this.toast.success('Student roster CSV downloaded successfully.');
+    this.toast.success('Roster CSV downloaded successfully.');
   }
 
-  private validateForm(): boolean {
+  private validateStudentForm(): boolean {
     return !!(
       this.formData.regNo.trim() &&
       this.formData.name.trim() &&
@@ -220,90 +378,5 @@ export class StudentManagement implements OnInit {
       this.formData.department &&
       this.formData.semester
     );
-  }
-
-  private saveStudentToStorage(): void {
-    try {
-      localStorage.setItem('obslmsStudents', JSON.stringify(this.studentList));
-      this.filterStudents();
-    } catch {
-      this.toast.error('Error saving student data');
-    }
-  }
-
-  private generateId(): string {
-    return 'STU-' + Date.now() + '-' + Math.floor(Math.random() * 1000);
-  }
-
-  courseRequests: any[] = [];
-
-  loadCourseRequests(): void {
-    const stored = localStorage.getItem('obslmsCourseRequests');
-    const allRequests = stored ? JSON.parse(stored) : [];
-    this.courseRequests = allRequests.filter((r: any) => r.status === 'Pending');
-  }
-
-  approveEnrollment(req: any): void {
-    const storedRequests = localStorage.getItem('obslmsCourseRequests');
-    const requests = storedRequests ? JSON.parse(storedRequests) : [];
-    
-    const idx = requests.findIndex((r: any) => r.id === req.id);
-    if (idx >= 0) {
-      requests[idx].status = 'Approved';
-      localStorage.setItem('obslmsCourseRequests', JSON.stringify(requests));
-    }
-
-    // Add to obslmsStudentCourses
-    const storedStudentCourses = localStorage.getItem('obslmsStudentCourses');
-    const studentCourses = storedStudentCourses ? JSON.parse(storedStudentCourses) : [];
-    
-    const exists = studentCourses.some((sc: any) => 
-      sc.studentName.toLowerCase() === req.studentName.toLowerCase() && 
-      sc.courseCode.toLowerCase() === req.courseCode.toLowerCase()
-    );
-    
-    if (!exists) {
-      studentCourses.push({
-        studentName: req.studentName,
-        courseCode: req.courseCode
-      });
-      localStorage.setItem('obslmsStudentCourses', JSON.stringify(studentCourses));
-    }
-
-    // Save to backend database
-    const storedUsers = localStorage.getItem('obslmsUsersDatabase');
-    const users = storedUsers ? JSON.parse(storedUsers) : [];
-    const dbUser = users.find((u: any) => u.name.toLowerCase() === req.studentName.toLowerCase());
-    if (dbUser) {
-      const currentList = dbUser.enrolledCourses ? dbUser.enrolledCourses.split(',') : [];
-      const codeTrimmed = req.courseCode.trim();
-      if (!currentList.some((c: string) => c.trim().toLowerCase() === codeTrimmed.toLowerCase())) {
-        currentList.push(codeTrimmed);
-        dbUser.enrolledCourses = currentList.join(',');
-        
-        this.http.post('http://localhost:8080/api/users', dbUser).subscribe({
-          next: () => {
-            console.log('Enrolled courses saved in MySQL.');
-          }
-        });
-      }
-    }
-
-    this.toast.success(`Enrollment request approved for student "${req.studentName}" in course "${req.courseCode}".`);
-    this.loadCourseRequests();
-  }
-
-  rejectEnrollment(req: any): void {
-    const storedRequests = localStorage.getItem('obslmsCourseRequests');
-    const requests = storedRequests ? JSON.parse(storedRequests) : [];
-    
-    const idx = requests.findIndex((r: any) => r.id === req.id);
-    if (idx >= 0) {
-      requests[idx].status = 'Rejected';
-      localStorage.setItem('obslmsCourseRequests', JSON.stringify(requests));
-    }
-
-    this.toast.info(`Enrollment request rejected for student "${req.studentName}".`);
-    this.loadCourseRequests();
   }
 }
