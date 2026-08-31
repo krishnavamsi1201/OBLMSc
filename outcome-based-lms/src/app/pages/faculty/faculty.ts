@@ -209,23 +209,28 @@ export class Faculty implements OnInit {
 
     this.facultyDataService.getFacultyDashboardData().subscribe({
       next: (data) => {
-        this.rawDashboardData = data;
-        
-        // Load workbench widget data directly from storage
-        this.loadWorkbenchData();
+        try {
+          this.rawDashboardData = data;
+          
+          // Load workbench widget data directly from storage
+          this.loadWorkbenchData();
 
-        // Load CQI actions
-        this.cqiActionsList = this.facultyDataService.getCqiActions();
+          // Load CQI actions
+          this.cqiActionsList = this.facultyDataService.getCqiActions();
 
-        // Apply selected subject filter on the dataset
-        this.applySubjectFilter();
+          // Apply selected subject filter on the dataset
+          this.applySubjectFilter();
 
-        // Update subjects list for question paper generator
-        const storedQB = this.getSafeJson('obslmsQuestionBank') as QuestionBankItem[];
-        const subs = storedQB.map(q => q.subject).filter(Boolean);
-        this.allSubjectsList = Array.from(new Set([...subs, ...data.courses.map((c: any) => c.name)]));
-
-        this.isLoading = false;
+          // Update subjects list for question paper generator
+          const storedQB = this.getSafeJson('obslmsQuestionBank') as QuestionBankItem[];
+          const subs = storedQB.map(q => q.subject).filter(Boolean);
+          this.allSubjectsList = Array.from(new Set([...subs, ...data.courses.map((c: any) => c.name)]));
+        } catch (e: any) {
+          console.error('Error processing dashboard data:', e);
+          this.error = 'Error processing dashboard data: ' + e.message;
+        } finally {
+          this.isLoading = false;
+        }
       },
       error: (err) => {
         console.error('Error loading real-time dashboard data:', err);

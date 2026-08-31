@@ -335,6 +335,37 @@ public class DashboardStatsController {
             .average()
             .orElse(0.0);
 
+        int distinction = 0;
+        int firstClass = 0;
+        int pass = 0;
+        int fail = 0;
+        int totalEvaluated = 0;
+
+        for (StudentMark m : allMarks) {
+            boolean isAllottedSubject = false;
+            for (Course c : allottedCourses) {
+                if (m.getAssessment().toLowerCase().contains(c.getCode().toLowerCase())) {
+                    isAllottedSubject = true;
+                    break;
+                }
+            }
+            if (isAllottedSubject && m.getMaxMarks() > 0) {
+                double pct = (m.getObtained() / m.getMaxMarks()) * 100;
+                totalEvaluated++;
+                if (pct >= 75) distinction++;
+                else if (pct >= 60) firstClass++;
+                else if (pct >= 40) pass++;
+                else fail++;
+            }
+        }
+
+        Map<String, Object> gradeDistribution = new HashMap<>();
+        gradeDistribution.put("distinction", distinction);
+        gradeDistribution.put("firstClass", firstClass);
+        gradeDistribution.put("pass", pass);
+        gradeDistribution.put("fail", fail);
+        gradeDistribution.put("totalEvaluated", totalEvaluated);
+
         Map<String, Object> response = new HashMap<>();
         response.put("courses", allottedCourses.stream().map(c -> Map.of(
             "id", c.getId() != null ? c.getId().toString() : "C1",
@@ -347,6 +378,7 @@ public class DashboardStatsController {
         response.put("studentProgressSummary", progressSummary);
         response.put("atRiskStudents", atRiskStudents);
         response.put("courseCOAttainments", coAttainments);
+        response.put("gradeDistribution", gradeDistribution);
 
         // Mock notifications
         response.put("notifications", List.of(
