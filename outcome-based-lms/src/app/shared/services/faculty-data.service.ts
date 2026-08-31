@@ -400,12 +400,20 @@ export class FacultyDataService {
         return [];
       }
 
-      return storedAssessments.map((a: any) => {
-        const courseMatch = courses.find(c =>
-          c.id.toString() === (a.course || '').toString() ||
-          c.name.toLowerCase() === (a.course || '').toLowerCase() ||
-          c.code.toLowerCase() === (a.course || '').toLowerCase()
-        );
+      return storedAssessments
+        .filter((a: any) => {
+          return courses.some(c =>
+            c.id.toString() === (a.course || '').toString() ||
+            c.name.toLowerCase() === (a.course || '').toLowerCase() ||
+            c.code.toLowerCase() === (a.course || '').toLowerCase()
+          );
+        })
+        .map((a: any) => {
+          const courseMatch = courses.find(c =>
+            c.id.toString() === (a.course || '').toString() ||
+            c.name.toLowerCase() === (a.course || '').toLowerCase() ||
+            c.code.toLowerCase() === (a.course || '').toLowerCase()
+          );
 
         const courseName = courseMatch ? courseMatch.name : (a.course || 'General Assessment');
         const assessmentType = a.type || 'Assignment';
