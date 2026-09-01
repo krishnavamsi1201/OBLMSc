@@ -35,7 +35,52 @@
                 <button mat-raised-button color="accent" (click)="startAdd('PO')">Create PO</button>
                 <button mat-stroked-button color="accent" (click)="toggleList()">View Outcome List</button>
             </div>
-            <span style="color:var(--text-secondary);">Admin and faculty can create and edit outcomes.</span>
+            <span style="color:var(--text-secondary);" *ngIf="role === 'admin'">Admin can review and approve faculty submitted COs.</span>
+            <span style="color:var(--text-secondary);" *ngIf="role === 'faculty'">Faculty can create COs (submitted to Admin for approval).</span>
+        </div>
+
+        <!-- Pending Approval Queue for Admin -->
+        <div *ngIf="role === 'admin' && pendingOutcomes.length > 0" class="table-card pending-card" style="margin-bottom: 24px; border-left: 5px solid #f59e0b; background: #fffbeb;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                <h2 style="color: #b45309; margin: 0; display: flex; align-items: center; gap: 8px;">
+                    ⏳ Pending Course Outcome Approvals ({{ pendingOutcomes.length }})
+                </h2>
+                <span style="background: #fef3c7; color: #b45309; font-weight: 700; font-size: 0.82rem; padding: 4px 10px; border-radius: 9999px; border: 1px solid #fde68a;">
+                    Action Required
+                </span>
+            </div>
+            <p style="color: #92400e; font-size: 0.9rem; margin-top: 0; margin-bottom: 16px;">
+                The following Course Outcomes were drafted by faculty members and are waiting for your approval before becoming active in syllabus & assessment tracking.
+            </p>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Course</th>
+                        <th>CO Code</th>
+                        <th>Bloom's Level</th>
+                        <th>Description</th>
+                        <th>Submitted By</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr *ngFor="let outcome of pendingOutcomes">
+                        <td><strong>{{ outcome.course }}</strong></td>
+                        <td><span style="background: #e0e7ff; color: #3730a3; padding: 2px 8px; border-radius: 4px; font-weight: 700;">{{ outcome.code }}</span></td>
+                        <td>{{ outcome.bloomsLevel }}</td>
+                        <td>{{ outcome.description }}</td>
+                        <td>{{ outcome.faculty || 'Faculty Member' }}</td>
+                        <td style="display:flex; gap:8px; flex-wrap:wrap;">
+                            <button mat-raised-button color="primary" (click)="approveOutcome(outcome)" style="background: #10b981; color: white;">
+                                ✓ Accept
+                            </button>
+                            <button mat-stroked-button color="warn" (click)="rejectOutcome(outcome)" style="color: #ef4444; border-color: #ef4444;">
+                                ✕ Reject
+                            </button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
         </div>
 
         <div class="table-card">
@@ -51,7 +96,7 @@
                     </mat-form-field>
                     <mat-form-field appearance="outline">
                         <mat-label>Outcome Code</mat-label>
-                        <input matInput [(ngModel)]="currentOutcome.code" name="code">
+                        <input matInput [(ngModel)]="currentOutcome.code" name="code" placeholder="e.g. CO1">
                     </mat-form-field>
                     <mat-form-field appearance="outline">
                         <mat-label>Bloom's Level</mat-label>
@@ -69,16 +114,16 @@
                 </div>
                 <mat-form-field appearance="outline" class="full-width">
                     <mat-label>Outcome Description</mat-label>
-                    <textarea matInput rows="4" [(ngModel)]="currentOutcome.description" name="description"></textarea>
+                    <textarea matInput rows="4" [(ngModel)]="currentOutcome.description" name="description" placeholder="Describe the outcome knowledge and capabilities..."></textarea>
                 </mat-form-field>
                 <div style="display:flex; gap:12px; flex-wrap:wrap; align-items:center;">
-                    <button mat-raised-button color="primary" (click)="saveOutcome()">{{ editing ? 'Edit Outcome' : 'Save Outcome' }}</button>
+                    <button mat-raised-button color="primary" (click)="saveOutcome()">{{ editing ? 'Update Outcome' : (role === 'admin' ? 'Save & Approve Outcome' : 'Submit for Admin Approval') }}</button>
                     <button mat-stroked-button (click)="resetForm()">Reset Form</button>
                 </div>
             </form>
 
-            <div *ngIf="showList" class="table-card">
-                <h2>Outcome List</h2>
+            <div *ngIf="showList" class="table-card" style="margin-top: 20px;">
+                <h2>Master Outcome List</h2>
                 <table>
                     <thead>
                         <tr>
@@ -94,13 +139,20 @@
                     <tbody>
                         <tr *ngFor="let outcome of outcomes">
                             <td>{{ outcome.type }}</td>
-                            <td>{{ outcome.code }}</td>
+                            <td><strong>{{ outcome.code }}</strong></td>
                             <td>{{ outcome.description }}</td>
                             <td>{{ outcome.bloomsLevel }}</td>
                             <td>{{ outcome.course }}</td>
-                            <td>{{ outcome.status }}</td>
+                            <td>
+                                <span [style.background]="outcome.approvalStatus === 'Approved' ? '#dcfce7' : (outcome.approvalStatus === 'Rejected' ? '#fee2e2' : '#fef3c7')"
+                                      [style.color]="outcome.approvalStatus === 'Approved' ? '#166534' : (outcome.approvalStatus === 'Rejected' ? '#991b1b' : '#92400e')"
+                                      style="padding: 4px 8px; border-radius: 6px; font-weight: 600; font-size: 0.8rem; display: inline-block;">
+                                    {{ outcome.approvalStatus === 'Approved' ? '✓ Approved' : (outcome.approvalStatus === 'Rejected' ? '✕ Rejected' : '⏳ Pending Approval') }}
+                                </span>
+                            </td>
                             <td style="display:flex; gap:8px; flex-wrap:wrap;">
                                 <button mat-button color="primary" (click)="startEdit(outcome)">Edit</button>
+                                <button *ngIf="role === 'admin' && outcome.approvalStatus === 'Pending Approval'" mat-button style="color: #10b981;" (click)="approveOutcome(outcome)">Approve</button>
                                 <button mat-button color="warn" (click)="deleteOutcome(outcome.id)">Delete</button>
                             </td>
                         </tr>
@@ -109,7 +161,7 @@
             </div>
 
             <div *ngIf="role !== 'faculty' && role !== 'admin'" style="color:var(--text-secondary); margin-top:12px;">
-                Faculty access required to add, edit, or delete COs.
+                Faculty or Admin access required to manage COs.
             </div>
         </div>
 

@@ -257,7 +257,9 @@ public class DashboardStatsController {
         }
 
         // 6. Course Outcomes (CO) Attainments
-        List<CourseOutcome> allCOs = coRepository.findAll();
+        List<CourseOutcome> allCOs = coRepository.findAll().stream()
+            .filter(c -> "Approved".equalsIgnoreCase(c.getApprovalStatus()))
+            .toList();
         List<Map<String, Object>> coAttainments = new ArrayList<>();
 
         for (CourseOutcome co : allCOs) {

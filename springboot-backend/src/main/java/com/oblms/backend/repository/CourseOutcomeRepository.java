@@ -10,4 +10,6 @@ import java.util.List;
 public interface CourseOutcomeRepository extends JpaRepository<CourseOutcome, Long> {
     List<CourseOutcome> findByCourse(String course);
     List<CourseOutcome> findByCourseIgnoreCase(String course);
+    List<CourseOutcome> findByApprovalStatusIgnoreCase(String approvalStatus);
+    List<CourseOutcome> findByCourseIgnoreCaseAndApprovalStatusIgnoreCase(String course, String approvalStatus);
 }

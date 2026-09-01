@@ -21,6 +21,14 @@ public class CourseOutcome {
     @Column(length = 2048)
     private String description;
 
+    @Column(name = "approval_status")
+    private String approvalStatus = "Approved";
+
+    @Column(name = "blooms_level")
+    private String bloomsLevel = "Apply";
+
+    private String faculty;
+
     public CourseOutcome() {}
 
     public CourseOutcome(Long id, String course, String co, String description) {
@@ -28,6 +36,7 @@ public class CourseOutcome {
         this.course = course;
         this.co = co;
         this.description = description;
+        this.approvalStatus = "Approved";
     }
 
     public CourseOutcome(Long comid, Long semSubId, String course, String co, String description) {
@@ -36,6 +45,7 @@ public class CourseOutcome {
         this.course = course;
         this.co = co;
         this.description = description;
+        this.approvalStatus = "Approved";
     }
 
     public Long getId() { return id; }
@@ -55,4 +65,13 @@ public class CourseOutcome {
 
     public String getDescription() { return description; }
     public void setDescription(String description) { this.description = description; }
+
+    public String getApprovalStatus() { return approvalStatus != null ? approvalStatus : "Approved"; }
+    public void setApprovalStatus(String approvalStatus) { this.approvalStatus = approvalStatus; }
+
+    public String getBloomsLevel() { return bloomsLevel != null ? bloomsLevel : "Apply"; }
+    public void setBloomsLevel(String bloomsLevel) { this.bloomsLevel = bloomsLevel; }
+
+    public String getFaculty() { return faculty; }
+    public void setFaculty(String faculty) { this.faculty = faculty; }
 }
