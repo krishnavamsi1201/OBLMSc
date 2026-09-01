@@ -302,24 +302,11 @@ app-chatbot .chatbot-card {
     font-size: 0.85rem;
 }
 
-.timetable-grid {
+div.timetable-grid {
     display: grid;
     grid-template-columns: 160px repeat(5, minmax(0, 1fr));
     gap: 12px;
     align-items: stretch;
-}
-
-.timetable-header,
-.timetable-slot {
-    background: rgba(74, 140, 234, 0.08);
-    border-radius: 16px;
-    padding: 16px;
-    color: #153f7f;
-}
-
-.timetable-header {
-    font-weight: 700;
-    background: rgba(74, 140, 234, 0.16);
 }
 
 body, html {
