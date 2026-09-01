@@ -613,6 +613,9 @@ public class DashboardStatsController {
         double avgScore = scoreCount > 0 ? (totalScoreSum / scoreCount) : 88.0;
         double cgpa = Math.min(10.0, Math.round((avgScore / 10.0) * 100.0) / 100.0);
 
+        // 8. Historical Semester-wise Results (Semesters 1 through 6)
+        List<Map<String, Object>> semesterResults = generateSemesterResults(student, dept, studentCourses);
+
         Map<String, Object> stats = new HashMap<>();
         stats.put("enrolledCourses", enrolledCourseCards.size());
         stats.put("attendancePercentage", overallAttPct);
@@ -628,7 +631,7 @@ public class DashboardStatsController {
         studentInfo.put("roll", "CUTM2026" + shortDept + String.format("%03d", Integer.parseInt(student.getId().replaceAll("[^0-9]", ""))));
         studentInfo.put("semester", "Semester 6 • B.Tech " + shortDept);
 
-        // 8. Notifications
+        // 9. Notifications
         List<Map<String, Object>> notifications = List.of(
             Map.of("id", "1", "title", "Upcoming Assessment Notice", "message", "Internal evaluation and CO assessment tests scheduled for " + dept + " courses.", "type", "alert", "date", new Date().toString()),
             Map.of("id", "2", "title", "NBA Accreditation Review", "message", "Verify your course outcome attainments and syllabus coverage for Semester 6.", "type", "announcement", "date", new Date().toString())
@@ -644,8 +647,157 @@ public class DashboardStatsController {
         responseData.put("recentGrades", recentGrades);
         responseData.put("upcomingDeadlines", upcomingDeadlines);
         responseData.put("notifications", notifications);
+        responseData.put("semesterResults", semesterResults);
 
         return ResponseEntity.ok(responseData);
+    }
+
+    private List<Map<String, Object>> generateSemesterResults(User student, String dept, List<Course> currentCourses) {
+        List<Map<String, Object>> list = new ArrayList<>();
+        int seed = Math.abs((student.getName() + student.getId()).hashCode() % 10);
+
+        // Define curriculums for Sem 1 through Sem 5
+        String[][] sem1Courses = {
+            {"MA101", "Engineering Mathematics I", "4"},
+            {"PH102", "Engineering Physics", "4"},
+            {"EE103", "Basic Electrical Engineering", "3"},
+            {"ME104", "Engineering Graphics & CAD", "3"},
+            {"CS105", "C Programming & Problem Solving", "4"},
+            {"EN106", "Technical English & Communication", "2"}
+        };
+
+        String[][] sem2Courses = {
+            {"MA201", "Engineering Mathematics II", "4"},
+            {"CH202", "Engineering Chemistry", "4"},
+            {"CS203", "Data Structures & Algorithms", "4"},
+            {"EC204", "Basic Electronics Engineering", "3"},
+            {"HS205", "Environmental Science & Sustainability", "2"},
+            {"CS206", "Data Structures Laboratory in C", "2"}
+        };
+
+        String[][] sem3Courses = {
+            {"CS301", "Discrete Mathematical Structures", "4"},
+            {"EC302", "Digital Logic & Switching Theory", "4"},
+            {"CS303", "Object Oriented Programming (Java/C++)", "4"},
+            {"CS304", "Computer Organization & Architecture", "4"},
+            {"HS305", "Universal Human Values & Professional Ethics", "3"},
+            {"CS306", "Object Oriented Programming Laboratory", "2"}
+        };
+
+        String[][] sem4Courses = {
+            {"MA401", "Probability, Statistics & Queueing Theory", "4"},
+            {"CS402", "Operating Systems & System Programming", "4"},
+            {"CS403", "Database Management Systems", "4"},
+            {"CS404", "Theory of Computation & Automata", "4"},
+            {"CS405", "Design & Analysis of Algorithms", "4"},
+            {"CS406", "Database Systems & OS Laboratory", "2"}
+        };
+
+        String[][] sem5Courses = {
+            {"CS501", "Computer Networks & Protocol Security", "4"},
+            {"CS502", "Software Engineering & Agile Methodologies", "4"},
+            {"CS503", "Web Technologies & Full-Stack Development", "4"},
+            {"CS504", "Cloud Computing & DevOps Practices", "4"},
+            {"OE505", "Open Elective: AI & Pattern Recognition", "3"},
+            {"CS506", "Full-Stack Development Laboratory", "2"}
+        };
+
+        List<String[][]> pastSems = List.of(sem1Courses, sem2Courses, sem3Courses, sem4Courses, sem5Courses);
+        double[] baseSgpas = { 8.85, 8.92, 9.15, 9.08, 9.35 };
+
+        for (int semNum = 1; semNum <= 5; semNum++) {
+            String[][] coursesData = pastSems.get(semNum - 1);
+            List<Map<String, Object>> subjectList = new ArrayList<>();
+            double totalGradePoints = 0;
+            int totalCredits = 0;
+
+            for (int i = 0; i < coursesData.length; i++) {
+                String code = coursesData[i][0];
+                String title = coursesData[i][1];
+                int credits = Integer.parseInt(coursesData[i][2]);
+                totalCredits += credits;
+
+                int variation = ((seed + semNum * 7 + i * 13) % 12);
+                int score = 82 + variation; // 82 - 94%
+                int cie = 25 + (variation / 3); // 25-29 out of 30
+                int see = score; // SEE %
+
+                String grade = score >= 90 ? "O" : score >= 80 ? "A+" : score >= 70 ? "A" : "B+";
+                int gp = "O".equals(grade) ? 10 : "A+".equals(grade) ? 9 : "A".equals(grade) ? 8 : 7;
+                totalGradePoints += (gp * credits);
+
+                Map<String, Object> subj = new HashMap<>();
+                subj.put("code", code);
+                subj.put("title", title);
+                subj.put("credits", credits);
+                subj.put("cieMarks", cie);
+                subj.put("seeMarks", see);
+                subj.put("totalScore", score);
+                subj.put("grade", grade);
+                subj.put("gradePoint", gp);
+                subj.put("coAttainment", "Level 3 (" + (score - 2) + "% - Achieved)");
+                subjectList.add(subj);
+            }
+
+            double sgpa = Math.round((totalGradePoints / totalCredits) * 100.0) / 100.0;
+
+            Map<String, Object> semMap = new HashMap<>();
+            semMap.put("semesterNumber", semNum);
+            semMap.put("semesterName", "Semester " + semNum);
+            semMap.put("status", "PASSED WITH FIRST CLASS DISTINCTION");
+            semMap.put("sgpa", sgpa);
+            semMap.put("totalCredits", totalCredits);
+            semMap.put("earnedCredits", totalCredits);
+            semMap.put("isCurrent", false);
+            semMap.put("subjects", subjectList);
+            list.add(semMap);
+        }
+
+        // Add Current Semester (Semester 6)
+        List<Map<String, Object>> sem6Subjects = new ArrayList<>();
+        double sem6GP = 0;
+        int sem6Credits = 0;
+
+        for (int i = 0; i < currentCourses.size(); i++) {
+            Course c = currentCourses.get(i);
+            int credits = 4;
+            sem6Credits += credits;
+
+            int variation = ((seed + 42 + i * 17) % 13);
+            int score = 84 + variation;
+            int cie = 26 + (variation / 4);
+            int see = score;
+
+            String grade = score >= 90 ? "O" : score >= 80 ? "A+" : score >= 70 ? "A" : "B+";
+            int gp = "O".equals(grade) ? 10 : "A+".equals(grade) ? 9 : "A".equals(grade) ? 8 : 7;
+            sem6GP += (gp * credits);
+
+            Map<String, Object> subj = new HashMap<>();
+            subj.put("code", c.getCode());
+            subj.put("title", c.getTitle());
+            subj.put("credits", credits);
+            subj.put("cieMarks", cie);
+            subj.put("seeMarks", see);
+            subj.put("totalScore", score);
+            subj.put("grade", grade);
+            subj.put("gradePoint", gp);
+            subj.put("coAttainment", "Level 3 (" + (score - 3) + "% - In Progress / Mid Achieved)");
+            sem6Subjects.add(subj);
+        }
+
+        double sem6Sgpa = sem6Credits > 0 ? (Math.round((sem6GP / sem6Credits) * 100.0) / 100.0) : 9.0;
+        Map<String, Object> sem6Map = new HashMap<>();
+        sem6Map.put("semesterNumber", 6);
+        sem6Map.put("semesterName", "Semester 6 (Current)");
+        sem6Map.put("status", "ONGOING • INTERNAL CIE RECORDED");
+        sem6Map.put("sgpa", sem6Sgpa);
+        sem6Map.put("totalCredits", sem6Credits);
+        sem6Map.put("earnedCredits", sem6Credits);
+        sem6Map.put("isCurrent", true);
+        sem6Map.put("subjects", sem6Subjects);
+        list.add(sem6Map);
+
+        return list;
     }
 
     private boolean isStudentEnrolledInCourse(String enrolledString, String courseCode, String courseTitle) {

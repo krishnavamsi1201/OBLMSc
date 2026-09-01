@@ -58,6 +58,29 @@ interface EnrolledCourseCard {
   attendancePct: number;
 }
 
+export interface SemesterSubject {
+  code: string;
+  title: string;
+  credits: number;
+  cieMarks: number;
+  seeMarks: number;
+  totalScore: number;
+  grade: string;
+  gradePoint: number;
+  coAttainment: string;
+}
+
+export interface SemesterResult {
+  semesterNumber: number;
+  semesterName: string;
+  status: string;
+  sgpa: number;
+  totalCredits: number;
+  earnedCredits: number;
+  isCurrent: boolean;
+  subjects: SemesterSubject[];
+}
+
 @Component({
   selector: 'app-students',
   standalone: true,
@@ -120,6 +143,9 @@ export class Students implements OnInit, OnDestroy {
   collapsedCoGroups: { [key: string]: boolean } = {};
   upcomingDeadlines: UpcomingDeadline[] = [];
   enrolledCourseCards: EnrolledCourseCard[] = [];
+  semesterResults: SemesterResult[] = [];
+  selectedSemester: number = 6;
+  selectedSemesterData: SemesterResult | null = null;
 
   studentNavGroups = [
     {
@@ -333,6 +359,8 @@ export class Students implements OnInit, OnDestroy {
           this.recentGrades = data.recentGrades || [];
           this.upcomingDeadlines = data.upcomingDeadlines || [];
           this.notifications = data.notifications || [];
+          this.semesterResults = data.semesterResults || [];
+          this.selectSemester(this.selectedSemester);
           this.cdr.detectChanges();
         } catch (e) {
           console.error('Error processing student dashboard data:', e);
@@ -342,6 +370,37 @@ export class Students implements OnInit, OnDestroy {
         console.error('Error fetching student dashboard from backend:', err);
       }
     });
+  }
+
+  selectSemester(semNumber: number): void {
+    this.selectedSemester = semNumber;
+    if (this.semesterResults && this.semesterResults.length > 0) {
+      this.selectedSemesterData = this.semesterResults.find(s => s.semesterNumber === semNumber) || this.semesterResults[this.semesterResults.length - 1];
+    } else {
+      this.selectedSemesterData = null;
+    }
+    this.cdr.detectChanges();
+  }
+
+  downloadSemesterMemo(sem: SemesterResult | null): void {
+    if (!sem) return;
+    const headers = ['Course Code', 'Subject Title', 'Credits', 'CIE Marks (30)', 'SEE Marks (100)', 'Total %', 'Grade', 'Grade Points', 'CO Attainment'];
+    const rows = sem.subjects.map(s => 
+      [`"${s.code}"`, `"${s.title}"`, `"${s.credits}"`, `"${s.cieMarks}"`, `"${s.seeMarks}"`, `"${s.totalScore}%"`, `"${s.grade}"`, `"${s.gradePoint}"`, `"${s.coAttainment}"`].join(',')
+    );
+
+    const summaryRow = `\n"Semester: ${sem.semesterName}","Status: ${sem.status}","Total Credits: ${sem.totalCredits}","SGPA: ${sem.sgpa}"`;
+    const csvContent = [`"Student Name: ${this.studentName}"`, `"Roll No: ${this.studentRoll}"`, `"Branch: ${this.studentDept}"\n`, headers.join(','), ...rows, summaryRow].join('\n');
+    
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.setAttribute('href', url);
+    link.setAttribute('download', `${this.studentRoll}_${sem.semesterName.replace(/\s+/g, '_')}_MarksMemo.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    this.toast.success(`${sem.semesterName} Official Grade Memo downloaded!`);
   }
 
   downloadGradeReportCsv(): void {

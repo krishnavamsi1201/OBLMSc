@@ -303,40 +303,128 @@
           </div>
         </div>
 
-        <!-- Recent Assessment Marks & Grades -->
-        <div class="dashboard-card" *ngIf="activeTab === 'marks'">
-          <div class="card-header">
+        <!-- Semester Results & Detailed Grade Cards -->
+        <div class="dashboard-card" *ngIf="activeTab === 'marks'" style="margin-bottom: 24px;">
+          <div class="card-header" style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 12px; margin-bottom: 16px;">
             <div>
-              <h2>📈 Recent Assessment Marks ({{ filteredGrades.length }})</h2>
-              <small class="header-sub">Continuous Internal Evaluations (CIE) and Lab marks</small>
+              <h2 style="display: flex; align-items: center; gap: 8px;">
+                🎓 Academic Results & Semester Grade Records
+              </h2>
+              <small class="header-sub">View previous semester grade memos, SGPA trends, and Continuous Internal Evaluations</small>
             </div>
-            <button mat-button color="primary" (click)="navigate('/performance')">View Performance →</button>
+            <div style="display: flex; gap: 8px;">
+              <button mat-stroked-button color="primary" *ngIf="selectedSemesterData" (click)="downloadSemesterMemo(selectedSemesterData)">
+                📥 Download Sem {{ selectedSemesterData.semesterNumber }} Memo
+              </button>
+              <button mat-button color="primary" (click)="navigate('/performance')">View Analytics →</button>
+            </div>
           </div>
-          <table class="marks-table">
-            <thead>
-              <tr>
-                <th>Assessment</th>
-                <th>Score</th>
-                <th>Performance</th>
-                <th>Grade</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr *ngFor="let g of filteredGrades">
-                <td><strong>{{ g.courseName }}</strong></td>
-                <td>{{ g.score }}%</td>
-                <td>
-                  <div class="table-score-bar">
-                    <div class="table-score-fill" [style.width]="g.score + '%'"></div>
-                  </div>
-                </td>
-                <td><span class="grade-badge" [class.excellent]="g.grade === 'O' || g.grade === 'A+'">{{ g.grade }}</span></td>
-              </tr>
-              <tr *ngIf="filteredGrades.length === 0">
-                <td colspan="4">No assessment scores available yet.</td>
-              </tr>
-            </tbody>
-          </table>
+
+          <!-- Semester Selection Tabs / Pills -->
+          <div class="semester-selector-bar" style="display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 20px; background: rgba(var(--student-primary-rgb), 0.04); padding: 8px; border-radius: 10px; border: 1px solid var(--student-border);">
+            <button *ngFor="let sem of semesterResults" 
+              class="sem-tab-btn" 
+              [class.active-sem]="selectedSemester === sem.semesterNumber" 
+              (click)="selectSemester(sem.semesterNumber)"
+              style="padding: 8px 16px; border-radius: 8px; border: 1px solid transparent; font-weight: 600; font-size: 13px; cursor: pointer; transition: all 0.2s ease; display: flex; align-items: center; gap: 6px;"
+              [style.background]="selectedSemester === sem.semesterNumber ? 'var(--student-primary)' : 'transparent'"
+              [style.color]="selectedSemester === sem.semesterNumber ? '#fff' : 'var(--student-text-primary)'"
+              [style.borderColor]="selectedSemester === sem.semesterNumber ? 'var(--student-primary)' : 'var(--student-border)'">
+              <span>{{ sem.semesterName }}</span>
+              <span *ngIf="sem.isCurrent" style="font-size: 10px; background: #f59e0b; color: #fff; padding: 1px 6px; border-radius: 10px;">CURRENT</span>
+            </button>
+          </div>
+
+          <!-- Selected Semester Overview Banner -->
+          <div *ngIf="selectedSemesterData" class="sem-summary-banner" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px; margin-bottom: 20px; padding: 16px; background: var(--student-card-bg); border: 1px solid var(--student-border); border-radius: 12px;">
+            <div class="sem-stat-item">
+              <span style="font-size: 12px; color: var(--student-text-secondary); text-transform: uppercase; font-weight: 700;">Semester SGPA</span>
+              <div style="font-size: 1.8rem; font-weight: 800; color: var(--student-primary); margin-top: 4px;">
+                {{ selectedSemesterData.sgpa }} <span style="font-size: 13px; color: var(--student-text-secondary); font-weight: 500;">/ 10.0</span>
+              </div>
+            </div>
+            <div class="sem-stat-item">
+              <span style="font-size: 12px; color: var(--student-text-secondary); text-transform: uppercase; font-weight: 700;">Earned Credits</span>
+              <div style="font-size: 1.8rem; font-weight: 800; color: #10b981; margin-top: 4px;">
+                {{ selectedSemesterData.earnedCredits }} <span style="font-size: 13px; color: var(--student-text-secondary); font-weight: 500;">/ {{ selectedSemesterData.totalCredits }} Cr</span>
+              </div>
+            </div>
+            <div class="sem-stat-item" style="grid-column: span 2;">
+              <span style="font-size: 12px; color: var(--student-text-secondary); text-transform: uppercase; font-weight: 700;">Academic Status</span>
+              <div style="margin-top: 6px;">
+                <span style="padding: 4px 10px; border-radius: 6px; font-weight: 700; font-size: 12px;"
+                  [style.background]="selectedSemesterData.isCurrent ? '#fef3c7' : '#dcfce7'"
+                  [style.color]="selectedSemesterData.isCurrent ? '#b45309' : '#15803d'">
+                  ✓ {{ selectedSemesterData.status }}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Subject Marks Details Table for Selected Semester -->
+          <div *ngIf="selectedSemesterData" style="overflow-x: auto;">
+            <table class="marks-table">
+              <thead>
+                <tr>
+                  <th>Code</th>
+                  <th>Course / Subject Name</th>
+                  <th>Credits</th>
+                  <th>CIE (30)</th>
+                  <th>SEE (100)</th>
+                  <th>Score %</th>
+                  <th>Grade</th>
+                  <th>Grade Point</th>
+                  <th>CO Attainment</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let subj of selectedSemesterData.subjects">
+                  <td><span class="course-code-badge">{{ subj.code }}</span></td>
+                  <td><strong>{{ subj.title }}</strong></td>
+                  <td>{{ subj.credits }}</td>
+                  <td>{{ subj.cieMarks }}/30</td>
+                  <td>{{ subj.seeMarks }}/100</td>
+                  <td>
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                      <strong>{{ subj.totalScore }}%</strong>
+                      <div class="table-score-bar" style="width: 60px; height: 6px;">
+                        <div class="table-score-fill" [style.width]="subj.totalScore + '%'" [style.background]="subj.totalScore >= 90 ? '#10b981' : '#3b82f6'"></div>
+                      </div>
+                    </div>
+                  </td>
+                  <td>
+                    <span class="grade-badge" [class.excellent]="subj.grade === 'O' || subj.grade === 'A+'">
+                      {{ subj.grade }}
+                    </span>
+                  </td>
+                  <td><strong style="color: var(--student-primary);">{{ subj.gradePoint }}</strong></td>
+                  <td>
+                    <span class="co-status-pill" style="font-size: 11px; padding: 2px 8px; border-radius: 12px; font-weight: 600; background: #ecfdf5; color: #047857;">
+                      🎯 {{ subj.coAttainment }}
+                    </span>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <!-- CGPA Progression Chart / Milestone History -->
+          <div class="semester-progression-box" style="margin-top: 24px; padding: 16px; background: rgba(var(--student-primary-rgb), 0.02); border: 1px solid var(--student-border); border-radius: 12px;">
+            <h4 style="margin: 0 0 12px 0; color: var(--student-text-primary); font-size: 14px; font-weight: 700;">
+              📈 Semester SGPA History & Performance Trend
+            </h4>
+            <div style="display: flex; gap: 12px; overflow-x: auto; padding-bottom: 4px;">
+              <div *ngFor="let sem of semesterResults" 
+                (click)="selectSemester(sem.semesterNumber)"
+                style="flex: 1; min-width: 100px; padding: 10px; border-radius: 8px; text-align: center; cursor: pointer; border: 1px solid var(--student-border);"
+                [style.background]="selectedSemester === sem.semesterNumber ? 'rgba(var(--student-primary-rgb), 0.1)' : 'var(--student-card-bg)'"
+                [style.borderColor]="selectedSemester === sem.semesterNumber ? 'var(--student-primary)' : 'var(--student-border)'">
+                <div style="font-size: 11px; color: var(--student-text-secondary); font-weight: 600;">Sem {{ sem.semesterNumber }}</div>
+                <div style="font-size: 16px; font-weight: 800; color: var(--student-primary); margin-top: 4px;">{{ sem.sgpa }}</div>
+                <div style="font-size: 10px; color: #10b981; font-weight: 600; margin-top: 2px;">{{ sem.totalCredits }} Cr</div>
+              </div>
+            </div>
+          </div>
         </div>
 
       </div>
