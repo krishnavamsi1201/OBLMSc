@@ -6,8 +6,10 @@ export class RoleGuard implements CanActivate {
   private router = inject(Router);
 
   canActivate(route: ActivatedRouteSnapshot): boolean | UrlTree {
+    const token = localStorage.getItem('authToken');
     const role = localStorage.getItem('userRole')?.toLowerCase() || null;
-    if (!role) {
+    
+    if (!token || !role) {
       return this.router.parseUrl('/login');
     }
 

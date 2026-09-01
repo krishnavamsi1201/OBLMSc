@@ -192,6 +192,9 @@ export class Login implements OnInit {
       next: (response) => {
         this.isLoading = false;
         try {
+          if (response.token) {
+            localStorage.setItem('authToken', response.token);
+          }
           localStorage.setItem('userRole', response.role.toLowerCase());
           localStorage.setItem('userEmail', response.email);
           localStorage.setItem('userName', response.name);

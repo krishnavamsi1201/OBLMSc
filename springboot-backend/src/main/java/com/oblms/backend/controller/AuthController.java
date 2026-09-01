@@ -20,6 +20,9 @@ public class AuthController {
     @Autowired
     private UserRepository userRepository;
 
+    @Autowired
+    private com.oblms.backend.security.JwtTokenProvider jwtTokenProvider;
+
     @PostConstruct
     public void seedUsers() {
         List<User> standardUsers = new ArrayList<>();
@@ -206,7 +209,13 @@ public class AuthController {
             }
         }
 
+        // Generate HMAC-SHA256 signed JWT Bearer Token
+        String token = jwtTokenProvider.generateToken(user);
+
         return ResponseEntity.ok(Map.of(
+            "token", token,
+            "tokenType", "Bearer",
+            "expiresIn", 86400,
             "id", user.getId(),
             "name", user.getName(),
             "email", user.getEmail(),
@@ -214,5 +223,18 @@ public class AuthController {
             "department", user.getDepartment() != null ? user.getDepartment() : "General",
             "assignedCourses", assigned
         ));
+    }
+
+    @GetMapping("/validate")
+    public ResponseEntity<?> validateToken(@RequestHeader(value = "Authorization", required = false) String bearerToken) {
+        if (bearerToken != null && bearerToken.startsWith("Bearer ")) {
+            String token = bearerToken.substring(7);
+            if (jwtTokenProvider.validateToken(token)) {
+                String userId = jwtTokenProvider.getUserIdFromToken(token);
+                String role = jwtTokenProvider.getRoleFromToken(token);
+                return ResponseEntity.ok(Map.of("valid", true, "userId", userId, "role", role));
+            }
+        }
+        return ResponseEntity.status(401).body(Map.of("valid", false, "message", "Invalid or expired token"));
     }
 }
