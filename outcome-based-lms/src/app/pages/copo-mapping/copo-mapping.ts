@@ -113,6 +113,45 @@ export class CopoMapping implements OnInit {
   newCoCode = '';
   newCoDescription = '';
 
+  selectedBranch: string = 'MY_BRANCH';
+
+  branchCoursesMap: { [key: string]: string[] } = {
+    'CSE': ['CS101', 'CS102', 'CS103', 'CS301', 'CS302', 'CS102L', 'RLMCA205', 'CC', 'OOP'],
+    'IT': ['IT305', 'CS303', 'Linux', 'WT', 'CS361', 'Linux Lab', 'Open Lab'],
+    'ECE': ['MES', 'DSLD', 'EC206', 'EE407', 'CS203', 'CS207', 'AMP', 'LD LAB'],
+    'ME': ['ME210', 'KM', 'SMSE', '04ME6512', 'IC', 'AU203', 'EM IV'],
+    'Civil': ['FMHM', 'SMSE', 'HS300', 'CE234', 'EMII', 'ECS']
+  };
+
+  get currentActiveBranch(): string {
+    if (this.selectedBranch === 'MY_BRANCH') {
+      const d = (this.studentDept || '').toLowerCase();
+      if (d.includes('computer') || d.includes('cse')) return 'CSE';
+      if (d.includes('information') || d.includes('it')) return 'IT';
+      if (d.includes('electronic') || d.includes('ece')) return 'ECE';
+      if (d.includes('mechanical') || d.includes('me')) return 'ME';
+      if (d.includes('civil') || d.includes('ce')) return 'Civil';
+      return 'CSE';
+    }
+    return this.selectedBranch;
+  }
+
+  get filteredGroupedMappings() {
+    if (this.selectedBranch === 'ALL') return this.groupedMappings;
+    const allowed = this.branchCoursesMap[this.currentActiveBranch] || [];
+    return this.groupedMappings.filter(g => 
+      allowed.some(ac => g.courseName.toLowerCase().includes(ac.toLowerCase()))
+    );
+  }
+
+  get filteredCourseOutcomes() {
+    if (this.selectedBranch === 'ALL') return this.courseOutcomes;
+    const allowed = this.branchCoursesMap[this.currentActiveBranch] || [];
+    return this.courseOutcomes.filter(co => 
+      allowed.some(ac => (co.course || '').toLowerCase().includes(ac.toLowerCase()))
+    );
+  }
+
   mappingLevels = [
     { value: 1, label: '1 - Low (Slight focus <30%)' },
     { value: 2, label: '2 - Medium (Moderate focus 30-60%)' },

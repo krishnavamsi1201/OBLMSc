@@ -62,8 +62,75 @@
       </div>
     </div>
 
+    <!-- Branch Filter Navigation Bar -->
+    <div class="branch-filter-toolbar" style="display: flex; gap: 8px; flex-wrap: wrap; background: var(--student-card-bg); padding: 12px 16px; border-radius: 12px; border: 1px solid var(--student-border); margin-bottom: 20px;">
+      <button type="button" 
+        class="filter-pill-btn" 
+        [style.background]="selectedBranch === 'MY_BRANCH' ? 'var(--student-primary)' : 'transparent'"
+        [style.color]="selectedBranch === 'MY_BRANCH' ? '#fff' : 'var(--student-text)'"
+        [style.borderColor]="selectedBranch === 'MY_BRANCH' ? 'var(--student-primary)' : 'var(--student-border)'"
+        style="padding: 6px 14px; border-radius: 8px; border: 1px solid; font-weight: 700; font-size: 12.5px; cursor: pointer; transition: all 0.15s ease;"
+        (click)="selectedBranch = 'MY_BRANCH'">
+        🌟 My Branch ({{ currentActiveBranch }})
+      </button>
+      <button type="button" 
+        class="filter-pill-btn" 
+        [style.background]="selectedBranch === 'CSE' ? 'var(--student-primary)' : 'transparent'"
+        [style.color]="selectedBranch === 'CSE' ? '#fff' : 'var(--student-text)'"
+        [style.borderColor]="selectedBranch === 'CSE' ? 'var(--student-primary)' : 'var(--student-border)'"
+        style="padding: 6px 14px; border-radius: 8px; border: 1px solid; font-weight: 700; font-size: 12.5px; cursor: pointer; transition: all 0.15s ease;"
+        (click)="selectedBranch = 'CSE'">
+        💻 CSE
+      </button>
+      <button type="button" 
+        class="filter-pill-btn" 
+        [style.background]="selectedBranch === 'IT' ? 'var(--student-primary)' : 'transparent'"
+        [style.color]="selectedBranch === 'IT' ? '#fff' : 'var(--student-text)'"
+        [style.borderColor]="selectedBranch === 'IT' ? 'var(--student-primary)' : 'var(--student-border)'"
+        style="padding: 6px 14px; border-radius: 8px; border: 1px solid; font-weight: 700; font-size: 12.5px; cursor: pointer; transition: all 0.15s ease;"
+        (click)="selectedBranch = 'IT'">
+        🌐 IT
+      </button>
+      <button type="button" 
+        class="filter-pill-btn" 
+        [style.background]="selectedBranch === 'ECE' ? 'var(--student-primary)' : 'transparent'"
+        [style.color]="selectedBranch === 'ECE' ? '#fff' : 'var(--student-text)'"
+        [style.borderColor]="selectedBranch === 'ECE' ? 'var(--student-primary)' : 'var(--student-border)'"
+        style="padding: 6px 14px; border-radius: 8px; border: 1px solid; font-weight: 700; font-size: 12.5px; cursor: pointer; transition: all 0.15s ease;"
+        (click)="selectedBranch = 'ECE'">
+        📡 ECE
+      </button>
+      <button type="button" 
+        class="filter-pill-btn" 
+        [style.background]="selectedBranch === 'ME' ? 'var(--student-primary)' : 'transparent'"
+        [style.color]="selectedBranch === 'ME' ? '#fff' : 'var(--student-text)'"
+        [style.borderColor]="selectedBranch === 'ME' ? 'var(--student-primary)' : 'var(--student-border)'"
+        style="padding: 6px 14px; border-radius: 8px; border: 1px solid; font-weight: 700; font-size: 12.5px; cursor: pointer; transition: all 0.15s ease;"
+        (click)="selectedBranch = 'ME'">
+        ⚙️ Mechanical
+      </button>
+      <button type="button" 
+        class="filter-pill-btn" 
+        [style.background]="selectedBranch === 'Civil' ? 'var(--student-primary)' : 'transparent'"
+        [style.color]="selectedBranch === 'Civil' ? '#fff' : 'var(--student-text)'"
+        [style.borderColor]="selectedBranch === 'Civil' ? 'var(--student-primary)' : 'var(--student-border)'"
+        style="padding: 6px 14px; border-radius: 8px; border: 1px solid; font-weight: 700; font-size: 12.5px; cursor: pointer; transition: all 0.15s ease;"
+        (click)="selectedBranch = 'Civil'">
+        🏗️ Civil
+      </button>
+      <button type="button" 
+        class="filter-pill-btn" 
+        [style.background]="selectedBranch === 'ALL' ? 'var(--student-primary)' : 'transparent'"
+        [style.color]="selectedBranch === 'ALL' ? '#fff' : 'var(--student-text)'"
+        [style.borderColor]="selectedBranch === 'ALL' ? 'var(--student-primary)' : 'var(--student-border)'"
+        style="padding: 6px 14px; border-radius: 8px; border: 1px solid; font-weight: 700; font-size: 12.5px; cursor: pointer; transition: all 0.15s ease;"
+        (click)="selectedBranch = 'ALL'">
+        🌐 All Branches
+      </button>
+    </div>
+
     <!-- Mappings grouped by Subject -->
-    <div *ngFor="let group of groupedMappings" class="table-card" style="background: var(--student-card-bg); border: 1px solid var(--student-border); padding: 20px; border-radius: 12px; display: flex; flex-direction: column; gap: 14px; box-shadow: 0 1px 12px rgba(0,0,0,.06);">
+    <div *ngFor="let group of filteredGroupedMappings" class="table-card" style="background: var(--student-card-bg); border: 1px solid var(--student-border); padding: 20px; border-radius: 12px; display: flex; flex-direction: column; gap: 14px; box-shadow: 0 1px 12px rgba(0,0,0,.06); margin-bottom: 16px;">
       <h2 style="margin: 0; color: var(--student-primary); border-bottom: 2px solid var(--student-border); padding-bottom: 8px; font-size: 1.15rem; display: flex; justify-content: space-between; align-items: center; cursor: pointer;" (click)="toggleGroup(group.courseName)">
           <span style="display: flex; align-items: center; gap: 8px;">📖 {{ group.courseName }} CO-PO Mappings</span>
           <span style="font-size: 0.82rem; color: var(--student-text-secondary); font-weight: 600;">
@@ -103,7 +170,9 @@
     <div class="table-card" style="background: var(--student-card-bg); border: 1px solid var(--student-border); padding: 20px; border-radius: 12px; display: flex; flex-direction: column; gap: 14px; box-shadow: 0 1px 12px rgba(0,0,0,.06);">
         <div style="display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap;">
             <div>
-                <h2 style="margin: 0; font-size: 1.3rem; color: var(--student-text); font-weight: 800;">View Mapping Matrix</h2>
+                <h2 style="margin: 0; font-size: 1.3rem; color: var(--student-text); font-weight: 800;">
+                  View {{ currentActiveBranch }} Mapping Matrix ({{ filteredCourseOutcomes.length }} COs)
+                </h2>
                 <small style="color: var(--student-text-secondary); display:block; margin-top:2px;">OBE Correlation Scale: 1 = Low (<30%), 2 = Medium (30-60%), 3 = High (>60%)</small>
             </div>
             <div style="display:flex; gap:8px; flex-wrap:wrap;">
@@ -112,7 +181,7 @@
             </div>
         </div>
         <div style="margin-top: 10px;">
-            <ng-container *ngIf="programOutcomes.length && courseOutcomes.length; else noMatrixContent">
+            <ng-container *ngIf="programOutcomes.length && filteredCourseOutcomes.length; else noMatrixContent">
                 <table class="matrix-table" style="width: 100%; border-collapse: collapse;">
                     <thead>
                         <tr style="border-bottom: 2px solid var(--student-border);">
@@ -123,7 +192,7 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <tr *ngFor="let outcome of courseOutcomes" style="border-bottom: 1px solid var(--student-border);">
+                        <tr *ngFor="let outcome of filteredCourseOutcomes" style="border-bottom: 1px solid var(--student-border);">
                             <td style="padding: 12px 10px; color: var(--student-text);">
                                 <span class="obe-badge obe-badge-co" style="background: rgba(var(--student-primary-rgb), 0.08); color: var(--student-primary); padding: 3px 8px; border-radius: 4px; font-weight: 600;">{{ outcome.co }}</span>
                                 <small style="display:block; color:var(--student-text-secondary); margin-top:2px;">{{ getCourseFullName(outcome.course) }}</small>
