@@ -38,6 +38,21 @@ public class CSVSeederService {
     @Autowired
     private UserRepository userRepository;
 
+    @Autowired
+    private AttendanceRecordRepository attendanceRepository;
+
+    @Autowired
+    private StudentMarkRepository marksRepository;
+
+    @Autowired
+    private AssessmentCOMappingRepository assessmentMappingRepository;
+
+    @Autowired
+    private ExamRepository examRepository;
+
+    @Autowired
+    private TimetableSlotRepository timetableRepository;
+
     // Official Dataset Directory on User System
     private static final String DATASET_DIR = "D:\\OBLMSc\\OBLMS Data Set\\Program & Course Data\\";
 
@@ -45,6 +60,9 @@ public class CSVSeederService {
     public void seedFromCSV() {
         seedUsersFromDatasetCSV();
         seedCoursesFromDatasetCSV();
+        seedCourseOutcomesForActiveCourses();
+        seedStudentMarksAndAttendance();
+        seedExamsAndTimetable();
 
         boolean needsSeeding = streamRepository.count() == 0 
                 || programRepository.count() == 0
@@ -83,8 +101,12 @@ public class CSVSeederService {
                         String enrolled = tokens.length >= 7 ? tokens[6].trim().replace("\"", "") : "";
 
                         Optional<User> existing = userRepository.findById(id);
+                        if (existing.isEmpty()) {
+                            existing = userRepository.findByEmail(email);
+                        }
                         if (existing.isPresent()) {
                             User u = existing.get();
+                            u.setId(id);
                             u.setName(name);
                             u.setEmail(email);
                             u.setPassword(password);
@@ -138,6 +160,145 @@ public class CSVSeederService {
             } catch (Exception e) {
                 System.err.println("[ERROR] Failed to seed courses from Course_Master_Active.csv: " + e.getMessage());
             }
+        }
+    }
+
+    public void seedCourseOutcomesForActiveCourses() {
+        List<Course> courses = courseRepository.findAll();
+        if (courses.isEmpty()) return;
+
+        String[] bloomLevels = { "Remember", "Understand", "Apply", "Analyze", "Evaluate" };
+        String[] standardDescs = {
+            "Understand and explain fundamental concepts, theory and terminology of the subject.",
+            "Analyze system architectures, methodologies, and engineering problem requirements.",
+            "Apply modern design principles, frameworks, and practical implementation tools.",
+            "Evaluate performance parameters, algorithmic efficiency, and operational metrics.",
+            "Design, construct, and validate industry-grade project solutions meeting safety standards."
+        };
+
+        List<CourseOutcome> cosToSave = new ArrayList<>();
+        for (Course c : courses) {
+            List<CourseOutcome> existing = coRepository.findByCourseIgnoreCase(c.getCode());
+            if (existing.isEmpty()) {
+                for (int i = 1; i <= 5; i++) {
+                    CourseOutcome co = new CourseOutcome();
+                    co.setCourse(c.getCode());
+                    co.setCo("CO" + i);
+                    co.setBloomsLevel(bloomLevels[i - 1]);
+                    co.setDescription(c.getTitle() + " - " + standardDescs[i - 1]);
+                    co.setApprovalStatus("Approved");
+                    co.setFaculty(c.getFaculty());
+                    cosToSave.add(co);
+                }
+            } else {
+                for (CourseOutcome co : existing) {
+                    if (co.getApprovalStatus() == null) {
+                        co.setApprovalStatus("Approved");
+                    }
+                    if (co.getFaculty() == null) {
+                        co.setFaculty(c.getFaculty());
+                    }
+                }
+                coRepository.saveAll(existing);
+            }
+        }
+        if (!cosToSave.isEmpty()) {
+            coRepository.saveAll(cosToSave);
+            System.out.println("[INFO] Synced " + cosToSave.size() + " active Course Outcomes into MySQL database.");
+        }
+    }
+
+    public void seedStudentMarksAndAttendance() {
+        if (marksRepository.count() > 100 && attendanceRepository.count() > 100) {
+            return;
+        }
+
+        List<User> students = userRepository.findAll().stream()
+            .filter(u -> "STUDENT".equalsIgnoreCase(u.getRole()))
+            .toList();
+
+        if (students.isEmpty()) return;
+
+        List<StudentMark> marksList = new ArrayList<>();
+        List<AttendanceRecord> attendanceList = new ArrayList<>();
+
+        String[] assessmentTypes = { "Mid-Term Examination 1", "Mid-Term Examination 2", "Assignment & Project", "Semester End Examination" };
+        int[] maxMarksList = { 30, 30, 20, 100 };
+
+        for (User stu : students) {
+            String enrolled = stu.getEnrolledCourses();
+            if (enrolled == null || enrolled.trim().isEmpty()) continue;
+
+            String[] codes = enrolled.split(",");
+            for (String code : codes) {
+                String cCode = code.trim();
+                if (cCode.isEmpty()) continue;
+
+                // 1. Seed marks
+                for (int a = 0; a < assessmentTypes.length; a++) {
+                    String assName = cCode + " " + assessmentTypes[a];
+                    double max = maxMarksList[a];
+                    double baseRate = 0.75 + (Math.abs((stu.getName() + cCode).hashCode() % 20)) / 100.0;
+                    double obtained = Math.round(max * baseRate);
+
+                    marksList.add(new StudentMark(null, stu.getName(), assName, obtained, max));
+                }
+
+                // 2. Seed attendance records
+                for (int d = 1; d <= 15; d++) {
+                    String date = "2026-08-" + String.format("%02d", d);
+                    boolean isPresent = ((stu.getName() + cCode + d).hashCode() % 10) != 0; // ~90% attendance
+
+                    attendanceList.add(new AttendanceRecord(null, stu.getName(), cCode, date, isPresent ? "Present" : "Absent"));
+                }
+            }
+        }
+
+        if (marksRepository.count() == 0) {
+            marksRepository.saveAll(marksList);
+            System.out.println("[INFO] Seeded " + marksList.size() + " student marks records in MySQL database.");
+        }
+        if (attendanceRepository.count() == 0) {
+            attendanceRepository.saveAll(attendanceList);
+            System.out.println("[INFO] Seeded " + attendanceList.size() + " student attendance records in MySQL database.");
+        }
+    }
+
+    public void seedExamsAndTimetable() {
+        if (examRepository.count() > 0 && timetableRepository.count() > 0) {
+            return;
+        }
+
+        List<Course> courses = courseRepository.findAll();
+        if (courses.isEmpty()) return;
+
+        List<Exam> exams = new ArrayList<>();
+        List<TimetableSlot> slots = new ArrayList<>();
+
+        String[] days = { "Monday", "Tuesday", "Wednesday", "Thursday", "Friday" };
+        String[] periods = { "09:00 AM - 10:00 AM", "10:15 AM - 11:15 AM", "11:30 AM - 12:30 PM", "02:00 PM - 03:00 PM", "03:15 PM - 04:15 PM" };
+        String[] rooms = { "LH-101", "Lab-2B", "LH-204", "Seminar Hall", "Lab-4A" };
+
+        int examDay = 10;
+        for (Course c : courses) {
+            exams.add(new Exam(null, c.getTitle() + " Assessment", c.getCode(), "2026-10-" + String.format("%02d", (examDay % 20) + 1), "Hall " + ((examDay % 5) + 1), "Scheduled", 50));
+            examDay++;
+        }
+
+        for (int d = 0; d < days.length; d++) {
+            for (int p = 0; p < Math.min(periods.length, courses.size()); p++) {
+                Course c = courses.get((d * 2 + p) % courses.size());
+                slots.add(new TimetableSlot(null, days[d], periods[p], c.getTitle(), rooms[p % rooms.length]));
+            }
+        }
+
+        if (examRepository.count() == 0) {
+            examRepository.saveAll(exams);
+            System.out.println("[INFO] Seeded " + exams.size() + " scheduled exams in MySQL database.");
+        }
+        if (timetableRepository.count() == 0) {
+            timetableRepository.saveAll(slots);
+            System.out.println("[INFO] Seeded " + slots.size() + " timetable slots in MySQL database.");
         }
     }
 
