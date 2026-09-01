@@ -352,11 +352,11 @@ export class Subjects implements OnInit {
 
   get shortDept(): string {
     const d = this.userDept.toLowerCase();
-    if (d.contains('computer') || d.contains('cse')) return 'CSE';
-    if (d.contains('information') || d.contains('it')) return 'IT';
-    if (d.contains('electronic') || d.contains('ece')) return 'ECE';
-    if (d.contains('mechanical') || d.contains('me')) return 'ME';
-    if (d.contains('civil') || d.contains('ce')) return 'Civil';
+    if (d.includes('computer') || d.includes('cse')) return 'CSE';
+    if (d.includes('information') || d.includes('it')) return 'IT';
+    if (d.includes('electronic') || d.includes('ece')) return 'ECE';
+    if (d.includes('mechanical') || d.includes('me')) return 'ME';
+    if (d.includes('civil') || d.includes('ce')) return 'Civil';
     return 'Engineering';
   }
 
@@ -473,19 +473,19 @@ export class Subjects implements OnInit {
     const c = (code || '').toUpperCase();
     const n = (name || '').toLowerCase();
 
-    if (c.startsWith('CS') || n.contains('database') || n.contains('java') || n.contains('data structure') || n.contains('operating') || n.contains('algorithm') || n.contains('compiler') || n.contains('software')) {
+    if (c.startsWith('CS') || n.includes('database') || n.includes('java') || n.includes('data structure') || n.includes('operating') || n.includes('algorithm') || n.includes('compiler') || n.includes('software')) {
       return 'Computer Science & Engineering';
     }
-    if (c.startsWith('IT') || n.contains('web') || n.contains('linux') || n.contains('cloud') || n.contains('information')) {
+    if (c.startsWith('IT') || n.includes('web') || n.includes('linux') || n.includes('cloud') || n.includes('information')) {
       return 'Information Technology';
     }
-    if (c.startsWith('EC') || c.startsWith('EE') || c.equals('MES') || c.equals('DSLD') || n.contains('microprocessor') || n.contains('logic') || n.contains('signal') || n.contains('communication')) {
+    if (c.startsWith('EC') || c.startsWith('EE') || c === 'MES' || c === 'DSLD' || n.includes('microprocessor') || n.includes('logic') || n.includes('signal') || n.includes('communication')) {
       return 'Electronics & Communication Engineering';
     }
-    if (c.startsWith('ME') || c.equals('KM') || c.equals('SMSE') || c.equals('IC') || n.contains('kinematics') || n.contains('thermo') || n.contains('fluid') || n.contains('machine')) {
+    if (c.startsWith('ME') || c === 'KM' || c === 'SMSE' || c === 'IC' || n.includes('kinematics') || n.includes('thermo') || n.includes('fluid') || n.includes('machine')) {
       return 'Mechanical Engineering';
     }
-    if (c.startsWith('CE') || c.equals('FMHM') || c.equals('EMII') || n.contains('civil') || n.contains('structural') || n.contains('survey') || n.contains('concrete')) {
+    if (c.startsWith('CE') || c === 'FMHM' || c === 'EMII' || n.includes('civil') || n.includes('structural') || n.includes('survey') || n.includes('concrete')) {
       return 'Civil Engineering';
     }
     return 'General Engineering';

@@ -172,3 +172,262 @@
   padding: 6px 12px;
   font-size: 12px;
 }
+
+/* ==========================================================================
+   Syllabus Outcomes Tracker Modal Styles
+   ========================================================================== */
+.modal-card.syllabus-modal-card {
+  max-width: 680px;
+  width: 95%;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  padding: 24px;
+  border-radius: 18px;
+  background: #ffffff;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  overflow: hidden;
+}
+
+.modal-header-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.modal-pill-tag {
+  display: inline-block;
+  background: #eff6ff;
+  color: #1d4ed8;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  padding: 3px 8px;
+  border-radius: 6px;
+  margin-bottom: 6px;
+}
+
+.modal-header-row h2 {
+  font-size: 1.35rem;
+  color: #0f172a;
+  margin: 0 0 8px 0;
+  font-weight: 800;
+}
+
+.course-meta-tags {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.meta-tag {
+  font-size: 12px;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 6px;
+  background: #f1f5f9;
+  color: #475569;
+}
+
+.meta-tag.code-tag {
+  background: #e0f2fe;
+  color: #0369a1;
+  font-weight: 700;
+}
+
+.close-icon-btn {
+  background: #f1f5f9;
+  border: 1px solid #cbd5e1;
+  color: #64748b;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.close-icon-btn:hover {
+  background: #e2e8f0;
+  color: #0f172a;
+}
+
+/* Progress Tracker */
+.syllabus-progress-container {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 12px 16px;
+  margin-bottom: 16px;
+}
+
+.progress-labels {
+  display: flex;
+  justify-content: space-between;
+  font-size: 13px;
+  color: #334155;
+  margin-bottom: 8px;
+}
+
+.progress-labels strong {
+  color: #059669;
+}
+
+.progress-track {
+  width: 100%;
+  height: 8px;
+  background: #e2e8f0;
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #10b981 0%, #059669 100%);
+  border-radius: 999px;
+  transition: width 0.3s ease;
+}
+
+/* Checklist Items */
+.syllabus-items-scroll {
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding-right: 4px;
+  max-height: 44vh;
+}
+
+.syllabus-co-card {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  padding: 12px 14px;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.syllabus-co-card:hover {
+  border-color: #cbd5e1;
+  background: #fafafa;
+}
+
+.syllabus-co-card.co-completed {
+  background: #f0fdf4;
+  border-color: #86efac;
+}
+
+.co-checkbox {
+  width: 18px;
+  height: 18px;
+  margin-top: 3px;
+  cursor: pointer;
+  accent-color: #10b981;
+}
+
+.co-content {
+  flex: 1;
+}
+
+.co-title-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 4px;
+}
+
+.co-badge {
+  background: #dbeafe;
+  color: #1d4ed8;
+  font-weight: 800;
+  font-size: 11px;
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+.co-completed .co-badge {
+  background: #dcfce7;
+  color: #15803d;
+}
+
+.co-title-row strong {
+  font-size: 13.5px;
+  color: #1e293b;
+}
+
+.co-completed .co-title-row strong {
+  color: #065f46;
+}
+
+.blooms-level-badge {
+  font-size: 11px;
+  font-weight: 700;
+  padding: 2px 7px;
+  border-radius: 4px;
+  background: #f1f5f9;
+  color: #475569;
+}
+
+.level-remember { background: #f3e8ff; color: #7e22ce; }
+.level-understand { background: #e0f2fe; color: #0369a1; }
+.level-apply { background: #dcfce7; color: #15803d; }
+.level-analyze { background: #fef3c7; color: #b45309; }
+.level-evaluate { background: #fee2e2; color: #b91c1c; }
+
+.co-description {
+  margin: 0;
+  font-size: 12.5px;
+  color: #475569;
+  line-height: 1.4;
+}
+
+/* Modal Bottom Actions */
+.modal-actions-bar {
+  margin-top: 18px;
+  padding-top: 14px;
+  border-top: 1px solid #e2e8f0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.bulk-actions {
+  display: flex;
+  gap: 12px;
+}
+
+.action-link-btn {
+  background: none;
+  border: none;
+  color: #2563eb;
+  font-size: 12.5px;
+  font-weight: 700;
+  cursor: pointer;
+  padding: 4px 6px;
+  border-radius: 4px;
+}
+
+.action-link-btn:hover {
+  background: #eff6ff;
+}
+
+.action-link-btn.danger-link {
+  color: #ef4444;
+}
+
+.action-link-btn.danger-link:hover {
+  background: #fef2f2;
+}

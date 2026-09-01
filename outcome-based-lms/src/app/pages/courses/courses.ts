@@ -119,6 +119,8 @@ export class Courses implements OnInit, OnDestroy {
   saveCourses(): void {}
 
   // Syllabus tracker methods
+  currentCourseCOs: any[] = [];
+
   loadCompletion(): void {
     try {
       const userName = localStorage.getItem('userName') || 'User';
@@ -143,20 +145,83 @@ export class Courses implements OnInit, OnDestroy {
     }
     const userName = localStorage.getItem('userName') || 'User';
     localStorage.setItem(`obslmsSyllabus_${userName}`, JSON.stringify(this.completedUnits));
-  }
-
-  getCourseCOs(): any[] {
-    return [
-      { code: 'CO1', title: 'Recall & Outline Concepts', desc: 'Unit 1: Fundamentals of computational design, terminology, and core frameworks.' },
-      { code: 'CO2', title: 'Demonstrate Schema Mapping', desc: 'Unit 2: Entity relationships, relational model mapping, and schema structure design.' },
-      { code: 'CO3', title: 'Solve Structured Algorithms', desc: 'Unit 3: Implementation of analysis algorithms, sorting, and complexity calculations.' },
-      { code: 'CO4', title: 'Evaluate Infrastructure', desc: 'Unit 4: Platform configurations, load metrics evaluation, and system availability.' },
-      { code: 'CO5', title: 'Optimize Containers', desc: 'Unit 5: Orchestration principles, microservices lifecycle, and container scaling.' }
-    ];
+    this.cdr.detectChanges();
   }
 
   trackSyllabus(course: Course): void {
     this.selectedSyllabusCourse = course;
+    this.loadCourseCOs(course);
+  }
+
+  loadCourseCOs(course: Course): void {
+    const code = course.code;
+    this.currentCourseCOs = this.getFallbackCOs(course);
+
+    this.http.get<any[]>(`http://localhost:8080/api/dataset/cos?course=${code}`).subscribe({
+      next: (data) => {
+        if (Array.isArray(data) && data.length > 0) {
+          this.currentCourseCOs = data.map((item, idx) => ({
+            code: item.co || `CO${idx + 1}`,
+            title: `Unit ${idx + 1}: ${item.bloomsLevel || 'Analyze & Implement'}`,
+            level: item.bloomsLevel || 'Apply',
+            desc: item.description || `Understand and master the core curriculum outcomes for ${course.title}.`
+          }));
+        }
+        this.cdr.detectChanges();
+      },
+      error: () => {
+        this.currentCourseCOs = this.getFallbackCOs(course);
+        this.cdr.detectChanges();
+      }
+    });
+  }
+
+  getFallbackCOs(course: Course): any[] {
+    const title = course.title;
+    return [
+      { code: 'CO1', title: 'Unit 1: Fundamentals & Theoretical Concepts', level: 'Remember', desc: `Outline essential foundations, notations, and core architectures of ${title}.` },
+      { code: 'CO2', title: 'Unit 2: System Analysis & Design Modeling', level: 'Understand', desc: `Analyze requirements, design logical models, and schema abstractions for ${title}.` },
+      { code: 'CO3', title: 'Unit 3: Algorithmic Implementation & Practical Tools', level: 'Apply', desc: `Apply practical frameworks, coding constructs, and execution strategies in ${title}.` },
+      { code: 'CO4', title: 'Unit 4: Quality Assessment & Performance Optimization', level: 'Analyze', desc: `Evaluate performance metrics, computational trade-offs, and integrity constraints.` },
+      { code: 'CO5', title: 'Unit 5: Advanced Industry Applications & Project Engineering', level: 'Evaluate', desc: `Synthesize end-to-end applications, real-world case studies, and modern standards.` }
+    ];
+  }
+
+  getCompletedCOsCount(): number {
+    if (!this.selectedSyllabusCourse) return 0;
+    const code = this.selectedSyllabusCourse.code;
+    return this.currentCourseCOs.filter(co => this.isCompleted(code, co.code)).length;
+  }
+
+  getProgressPercentage(): number {
+    const total = this.currentCourseCOs.length || 5;
+    const completed = this.getCompletedCOsCount();
+    return Math.round((completed / total) * 100);
+  }
+
+  markAllCOsComplete(): void {
+    if (!this.selectedSyllabusCourse) return;
+    const code = this.selectedSyllabusCourse.code;
+    for (const co of this.currentCourseCOs) {
+      const key = `${code}_${co.code}`;
+      if (!this.completedUnits.includes(key)) {
+        this.completedUnits.push(key);
+      }
+    }
+    const userName = localStorage.getItem('userName') || 'User';
+    localStorage.setItem(`obslmsSyllabus_${userName}`, JSON.stringify(this.completedUnits));
+    this.toast.success(`Marked all Course Outcomes as completed for ${this.selectedSyllabusCourse.title}!`);
+    this.cdr.detectChanges();
+  }
+
+  resetCOsProgress(): void {
+    if (!this.selectedSyllabusCourse) return;
+    const code = this.selectedSyllabusCourse.code;
+    this.completedUnits = this.completedUnits.filter(k => !k.startsWith(`${code}_`));
+    const userName = localStorage.getItem('userName') || 'User';
+    localStorage.setItem(`obslmsSyllabus_${userName}`, JSON.stringify(this.completedUnits));
+    this.toast.info(`Reset progress for ${this.selectedSyllabusCourse.title}.`);
+    this.cdr.detectChanges();
   }
 
   openCourseForm(): void {
