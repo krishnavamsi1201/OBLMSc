@@ -1,0 +1,25 @@
+course_code,course_title,department,credits,semester,assigned_faculty
+CS101,Database Management Systems,Computer Science & Engineering,4,Semester 6,Dr. Ramesh Babu
+CS102,Data Structures & Algorithms,Computer Science & Engineering,4,Semester 6,Prof. Sunita Sharma
+CS103,Object-Oriented Programming,Computer Science & Engineering,4,Semester 6,Dr. Amit Patel
+CS301,Computer Networks,Computer Science & Engineering,4,Semester 6,Dr. Priya Nair
+CS302,Software Engineering,Computer Science & Engineering,4,Semester 6,Prof. Rajesh Verma
+IT305,Operating Systems,Information Technology,4,Semester 6,Dr. Ramesh Babu
+CS303,Cloud Computing & DevOps,Information Technology,4,Semester 6,Dr. V. C. Reddy
+Linux,Linux and Shell Programming,Information Technology,4,Semester 6,Prof. Sunita Sharma
+WT,Web Technologies,Information Technology,4,Semester 6,Prof. Rajesh Verma
+CS361,Soft Computing,Information Technology,4,Semester 6,Dr. Kavita Menon
+MES,Microprocessors and Embedded Systems,Electronics & Communication Engineering,4,Semester 6,Dr. Amit Patel
+DSLD,Digital Systems & Logic Designs,Electronics & Communication Engineering,4,Semester 6,Prof. Deepa Reddy
+EC206,Computer Organization,Electronics & Communication Engineering,4,Semester 6,Dr. Priya Nair
+EE407,Digital Signal Processing,Electronics & Communication Engineering,4,Semester 6,Prof. Rajesh Verma
+CS203,Switching Theory and Logic Design,Electronics & Communication Engineering,4,Semester 6,Prof. Snehalata Das
+ME210,Metallurgy & Materials Engineering,Mechanical Engineering,4,Semester 6,Prof. Arun Roy
+KM,Kinematics of Machinery,Mechanical Engineering,4,Semester 6,Dr. Ananya Mishra
+SMSE,Strength of Materials,Mechanical Engineering,4,Semester 6,Dr. Alok Nath
+04ME6512,CAD/CAM,Mechanical Engineering,4,Semester 6,Dr. Manoj Joshi
+IC,I C Engines and Combustion,Mechanical Engineering,4,Semester 6,Dr. Suresh Kumar
+FMHM,Fluid Mechanics & Hydraulic Machinery,Civil Engineering,4,Semester 6,Dr. Suresh Kumar
+HS300,Principles of Management,Civil Engineering,3,Semester 6,Prof. Meenakshi Iyer
+CE234,Analysis of Variance,Civil Engineering,3,Semester 6,Dr. Alok Nath
+EMII,ENGINEERING MATHEMATICS II,Civil Engineering,4,Semester 6,Prof. Snehalata Das

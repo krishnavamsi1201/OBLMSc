@@ -43,7 +43,8 @@ public class CSVSeederService {
 
     @PostConstruct
     public void seedFromCSV() {
-        redistributeStudents();
+        seedUsersFromDatasetCSV();
+        seedCoursesFromDatasetCSV();
 
         boolean needsSeeding = streamRepository.count() == 0 
                 || programRepository.count() == 0
@@ -63,42 +64,80 @@ public class CSVSeederService {
         importAllDataset();
     }
 
-    private void redistributeStudents() {
-        try {
-            List<User> users = userRepository.findAll();
-            List<User> students = new ArrayList<>();
-            for (User u : users) {
-                if ("STUDENT".equalsIgnoreCase(u.getRole())) {
-                    students.add(u);
+    public void seedUsersFromDatasetCSV() {
+        File userCsv = new File(DATASET_DIR + "User_Credentials_Master.csv");
+        if (userCsv.exists()) {
+            try (BufferedReader reader = new BufferedReader(new FileReader(userCsv))) {
+                String line;
+                boolean isHeader = true;
+                while ((line = reader.readLine()) != null) {
+                    if (isHeader) { isHeader = false; continue; }
+                    String[] tokens = line.split(",(?=(?:[^\"]*\"[^\"]*\")*[^\"]*$)", -1);
+                    if (tokens.length >= 6) {
+                        String id = tokens[0].trim();
+                        String name = tokens[1].trim();
+                        String email = tokens[2].trim();
+                        String password = tokens[3].trim();
+                        String role = tokens[4].trim();
+                        String dept = tokens[5].trim();
+                        String enrolled = tokens.length >= 7 ? tokens[6].trim().replace("\"", "") : "";
+
+                        Optional<User> existing = userRepository.findById(id);
+                        if (existing.isPresent()) {
+                            User u = existing.get();
+                            u.setName(name);
+                            u.setEmail(email);
+                            u.setPassword(password);
+                            u.setRole(role);
+                            u.setDepartment(dept);
+                            u.setEnrolledCourses(enrolled);
+                            userRepository.save(u);
+                        } else {
+                            User u = new User(id, name, email, password, role, dept);
+                            u.setEnrolledCourses(enrolled);
+                            userRepository.save(u);
+                        }
+                    }
                 }
+                System.out.println("[INFO] Synced all 47 user accounts directly from User_Credentials_Master.csv into MySQL database.");
+            } catch (Exception e) {
+                System.err.println("[ERROR] Failed to seed users from User_Credentials_Master.csv: " + e.getMessage());
             }
+        }
+    }
 
-            if (students.isEmpty()) {
-                System.out.println("[INFO] No students found in database to redistribute.");
-                return;
+    public void seedCoursesFromDatasetCSV() {
+        File courseCsv = new File(DATASET_DIR + "Course_Master_Active.csv");
+        if (courseCsv.exists()) {
+            try (BufferedReader reader = new BufferedReader(new FileReader(courseCsv))) {
+                String line;
+                boolean isHeader = true;
+                while ((line = reader.readLine()) != null) {
+                    if (isHeader) { isHeader = false; continue; }
+                    String[] tokens = line.split(",");
+                    if (tokens.length >= 6) {
+                        String code = tokens[0].trim();
+                        String title = tokens[1].trim();
+                        String semester = tokens[4].trim();
+                        String faculty = tokens[5].trim();
+
+                        Optional<Course> existing = courseRepository.findByCodeIgnoreCase(code);
+                        if (existing.isPresent()) {
+                            Course c = existing.get();
+                            c.setTitle(title);
+                            c.setFaculty(faculty);
+                            c.setSemester(semester);
+                            courseRepository.save(c);
+                        } else {
+                            Course c = new Course(null, code, title, faculty, semester);
+                            courseRepository.save(c);
+                        }
+                    }
+                }
+                System.out.println("[INFO] Synced active courses from Course_Master_Active.csv into MySQL database.");
+            } catch (Exception e) {
+                System.err.println("[ERROR] Failed to seed courses from Course_Master_Active.csv: " + e.getMessage());
             }
-
-            // Sort students by id to ensure deterministic allocation
-            students.sort(Comparator.comparing(User::getId));
-
-            String[] departments = {
-                "Computer Science & Engineering",
-                "Information Technology",
-                "Electronics & Communication Engineering",
-                "Mechanical Engineering",
-                "Civil Engineering",
-                "Electrical & Electronics Engineering"
-            };
-
-            for (int i = 0; i < students.size(); i++) {
-                User student = students.get(i);
-                String assignedDept = departments[i % departments.length];
-                student.setDepartment(assignedDept);
-                userRepository.save(student);
-            }
-            System.out.println("[INFO] Redistributed " + students.size() + " students equally across " + departments.length + " departments.");
-        } catch (Exception e) {
-            System.err.println("[ERROR] Failed to redistribute students: " + e.getMessage());
         }
     }
 

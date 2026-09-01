@@ -1,0 +1,16 @@
+faculty_id,faculty_name,email,department,allotted_courses,course_count
+FAC001,Dr. Ramesh Babu,ramesh.babu@oblms.edu,Computer Science & Engineering,"CS101,IT305,DSLD,FMHM,KM",5
+FAC002,Prof. Sunita Sharma,sunita.sharma@oblms.edu,Computer Science & Engineering,"CS102,Linux,CS203,SMSE,ME210",5
+FAC003,Dr. Amit Patel,amit.patel@oblms.edu,Electronics & Communication Engineering,"MES,CS103,HPC,AU203,INMCA202",5
+FAC004,Dr. Priya Nair,priya.nair@oblms.edu,Information Technology,"CS301,EC206,HS300,CE234,OOP",5
+FAC005,Prof. Rajesh Verma,rajesh.verma@oblms.edu,Computer Science & Engineering,"CS302,WT,EE407,EMII,04ME6512",5
+FAC006,Dr. Suresh Kumar,suresh.kumar@oblms.edu,Civil Engineering,"FMHM,CS101,CS303,DS,IC",5
+FAC007,Dr. Ananya Mishra,ananya.mishra@oblms.edu,Mechanical Engineering,"KM,CS102,MES,RLMCA108,COMPUTER LAB",5
+FAC008,Prof. Deepa Reddy,deepa.reddy@oblms.edu,Electronics & Communication Engineering,"DSLD,CS103,Linux,SMSE,AMP",5
+FAC009,Dr. V. C. Reddy,vc.reddy@oblms.edu,Information Technology,"CS303,EC206,ME210,WT,HARDWARE LAB",5
+FAC010,Prof. Meenakshi Iyer,meenakshi.iyer@oblms.edu,Computer Science & Engineering,"CS101,EE407,HS300,CS361,EE233",5
+FAC011,Dr. Alok Nath,alok.nath@oblms.edu,Civil Engineering,"SMSE,CS102,IT305,CE234,RLMCA205",5
+FAC012,Prof. Snehalata Das,snehalata.das@oblms.edu,Electronics & Communication Engineering,"CS203,CS103,DSLD,EMII,Linux Lab",5
+FAC013,Dr. Manoj Joshi,manoj.joshi@oblms.edu,Computer Science & Engineering,"CS301,CC,MES,04ME6512,EM IV",5
+FAC014,Dr. Kavita Menon,kavita.menon@oblms.edu,Artificial Intelligence & Data Science,"CS361,WT,DSLD,KM,INMCA102",5
+FAC015,Prof. Arun Roy,arun.roy@oblms.edu,Mechanical Engineering,"ME210,CS101,IT305,EE407,FMHM",5
