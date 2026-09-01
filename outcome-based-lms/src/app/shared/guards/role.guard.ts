@@ -6,23 +6,23 @@ export class RoleGuard implements CanActivate {
   private router = inject(Router);
 
   canActivate(route: ActivatedRouteSnapshot): boolean | UrlTree {
-    const token = localStorage.getItem('authToken');
-    const role = localStorage.getItem('userRole')?.toLowerCase() || null;
+    const role = (localStorage.getItem('userRole') || '').toLowerCase().trim();
     
-    if (!token || !role) {
+    if (!role) {
       return this.router.parseUrl('/login');
     }
 
     const allowedRoles = route.data['roles'] as string[] | undefined;
     if (!allowedRoles || allowedRoles.length === 0) {
-      return this.redirectToRoleHome(role);
-    }
-
-    if (allowedRoles.includes(role)) {
       return true;
     }
 
-    return this.router.parseUrl('/access-denied');
+    const normalizedAllowed = allowedRoles.map(r => r.toLowerCase().trim());
+    if (normalizedAllowed.includes(role)) {
+      return true;
+    }
+
+    return this.redirectToRoleHome(role);
   }
 
   private redirectToRoleHome(role: string): UrlTree {

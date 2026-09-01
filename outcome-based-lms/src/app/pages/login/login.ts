@@ -208,19 +208,17 @@ export class Login implements OnInit {
         this.syncDatabaseToLocalStorage();
         this.toast.success(`Welcome back, ${response.name}! 🎉`);
 
-        switch (response.role.toLowerCase()) {
-          case 'admin':
-            this.router.navigate(['/admin']);
-            break;
-          case 'faculty':
-            this.router.navigate(['/faculty']);
-            break;
-          case 'student':
-            this.router.navigate(['/students']);
-            break;
-          default:
-            this.router.navigate(['/login']);
+        const roleLower = (response.role || '').toLowerCase();
+        let targetRoute = '/login';
+        if (roleLower === 'admin') {
+          targetRoute = '/admin';
+        } else if (roleLower === 'faculty') {
+          targetRoute = '/faculty';
+        } else if (roleLower === 'student') {
+          targetRoute = '/students';
         }
+
+        this.router.navigateByUrl(targetRoute);
       },
       error: (err) => {
         this.isLoading = false;
