@@ -208,131 +208,28 @@ export class Admin implements OnInit, OnDestroy {
   }
 
   private loadAdminData(): void {
-    try {
-      this.counts.faculty = this.safeLoadCount('obslmsFaculty');
-      this.counts.students = this.safeLoadCount('obslmsStudents');
-      this.counts.courses = this.safeLoadCount('obslmsCourses');
-      this.counts.subjects = this.safeLoadCount('obslmsSubjects');
-      this.counts.assessments = this.safeLoadCount('obslmsAssessments');
-      this.counts.programOutcomes = this.safeLoadCount('obslmsProgramOutcomes');
-      this.counts.courseOutcomes = this.safeLoadCount('obslmsCourseOutcomes');
-
-      const copoMappings = this.safeLoadArray('obslmsCoMappings');
-      this.counts.copoMappings = copoMappings.length;
-      this.counts.approvedMappings = copoMappings.filter((m: any) => m.status === 'Approved').length;
-
-      const assessmentMappings = this.safeLoadArray('obslmsAssessmentCOMappings');
-      const pendingAssessments = assessmentMappings.filter((m: any) => m.approvalStatus === 'Pending' || !m.approvalStatus).length;
-      const pendingCopo = copoMappings.filter((m: any) => m.status === 'Pending').length;
-      
-      const courseRequests = this.safeLoadArray('obslmsCourseRequests');
-      const pendingEnrollments = courseRequests.filter((r: any) => r.status === 'Pending').length;
-
-      this.counts.pendingApprovals = pendingAssessments + pendingCopo + pendingEnrollments;
-
-      const grievances = this.safeLoadArray('obslmsGrievances');
-      this.counts.openGrievances = grievances.filter((g: any) => g.status === 'Open' || g.status === 'In Review').length;
-
-      // 1. Calculate OBE Accreditation Metrics
-      const mappingPct = this.counts.courseOutcomes > 0
-        ? Math.min(100, Math.round((this.counts.approvedMappings / this.counts.courseOutcomes) * 100))
-        : 0;
-      const alignPct = this.counts.assessments > 0
-        ? Math.min(100, Math.round((assessmentMappings.length / this.counts.assessments) * 100))
-        : 0;
-      
-      const overallReadiness = (this.counts.courseOutcomes > 0 || this.counts.assessments > 0)
-        ? Math.round((mappingPct * 0.6) + (alignPct * 0.4))
-        : 0;
-
-      let status = 'Setup In Progress';
-      if (this.counts.courseOutcomes === 0 && this.counts.assessments === 0 && this.counts.students === 0) {
-        status = 'Awaiting Curriculum Data';
-      } else if (overallReadiness >= 75) {
-        status = 'Accreditation Ready (NBA Compliant)';
-      } else if (overallReadiness >= 40) {
-        status = 'On Track (Mappings in Progress)';
-      } else if (this.counts.pendingApprovals > 0) {
-        status = 'Action Required: Pending Approvals';
+    this.http.get<any>('http://localhost:8080/api/stats/admin-dashboard').subscribe({
+      next: (data) => {
+        if (data) {
+          if (data.counts) {
+            this.counts = { ...this.counts, ...data.counts };
+          }
+          if (data.departmentStats) {
+            this.departmentStats = data.departmentStats;
+          }
+          if (data.obeHealth) {
+            this.obeHealth = data.obeHealth;
+          }
+          if (data.recentActivities) {
+            this.recentActivities = data.recentActivities;
+          }
+          this.cdr.detectChanges();
+        }
+      },
+      error: (err) => {
+        console.error('Error loading admin dashboard stats:', err);
       }
-
-      this.obeHealth = {
-        curriculumMappingPct: mappingPct,
-        assessmentAlignmentPct: alignPct,
-        accreditationReadinessPct: overallReadiness,
-        complianceStatus: status
-      };
-
-      // 2. Compute Departmental Distribution Dynamically from Real Records
-      const students = this.safeLoadArray('obslmsStudents');
-      const faculty = this.safeLoadArray('obslmsFaculty');
-      const deptMap = new Map<string, { studentCount: number; facultyCount: number }>();
-
-      students.forEach((s: any) => {
-        if (s.department && s.department.trim()) {
-          const dept = s.department.trim();
-          const existing = deptMap.get(dept) || { studentCount: 0, facultyCount: 0 };
-          existing.studentCount++;
-          deptMap.set(dept, existing);
-        }
-      });
-
-      faculty.forEach((f: any) => {
-        if (f.department && f.department.trim()) {
-          const dept = f.department.trim();
-          const existing = deptMap.get(dept) || { studentCount: 0, facultyCount: 0 };
-          existing.facultyCount++;
-          deptMap.set(dept, existing);
-        }
-      });
-
-      if (deptMap.size === 0) {
-        this.departmentStats = [
-          { name: 'Computer Science & Engineering', studentCount: 16, facultyCount: 7 },
-          { name: 'Information Technology', studentCount: 6, facultyCount: 3 },
-          { name: 'Electronics & Communication', studentCount: 4, facultyCount: 2 },
-          { name: 'Mechanical Engineering', studentCount: 2, facultyCount: 2 },
-          { name: 'Civil Engineering', studentCount: 2, facultyCount: 1 }
-        ];
-      } else {
-        this.departmentStats = Array.from(deptMap.entries()).map(([name, counts]) => ({
-          name,
-          studentCount: counts.studentCount,
-          facultyCount: counts.facultyCount
-        })).sort((a, b) => (b.studentCount + b.facultyCount) - (a.studentCount + a.facultyCount));
-      }
-
-      // 3. Live Recent Audit Trail
-      this.recentActivities = [
-        {
-          id: 'ACT-1',
-          icon: '🛡️',
-          title: 'Official Role Authentication Initialized',
-          description: 'Verified 1 Admin, 15 Faculty, and 30 Student accounts in MySQL.',
-          time: 'Just now',
-          type: 'success'
-        },
-        {
-          id: 'ACT-2',
-          icon: '⚖️',
-          title: 'Approval Queue Updated',
-          description: `${this.counts.pendingApprovals} item(s) pending administrative review.`,
-          time: '10 mins ago',
-          type: 'warning'
-        },
-        {
-          id: 'ACT-3',
-          icon: '🎯',
-          title: 'NBA SAR Criterion 3 Attainment Monitored',
-          description: `CO-PO attainment readiness tracked at ${overallReadiness}%.`,
-          time: '1 hour ago',
-          type: 'info'
-        }
-      ];
-
-    } catch (e) {
-      console.error('Error loading admin dashboard data:', e);
-    }
+    });
   }
 
   exportInstitutionAuditCsv(): void {

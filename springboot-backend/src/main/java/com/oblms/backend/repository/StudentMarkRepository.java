@@ -9,4 +9,5 @@ import java.util.List;
 @Repository
 public interface StudentMarkRepository extends JpaRepository<StudentMark, Long> {
     List<StudentMark> findByStudent(String student);
+    List<StudentMark> findByStudentIgnoreCase(String student);
 }

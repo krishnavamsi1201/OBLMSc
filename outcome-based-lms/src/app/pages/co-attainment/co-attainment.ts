@@ -95,26 +95,28 @@ export class CoAttainment implements OnInit {
   }
 
   loadCourses(): void {
-    try {
-      const stored = localStorage.getItem('obslmsCourses');
-      let list = stored ? JSON.parse(stored) : [];
-      if (this.role === 'faculty') {
-        let assigned: string[] = [];
-        try {
-          const storedAssigned = localStorage.getItem('userAssignedCourses');
-          if (storedAssigned) assigned = JSON.parse(storedAssigned);
-        } catch {}
-        if (assigned.length > 0) {
-          list = list.filter((c: any) => 
-            assigned.includes(c.title) || 
-            assigned.includes(c.code)
-          );
+    this.http.get<any[]>('http://localhost:8080/api/courses').subscribe({
+      next: (courses) => {
+        let list = courses || [];
+        if (this.role === 'faculty') {
+          let assigned: string[] = [];
+          try {
+            const storedAssigned = localStorage.getItem('userAssignedCourses');
+            if (storedAssigned) assigned = JSON.parse(storedAssigned);
+          } catch {}
+          if (assigned.length > 0) {
+            list = list.filter((c: any) => 
+              assigned.includes(c.title) || 
+              assigned.includes(c.code)
+            );
+          }
         }
+        this.courses = list;
+      },
+      error: () => {
+        this.courses = [];
       }
-      this.courses = list;
-    } catch {
-      this.courses = [];
-    }
+    });
   }
 
   calculateCOAttainment(): void {
