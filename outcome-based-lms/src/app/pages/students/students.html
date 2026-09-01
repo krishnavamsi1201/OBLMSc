@@ -211,6 +211,9 @@
       <button class="tab-btn" [class.active]="activeTab === 'co'" (click)="activeTab = 'co'">
         🎯 Course Outcomes (CO)
       </button>
+      <button class="tab-btn" [class.active]="activeTab === 'po'" (click)="setPoTab()">
+        🕸️ Program Outcomes (PO)
+      </button>
       <button class="tab-btn" [class.active]="activeTab === 'marks'" (click)="activeTab = 'marks'">
         📈 Marks & Grades
       </button>
@@ -221,6 +224,129 @@
       
       <!-- Left Column: OBE CO Mastery, Timetable & Grades -->
       <div class="details-left">
+
+        <!-- Program Outcomes (PO) Dashboard Card -->
+        <div class="dashboard-card po-dashboard-tab-card" *ngIf="activeTab === 'po'">
+          <div class="card-header" style="margin-bottom: 20px; display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 12px;">
+            <div>
+              <h2 style="display: flex; align-items: center; gap: 8px; margin: 0; color: var(--student-text); font-weight: 800; font-size: 1.35rem;">
+                🕸️ NBA Program Outcomes (PO1 - PO12 & PSOs)
+              </h2>
+              <small class="header-sub" style="color: var(--student-text-secondary); margin-top: 4px; display: block;">12-Axis Graduate Attributes & Specialized Program Outcomes attainment for {{ studentDept }}</small>
+            </div>
+            <div style="display: flex; gap: 8px;">
+              <button mat-stroked-button color="primary" (click)="downloadPoReportCsv()">
+                📥 Export PO CSV
+              </button>
+              <button mat-button color="primary" (click)="navigate('/po-attainment')">Full PO Analytics →</button>
+            </div>
+          </div>
+
+          <!-- Overall PO Summary Banner -->
+          <div class="po-summary-banner" style="background: var(--student-hero-bg); border-radius: 16px; padding: 20px 24px; color: #ffffff; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 20px; box-shadow: 0 8px 24px rgba(var(--student-primary-rgb), 0.2); margin-bottom: 24px;">
+            <div>
+              <span style="font-size: 12px; text-transform: uppercase; font-weight: 700; opacity: 0.9; letter-spacing: 0.5px;">Program Attainment Index</span>
+              <div style="font-size: 2.6rem; font-weight: 900; margin: 6px 0;">{{ overallPoAttainment }}%</div>
+              <p style="margin: 0; font-size: 0.88rem; opacity: 0.95;">
+                Target NBA Threshold: <strong>{{ targetPoPercentage }}%</strong> • Status: <span style="background: #10b981; padding: 2px 8px; border-radius: 4px; font-weight: 700;">✓ NBA Tier-1 Compliant</span>
+              </p>
+            </div>
+            <div style="display: flex; gap: 16px; text-align: center;">
+              <div style="background: rgba(255,255,255,0.15); padding: 10px 16px; border-radius: 10px; backdrop-filter: blur(4px);">
+                <div style="font-size: 1.5rem; font-weight: 800;">14</div>
+                <div style="font-size: 11px; opacity: 0.9;">Total Outcomes</div>
+              </div>
+              <div style="background: rgba(255,255,255,0.15); padding: 10px 16px; border-radius: 10px; backdrop-filter: blur(4px);">
+                <div style="font-size: 1.5rem; font-weight: 800; color: #86efac;">14 / 14</div>
+                <div style="font-size: 11px; opacity: 0.9;">Achieved Targets</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 12-Axis SVG Spider/Radar Chart -->
+          <div class="po-radar-card" style="background: var(--student-card-bg); border: 1px solid var(--student-border); border-radius: 14px; padding: 20px; margin-bottom: 24px; text-align: center;">
+            <h3 style="margin: 0 0 4px 0; color: var(--student-text); font-size: 1.1rem; font-weight: 800;">
+              🕷️ 12-Dimensional NBA Graduate Profile Radar
+            </h3>
+            <p style="margin: 0 0 16px 0; color: var(--student-text-secondary); font-size: 0.85rem;">
+              Polygon articulates your current attainment across all 12 Washington Accord Graduate Attributes vs 75% target threshold.
+            </p>
+
+            <div style="display: flex; justify-content: center; align-items: center; overflow-x: auto; padding: 10px 0;">
+              <svg viewBox="0 0 440 440" style="width: 100%; max-width: 420px; height: auto;">
+                <!-- Concentric Background Rings -->
+                <polygon *ngFor="let ring of radarRings; let idx = index" 
+                  [attr.points]="ring" 
+                  fill="none" 
+                  [attr.stroke]="idx === 2 ? '#ef4444' : 'var(--student-border)'" 
+                  [attr.stroke-dasharray]="idx === 2 ? '4,4' : 'none'"
+                  [attr.stroke-width]="idx === 2 ? '1.5' : '1'" 
+                  opacity="0.8" />
+
+                <!-- Spokes -->
+                <g *ngFor="let spoke of radarSpokes">
+                  <line [attr.x1]="spoke.x1" [attr.y1]="spoke.y1" [attr.x2]="spoke.x2" [attr.y2]="spoke.y2" stroke="var(--student-border)" stroke-width="1" opacity="0.6" />
+                  <text [attr.x]="spoke.labelX" [attr.y]="spoke.labelY" [attr.text-anchor]="spoke.textAnchor" font-size="10.5" font-weight="700" fill="var(--student-text)">
+                    {{ spoke.code }} ({{ spoke.achievement }}%)
+                  </text>
+                </g>
+
+                <!-- Target Threshold Polygon (75%) -->
+                <polygon [attr.points]="targetRadarPoints" fill="rgba(239, 68, 68, 0.06)" stroke="#ef4444" stroke-width="1.5" stroke-dasharray="4,4" />
+
+                <!-- Attained PO Polygon -->
+                <polygon [attr.points]="radarPoints" fill="rgba(37, 99, 235, 0.25)" stroke="#2563eb" stroke-width="2.5" />
+
+                <!-- Attained PO Data Points -->
+                <g *ngFor="let spoke of radarSpokes">
+                  <circle [attr.cx]="spoke.labelX - (spoke.labelX - spoke.x1) * 0.15" [attr.cy]="spoke.labelY - (spoke.labelY - spoke.y1) * 0.15" r="4.5" fill="#2563eb" stroke="#ffffff" stroke-width="1.5" />
+                </g>
+              </svg>
+            </div>
+          </div>
+
+          <!-- PO Cards List -->
+          <div class="po-cards-grid" style="display: grid; gap: 14px; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));">
+            <div *ngFor="let po of filteredPOList" class="po-item-card" style="background: var(--student-card-bg); border: 1px solid var(--student-border); border-radius: 12px; padding: 16px; display: flex; flex-direction: column; justify-content: space-between; gap: 10px; transition: transform 0.15s ease;">
+              <div>
+                <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; margin-bottom: 6px;">
+                  <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+                    <span style="background: #eff6ff; color: #1d4ed8; font-weight: 800; font-size: 12px; padding: 2px 8px; border-radius: 6px; border: 1px solid #bfdbfe;">{{ po.code }}</span>
+                    <strong style="color: var(--student-text); font-size: 13.5px;">{{ po.name }}</strong>
+                  </div>
+                  <span style="background: #dcfce7; color: #15803d; font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 999px;">
+                    ✓ {{ po.status }}
+                  </span>
+                </div>
+                <div style="font-size: 11px; color: #64748b; font-weight: 600; margin-bottom: 6px;">
+                  🎯 Attribute: {{ po.graduateAttribute }}
+                </div>
+                <p style="margin: 0; font-size: 12.5px; color: var(--student-text-secondary); line-height: 1.4;">
+                  {{ po.description }}
+                </p>
+              </div>
+
+              <div>
+                <!-- Contributing Subjects -->
+                <div style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap; margin-bottom: 8px;">
+                  <span style="font-size: 11px; color: var(--student-text-secondary); font-weight: 600;">Mapped Subjects:</span>
+                  <span *ngFor="let c of po.mappedCourses" style="font-size: 10.5px; background: rgba(var(--student-primary-rgb), 0.08); color: var(--student-primary); padding: 1px 6px; border-radius: 4px; font-weight: 700;">
+                    {{ c }}
+                  </span>
+                </div>
+
+                <!-- Progress Bar -->
+                <div style="display: flex; justify-content: space-between; font-size: 12px; margin-bottom: 4px;">
+                  <span style="font-weight: 700; color: var(--student-primary);">Attainment: {{ po.attainedPct }}%</span>
+                  <span style="color: var(--student-text-secondary); font-size: 11px;">Target: {{ po.targetPct }}%</span>
+                </div>
+                <div style="height: 6px; background: #e2e8f0; border-radius: 4px; overflow: hidden;">
+                  <div [style.width]="po.attainedPct + '%'" style="height: 100%; background: #10b981; border-radius: 4px;"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
 
         <!-- OBE Course Outcomes (CO) Mastery Progress Card -->
         <div class="dashboard-card obe-card" *ngIf="activeTab === 'co'">

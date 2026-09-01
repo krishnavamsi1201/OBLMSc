@@ -81,6 +81,17 @@ export interface SemesterResult {
   subjects: SemesterSubject[];
 }
 
+export interface POAttainmentItem {
+  code: string;
+  name: string;
+  description: string;
+  targetPct: number;
+  attainedPct: number;
+  status: 'Achieved' | 'In Progress' | 'Action Needed';
+  mappedCourses: string[];
+  graduateAttribute: string;
+}
+
 @Component({
   selector: 'app-students',
   standalone: true,
@@ -133,7 +144,34 @@ export class Students implements OnInit, OnDestroy {
 
   searchQuery = '';
   deadlineTab: 'all' | 'mid' | 'assignment' | 'project' = 'all';
-  activeTab: 'overview' | 'co' | 'marks' = 'overview';
+  activeTab: 'overview' | 'co' | 'po' | 'marks' = 'overview';
+
+  // Program Outcomes (PO) Attainment State
+  poList: POAttainmentItem[] = [
+    { code: 'PO1', name: 'Engineering Knowledge', graduateAttribute: 'Computational Foundations', targetPct: 75, attainedPct: 88, status: 'Achieved', mappedCourses: ['CS101', 'CS102', 'CS103'], description: 'Apply mathematics, computing principles, and engineering fundamentals to solve complex software problems.' },
+    { code: 'PO2', name: 'Problem Analysis', graduateAttribute: 'Algorithmic Diagnostics', targetPct: 75, attainedPct: 85, status: 'Achieved', mappedCourses: ['CS102', 'CS103', 'CS301'], description: 'Identify, formulate, and analyze complex software engineering problems reaching substantiated conclusions.' },
+    { code: 'PO3', name: 'Design & Development of Solutions', graduateAttribute: 'System Architecture', targetPct: 75, attainedPct: 82, status: 'Achieved', mappedCourses: ['CS101', 'CS103', 'CS302'], description: 'Design modular software components, database schemas, and microservice workflows meeting specified functional needs.' },
+    { code: 'PO4', name: 'Conduct Investigations of Complex Problems', graduateAttribute: 'Empirical Research', targetPct: 75, attainedPct: 79, status: 'Achieved', mappedCourses: ['CS101', 'CS202', 'CS301'], description: 'Use research-based knowledge and benchmarking methods including experimental performance analysis and data validation.' },
+    { code: 'PO5', name: 'Modern Tool Usage', graduateAttribute: 'DevOps & Tool Mastery', targetPct: 75, attainedPct: 92, status: 'Achieved', mappedCourses: ['CS101', 'CS302', 'CS303'], description: 'Select and apply modern IDEs, Git versioning, Docker containerization, and automated CI/CD pipeline platforms.' },
+    { code: 'PO6', name: 'The Engineer and Society', graduateAttribute: 'Societal Relevance', targetPct: 75, attainedPct: 78, status: 'Achieved', mappedCourses: ['CS201', 'CS302'], description: 'Apply reasoning informed by contextual knowledge to assess safety, security, privacy, and societal responsibilities.' },
+    { code: 'PO7', name: 'Environment and Sustainability', graduateAttribute: 'Green Computing', targetPct: 75, attainedPct: 76, status: 'Achieved', mappedCourses: ['CS302', 'CS303'], description: 'Understand the impact of enterprise software architectures and cloud computing on energy consumption and sustainability.' },
+    { code: 'PO8', name: 'Ethics & Integrity', graduateAttribute: 'Professional Conduct', targetPct: 75, attainedPct: 88, status: 'Achieved', mappedCourses: ['CS201', 'CS302'], description: 'Apply ethical standards, open-source licensing compliance, data integrity norms, and professional software ethics.' },
+    { code: 'PO9', name: 'Individual and Team Work', graduateAttribute: 'Agile Collaboration', targetPct: 75, attainedPct: 90, status: 'Achieved', mappedCourses: ['CS102', 'CS302'], description: 'Function effectively as an individual, and as a member or leader in multidisciplinary agile scrum teams.' },
+    { code: 'PO10', name: 'Communication Skills', graduateAttribute: 'Technical Articulation', targetPct: 75, attainedPct: 86, status: 'Achieved', mappedCourses: ['CS302', 'CS101'], description: 'Communicate technical designs effectively, draft OpenAPI specifications, and deliver clear system presentations.' },
+    { code: 'PO11', name: 'Project Management & Finance', graduateAttribute: 'Estimation & Delivery', targetPct: 75, attainedPct: 75, status: 'Achieved', mappedCourses: ['CS302', 'CS303'], description: 'Demonstrate knowledge of sprint planning, cost estimation, risk mitigation, and engineering management principles.' },
+    { code: 'PO12', name: 'Life-long Learning', graduateAttribute: 'Continuous Evolution', targetPct: 75, attainedPct: 87, status: 'Achieved', mappedCourses: ['CS103', 'CS301', 'CS303'], description: 'Demonstrate independent research capability and adaptability to rapid technological advancements in software industry.' },
+    { code: 'PSO1', name: 'Enterprise Backend Systems', graduateAttribute: 'Program Specific Outcome 1', targetPct: 75, attainedPct: 89, status: 'Achieved', mappedCourses: ['CS101', 'CS102', 'CS301'], description: 'Design and deploy resilient, high-throughput Spring Boot REST microservices with relational MySQL caching.' },
+    { code: 'PSO2', name: 'Data Engineering & AI Pipelines', graduateAttribute: 'Program Specific Outcome 2', targetPct: 75, attainedPct: 84, status: 'Achieved', mappedCourses: ['CS103', 'CS202', 'CS303'], description: 'Build end-to-end data processing pipelines and apply intelligent learning algorithms to automate operational workflows.' }
+  ];
+
+  overallPoAttainment: number = 84;
+  targetPoPercentage: number = 75;
+  poFilterStatus: string = '';
+  hoveredPoItem: POAttainmentItem | null = null;
+  radarPoints: string = '';
+  targetRadarPoints: string = '';
+  radarSpokes: Array<{ code: string; x1: number; y1: number; x2: number; y2: number; labelX: number; labelY: number; achievement: number; textAnchor: string }> = [];
+  radarRings: string[] = [];
 
   todaySchedule: TimetableEntry[] = [];
   notifications: any[] = [];
@@ -282,6 +320,21 @@ export class Students implements OnInit, OnDestroy {
       d.title.toLowerCase().includes(q) || 
       d.course.toLowerCase().includes(q) || 
       d.type.toLowerCase().includes(q)
+    );
+  }
+
+  get filteredPOList(): POAttainmentItem[] {
+    let list = this.poList;
+    if (this.poFilterStatus) {
+      list = list.filter(p => p.status === this.poFilterStatus);
+    }
+    if (!this.searchQuery.trim()) return list;
+    const q = this.searchQuery.toLowerCase();
+    return list.filter(p => 
+      p.code.toLowerCase().includes(q) || 
+      p.name.toLowerCase().includes(q) || 
+      p.graduateAttribute.toLowerCase().includes(q) ||
+      p.description.toLowerCase().includes(q)
     );
   }
 
@@ -442,6 +495,97 @@ export class Students implements OnInit, OnDestroy {
     link.click();
     document.body.removeChild(link);
     this.toast.success('Course Outcomes Mastery Report downloaded.');
+  }
+
+  setPoTab(): void {
+    this.activeTab = 'po';
+    this.computeRadarChart();
+    this.cdr.detectChanges();
+  }
+
+  computeRadarChart(): void {
+    const list = this.poList.slice(0, 12);
+    const count = 12;
+    const cx = 220;
+    const cy = 220;
+    const maxRadius = 140;
+
+    // Concentric rings at 25%, 50%, 75% (Target), 100%
+    const levels = [0.25, 0.50, 0.75, 1.0];
+    this.radarRings = levels.map(level => {
+      const pts: string[] = [];
+      for (let i = 0; i < count; i++) {
+        const angle = (i * 2 * Math.PI / count) - (Math.PI / 2);
+        const x = cx + maxRadius * level * Math.cos(angle);
+        const y = cy + maxRadius * level * Math.sin(angle);
+        pts.push(`${x.toFixed(1)},${y.toFixed(1)}`);
+      }
+      return pts.join(' ');
+    });
+
+    // Target threshold (75%)
+    const targetPts: string[] = [];
+    for (let i = 0; i < count; i++) {
+      const angle = (i * 2 * Math.PI / count) - (Math.PI / 2);
+      const x = cx + maxRadius * 0.75 * Math.cos(angle);
+      const y = cy + maxRadius * 0.75 * Math.sin(angle);
+      targetPts.push(`${x.toFixed(1)},${y.toFixed(1)}`);
+    }
+    this.targetRadarPoints = targetPts.join(' ');
+
+    // Actual attainment polygon & spokes
+    const attainedPts: string[] = [];
+    this.radarSpokes = [];
+
+    for (let i = 0; i < count; i++) {
+      const po = list[i];
+      const angle = (i * 2 * Math.PI / count) - (Math.PI / 2);
+      const spokeX = cx + maxRadius * Math.cos(angle);
+      const spokeY = cy + maxRadius * Math.sin(angle);
+
+      const val = Math.max(10, Math.min(100, po.attainedPct || 75));
+      const ptX = cx + maxRadius * (val / 100) * Math.cos(angle);
+      const ptY = cy + maxRadius * (val / 100) * Math.sin(angle);
+      attainedPts.push(`${ptX.toFixed(1)},${ptY.toFixed(1)}`);
+
+      const labelX = cx + (maxRadius + 22) * Math.cos(angle);
+      const labelY = cy + (maxRadius + 18) * Math.sin(angle);
+      const textAnchor = Math.abs(Math.cos(angle)) < 0.1 ? 'middle' : (Math.cos(angle) > 0 ? 'start' : 'end');
+
+      this.radarSpokes.push({
+        code: po.code,
+        x1: cx,
+        y1: cy,
+        x2: spokeX,
+        y2: spokeY,
+        labelX,
+        labelY,
+        achievement: val,
+        textAnchor
+      });
+    }
+
+    this.radarPoints = attainedPts.join(' ');
+  }
+
+  downloadPoReportCsv(): void {
+    const headers = ['PO Code', 'Program Outcome Name', 'NBA Graduate Attribute', 'Attained %', 'Target %', 'Status', 'Mapped Contributing Courses'];
+    const rows = this.poList.map(p => 
+      [`"${p.code}"`, `"${p.name}"`, `"${p.graduateAttribute}"`, `"${p.attainedPct}%"`, `"${p.targetPct}%"`, `"${p.status}"`, `"${p.mappedCourses.join(', ')}"`].join(',')
+    );
+
+    const summaryRow = `\n"Overall PO Attainment: ${this.overallPoAttainment}%","Target Benchmark: ${this.targetPoPercentage}%","NBA Status: Compliant"`;
+    const csvContent = [`"Student: ${this.studentName}"`, `"Department: ${this.studentDept}"`, `"Academic Year: 2026-2027"\n`, headers.join(','), ...rows, summaryRow].join('\n');
+    
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.setAttribute('href', url);
+    link.setAttribute('download', `${this.studentRoll}_Program_Outcomes_Attainment.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    this.toast.success('Program Outcomes (PO) Attainment Transcript downloaded!');
   }
 
   loadAppearance(): void {
