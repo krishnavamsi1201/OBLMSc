@@ -45,6 +45,7 @@ public class SecurityConfig {
                 .requestMatchers("/api/auth/**").permitAll()
                 .requestMatchers("/api/stats/**").permitAll()
                 .requestMatchers("/api/dataset/**").permitAll()
+                .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/swagger-ui.html", "/swagger-resources/**", "/webjars/**").permitAll()
                 .requestMatchers("/error").permitAll()
                 .anyRequest().permitAll() // Allow authenticated requests with JWT filter validating tokens
             )
