@@ -90,8 +90,7 @@ public class AuthController {
 
 
 
-        // 3. 30 Dedicated Student Accounts (STU001 to STU030)
-        String standardCourses = "INMCA202,DS,MES,IT305,OOP";
+        // 3. 30 Dedicated Student Accounts (STU001 to STU030) across 5 Engineering Departments
         String[] studentNames = {
             "Raj Kumar", "Aarav Mehta", "Aditya Sen", "Krishnavamsi", "Ananya Iyer",
             "Rahul Dravid", "Sneha Reddy", "Vikram Malhotra", "Divya Joshi", "Siddharth Roy",
@@ -102,18 +101,38 @@ public class AuthController {
         };
 
         String[] departments = {
-            "Computer Science & Engineering", "Information Technology", "Electronics & Communication",
-            "Mechanical Engineering", "Civil Engineering"
+            "Computer Science & Engineering",
+            "Information Technology",
+            "Electronics & Communication Engineering",
+            "Mechanical Engineering",
+            "Civil Engineering"
+        };
+
+        String[] deptCourses = {
+            "CS101,CS102,CS103,CS301,CS302",    // CSE (Database, DSA, OOP, Networks, Software Engg)
+            "IT305,CS303,Linux,WT,CS361",        // IT (OS, Cloud, Linux, Web Tech, Soft Computing)
+            "MES,DSLD,EC206,EE407,CS203",        // ECE (Microprocessors, Logic Design, Comp Org, DSP, Switching Theory)
+            "ME210,KM,SMSE,04ME6512,IC",         // Mechanical (Metallurgy, Kinematics, Strength of Materials, CAD/CAM, IC Engines)
+            "FMHM,SMSE,HS300,CE234,EMII"         // Civil (Fluid Mechanics, Structural Engg, Management, Variance, Engg Maths)
         };
 
         for (int i = 1; i <= 30; i++) {
             String stuId = String.format("STU%03d", i);
             String name = studentNames[i - 1];
-            String email = (i == 4) ? "krishnavamsi1201@gmail.com" : (name.toLowerCase().replace(" ", ".") + "@oblms.edu");
-            String dept = departments[(i - 1) % departments.length];
+            
+            // Assign department and department-specific courses
+            int deptIndex = (i - 1) % departments.length;
+            // Explicitly ensure Krishnavamsi (STU004) is in Computer Science & Engineering
+            if (i == 4) {
+                deptIndex = 0; // Computer Science & Engineering
+            }
+
+            String dept = departments[deptIndex];
+            String courses = deptCourses[deptIndex];
+            String email = (i == 4) ? "krishnavamsi@gmail.com" : (name.toLowerCase().replace(" ", ".") + "@oblms.edu");
 
             User stu = new User(stuId, name, email, "password", "Student", dept);
-            stu.setEnrolledCourses(standardCourses);
+            stu.setEnrolledCourses(courses);
             standardUsers.add(stu);
         }
 
@@ -136,7 +155,7 @@ public class AuthController {
                 userRepository.save(u);
             }
         }
-        System.out.println("[INFO] Verified and seeded 1 Admin, 15 Faculty, and 30 Student accounts in MySQL database (Total users: " + userRepository.count() + ").");
+        System.out.println("[INFO] Verified and seeded 1 Admin, 15 Faculty, and 30 Student accounts across 5 branches in MySQL database (Total users: " + userRepository.count() + ").");
     }
 
     @PostMapping("/login")
@@ -154,6 +173,10 @@ public class AuthController {
         Optional<User> userOpt = userRepository.findByEmailIgnoreCase(identifier);
         if (userOpt.isEmpty()) {
             userOpt = userRepository.findByIdIgnoreCase(identifier);
+        }
+        // Alias check for Krishnavamsi
+        if (userOpt.isEmpty() && (identifier.equalsIgnoreCase("krishnavamsi1201@gmail.com") || identifier.equalsIgnoreCase("krishnavamsi@gmail.com") || identifier.equalsIgnoreCase("krishnavamsi"))) {
+            userOpt = userRepository.findById("STU004");
         }
 
         if (userOpt.isEmpty()) {
