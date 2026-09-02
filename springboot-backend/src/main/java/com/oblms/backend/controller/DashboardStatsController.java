@@ -506,28 +506,23 @@ public class DashboardStatsController {
         if (studentOpt.isEmpty()) {
             studentOpt = userRepository.findByEmailIgnoreCase(studentId);
         }
-        if (studentOpt.isEmpty() && (studentId.toLowerCase().startsWith("krishnavamsi") || studentId.toLowerCase().contains("krishna"))) {
-            studentOpt = userRepository.findById("STU004");
-        }
         if (studentOpt.isEmpty()) {
             studentOpt = userRepository.findAll().stream()
-                .filter(u -> u.getName().equalsIgnoreCase(studentId))
+                .filter(u -> u.getName() != null && u.getName().equalsIgnoreCase(studentId))
                 .findFirst();
         }
-        if (studentOpt.isEmpty()) {
-            // Default to STU004
-            studentOpt = userRepository.findById("STU004");
-        }
-        if (studentOpt.isEmpty()) {
-            return ResponseEntity.status(404).body(Map.of("message", "Student not found: " + studentId));
+        User student;
+        if (studentOpt.isPresent()) {
+            student = studentOpt.get();
+        } else {
+            // Create runtime transient user matching the studentId requested
+            student = new User(studentId, studentId, studentId, "password", "STUDENT", "Mechanical Engineering");
         }
 
-        User student = studentOpt.get();
-        String studentName = student.getName();
-        String dept = student.getDepartment() != null ? student.getDepartment() : "Computer Science & Engineering";
-        if ("STU004".equalsIgnoreCase(student.getId()) || studentName.toLowerCase().contains("krishnavamsi") || studentName.toLowerCase().contains("jahnavi")) {
-            dept = student.getDepartment() != null && !student.getDepartment().isEmpty() ? student.getDepartment() : "Computer Science & Engineering";
-        }
+        String studentName = student.getName() != null ? student.getName() : studentId;
+        String dept = (student.getDepartment() != null && !student.getDepartment().trim().isEmpty()) 
+            ? student.getDepartment() 
+            : "Computer Science & Engineering";
 
         String dLow = dept.toLowerCase();
         String defaultBranchCourses;

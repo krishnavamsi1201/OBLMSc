@@ -192,14 +192,37 @@ export class Login implements OnInit {
       next: (response) => {
         this.isLoading = false;
         try {
+          // Clear any stale user session data
+          localStorage.removeItem('userRole');
+          localStorage.removeItem('userEmail');
+          localStorage.removeItem('userName');
+          localStorage.removeItem('userId');
+          localStorage.removeItem('userDept');
+          localStorage.removeItem('userDepartment');
+          localStorage.removeItem('userRoll');
+          localStorage.removeItem('userAssignedCourses');
+
           if (response.token) {
             localStorage.setItem('authToken', response.token);
           }
-          localStorage.setItem('userRole', response.role.toLowerCase());
-          localStorage.setItem('userEmail', response.email);
-          localStorage.setItem('userName', response.name);
-          localStorage.setItem('userId', response.id);
-          localStorage.setItem('userDept', response.department || 'Computer Science');
+          localStorage.setItem('userRole', (response.role || '').toLowerCase());
+          localStorage.setItem('userEmail', response.email || '');
+          localStorage.setItem('userName', response.name || '');
+          localStorage.setItem('userId', response.id || '');
+          
+          const dept = response.department || 'Computer Science & Engineering';
+          localStorage.setItem('userDept', dept);
+          localStorage.setItem('userDepartment', dept);
+
+          const dLow = dept.toLowerCase();
+          const shortDept = (dLow.includes('mechanical') || dLow.includes('me')) ? 'ME' :
+                            (dLow.includes('civil') || dLow.includes('ce')) ? 'Civil' :
+                            (dLow.includes('electronic') || dLow.includes('ece')) ? 'ECE' :
+                            (dLow.includes('information') || dLow.includes('it')) ? 'IT' : 'CSE';
+          const numStr = (response.id || '').replace(/[^0-9]/g, '');
+          const rollNum = 'CUTM2026' + shortDept + (numStr.length > 0 ? numStr.padStart(3, '0').slice(-3) : '042');
+          localStorage.setItem('userRoll', rollNum);
+
           if (response.assignedCourses) {
             localStorage.setItem('userAssignedCourses', JSON.stringify(response.assignedCourses));
           }
