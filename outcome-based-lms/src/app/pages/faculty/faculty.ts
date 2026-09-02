@@ -230,12 +230,14 @@ export class Faculty implements OnInit {
           this.error = 'Error processing dashboard data: ' + e.message;
         } finally {
           this.isLoading = false;
+          this.cdr.detectChanges();
         }
       },
       error: (err) => {
         console.error('Error loading real-time dashboard data:', err);
         this.error = 'Failed to load real-time analytics. Please try again.';
         this.isLoading = false;
+        this.cdr.detectChanges();
       }
     });
   }

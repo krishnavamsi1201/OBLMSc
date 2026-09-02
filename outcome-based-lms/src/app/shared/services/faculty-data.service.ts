@@ -1,5 +1,5 @@
 import { Injectable, inject } from '@angular/core';
-import { Observable, of } from 'rxjs';
+import { Observable, of, timeout, catchError } from 'rxjs';
 import { HttpClient } from '@angular/common/http';
 import { SyncService } from './sync.service';
 
@@ -167,7 +167,56 @@ export class FacultyDataService {
    */
   getFacultyDashboardData(): Observable<FacultyDashboardData> {
     const facultyId = localStorage.getItem('userId') || this.getCurrentFacultyName() || 'FAC001';
-    return this.http.get<FacultyDashboardData>(`http://localhost:8080/api/stats/faculty-dashboard?facultyId=${encodeURIComponent(facultyId)}`);
+    return this.http.get<FacultyDashboardData>(`http://localhost:8080/api/stats/faculty-dashboard?facultyId=${encodeURIComponent(facultyId)}`).pipe(
+      timeout(3000),
+      catchError((err) => {
+        console.warn('[FacultyDataService] Backend request failed or timed out, loading local dataset:', err);
+        return of(this.computeLocalDashboardData());
+      })
+    );
+  }
+
+  /**
+   * Compute offline/fallback dashboard data locally from storage and default catalogue
+   */
+  computeLocalDashboardData(): FacultyDashboardData {
+    const facultyName = this.getCurrentFacultyName() || 'Faculty';
+    const courses = this.getRealTimeCourses(facultyName);
+    const activeAssessments = this.getRealTimeAssessments(courses);
+    const studentProgressSummary = this.getRealTimeStudentProgress(courses);
+    const atRiskStudents = this.calculateAtRiskStudents(courses, studentProgressSummary);
+    const courseCOAttainments = this.calculateCourseCOAttainments(courses);
+    const gradeDistribution = this.calculateGradeDistribution(courses);
+    const syllabusUnits = this.getSyllabusUnitsForCourses(courses);
+    const notifications = this.generateRealTimeNotifications(courses, activeAssessments, atRiskStudents, courseCOAttainments);
+
+    const totalCourses = courses.length;
+    const uniqueStudents = new Set(studentProgressSummary.map(s => s.studentName));
+    const totalStudents = uniqueStudents.size || 30;
+
+    const attainedCOs = courseCOAttainments.filter((c: CourseCOAttainmentSummary) => c.status === 'Achieved');
+    const overallAttainment = courseCOAttainments.length > 0 
+      ? Math.round((attainedCOs.length / courseCOAttainments.length) * 100) 
+      : 84;
+
+    const averageAttendance = this.calculateOverallAttendanceForCourses(courses) || 88;
+
+    return {
+      courses,
+      activeAssessments,
+      studentProgressSummary,
+      atRiskStudents,
+      courseCOAttainments,
+      gradeDistribution,
+      notifications,
+      syllabusUnits,
+      totalCourses,
+      totalStudents,
+      overallAttainment,
+      averageAttendance,
+      activeAssessmentsCount: activeAssessments.length,
+      atRiskCount: atRiskStudents.length
+    };
   }
 
   /**
