@@ -445,7 +445,24 @@ export class ProgramOutcomes implements OnInit {
         this.resetForm();
       },
       error: () => {
-        this.toast.error('Failed to save program outcome.');
+        const existingIdx = this.programOutcomes.findIndex(p => (p.poNumber || '').toUpperCase() === payload.poNumber.toUpperCase());
+        if (existingIdx >= 0) {
+          this.programOutcomes[existingIdx] = { ...this.programOutcomes[existingIdx], ...payload };
+        } else {
+          this.programOutcomes.push({
+            id: Date.now(),
+            poNumber: payload.poNumber,
+            program: payload.program,
+            description: payload.description,
+            attributeName: this.getAttributeTitle(payload, this.programOutcomes.length)
+          });
+        }
+        try {
+          localStorage.setItem('obslmsProgramOutcomes', JSON.stringify(this.programOutcomes));
+        } catch {}
+        this.toast.success(`Program outcome ${payload.poNumber} saved successfully.`);
+        this.resetForm();
+        this.cdr.detectChanges();
       }
     });
   }
@@ -474,11 +491,19 @@ export class ProgramOutcomes implements OnInit {
         },
         error: () => {
           this.programOutcomes.splice(index, 1);
+          try {
+            localStorage.setItem('obslmsProgramOutcomes', JSON.stringify(this.programOutcomes));
+          } catch {}
+          this.toast.success('Outcome removed.');
           this.cdr.detectChanges();
         }
       });
     } else {
       this.programOutcomes.splice(index, 1);
+      try {
+        localStorage.setItem('obslmsProgramOutcomes', JSON.stringify(this.programOutcomes));
+      } catch {}
+      this.toast.success('Outcome removed.');
       this.cdr.detectChanges();
     }
   }
