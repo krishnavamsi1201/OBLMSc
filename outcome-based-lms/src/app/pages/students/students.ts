@@ -444,66 +444,19 @@ export class Students implements OnInit, OnDestroy {
             }
           } catch {}
 
-          if (this.enrolledCourseCards.length === 0) {
-            const d = (this.studentDept || '').toLowerCase();
-            if (d.includes('mechanical') || d.includes('me')) {
-              this.enrolledCourseCards = [
-                { code: 'ME210', title: 'Kinematics & Dynamics of Machinery', faculty: 'Prof. Arun Roy', credits: 4, currentAvg: 85, attendancePct: 88 },
-                { code: 'KM', title: 'Kinematics of Machinery', faculty: 'Dr. Manoj Joshi', credits: 4, currentAvg: 87, attendancePct: 90 },
-                { code: 'IC', title: 'Internal Combustion Engines & Thermodynamics', faculty: 'Dr. Suresh Kumar', credits: 4, currentAvg: 86, attendancePct: 89 },
-                { code: '04ME6512', title: 'Fluid Power Systems & Heat Transfer', faculty: 'Dr. Manoj Joshi', credits: 4, currentAvg: 84, attendancePct: 86 },
-                { code: 'AU203', title: 'Automobile Engineering', faculty: 'Faculty Board', credits: 4, currentAvg: 88, attendancePct: 92 }
-              ];
-            } else if (d.includes('civil') || d.includes('ce')) {
-              this.enrolledCourseCards = [
-                { code: 'FMHM', title: 'Fluid Mechanics and Hydraulic Machinery', faculty: 'Dr. Alok Nath', credits: 4, currentAvg: 86, attendancePct: 90 },
-                { code: 'SMSE', title: 'Solid Mechanics & Structural Engineering', faculty: 'Dr. Alok Nath', credits: 4, currentAvg: 84, attendancePct: 88 },
-                { code: 'CE234', title: 'Surveying & Geomatics', faculty: 'Faculty Board', credits: 4, currentAvg: 89, attendancePct: 92 },
-                { code: 'EMII', title: 'Engineering Mathematics II', faculty: 'Prof. Rajesh Verma', credits: 4, currentAvg: 85, attendancePct: 87 },
-                { code: 'HS300', title: 'Environmental Science & Engineering', faculty: 'Dr. Priya Nair', credits: 4, currentAvg: 90, attendancePct: 94 }
-              ];
-            } else if (d.includes('electronic') || d.includes('ece')) {
-              this.enrolledCourseCards = [
-                { code: 'MES', title: 'Microprocessors and Embedded Systems', faculty: 'Prof. K. Sharma', credits: 4, currentAvg: 88, attendancePct: 91 },
-                { code: 'DSLD', title: 'Digital System and Logic Design', faculty: 'Dr. Sunita Rao', credits: 4, currentAvg: 85, attendancePct: 88 },
-                { code: 'EC206', title: 'Signals and Systems', faculty: 'Faculty Board', credits: 4, currentAvg: 84, attendancePct: 86 },
-                { code: 'EE407', title: 'Control Systems Engineering', faculty: 'Prof. M. Venkatesh', credits: 4, currentAvg: 87, attendancePct: 89 },
-                { code: 'CS203', title: 'VLSI Design Architecture', faculty: 'Dr. Ramesh Babu', credits: 4, currentAvg: 89, attendancePct: 92 }
-              ];
-            } else if (d.includes('information') || d.includes('it')) {
-              this.enrolledCourseCards = [
-                { code: 'IT305', title: 'Operating Systems & Systems Programming', faculty: 'Dr. Amit Patel', credits: 4, currentAvg: 88, attendancePct: 91 },
-                { code: 'CS303', title: 'Design and Analysis of Algorithms', faculty: 'Dr. Amit Patel', credits: 4, currentAvg: 85, attendancePct: 89 },
-                { code: 'WT', title: 'Web Technologies & Full-Stack Development', faculty: 'Prof. Sunita Sharma', credits: 4, currentAvg: 87, attendancePct: 90 },
-                { code: 'Linux', title: 'Linux Administration & Shell Scripting', faculty: 'Faculty Board', credits: 4, currentAvg: 89, attendancePct: 93 },
-                { code: 'CS361', title: 'Cloud Computing & Virtualization', faculty: 'Dr. Priya Nair', credits: 4, currentAvg: 86, attendancePct: 88 }
-              ];
-            } else {
-              this.enrolledCourseCards = [
-                { code: 'CS101', title: 'Database Management Systems', faculty: 'Dr. Ramesh Babu', credits: 4, currentAvg: 88, attendancePct: 92 },
-                { code: 'CS102', title: 'Data Structures & Algorithms', faculty: 'Prof. Ananya Rao', credits: 4, currentAvg: 84, attendancePct: 88 },
-                { code: 'CS103', title: 'Object-Oriented Programming', faculty: 'Dr. K. Srinivas', credits: 4, currentAvg: 86, attendancePct: 90 },
-                { code: 'CS301', title: 'Computer Networks', faculty: 'Prof. M. Venkatesh', credits: 4, currentAvg: 82, attendancePct: 85 },
-                { code: 'CS302', title: 'Software Engineering', faculty: 'Dr. P. Suresh', credits: 4, currentAvg: 90, attendancePct: 94 }
-              ];
-            }
-          }
-
-          if (data.stats && data.stats.enrolledCourses > 0) {
+          if (data.stats) {
             this.stats = { ...data.stats };
             this.stats.enrolledCourses = this.enrolledCourseCards.length;
-            if (this.stats.attendancePercentage < 60) this.stats.attendancePercentage = 88;
-            if (this.stats.cgpa < 5.0) this.stats.cgpa = 8.65;
-            this.showAttendanceWarning = this.stats.attendancePercentage < 75;
+            this.showAttendanceWarning = this.stats.enrolledCourses > 0 && this.stats.attendancePercentage > 0 && this.stats.attendancePercentage < 75;
             this.attendanceWarningMsg = this.showAttendanceWarning
               ? `Warning: Your overall attendance is ${this.stats.attendancePercentage}%, which is below the mandatory 75% threshold.`
               : '';
           } else {
             this.stats = {
               enrolledCourses: this.enrolledCourseCards.length,
-              attendancePercentage: 88,
-              cgpa: 8.65,
-              pendingExams: 2
+              attendancePercentage: 0,
+              cgpa: 0.0,
+              pendingExams: 0
             };
             this.showAttendanceWarning = false;
             this.attendanceWarningMsg = '';

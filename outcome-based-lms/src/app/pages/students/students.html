@@ -67,8 +67,8 @@
       </div>
     </div>
     
-    <!-- Attendance Warning Alert -->
-    <div *ngIf="stats.attendancePercentage < 75" class="attendance-warning-alert">
+    <!-- Attendance Warning Alert (Only if enrolled and attendance actually recorded below 75) -->
+    <div *ngIf="stats.enrolledCourses > 0 && stats.attendancePercentage > 0 && stats.attendancePercentage < 75" class="attendance-warning-alert">
       ⚠️ <strong>Attendance Warning:</strong> Your current attendance is <strong>{{ stats.attendancePercentage }}%</strong>, which is below the required 75% threshold. You may be barred from appearing in semester examinations if this is not improved.
     </div>
 
@@ -198,9 +198,17 @@
           </div>
         </div>
       </div>
-      <p *ngIf="filteredCourses.length === 0" class="empty-filter-notice">
-        No courses matching "{{ searchQuery }}".
-      </p>
+
+      <div *ngIf="filteredCourses.length === 0" class="empty-filter-notice" style="text-align: center; padding: 2rem 1rem; background: var(--surface); border: 1px dashed var(--border); border-radius: 12px; margin: 1rem 0;">
+        <span style="font-size: 2.2rem; display: block; margin-bottom: 0.5rem;">📚</span>
+        <h3 style="margin-bottom: 0.35rem; font-size: 1.05rem; color: var(--text-primary);">No Enrolled Courses Found</h3>
+        <p style="color: var(--text-secondary); margin-bottom: 1rem; font-size: 0.88rem;">
+          You have not enrolled in any subjects for this semester yet.
+        </p>
+        <button class="hero-btn primary-btn" (click)="navigate('/subjects')" style="margin: 0 auto; display: inline-flex;">
+          📖 Go to Curriculum Subjects →
+        </button>
+      </div>
     </div>
 
     <!-- Dashboard Tabs -->

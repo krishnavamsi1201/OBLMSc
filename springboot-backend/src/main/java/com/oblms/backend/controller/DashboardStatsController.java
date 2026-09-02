@@ -306,8 +306,6 @@ public class DashboardStatsController {
                         double totalObt = studentCourseMarks.stream().mapToDouble(StudentMark::getObtained).sum();
                         double totalMax = studentCourseMarks.stream().mapToDouble(StudentMark::getMaxMarks).sum();
                         coAttainment = totalMax > 0 ? (int) Math.round((totalObt / totalMax) * 100) : 0;
-                    } else {
-                        coAttainment = u.getName().equalsIgnoreCase("Krishnavamsi") ? 88 : 0;
                     }
 
                     List<AttendanceRecord> studentCourseAtt = new ArrayList<>();
@@ -316,7 +314,7 @@ public class DashboardStatsController {
                             studentCourseAtt.add(ar);
                         }
                     }
-                    int attendancePct = 100;
+                    int attendancePct = 0;
                     if (!studentCourseAtt.isEmpty()) {
                         long present = studentCourseAtt.stream().filter(a -> "Present".equalsIgnoreCase(a.getStatus())).count();
                         attendancePct = (int) Math.round(((double) present / studentCourseAtt.size()) * 100);
@@ -336,12 +334,13 @@ public class DashboardStatsController {
             }
         }
 
-        // 5. At-Risk Students
+        // 5. At-Risk Students (only if attendance or attainment recorded and low)
         List<Map<String, Object>> atRiskStudents = new ArrayList<>();
         for (Map<String, Object> prog : progressSummary) {
             int coAtt = (int) prog.get("coAttainment");
             int att = (int) prog.get("attendance");
-            if (coAtt < 60 || att < 75) {
+            int totalAssessments = (int) prog.get("totalAssessments");
+            if ((totalAssessments > 0 && coAtt < 60) || (att > 0 && att < 75)) {
                 Map<String, Object> ar = new HashMap<>();
                 ar.put("studentName", prog.get("studentName"));
                 ar.put("courseName", prog.get("courseName"));
@@ -350,8 +349,8 @@ public class DashboardStatsController {
                 ar.put("severity", coAtt < 40 ? "High" : "Medium");
 
                 List<String> reasons = new ArrayList<>();
-                if (coAtt < 60) reasons.add("Low score in direct evaluations");
-                if (att < 75) reasons.add("Attendance below threshold");
+                if (coAtt < 60 && totalAssessments > 0) reasons.add("Low score in direct evaluations");
+                if (att < 75 && att > 0) reasons.add("Attendance below threshold");
                 ar.put("riskReasons", reasons);
                 atRiskStudents.add(ar);
             }
@@ -397,15 +396,12 @@ public class DashboardStatsController {
                     }
                 }
 
-                double avgAtt = 0;
-                if (!percentages.isEmpty()) {
-                    avgAtt = percentages.stream().mapToDouble(Double::doubleValue).average().orElse(0.0);
-                } else {
-                    avgAtt = co.getCo().equals("CO1") ? 78 : co.getCo().equals("CO2") ? 82 : co.getCo().equals("CO3") ? 68 : 74;
-                }
+                double avgAtt = !percentages.isEmpty() 
+                    ? percentages.stream().mapToDouble(Double::doubleValue).average().orElse(0.0) 
+                    : 0.0;
 
                 int finalAtt = (int) Math.round(avgAtt);
-                String status = finalAtt >= 75 ? "Achieved" : finalAtt >= 50 ? "Partial" : "Not Achieved";
+                String status = finalAtt >= 75 ? "Achieved" : finalAtt > 0 ? "In Progress" : "Not Evaluated";
 
                 Map<String, Object> coMap = new HashMap<>();
                 coMap.put("coCode", co.getCo());
@@ -414,7 +410,7 @@ public class DashboardStatsController {
                 coMap.put("attainmentPercentage", finalAtt);
                 coMap.put("targetPercentage", 75);
                 coMap.put("status", status);
-                coMap.put("assessedStudentsCount", students.size() > 0 ? students.size() : 4);
+                coMap.put("assessedStudentsCount", students.size());
                 coAttainments.add(coMap);
             }
         }
@@ -429,8 +425,9 @@ public class DashboardStatsController {
 
         double avgAttendance = progressSummary.stream()
             .mapToDouble(p -> (int) p.get("attendance"))
+            .filter(v -> v > 0)
             .average()
-            .orElse(100.0);
+            .orElse(0.0);
 
         double avgCO = progressSummary.stream()
             .mapToDouble(p -> (int) p.get("coAttainment"))
@@ -525,30 +522,13 @@ public class DashboardStatsController {
             : "Computer Science & Engineering";
 
         String dLow = dept.toLowerCase();
-        String defaultBranchCourses;
-        if (dLow.contains("mechanical") || dLow.contains("me")) {
-            defaultBranchCourses = "ME210,KM,IC,04ME6512,AU203";
-        } else if (dLow.contains("civil") || dLow.contains("ce")) {
-            defaultBranchCourses = "FMHM,SMSE,CE234,EMII,HS300";
-        } else if (dLow.contains("electronic") || dLow.contains("ece")) {
-            defaultBranchCourses = "MES,DSLD,EC206,EE407,CS203";
-        } else if (dLow.contains("information") || dLow.contains("it")) {
-            defaultBranchCourses = "IT305,CS303,Linux,WT,CS361";
-        } else {
-            defaultBranchCourses = "CS101,CS102,CS103,CS301,CS302";
-        }
-
-        String enrolledStr = (student.getEnrolledCourses() != null && !student.getEnrolledCourses().trim().isEmpty()) 
-            ? student.getEnrolledCourses() 
-            : defaultBranchCourses;
-
-        List<String> enrolledCodes = Arrays.stream(enrolledStr.split(","))
-            .map(String::trim)
-            .filter(s -> !s.isEmpty())
-            .toList();
-
-        if (enrolledCodes.isEmpty()) {
-            enrolledCodes = Arrays.stream(defaultBranchCourses.split(",")).map(String::trim).toList();
+        String enrolledStr = student.getEnrolledCourses();
+        List<String> enrolledCodes = new ArrayList<>();
+        if (enrolledStr != null && !enrolledStr.trim().isEmpty()) {
+            enrolledCodes = Arrays.stream(enrolledStr.split(","))
+                .map(String::trim)
+                .filter(s -> !s.isEmpty())
+                .toList();
         }
 
         // 2. Fetch all faculty members to map who teaches each course
@@ -591,43 +571,42 @@ public class DashboardStatsController {
                 }
             }
 
-            // Calculate attendance percentage for this student in this course
+            // Calculate attendance percentage strictly from database
             long totalStudentClasses = allAttendance.stream()
                 .filter(a -> a.getCourseCode() != null && 
                              (a.getCourseCode().equalsIgnoreCase(code) || a.getCourseCode().toLowerCase().contains(code.toLowerCase()) || (course.getTitle() != null && a.getCourseCode().toLowerCase().contains(course.getTitle().toLowerCase()))) &&
-                             a.getStudent() != null && (a.getStudent().equalsIgnoreCase(studentName) || a.getStudent().equalsIgnoreCase(student.getId()) || a.getStudent().equalsIgnoreCase("student") || (studentName.toLowerCase().contains("krishnavamsi") && a.getStudent().toLowerCase().contains("krishnavamsi"))))
+                             a.getStudent() != null && (a.getStudent().equalsIgnoreCase(studentName) || a.getStudent().equalsIgnoreCase(student.getId())))
                 .count();
 
             long presentClasses = allAttendance.stream()
                 .filter(a -> a.getCourseCode() != null && 
                              (a.getCourseCode().equalsIgnoreCase(code) || a.getCourseCode().toLowerCase().contains(code.toLowerCase()) || (course.getTitle() != null && a.getCourseCode().toLowerCase().contains(course.getTitle().toLowerCase()))) &&
-                             a.getStudent() != null && (a.getStudent().equalsIgnoreCase(studentName) || a.getStudent().equalsIgnoreCase(student.getId()) || a.getStudent().equalsIgnoreCase("student") || (studentName.toLowerCase().contains("krishnavamsi") && a.getStudent().toLowerCase().contains("krishnavamsi"))) &&
+                             a.getStudent() != null && (a.getStudent().equalsIgnoreCase(studentName) || a.getStudent().equalsIgnoreCase(student.getId())) &&
                              "Present".equalsIgnoreCase(a.getStatus()))
                 .count();
 
-            int attPct;
+            int attPct = totalStudentClasses > 0 ? (int) Math.round(((double) presentClasses / totalStudentClasses) * 100) : 0;
             if (totalStudentClasses > 0) {
-                attPct = (int) Math.round(((double) presentClasses / totalStudentClasses) * 100);
-            } else {
-                attPct = 87; // Realistic attendance matching overall academic rate
+                totalAttendanceSum += attPct;
+                attendanceCourseCount++;
             }
-            totalAttendanceSum += attPct;
-            attendanceCourseCount++;
 
-            // Calculate student marks in this course
+            // Calculate student marks strictly from database
             List<Double> courseScores = new ArrayList<>();
             for (StudentMark m : allMarks) {
                 if (m.getStudent() != null && (m.getStudent().equalsIgnoreCase(studentName) || m.getStudent().equalsIgnoreCase(student.getId()))) {
-                    if (m.getAssessment() != null && m.getAssessment().toLowerCase().contains(code.toLowerCase())) {
+                    if (m.getAssessment() != null && (m.getAssessment().toLowerCase().contains(code.toLowerCase()) || (course.getTitle() != null && m.getAssessment().toLowerCase().contains(course.getTitle().toLowerCase())))) {
                         if (m.getMaxMarks() > 0) {
                             courseScores.add((m.getObtained() / m.getMaxMarks()) * 100);
                         }
                     }
                 }
             }
-            int currentAvg = !courseScores.isEmpty() ? (int) Math.round(courseScores.stream().mapToDouble(Double::doubleValue).average().orElse(85.0)) : 88;
-            totalScoreSum += currentAvg;
-            scoreCount++;
+            int currentAvg = !courseScores.isEmpty() ? (int) Math.round(courseScores.stream().mapToDouble(Double::doubleValue).average().orElse(0.0)) : 0;
+            if (!courseScores.isEmpty()) {
+                totalScoreSum += currentAvg;
+                scoreCount++;
+            }
 
             Map<String, Object> card = new HashMap<>();
             card.put("code", course.getCode());
@@ -639,7 +618,7 @@ public class DashboardStatsController {
             enrolledCourseCards.add(card);
         }
 
-        // 3. Course Outcomes (CO) Progress for student's enrolled courses
+        // 3. Course Outcomes (CO) Progress strictly for student's enrolled courses
         List<CourseOutcome> allCOs = coRepository.findAll().stream()
             .filter(c -> "Approved".equalsIgnoreCase(c.getApprovalStatus()))
             .toList();
@@ -653,37 +632,40 @@ public class DashboardStatsController {
                 .toList();
 
             List<Map<String, Object>> groupList = new ArrayList<>();
-            int coIndex = 1;
-            if (courseCOs.isEmpty()) {
-                // Generate standard 5 COs for curriculum display
-                for (int j = 1; j <= 5; j++) {
-                    Map<String, Object> coItem = new HashMap<>();
-                    coItem.put("coCode", "CO" + j);
-                    coItem.put("courseName", c.getTitle());
-                    coItem.put("bloomsLevel", j == 1 ? "Remember" : j == 2 ? "Understand" : j == 3 ? "Apply" : j == 4 ? "Analyze" : "Evaluate");
-                    int att = (j == 1 || j == 2) ? 84 : (j == 3 ? 78 : (j == 4 ? 72 : 80));
-                    coItem.put("attainmentPct", att);
-                    coItem.put("targetPct", 75);
-                    coItem.put("status", att >= 75 ? "Achieved" : "In Progress");
-                    coProgressList.add(coItem);
-                    groupList.add(coItem);
+            for (CourseOutcome co : courseCOs) {
+                // Find actual marks for this CO if mapped
+                List<Double> coPercentages = new ArrayList<>();
+                for (AssessmentCOMapping mapping : assessmentMappingRepository.findAll()) {
+                    if (mapping.getCourseId() != null && mapping.getCourseId().equalsIgnoreCase(c.getCode())) {
+                        List<String> mappedCOs = Arrays.asList(mapping.getCourseOutcomes().split(","));
+                        if (mappedCOs.contains(co.getCo())) {
+                            for (StudentMark m : allMarks) {
+                                if (m.getStudent() != null && (m.getStudent().equalsIgnoreCase(studentName) || m.getStudent().equalsIgnoreCase(student.getId()))) {
+                                    if (m.getAssessment() != null && m.getAssessment().equalsIgnoreCase(mapping.getAssessmentName()) && m.getMaxMarks() > 0) {
+                                        coPercentages.add((m.getObtained() / m.getMaxMarks()) * 100);
+                                    }
+                                }
+                            }
+                        }
+                    }
                 }
-            } else {
-                for (CourseOutcome co : courseCOs) {
-                    Map<String, Object> coItem = new HashMap<>();
-                    coItem.put("coCode", co.getCo());
-                    coItem.put("courseName", c.getTitle());
-                    coItem.put("bloomsLevel", co.getBloomsLevel() != null ? co.getBloomsLevel() : "Apply");
-                    int att = (coIndex % 2 == 0) ? 82 : 76;
-                    coItem.put("attainmentPct", att);
-                    coItem.put("targetPct", 75);
-                    coItem.put("status", att >= 75 ? "Achieved" : "In Progress");
-                    coProgressList.add(coItem);
-                    groupList.add(coItem);
-                    coIndex++;
-                }
+
+                int att = !coPercentages.isEmpty() ? (int) Math.round(coPercentages.stream().mapToDouble(Double::doubleValue).average().orElse(0.0)) : 0;
+                String status = att >= 75 ? "Achieved" : (att > 0 ? "In Progress" : "Not Evaluated");
+
+                Map<String, Object> coItem = new HashMap<>();
+                coItem.put("coCode", co.getCo());
+                coItem.put("courseName", c.getTitle());
+                coItem.put("bloomsLevel", co.getBloomsLevel() != null ? co.getBloomsLevel() : "Apply");
+                coItem.put("attainmentPct", att);
+                coItem.put("targetPct", 75);
+                coItem.put("status", status);
+                coProgressList.add(coItem);
+                groupList.add(coItem);
             }
-            groupedCOsMap.put(c.getTitle(), groupList);
+            if (!groupList.isEmpty()) {
+                groupedCOsMap.put(c.getTitle(), groupList);
+            }
         }
 
         List<Map<String, Object>> groupedCOs = new ArrayList<>();
@@ -694,7 +676,7 @@ public class DashboardStatsController {
             groupedCOs.add(group);
         }
 
-        // 4. Timetable today schedule
+        // 4. Timetable today schedule strictly for enrolled courses
         List<Map<String, Object>> todaySchedule = new ArrayList<>();
         String[] periods = { "09:00 AM - 10:00 AM", "10:15 AM - 11:15 AM", "11:30 AM - 12:30 PM", "02:00 PM - 03:00 PM", "03:15 PM - 04:15 PM" };
         String[] rooms = { "LH-101", "Lab-2B", "LH-204", "Seminar Hall", "Lab-4A" };
@@ -708,62 +690,58 @@ public class DashboardStatsController {
             todaySchedule.add(slot);
         }
 
-        // 5. Recent Grades
+        // 5. Recent Grades strictly from student_marks table in database
         List<Map<String, Object>> recentGrades = new ArrayList<>();
-        for (Course c : studentCourses) {
-            Map<String, Object> g = new HashMap<>();
-            g.put("courseName", c.getTitle());
-            int score = 82 + (int)(Math.random() * 14);
-            g.put("score", score);
-            g.put("grade", score >= 90 ? "O" : score >= 80 ? "A+" : score >= 70 ? "A" : "B+");
-            recentGrades.add(g);
+        for (StudentMark m : allMarks) {
+            if (m.getStudent() != null && (m.getStudent().equalsIgnoreCase(studentName) || m.getStudent().equalsIgnoreCase(student.getId()))) {
+                Map<String, Object> g = new HashMap<>();
+                g.put("courseName", m.getAssessment());
+                int score = m.getMaxMarks() > 0 ? (int) Math.round((m.getObtained() / m.getMaxMarks()) * 100) : 0;
+                g.put("score", score);
+                g.put("grade", score >= 90 ? "O" : score >= 80 ? "A+" : score >= 70 ? "A" : score >= 50 ? "B+" : "F");
+                recentGrades.add(g);
+            }
         }
 
-        // 6. Upcoming Deadlines
+        // 6. Upcoming Deadlines from real scheduled assessments
         List<Map<String, Object>> upcomingDeadlines = new ArrayList<>();
+        List<AssessmentCOMapping> allAssessments = assessmentMappingRepository.findAll();
         int days = 3;
         for (Course c : studentCourses) {
-            Map<String, Object> dl = new HashMap<>();
-            dl.put("title", c.getCode() + " Midterm Assessment & Project Submission");
-            dl.put("course", c.getTitle());
-            dl.put("type", "Assignment");
-            dl.put("dueDate", "2026-10-15");
-            dl.put("daysLeft", days++);
-            dl.put("marks", 25);
-            upcomingDeadlines.add(dl);
+            for (AssessmentCOMapping asm : allAssessments) {
+                if (asm.getCourseId() != null && asm.getCourseId().equalsIgnoreCase(c.getCode())) {
+                    Map<String, Object> dl = new HashMap<>();
+                    dl.put("title", asm.getAssessmentName() + " (" + c.getCode() + ")");
+                    dl.put("course", c.getTitle());
+                    dl.put("type", asm.getAssessmentType() != null ? asm.getAssessmentType() : "Assessment");
+                    dl.put("dueDate", "2026-10-15");
+                    dl.put("daysLeft", days++);
+                    dl.put("marks", asm.getMaxMarks() > 0 ? asm.getMaxMarks() : 25);
+                    upcomingDeadlines.add(dl);
+                }
+            }
         }
 
-        // 7. General Stats
+        // 7. General Stats strictly computed from real entries
         long totalStudentAllClasses = allAttendance.stream()
-            .filter(a -> a.getStudent() != null && (a.getStudent().equalsIgnoreCase(studentName) || a.getStudent().equalsIgnoreCase(student.getId()) || a.getStudent().equalsIgnoreCase("student") || (studentName.toLowerCase().contains("krishnavamsi") && a.getStudent().toLowerCase().contains("krishnavamsi"))))
+            .filter(a -> a.getStudent() != null && (a.getStudent().equalsIgnoreCase(studentName) || a.getStudent().equalsIgnoreCase(student.getId())))
             .count();
 
         long totalStudentPresentClasses = allAttendance.stream()
-            .filter(a -> a.getStudent() != null && (a.getStudent().equalsIgnoreCase(studentName) || a.getStudent().equalsIgnoreCase(student.getId()) || a.getStudent().equalsIgnoreCase("student") || (studentName.toLowerCase().contains("krishnavamsi") && a.getStudent().toLowerCase().contains("krishnavamsi"))) && "Present".equalsIgnoreCase(a.getStatus()))
+            .filter(a -> a.getStudent() != null && (a.getStudent().equalsIgnoreCase(studentName) || a.getStudent().equalsIgnoreCase(student.getId())) && "Present".equalsIgnoreCase(a.getStatus()))
             .count();
 
-        int overallAttPct;
-        if (totalStudentAllClasses > 0) {
-            overallAttPct = (int) Math.round(((double) totalStudentPresentClasses / totalStudentAllClasses) * 100);
-        } else if (attendanceCourseCount > 0 && totalAttendanceSum > 0) {
-            overallAttPct = (int) Math.round(totalAttendanceSum / attendanceCourseCount);
-        } else {
-            overallAttPct = 88;
-        }
-        if (overallAttPct == 0) overallAttPct = 88;
-
-        double avgScore = (scoreCount > 0 && totalScoreSum > 0) ? (totalScoreSum / scoreCount) : 86.5;
-        double cgpa = Math.min(10.0, Math.round((avgScore / 10.0) * 100.0) / 100.0);
-        if (cgpa < 6.0) cgpa = 8.65;
+        int overallAttPct = totalStudentAllClasses > 0 ? (int) Math.round(((double) totalStudentPresentClasses / totalStudentAllClasses) * 100) : 0;
+        double cgpa = scoreCount > 0 && totalScoreSum > 0 ? Math.min(10.0, Math.round((totalScoreSum / scoreCount / 10.0) * 100.0) / 100.0) : 0.0;
 
         // 8. Historical Semester-wise Results (Semesters 1 through 6)
-        List<Map<String, Object>> semesterResults = generateSemesterResults(student, dept, studentCourses);
+        List<Map<String, Object>> semesterResults = enrolledCourseCards.isEmpty() ? Collections.emptyList() : generateSemesterResults(student, dept, studentCourses);
 
         Map<String, Object> stats = new HashMap<>();
         stats.put("enrolledCourses", enrolledCourseCards.size());
         stats.put("attendancePercentage", overallAttPct);
         stats.put("cgpa", cgpa);
-        stats.put("pendingExams", upcomingDeadlines.size() > 0 ? upcomingDeadlines.size() : 2);
+        stats.put("pendingExams", upcomingDeadlines.size());
 
         Map<String, Object> studentInfo = new HashMap<>();
         studentInfo.put("id", student.getId());
