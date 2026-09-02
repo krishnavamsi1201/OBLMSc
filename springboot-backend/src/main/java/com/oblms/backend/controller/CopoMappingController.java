@@ -81,24 +81,55 @@ public class CopoMappingController {
     }
 
     private void seedProgramOutcomes() {
-        if (programOutcomeRepository.count() < 14) {
+        if (programOutcomeRepository.count() < 30) {
             programOutcomeRepository.deleteAll();
-            List<ProgramOutcome> pos = List.of(
-                new ProgramOutcome(null, "PO1", "Computer Science & Engineering", "Engineering Knowledge: Apply mathematics, science, and engineering fundamentals to solve complex computing problems."),
-                new ProgramOutcome(null, "PO2", "Computer Science & Engineering", "Problem Analysis: Identify, formulate, review research literature, and analyze complex engineering problems."),
-                new ProgramOutcome(null, "PO3", "Computer Science & Engineering", "Design & Development of Solutions: Design system components, databases, and algorithms meeting specified needs."),
-                new ProgramOutcome(null, "PO4", "Computer Science & Engineering", "Conduct Investigations of Complex Problems: Use research-based knowledge and methods including design of experiments."),
-                new ProgramOutcome(null, "PO5", "Computer Science & Engineering", "Modern Tool Usage: Create, select, and apply appropriate techniques, resources, and modern IT and engineering tools."),
-                new ProgramOutcome(null, "PO6", "Computer Science & Engineering", "The Engineer and Society: Apply reasoning informed by contextual knowledge to assess societal and safety issues."),
-                new ProgramOutcome(null, "PO7", "Computer Science & Engineering", "Environment and Sustainability: Understand the impact of professional engineering solutions in environmental contexts."),
-                new ProgramOutcome(null, "PO8", "Computer Science & Engineering", "Ethics & Integrity: Apply ethical principles and commit to professional ethics and responsibilities."),
-                new ProgramOutcome(null, "PO9", "Computer Science & Engineering", "Individual and Team Work: Function effectively as an individual, and as a member or leader in diverse teams."),
-                new ProgramOutcome(null, "PO10", "Computer Science & Engineering", "Communication: Communicate effectively on complex engineering activities with technical and public audiences."),
-                new ProgramOutcome(null, "PO11", "Computer Science & Engineering", "Project Management and Finance: Demonstrate knowledge and understanding of engineering and management principles."),
-                new ProgramOutcome(null, "PO12", "Computer Science & Engineering", "Life-long Learning: Recognize the need for, and have the preparation to engage in independent life-long learning."),
-                new ProgramOutcome(null, "PSO1", "Computer Science & Engineering", "Professional Software Systems: Design and implement reliable, scalable enterprise backend architectures and data pipelines."),
-                new ProgramOutcome(null, "PSO2", "Computer Science & Engineering", "Intelligent Computing & AI: Apply machine learning, data engineering, and intelligent algorithmic workflows.")
+            List<ProgramOutcome> pos = new ArrayList<>();
+            
+            // Standard Departments
+            Map<String, List<String>> deptPsos = Map.of(
+                "Computer Science & Engineering", List.of(
+                    "PSO1: Design and implement reliable, scalable enterprise backend microservices and database pipelines.",
+                    "PSO2: Apply intelligent learning algorithms, machine learning models, and modern full-stack web architectures."
+                ),
+                "Information Technology", List.of(
+                    "PSO1: Architect, secure, and manage hybrid cloud infrastructure, containerized deployments, and CI/CD pipelines.",
+                    "PSO2: Design enterprise web platforms and full-stack software applications with robust security protocols."
+                ),
+                "Electronics & Communication Engineering", List.of(
+                    "PSO1: Develop real-time embedded firmware, ARM microcontroller architectures, and IoT sensor interfaces.",
+                    "PSO2: Design digital VLSI systems, signal processing pipelines, and high-frequency communication protocols."
+                ),
+                "Mechanical Engineering", List.of(
+                    "PSO1: Analyze thermal systems, IC engines, fluid power dynamics, and HVAC thermodynamic cycles.",
+                    "PSO2: Design precision machine elements, CAD/CAM kinematics, and robotic automation mechanisms."
+                ),
+                "Civil Engineering", List.of(
+                    "PSO1: Perform advanced structural analysis, RCC concrete designs, and geotechnical soil mechanics.",
+                    "PSO2: Apply fluid mechanics, hydraulic networks, GIS surveying, and sustainable environmental engineering."
+                )
             );
+
+            for (Map.Entry<String, List<String>> entry : deptPsos.entrySet()) {
+                String dept = entry.getKey();
+                List<String> psos = entry.getValue();
+
+                pos.add(new ProgramOutcome(null, "PO1", dept, "Engineering Knowledge: Apply mathematics, science, and core engineering fundamentals."));
+                pos.add(new ProgramOutcome(null, "PO2", dept, "Problem Analysis: Identify, formulate, review research literature, and analyze complex problems."));
+                pos.add(new ProgramOutcome(null, "PO3", dept, "Design & Development of Solutions: Design system components and processes meeting specified technical needs."));
+                pos.add(new ProgramOutcome(null, "PO4", dept, "Conduct Investigations of Complex Problems: Use research-based methods and experimental analysis."));
+                pos.add(new ProgramOutcome(null, "PO5", dept, "Modern Tool Usage: Select and apply appropriate techniques, modern tools, and simulation software."));
+                pos.add(new ProgramOutcome(null, "PO6", dept, "The Engineer and Society: Apply reasoning informed by contextual knowledge to assess societal responsibilities."));
+                pos.add(new ProgramOutcome(null, "PO7", dept, "Environment and Sustainability: Understand the impact of engineering solutions in environmental contexts."));
+                pos.add(new ProgramOutcome(null, "PO8", dept, "Ethics & Integrity: Apply ethical principles and commit to professional ethics and responsibilities."));
+                pos.add(new ProgramOutcome(null, "PO9", dept, "Individual and Team Work: Function effectively as an individual, and as a member or leader in diverse teams."));
+                pos.add(new ProgramOutcome(null, "PO10", dept, "Communication: Communicate effectively on complex engineering activities with technical audiences."));
+                pos.add(new ProgramOutcome(null, "PO11", dept, "Project Management and Finance: Apply engineering management principles to manage multidisciplinary projects."));
+                pos.add(new ProgramOutcome(null, "PO12", dept, "Life-long Learning: Engage in independent and life-long learning in the broadest context of technological change."));
+                
+                pos.add(new ProgramOutcome(null, "PSO1", dept, psos.get(0)));
+                pos.add(new ProgramOutcome(null, "PSO2", dept, psos.get(1)));
+            }
+
             programOutcomeRepository.saveAll(pos);
         }
     }
@@ -363,6 +394,29 @@ public class CopoMappingController {
             }
         }
 
+        // Branch / Department filter
+        String targetBranch = branch;
+        if (targetBranch == null && department != null) {
+            String d = department.toLowerCase();
+            if (d.contains("computer") || d.contains("cse")) targetBranch = "CSE";
+            else if (d.contains("information") || d.contains("it")) targetBranch = "IT";
+            else if (d.contains("electronic") || d.contains("ece")) targetBranch = "ECE";
+            else if (d.contains("mechanical") || d.contains("me")) targetBranch = "ME";
+            else if (d.contains("civil") || d.contains("ce")) targetBranch = "Civil";
+        }
+
+        if (targetBranch != null && !targetBranch.trim().isEmpty()) {
+            String bKey = targetBranch.toUpperCase().trim();
+            String fullDeptName = bKey.equals("CSE") ? "Computer Science & Engineering" :
+                                 bKey.equals("IT") ? "Information Technology" :
+                                 bKey.equals("ECE") ? "Electronics & Communication Engineering" :
+                                 bKey.equals("ME") ? "Mechanical Engineering" : "Civil Engineering";
+            
+            return allPos.stream()
+                .filter(po -> po.getProgram() != null && (po.getProgram().equalsIgnoreCase(fullDeptName) || po.getProgram().toUpperCase().contains(bKey) || fullDeptName.toLowerCase().contains(po.getProgram().toLowerCase())))
+                .collect(Collectors.toList());
+        }
+
         return allPos;
     }
 
@@ -380,6 +434,7 @@ public class CopoMappingController {
     // Course Outcomes
     @GetMapping("/co")
     public List<CourseOutcome> getAllCOs(
+            @RequestParam(required = false) String department,
             @RequestParam(required = false) String branch, 
             @RequestParam(required = false) String course,
             @RequestParam(required = false) String faculty) {
@@ -401,12 +456,24 @@ public class CopoMappingController {
             return all.stream().filter(c -> c.getCourse() != null && c.getCourse().equalsIgnoreCase(course.trim())).collect(Collectors.toList());
         }
 
-        // 3. Branch specific filter
-        if (branch != null && !branch.trim().isEmpty()) {
-            String b = branch.toUpperCase().trim();
+        // 3. Branch / Department specific filter
+        String targetBranch = branch;
+        if (targetBranch == null && department != null) {
+            String d = department.toLowerCase();
+            if (d.contains("computer") || d.contains("cse")) targetBranch = "CSE";
+            else if (d.contains("information") || d.contains("it")) targetBranch = "IT";
+            else if (d.contains("electronic") || d.contains("ece")) targetBranch = "ECE";
+            else if (d.contains("mechanical") || d.contains("me")) targetBranch = "ME";
+            else if (d.contains("civil") || d.contains("ce")) targetBranch = "Civil";
+        }
+
+        if (targetBranch != null && !targetBranch.trim().isEmpty()) {
+            String b = targetBranch.toUpperCase().trim();
             if (BRANCH_COURSES.containsKey(b)) {
                 List<String> allowed = BRANCH_COURSES.get(b);
-                return all.stream().filter(c -> allowed.contains(c.getCourse())).collect(Collectors.toList());
+                return all.stream()
+                    .filter(c -> c.getCourse() != null && allowed.stream().anyMatch(ac -> ac.equalsIgnoreCase(c.getCourse())))
+                    .collect(Collectors.toList());
             }
         }
         return all;

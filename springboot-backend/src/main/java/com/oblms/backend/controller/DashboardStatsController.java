@@ -526,11 +526,26 @@ public class DashboardStatsController {
         String studentName = student.getName();
         String dept = student.getDepartment() != null ? student.getDepartment() : "Computer Science & Engineering";
         if ("STU004".equalsIgnoreCase(student.getId()) || studentName.toLowerCase().contains("krishnavamsi") || studentName.toLowerCase().contains("jahnavi")) {
-            dept = "Computer Science & Engineering";
+            dept = student.getDepartment() != null && !student.getDepartment().isEmpty() ? student.getDepartment() : "Computer Science & Engineering";
         }
+
+        String dLow = dept.toLowerCase();
+        String defaultBranchCourses;
+        if (dLow.contains("mechanical") || dLow.contains("me")) {
+            defaultBranchCourses = "ME210,KM,IC,04ME6512,AU203";
+        } else if (dLow.contains("civil") || dLow.contains("ce")) {
+            defaultBranchCourses = "FMHM,SMSE,CE234,EMII,HS300";
+        } else if (dLow.contains("electronic") || dLow.contains("ece")) {
+            defaultBranchCourses = "MES,DSLD,EC206,EE407,CS203";
+        } else if (dLow.contains("information") || dLow.contains("it")) {
+            defaultBranchCourses = "IT305,CS303,Linux,WT,CS361";
+        } else {
+            defaultBranchCourses = "CS101,CS102,CS103,CS301,CS302";
+        }
+
         String enrolledStr = (student.getEnrolledCourses() != null && !student.getEnrolledCourses().trim().isEmpty()) 
             ? student.getEnrolledCourses() 
-            : "CS101,CS102,CS103,CS301,CS302";
+            : defaultBranchCourses;
 
         List<String> enrolledCodes = Arrays.stream(enrolledStr.split(","))
             .map(String::trim)
@@ -538,7 +553,7 @@ public class DashboardStatsController {
             .toList();
 
         if (enrolledCodes.isEmpty()) {
-            enrolledCodes = List.of("CS101", "CS102", "CS103", "CS301", "CS302");
+            enrolledCodes = Arrays.stream(defaultBranchCourses.split(",")).map(String::trim).toList();
         }
 
         // 2. Fetch all faculty members to map who teaches each course
