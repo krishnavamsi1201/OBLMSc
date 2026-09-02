@@ -1,6 +1,7 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { HttpClient } from '@angular/common/http';
 import { Navbar } from '../../shared/navbar/navbar';
 import { Sidebar } from '../../shared/sidebar/sidebar';
 import { Footer } from '../../shared/footer/footer';
@@ -141,7 +142,7 @@ export class CourseOutcomes {
     const url = facultyParam ? `http://localhost:8080/api/courses?faculty=${facultyParam}` : 'http://localhost:8080/api/courses';
 
     this.http.get<Array<{ code: string; title: string }>>(url).subscribe({
-      next: (courseList) => {
+      next: (courseList: Array<{ code: string; title: string }>) => {
         let list = courseList;
         if (this.role === 'faculty') {
           let assigned: string[] = [];
@@ -150,14 +151,14 @@ export class CourseOutcomes {
             if (storedAssigned) assigned = JSON.parse(storedAssigned);
           } catch {}
           if (assigned.length > 0) {
-            list = courseList.filter(c => 
+            list = courseList.filter((c: any) => 
               assigned.includes(c.title) || assigned.includes(c.code) ||
               assigned.some(a => c.title && c.title.toLowerCase().includes(a.toLowerCase()))
             );
           }
         }
         this.courses = list
-          .map(c => `${c.code ? c.code : ''}${c.code && c.title ? ' - ' : ''}${c.title ? c.title : ''}`)
+          .map((c: any) => `${c.code ? c.code : ''}${c.code && c.title ? ' - ' : ''}${c.title ? c.title : ''}`)
           .filter(Boolean);
         this.cdr.detectChanges();
       },
@@ -166,7 +167,7 @@ export class CourseOutcomes {
           const stored = localStorage.getItem('obslmsCourses');
           const courseList = stored ? JSON.parse(stored) as Array<{ code: string; title: string }> : [];
           this.courses = courseList
-            .map(c => `${c.code ? c.code : ''}${c.code && c.title ? ' - ' : ''}${c.title ? c.title : ''}`)
+            .map((c: any) => `${c.code ? c.code : ''}${c.code && c.title ? ' - ' : ''}${c.title ? c.title : ''}`)
             .filter(Boolean);
         } catch {
           this.courses = [];
@@ -180,7 +181,7 @@ export class CourseOutcomes {
     const url = facultyParam ? `http://localhost:8080/api/copo/co?faculty=${facultyParam}` : 'http://localhost:8080/api/copo/co';
 
     this.http.get<CourseOutcome[]>(url).subscribe({
-      next: (data) => {
+      next: (data: CourseOutcome[]) => {
         let list = data;
         if (this.role === 'faculty') {
           let assigned: string[] = [];
@@ -189,7 +190,7 @@ export class CourseOutcomes {
             if (storedAssigned) assigned = JSON.parse(storedAssigned);
           } catch {}
           if (assigned.length > 0) {
-            list = data.filter(co => 
+            list = data.filter((co: CourseOutcome) => 
               assigned.includes(co.course) ||
               assigned.some(a => (co.course || '').toLowerCase().includes(a.toLowerCase()))
             );
@@ -256,7 +257,7 @@ export class CourseOutcomes {
     };
 
     this.http.post<CourseOutcome>('http://localhost:8080/api/copo/co', payload).subscribe({
-      next: (saved) => {
+      next: (saved: CourseOutcome) => {
         this.toast.success(`Course Outcome ${payload.co} saved successfully.`);
         this.loadOutcomes();
         this.resetForm();

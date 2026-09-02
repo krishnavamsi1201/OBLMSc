@@ -302,6 +302,8 @@ export class ProgramOutcomes implements OnInit {
   private cdr = inject(ChangeDetectorRef);
 
   userRole: string = 'student';
+  userName: string = '';
+  facultyName: string = '';
   studentDept: string = 'Computer Science & Engineering';
   
   programOutcomes: ProgramOutcome[] = [];
@@ -333,6 +335,8 @@ export class ProgramOutcomes implements OnInit {
   constructor() {
     try {
       this.userRole = localStorage.getItem('userRole')?.toLowerCase() || 'student';
+      this.userName = localStorage.getItem('userName') || '';
+      this.facultyName = this.userName;
       this.studentDept = localStorage.getItem('userDept') || localStorage.getItem('userDepartment') || 'Computer Science & Engineering';
     } catch {
       this.userRole = 'student';

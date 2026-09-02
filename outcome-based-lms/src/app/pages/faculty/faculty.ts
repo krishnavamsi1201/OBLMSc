@@ -840,8 +840,8 @@ export class Faculty implements OnInit {
     }
 
     const courseName = this.selectedDossierCourse || 'Database Management Systems';
-    const facultyName = this.facultyProfile?.name || 'Faculty Member';
-    const dept = this.facultyProfile?.department || 'Computer Science & Engineering';
+    const facultyName = localStorage.getItem('userName') || 'Faculty Member';
+    const dept = localStorage.getItem('userDepartment') || localStorage.getItem('userDept') || 'Computer Science & Engineering';
     const today = new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' });
 
     let coRows = '';

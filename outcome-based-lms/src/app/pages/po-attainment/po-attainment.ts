@@ -411,8 +411,8 @@ export class PoAttainment implements OnInit {
       po.achievement.toString(),
       po.targetPercentage.toString(),
       po.status,
-      po.mappedCOs.join(';'),
-      po.coCount.toString()
+      po.mappedCOs ? po.mappedCOs.join(';') : '',
+      (po.coCount ?? 0).toString()
     ]);
 
     const csv = [headers, ...rows].map(row => row.join(',')).join('\n');

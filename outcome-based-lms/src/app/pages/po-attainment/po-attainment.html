@@ -1,6 +1,6 @@
 <app-navbar></app-navbar>
 
-<div *ngIf="role === 'student'; else fullApp" class="student-shell" [ngStyle]="themeStyles">
+<div class="student-shell" [ngStyle]="themeStyles">
   <!-- Categorized Sidebar Navigation -->
   <div class="student-sidebar">
     <div class="logo">
@@ -193,7 +193,7 @@
           </g>
         </svg>
       </div>
-    </div>
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px;">
       <div class="stat-card achieved" style="background: var(--student-card-bg); border: 1px solid var(--student-border); border-left: 5px solid #10b981; border-radius: 12px; padding: 18px; display: flex; flex-direction: column; gap: 6px;">
         <div class="stat-number" style="font-size: 1.8rem; font-weight: 800; color: #10b981;">{{ getAchievedCount() }}</div>
         <div class="stat-label" style="font-size: 0.85rem; font-weight: 700; color: var(--student-text-secondary); text-transform: uppercase;">Achieved (≥{{ targetPercentage }}%)</div>
@@ -293,129 +293,3 @@
     <app-footer></app-footer>
   </div>
 </div>
-
-<ng-template #fullApp>
-  <div class="container">
-    <app-sidebar></app-sidebar>
-
-    <div class="content">
-      <div class="page-header">
-        <div class="header-title">
-          <h1>🎓 PO Attainment Analysis</h1>
-          <p>Track and analyze program outcome achievement (OBE Most Important)</p>
-        </div>
-        <button class="btn btn-primary" (click)="exportToCSV()">📥 Export CSV</button>
-      </div>
-
-      <!-- Overall Achievement Card -->
-      <div class="overall-card">
-        <div class="overall-content">
-          <h2>Overall Program Achievement</h2>
-          <div class="overall-value">{{ overallAchievement }}%</div>
-          <p>Average achievement across all program outcomes</p>
-        </div>
-        <div class="overall-chart">
-          <div class="progress-ring">
-            <svg viewBox="0 0 100 100" class="ring-svg">
-              <circle cx="50" cy="50" r="45" class="ring-bg"></circle>
-              <circle cx="50" cy="50" r="45" class="ring-progress" 
-                [style.strokeDashoffset]="282.7 - (overallAchievement / 100) * 282.7"></circle>
-            </svg>
-            <div class="ring-text">{{ overallAchievement }}%</div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Stats Grid -->
-      <div class="stats-grid">
-        <div class="stat-card achieved">
-          <div class="stat-number">{{ getAchievedCount() }}</div>
-          <div class="stat-label">Achieved (≥{{ targetPercentage }}%)</div>
-        </div>
-        <div class="stat-card partial">
-          <div class="stat-number">{{ getPartialCount() }}</div>
-          <div class="stat-label">Partial (50-{{ targetPercentage }}%)</div>
-        </div>
-        <div class="stat-card not-achieved">
-          <div class="stat-number">{{ getNotAchievedCount() }}</div>
-          <div class="stat-label">Not Achieved (<50%)</div>
-        </div>
-      </div>
-
-      <!-- Search and Filter -->
-      <div class="toolbar">
-        <div class="search-box">
-          <input 
-            type="text" 
-            placeholder="🔍 Search by PO code or description..."
-            [(ngModel)]="searchQuery"
-            (input)="onSearchChange()"
-            class="search-input"
-          />
-        </div>
-        <select 
-          [(ngModel)]="filterStatus"
-          (change)="onFilterChange()"
-          class="filter-select"
-        >
-          <option value="">All Status</option>
-          <option value="Achieved">Achieved</option>
-          <option value="Partial">Partial</option>
-          <option value="Not Achieved">Not Achieved</option>
-        </select>
-      </div>
-
-      <!-- PO Attainment Cards -->
-      <div class="attainment-grid">
-        <div *ngIf="filteredAttainments.length === 0" class="empty-state">
-          <p>📭 No program outcomes found</p>
-          <p class="hint">Create program outcomes and CO-PO mappings to view attainment analysis</p>
-        </div>
-
-        <div *ngFor="let po of filteredAttainments" class="attainment-card">
-          <div class="card-header">
-            <div class="po-info">
-              <h3>{{ po.code }}</h3>
-              <p>{{ po.description }}</p>
-            </div>
-            <div class="status-badge" [style.backgroundColor]="getStatusBgColor(po.status)" [style.color]="getStatusColor(po.status)">
-              {{ po.status }}
-            </div>
-          </div>
-
-          <div class="card-body">
-            <div class="achievement-display">
-              <div class="achievement-value">{{ po.achievement }}%</div>
-              <div class="target-value">Target: {{ po.targetPercentage }}%</div>
-            </div>
-
-            <div class="progress-bar-container">
-              <div class="progress-bar">
-                <div class="progress-fill" 
-                  [style.width]="getProgressWidth(po.achievement) + '%'"
-                  [style.backgroundColor]="getStatusColor(po.status)"></div>
-              </div>
-              <div class="progress-labels">
-                <span>0%</span>
-                <span>50%</span>
-                <span>{{ po.targetPercentage }}%</span>
-                <span>100%</span>
-              </div>
-            </div>
-
-            <div class="po-mapping-info">
-              <div class="mapped-cos">
-                <span class="label">Mapped COs ({{ po.coCount }}):</span>
-                <div class="co-tags">
-                  <span *ngFor="let coCode of po.mappedCOs" class="co-tag">{{ coCode }}</span>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <app-footer></app-footer>
-    </div>
-  </div>
-</ng-template>

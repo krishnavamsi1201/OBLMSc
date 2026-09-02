@@ -79,48 +79,48 @@ interface SubjectRecord {
             />
           </div>
 
-          <!-- Branch Filter Pills (For Admin/Faculty or All Branches view) -->
-          <div class="dept-filter-group" *ngIf="viewMode === 'all' || userRole !== 'student'">
+          <!-- Branch Filter Pills (Always Accessible) -->
+          <div class="dept-filter-group">
             <button 
               type="button" 
               class="dept-pill" 
               [class.active]="selectedDeptFilter === ''" 
-              (click)="selectedDeptFilter = ''">
+              (click)="selectDepartmentFilter('')">
               All Branches
             </button>
             <button 
               type="button" 
               class="dept-pill" 
               [class.active]="selectedDeptFilter === 'CSE'" 
-              (click)="selectedDeptFilter = 'CSE'">
+              (click)="selectDepartmentFilter('CSE')">
               💻 CSE
             </button>
             <button 
               type="button" 
               class="dept-pill" 
               [class.active]="selectedDeptFilter === 'IT'" 
-              (click)="selectedDeptFilter = 'IT'">
+              (click)="selectDepartmentFilter('IT')">
               🌐 IT
             </button>
             <button 
               type="button" 
               class="dept-pill" 
               [class.active]="selectedDeptFilter === 'ECE'" 
-              (click)="selectedDeptFilter = 'ECE'">
+              (click)="selectDepartmentFilter('ECE')">
               📡 ECE
             </button>
             <button 
               type="button" 
               class="dept-pill" 
               [class.active]="selectedDeptFilter === 'ME'" 
-              (click)="selectedDeptFilter = 'ME'">
+              (click)="selectDepartmentFilter('ME')">
               ⚙️ Mechanical
             </button>
             <button 
               type="button" 
               class="dept-pill" 
               [class.active]="selectedDeptFilter === 'Civil'" 
-              (click)="selectedDeptFilter = 'Civil'">
+              (click)="selectDepartmentFilter('Civil')">
               🏗️ Civil
             </button>
           </div>
@@ -469,58 +469,105 @@ export class Subjects implements OnInit {
     });
   }
 
-  getDepartmentName(code: string, name: string): string {
-    const c = (code || '').toUpperCase();
-    const n = (name || '').toLowerCase();
+  selectDepartmentFilter(dept: string): void {
+    this.selectedDeptFilter = dept;
+    if (dept !== '') {
+      this.viewMode = 'all';
+    }
+    this.currentPage = 1;
+    this.cdr.detectChanges();
+  }
 
-    if (c.startsWith('CS') || n.includes('database') || n.includes('java') || n.includes('data structure') || n.includes('operating') || n.includes('algorithm') || n.includes('compiler') || n.includes('software')) {
-      return 'Computer Science & Engineering';
-    }
-    if (c.startsWith('IT') || n.includes('web') || n.includes('linux') || n.includes('cloud') || n.includes('information')) {
-      return 'Information Technology';
-    }
-    if (c.startsWith('EC') || c.startsWith('EE') || c === 'MES' || c === 'DSLD' || n.includes('microprocessor') || n.includes('logic') || n.includes('signal') || n.includes('communication')) {
-      return 'Electronics & Communication Engineering';
-    }
-    if (c.startsWith('ME') || c === 'KM' || c === 'SMSE' || c === 'IC' || n.includes('kinematics') || n.includes('thermo') || n.includes('fluid') || n.includes('machine')) {
-      return 'Mechanical Engineering';
-    }
-    if (c.startsWith('CE') || c === 'FMHM' || c === 'EMII' || n.includes('civil') || n.includes('structural') || n.includes('survey') || n.includes('concrete')) {
+  getDepartmentName(code: string, name: string): string {
+    const c = (code || '').toUpperCase().trim();
+    const n = (name || '').toLowerCase().trim();
+
+    // 1. Civil Engineering
+    if (c === 'FMHM' || c === 'SMSE' || c === 'CE234' || c === 'EMII' || c.startsWith('CE') || 
+        n.includes('fluid mechanics') || n.includes('strength of materials') || 
+        n.includes('structural') || n.includes('civil') || n.includes('survey')) {
       return 'Civil Engineering';
     }
-    return 'General Engineering';
+
+    // 2. Mechanical Engineering
+    if (c === 'ME210' || c === 'KM' || c === 'IC' || c === '04ME6512' || c === 'AU203' || c.startsWith('ME') || c.startsWith('AU') ||
+        n.includes('kinematics') || n.includes('i c engine') || n.includes('metallurgy') || 
+        n.includes('manufacturing') || n.includes('auto chassis') || n.includes('cad') || n.includes('mechanical')) {
+      return 'Mechanical Engineering';
+    }
+
+    // 3. Electronics & Communication Engineering (ECE)
+    if (c === 'MES' || c === 'DSLD' || c === 'CS203' || c === 'CS207' || c === 'EC206' || c === 'EE407' || c === 'AMP' || c === 'HARDWARE LAB' || c === 'EE233' || c === 'LD LAB' || c.startsWith('EC') || c.startsWith('EE') ||
+        n.includes('microprocessor') || n.includes('logic design') || n.includes('switching theory') || 
+        n.includes('electronics') || n.includes('digital signal') || n.includes('hardware & microprocessor')) {
+      return 'Electronics & Communication Engineering';
+    }
+
+    // 4. Information Technology (IT)
+    if (c === 'IT305' || c === 'CS303' || c === 'LINUX' || c === 'LINUX LAB' || c === 'OPEN LAB' || c === 'WT' || c === 'RLMCA108' || c.startsWith('IT') ||
+        n.includes('web tech') || n.includes('shell programming') || n.includes('linux') || 
+        n.includes('cloud') || n.includes('devops') || n.includes('open source') || n.includes('operations research')) {
+      return 'Information Technology';
+    }
+
+    // 5. Computer Science & Engineering (CSE)
+    if (c.startsWith('CS') || c === 'DS' || c === 'DS LAB' || c === 'OOP' || c === 'C++ LAB' || c === 'OOMD' || c === 'CC' || c === 'C' || c === 'COMPUTER LAB' || c === 'HPC' || c === 'RLMCA101' || c === 'RLMCA201' || c === 'RLMCA205' || c === 'RLMCA231' ||
+        n.includes('data structure') || n.includes('database') || n.includes('algorithm') || 
+        n.includes('c++') || n.includes('compiler') || n.includes('computer networks') || 
+        n.includes('programming in c') || n.includes('object oriented') || n.includes('soft computing') || n.includes('high performance')) {
+      return 'Computer Science & Engineering';
+    }
+
+    // 6. Foundation / General Engineering (INMCA202 Probability & Statistics, etc.)
+    if (c === 'INMCA202' || c === 'STATISTICS' || c === 'EM IV' || c === 'INMCA102' || c === 'ECS' || c === 'HS300' || c === 'OTHER') {
+      return 'General Engineering';
+    }
+
+    return 'Computer Science & Engineering';
   }
 
   get filteredSubjects(): SubjectRecord[] {
     const q = this.searchQuery.toLowerCase().trim();
 
     return this.subjects.filter(s => {
-      // 1. View Mode Filter
-      if (this.viewMode === 'registered') {
-        if (!this.isCourseEnrolled(s.code, s.name)) {
-          return false;
-        }
-      } else if (this.viewMode === 'branch') {
-        const sDept = (s.department || this.getDepartmentName(s.code, s.name)).toLowerCase();
-        const uDept = this.userDept.toLowerCase();
-        if (!sDept.includes(this.shortDept.toLowerCase()) && !uDept.includes(sDept.split(' ')[0])) {
-          return false;
-        }
-      }
+      const sDept = (s.department || this.getDepartmentName(s.code, s.name)).toLowerCase();
 
-      // 2. Department Filter Pill (if chosen)
+      // 1. Department Filter Pill (if chosen by user e.g. CSE, IT, ECE, ME, Civil)
       if (this.selectedDeptFilter) {
-        const sDept = (s.department || this.getDepartmentName(s.code, s.name)).toLowerCase();
         const filt = this.selectedDeptFilter.toLowerCase();
-        if (!sDept.includes(filt)) {
-          return false;
+        let matches = false;
+        if (filt === 'cse' || filt === 'computer') {
+          matches = sDept.includes('computer') || sDept.includes('cse');
+        } else if (filt === 'it' || filt === 'information') {
+          matches = sDept.includes('information') || sDept.includes('it');
+        } else if (filt === 'ece' || filt === 'electronics') {
+          matches = sDept.includes('electronic') || sDept.includes('ece') || sDept.includes('electrical');
+        } else if (filt === 'me' || filt === 'mechanical') {
+          matches = sDept.includes('mechanical') || sDept.includes('me') || sDept.includes('auto');
+        } else if (filt === 'civil' || filt === 'ce') {
+          matches = sDept.includes('civil') || sDept.includes('ce') || sDept.includes('structural');
+        } else {
+          matches = sDept.includes(filt);
+        }
+        if (!matches) return false;
+      } else {
+        // Only apply registered/branch view mode restriction when NO specific department pill is selected
+        if (this.viewMode === 'registered') {
+          if (!this.isCourseEnrolled(s.code, s.name)) {
+            return false;
+          }
+        } else if (this.viewMode === 'branch') {
+          const uDept = this.userDept.toLowerCase();
+          if (!sDept.includes(this.shortDept.toLowerCase()) && !uDept.includes(sDept.split(' ')[0])) {
+            return false;
+          }
         }
       }
 
-      // 3. Search Query Filter
-      const matchesSearch = !q || s.code.toLowerCase().includes(q) || s.name.toLowerCase().includes(q);
+      // 2. Search Query Filter
+      const matchesSearch = !q || s.code.toLowerCase().includes(q) || s.name.toLowerCase().includes(q) || sDept.includes(q);
 
-      // 4. Type Filter
+      // 3. Type Filter
       const matchesType = !this.selectedType || s.type.toLowerCase().includes(this.selectedType.toLowerCase());
 
       return matchesSearch && matchesType;
