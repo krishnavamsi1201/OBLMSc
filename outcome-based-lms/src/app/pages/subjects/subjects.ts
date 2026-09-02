@@ -62,9 +62,6 @@ interface SubjectRecord {
             <button type="button" class="switch-view-btn" [class.active]="viewMode === 'branch'" (click)="setViewMode('branch')">
               🏛️ {{ shortDept }} Curriculum
             </button>
-            <button type="button" class="switch-view-btn" [class.active]="viewMode === 'all'" (click)="setViewMode('all')">
-              🌐 All Branches
-            </button>
           </div>
         </div>
 
@@ -75,12 +72,12 @@ interface SubjectRecord {
             <input 
               type="text" 
               [(ngModel)]="searchQuery" 
-              placeholder="Search by code (e.g. CS101, IT305, DSLD) or subject title..." 
+              placeholder="Search by code (e.g. CS101, IT305) or subject title..." 
             />
           </div>
 
-          <!-- Branch Filter Pills (Always Accessible) -->
-          <div class="dept-filter-group">
+          <!-- Branch Filter Pills: Only All Branches/Multi-Dept for Admin/Faculty; Single Department Badge for Student -->
+          <div class="dept-filter-group" *ngIf="userRole !== 'student'">
             <button 
               type="button" 
               class="dept-pill" 
@@ -123,6 +120,13 @@ interface SubjectRecord {
               (click)="selectDepartmentFilter('Civil')">
               🏗️ Civil
             </button>
+          </div>
+
+          <!-- Student View: Dedicated Department Badge -->
+          <div class="dept-filter-group" *ngIf="userRole === 'student'">
+            <div class="dept-pill active" style="cursor: default; display: flex; align-items: center; gap: 6px; background: #1e40af; color: #fff; border-color: #1e40af;">
+              <span>💻 {{ userDept }}</span>
+            </div>
           </div>
 
           <div class="filter-group">
@@ -532,35 +536,41 @@ export class Subjects implements OnInit {
     return this.subjects.filter(s => {
       const sDept = (s.department || this.getDepartmentName(s.code, s.name)).toLowerCase();
 
-      // 1. Department Filter Pill (if chosen by user e.g. CSE, IT, ECE, ME, Civil)
-      if (this.selectedDeptFilter) {
-        const filt = this.selectedDeptFilter.toLowerCase();
-        let matches = false;
-        if (filt === 'cse' || filt === 'computer') {
-          matches = sDept.includes('computer') || sDept.includes('cse');
-        } else if (filt === 'it' || filt === 'information') {
-          matches = sDept.includes('information') || sDept.includes('it');
-        } else if (filt === 'ece' || filt === 'electronics') {
-          matches = sDept.includes('electronic') || sDept.includes('ece') || sDept.includes('electrical');
-        } else if (filt === 'me' || filt === 'mechanical') {
-          matches = sDept.includes('mechanical') || sDept.includes('me') || sDept.includes('auto');
-        } else if (filt === 'civil' || filt === 'ce') {
-          matches = sDept.includes('civil') || sDept.includes('ce') || sDept.includes('structural');
-        } else {
-          matches = sDept.includes(filt);
-        }
-        if (!matches) return false;
-      } else {
-        // Only apply registered/branch view mode restriction when NO specific department pill is selected
+      // Student Role: strictly restricted to their department and registered courses
+      if (this.userRole === 'student') {
         if (this.viewMode === 'registered') {
           if (!this.isCourseEnrolled(s.code, s.name)) {
             return false;
           }
-        } else if (this.viewMode === 'branch') {
+        } else {
+          // Branch curriculum mode: only student's department subjects
           const uDept = this.userDept.toLowerCase();
-          if (!sDept.includes(this.shortDept.toLowerCase()) && !uDept.includes(sDept.split(' ')[0])) {
+          const matchesStudentDept = sDept.includes(this.shortDept.toLowerCase()) || 
+                                     uDept.includes(sDept.split(' ')[0]) || 
+                                     this.isCourseEnrolled(s.code, s.name);
+          if (!matchesStudentDept) {
             return false;
           }
+        }
+      } else {
+        // Admin / Faculty Role: filter by chosen department pill
+        if (this.selectedDeptFilter) {
+          const filt = this.selectedDeptFilter.toLowerCase();
+          let matches = false;
+          if (filt === 'cse' || filt === 'computer') {
+            matches = sDept.includes('computer') || sDept.includes('cse');
+          } else if (filt === 'it' || filt === 'information') {
+            matches = sDept.includes('information') || sDept.includes('it');
+          } else if (filt === 'ece' || filt === 'electronics') {
+            matches = sDept.includes('electronic') || sDept.includes('ece') || sDept.includes('electrical');
+          } else if (filt === 'me' || filt === 'mechanical') {
+            matches = sDept.includes('mechanical') || sDept.includes('me') || sDept.includes('auto');
+          } else if (filt === 'civil' || filt === 'ce') {
+            matches = sDept.includes('civil') || sDept.includes('ce') || sDept.includes('structural');
+          } else {
+            matches = sDept.includes(filt);
+          }
+          if (!matches) return false;
         }
       }
 
