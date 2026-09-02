@@ -3,7 +3,10 @@ package com.oblms.backend.model;
 import jakarta.persistence.*;
 
 @Entity
-@Table(name = "student_marks")
+@Table(name = "student_marks", indexes = {
+    @Index(name = "idx_marks_student", columnList = "student"),
+    @Index(name = "idx_marks_assessment", columnList = "assessment")
+})
 public class StudentMark {
 
     @Id

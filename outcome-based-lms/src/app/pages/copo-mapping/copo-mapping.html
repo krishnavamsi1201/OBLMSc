@@ -37,10 +37,18 @@
   <!-- Student Scrollable Content Area -->
   <div class="student-content" style="flex: 1; height: 100%; box-sizing: border-box; padding: 24px 28px 40px; overflow-y: auto; display: flex; flex-direction: column; gap: 20px;">
     
-    <div class="page-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+    <div class="page-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; flex-wrap: wrap; gap: 12px;">
       <div class="header-title">
-        <h1 style="margin: 0; font-size: 1.8rem; color: var(--student-text); font-weight: 800;">🔗 CO-PO Mapping Matrix</h1>
-        <p style="margin: 4px 0 0 0; color: var(--student-text-secondary); font-size: 0.95rem;">View the current mappings between Course Outcomes (CO) and Program Outcomes (PO).</p>
+        <h1 style="margin: 0; font-size: 1.8rem; color: var(--student-text); font-weight: 800;">🔗 CO-PO Mapping Matrix (NBA Criteria-3)</h1>
+        <p style="margin: 4px 0 0 0; color: var(--student-text-secondary); font-size: 0.95rem;">Official course outcome correlations & graduate attribute articulation matrix.</p>
+      </div>
+      <div style="display: flex; gap: 10px; align-items: center;">
+        <button (click)="exportToCSV()" style="background: var(--student-card-bg); border: 1px solid var(--student-border); color: var(--student-text); border-radius: 8px; font-weight: 700; padding: 9px 15px; font-size: 12.5px; cursor: pointer; display: flex; align-items: center; gap: 6px;">
+          📥 Export CSV
+        </button>
+        <button (click)="downloadNBAPdfReport()" style="background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%); border: none; color: #fff; border-radius: 8px; font-weight: 800; padding: 9px 18px; font-size: 12.5px; cursor: pointer; display: flex; align-items: center; gap: 6px; box-shadow: 0 4px 12px rgba(30,64,175,0.25);">
+          📄 Download NBA PDF Dossier
+        </button>
       </div>
     </div>
 

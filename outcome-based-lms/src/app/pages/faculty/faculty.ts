@@ -833,7 +833,99 @@ export class Faculty implements OnInit {
   }
 
   printCourseFile(): void {
-    window.print();
+    const printWindow = window.open('', '_blank');
+    if (!printWindow) {
+      window.print();
+      return;
+    }
+
+    const courseName = this.selectedDossierCourse || 'Database Management Systems';
+    const facultyName = this.facultyProfile?.name || 'Faculty Member';
+    const dept = this.facultyProfile?.department || 'Computer Science & Engineering';
+    const today = new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' });
+
+    let coRows = '';
+    this.dossierCOs.forEach(co => {
+      coRows += `
+        <tr>
+          <td style="padding: 8px 12px; border: 1px solid #cbd5e1; font-weight: bold; color: #1e40af;">${co.coCode}</td>
+          <td style="padding: 8px 12px; border: 1px solid #cbd5e1;">${co.description}</td>
+          <td style="padding: 8px 12px; border: 1px solid #cbd5e1; text-align: center; font-weight: bold;">${co.targetPercentage}%</td>
+          <td style="padding: 8px 12px; border: 1px solid #cbd5e1; text-align: center; font-weight: bold; color: ${co.attainmentPercentage >= co.targetPercentage ? '#16a34a' : '#dc2626'};">${co.attainmentPercentage}%</td>
+          <td style="padding: 8px 12px; border: 1px solid #cbd5e1; text-align: center;">
+            <span style="display: inline-block; padding: 2px 8px; border-radius: 4px; font-weight: bold; font-size: 11px; ${
+              co.attainmentPercentage >= co.targetPercentage ? 'background: #dcfce7; color: #166534;' : 'background: #fee2e2; color: #991b1b;'
+            }">${co.status}</span>
+          </td>
+        </tr>
+      `;
+    });
+
+    const htmlContent = `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <title>NBA Official Course File Dossier - ${courseName}</title>
+        <style>
+          body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; padding: 30px; color: #1e293b; line-height: 1.5; }
+          .header { text-align: center; border-bottom: 2px solid #1e40af; padding-bottom: 16px; margin-bottom: 20px; }
+          .inst-title { font-size: 20px; font-weight: 900; color: #1e3a8a; text-transform: uppercase; margin: 0; }
+          .sub-title { font-size: 13px; color: #475569; margin: 4px 0 0 0; }
+          .meta-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; background: #f8fafc; border: 1px solid #e2e8f0; padding: 14px 18px; border-radius: 6px; margin-bottom: 24px; font-size: 12px; }
+          table { width: 100%; border-collapse: collapse; margin-bottom: 24px; font-size: 12px; }
+          th { background: #1e40af; color: #ffffff; padding: 10px 12px; font-size: 11px; text-transform: uppercase; border: 1px solid #1e40af; }
+          .signatures { display: flex; justify-content: space-between; margin-top: 60px; padding-top: 20px; }
+          .sig-box { text-align: center; width: 220px; border-top: 1px solid #475569; padding-top: 8px; font-size: 12px; font-weight: bold; }
+          @media print { body { padding: 0; } button { display: none; } }
+        </style>
+      </head>
+      <body>
+        <div class="header">
+          <h1 class="inst-title">CENTURION UNIVERSITY OF TECHNOLOGY & MANAGEMENT</h1>
+          <p class="sub-title">DEPARTMENT OF ${dept.toUpperCase()} | OBE & NBA ACCREDITATION CELL</p>
+          <p style="font-size: 15px; font-weight: 800; color: #0f766e; margin: 8px 0 0 0;">NBA CRITERIA-3: OFFICIAL COURSE FILE & ATTAINMENT DOSSIER</p>
+        </div>
+
+        <div class="meta-grid">
+          <div><strong>Course Title:</strong> ${courseName}</div>
+          <div><strong>Course Instructor:</strong> ${facultyName}</div>
+          <div><strong>Department:</strong> ${dept}</div>
+          <div><strong>Academic Year:</strong> 2025 - 2026 (Semester Odd)</div>
+          <div><strong>Accreditation Benchmark Target:</strong> 75% Attainment</div>
+          <div><strong>Dossier Generation Date:</strong> ${today}</div>
+        </div>
+
+        <h3 style="color: #1e40af; font-size: 14px; margin-bottom: 10px; text-transform: uppercase;">1. Course Outcomes (CO) Attainment Summary</h3>
+        <table>
+          <thead>
+            <tr>
+              <th style="width: 80px;">CO Code</th>
+              <th style="text-align: left;">Outcome Description</th>
+              <th style="width: 90px;">Target %</th>
+              <th style="width: 90px;">Attained %</th>
+              <th style="width: 110px;">NBA Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${coRows || '<tr><td colspan="5" style="text-align: center; padding: 12px;">No Course Outcomes logged yet.</td></tr>'}
+          </tbody>
+        </table>
+
+        <div class="signatures">
+          <div class="sig-box">${facultyName}<br><span style="font-size: 10px; font-weight: normal; color: #64748b;">Course Faculty</span></div>
+          <div class="sig-box">OBE & NBA Coordinator<br><span style="font-size: 10px; font-weight: normal; color: #64748b;">Internal Quality Assurance</span></div>
+          <div class="sig-box">Head of Department (HOD)<br><span style="font-size: 10px; font-weight: normal; color: #64748b;">Academic Endorsement</span></div>
+        </div>
+      </body>
+      </html>
+    `;
+
+    printWindow.document.write(htmlContent);
+    printWindow.document.close();
+    setTimeout(() => {
+      printWindow.focus();
+      printWindow.print();
+    }, 500);
   }
 
   // ==========================================

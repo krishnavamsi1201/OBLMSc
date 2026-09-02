@@ -524,8 +524,110 @@ export class CopoMapping implements OnInit {
     this.toast.success('CO-PO Matrix exported to CSV.');
   }
 
+  downloadNBAPdfReport(): void {
+    const printWindow = window.open('', '_blank');
+    if (!printWindow) {
+      this.toast.error('Popup blocked. Please allow popups to download NBA PDF report.');
+      return;
+    }
+
+    const today = new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' });
+    const dept = this.studentDept || 'Computer Science & Engineering';
+
+    let tableRows = '';
+    this.groupedMappings.forEach(grp => {
+      grp.mappings.forEach(m => {
+        tableRows += `
+          <tr>
+            <td style="padding: 8px 12px; border: 1px solid #cbd5e1; font-weight: bold; font-size: 11px;">${grp.courseName}</td>
+            <td style="padding: 8px 12px; border: 1px solid #cbd5e1; text-align: center; font-weight: 800; color: #1e40af;">${m.co}</td>
+            <td style="padding: 8px 12px; border: 1px solid #cbd5e1; text-align: center; font-weight: 800; color: #047857;">${m.po}</td>
+            <td style="padding: 8px 12px; border: 1px solid #cbd5e1; text-align: center;">
+              <span style="display: inline-block; padding: 2px 8px; border-radius: 4px; font-weight: bold; font-size: 11px; ${
+                m.mappingLevel === 3 ? 'background: #dcfce7; color: #166534;' : 
+                m.mappingLevel === 2 ? 'background: #fef9c3; color: #854d0e;' : 
+                'background: #fee2e2; color: #991b1b;'
+              }">
+                Level ${m.mappingLevel || m.contribution || 1} (${m.mappingLevel === 3 ? 'High' : m.mappingLevel === 2 ? 'Medium' : 'Low'})
+              </span>
+            </td>
+            <td style="padding: 8px 12px; border: 1px solid #cbd5e1; text-align: center; color: #15803d; font-weight: bold;">Approved</td>
+          </tr>
+        `;
+      });
+    });
+
+    const htmlContent = `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <title>NBA Accreditation CO-PO Articulation Dossier</title>
+        <style>
+          body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; padding: 30px; color: #1e293b; line-height: 1.5; }
+          .header { text-align: center; border-bottom: 2px solid #1e40af; padding-bottom: 16px; margin-bottom: 20px; }
+          .inst-title { font-size: 20px; font-weight: 900; color: #1e3a8a; text-transform: uppercase; margin: 0; }
+          .sub-title { font-size: 13px; color: #475569; margin: 4px 0 0 0; }
+          .meta-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; background: #f8fafc; border: 1px solid #e2e8f0; padding: 12px 16px; border-radius: 6px; margin-bottom: 20px; font-size: 12px; }
+          table { width: 100%; border-collapse: collapse; margin-bottom: 30px; }
+          th { background: #1e40af; color: #ffffff; padding: 10px 12px; font-size: 11px; text-transform: uppercase; border: 1px solid #1e40af; }
+          .signatures { display: flex; justify-content: space-between; margin-top: 60px; padding-top: 20px; }
+          .sig-box { text-align: center; width: 200px; border-top: 1px solid #475569; padding-top: 8px; font-size: 12px; font-weight: bold; }
+          @media print { body { padding: 0; } button { display: none; } }
+        </style>
+      </head>
+      <body>
+        <div class="header">
+          <h1 class="inst-title">CENTURION UNIVERSITY OF TECHNOLOGY & MANAGEMENT</h1>
+          <p class="sub-title">DEPARTMENT OF ${dept.toUpperCase()} | OUTCOME-BASED EDUCATION (OBE) CELL</p>
+          <p style="font-size: 15px; font-weight: 800; color: #0f766e; margin: 8px 0 0 0;">NBA CRITERIA-3: OFFICIAL CO-PO ARTICULATION MATRIX REPORT</p>
+        </div>
+
+        <div class="meta-grid">
+          <div><strong>Academic Year:</strong> 2025 - 2026 (Odd Semester)</div>
+          <div><strong>Accreditation Tier:</strong> NBA Tier-1 Compliant</div>
+          <div><strong>Department:</strong> ${dept}</div>
+          <div><strong>Generated On:</strong> ${today}</div>
+        </div>
+
+        <table>
+          <thead>
+            <tr>
+              <th style="text-align: left;">Course Name / Code</th>
+              <th>Course Outcome</th>
+              <th>Program Outcome</th>
+              <th>Correlation Level</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${tableRows}
+          </tbody>
+        </table>
+
+        <div style="background: #eff6ff; border-left: 4px solid #3b82f6; padding: 12px 16px; border-radius: 4px; font-size: 11px; margin-bottom: 30px;">
+          <strong>NBA Mapping Key:</strong> Level 1 (Slight/Low: 10-25%), Level 2 (Moderate/Medium: 25-50%), Level 3 (Substantial/High: >50%).
+        </div>
+
+        <div class="signatures">
+          <div class="sig-box">Course Coordinator</div>
+          <div class="sig-box">OBE & NBA Coordinator</div>
+          <div class="sig-box">Head of Department (HOD)</div>
+        </div>
+      </body>
+      </html>
+    `;
+
+    printWindow.document.write(htmlContent);
+    printWindow.document.close();
+    setTimeout(() => {
+      printWindow.focus();
+      printWindow.print();
+    }, 500);
+    this.toast.success('Generated official NBA CO-PO Articulation PDF report.');
+  }
+
   printMatrix(): void {
-    window.print();
+    this.downloadNBAPdfReport();
   }
 
   getCourseFullName(courseCode: string): string {

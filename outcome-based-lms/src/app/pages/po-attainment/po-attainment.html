@@ -39,28 +39,55 @@
     
     <div class="page-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
       <div class="header-title">
-        <h1 style="margin: 0; font-size: 1.8rem; color: var(--student-text); font-weight: 800;">🎓 PO Attainment Analysis</h1>
-        <p style="margin: 4px 0 0 0; color: var(--student-text-secondary); font-size: 0.95rem;">Track and analyze program outcome achievement (OBE Most Important)</p>
+        <h1 style="margin: 0; font-size: 1.8rem; color: var(--student-text); font-weight: 800;">🎓 PO Attainment Analysis (NBA 80:20 Framework)</h1>
+        <p style="margin: 4px 0 0 0; color: var(--student-text-secondary); font-size: 0.95rem;">Track 80% Direct Assessment + 20% Indirect Exit Feedback composite attainment</p>
       </div>
       <button class="btn btn-primary" (click)="exportToCSV()" style="background: var(--student-primary); border-radius: 8px; font-weight: 600; padding: 10px 18px; color: #fff; border: none; cursor: pointer;">📥 Export CSV</button>
     </div>
 
-    <!-- Overall Achievement Card -->
-    <div class="overall-card" style="background: var(--student-hero-bg); border-radius: 18px; padding: 24px 28px; color: #ffffff; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 20px; box-shadow: 0 10px 30px rgba(var(--student-primary-rgb), 0.22);">
-      <div class="overall-content">
-        <h2 style="margin: 0; font-size: 1.4rem; font-weight: 800;">Overall Program Achievement</h2>
-        <div class="overall-value" style="font-size: 2.8rem; font-weight: 900; margin: 10px 0 6px 0;">{{ overallAchievement }}%</div>
-        <p style="margin: 0; font-size: 0.9rem; color: rgba(255, 255, 255, 0.9);">Average achievement across all program outcomes</p>
+    <!-- Overall 80:20 NBA Achievement Grid -->
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px;">
+      <!-- Composite PO Score -->
+      <div class="overall-card" style="background: linear-gradient(135deg, var(--student-primary) 0%, #1e40af 100%); border-radius: 16px; padding: 22px; color: #ffffff; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 10px 25px -5px rgba(30, 64, 175, 0.3);">
+        <div class="overall-content">
+          <span style="font-size: 0.75rem; font-weight: 800; background: rgba(255,255,255,0.2); padding: 3px 8px; border-radius: 12px; text-transform: uppercase;">NBA Criteria-3 Composite</span>
+          <div class="overall-value" style="font-size: 2.4rem; font-weight: 900; margin: 8px 0 4px 0;">{{ overallAchievement }}%</div>
+          <p style="margin: 0; font-size: 0.85rem; color: rgba(255, 255, 255, 0.9);">80% Direct + 20% Indirect</p>
+        </div>
+        <div class="overall-chart">
+          <div class="progress-ring" style="position: relative; width: 75px; height: 75px; display: flex; align-items: center; justify-content: center;">
+            <svg viewBox="0 0 100 100" class="ring-svg" style="width: 100%; height: 100%; transform: rotate(-90deg);">
+              <circle cx="50" cy="50" r="45" class="ring-bg" style="fill: none; stroke: rgba(255, 255, 255, 0.2); stroke-width: 8;"></circle>
+              <circle cx="50" cy="50" r="45" class="ring-progress" 
+                [style.strokeDashoffset]="282.7 - (overallAchievement / 100) * 282.7"
+                style="fill: none; stroke: #ffffff; stroke-width: 8; stroke-dasharray: 282.7; transition: stroke-dashoffset 0.3s ease; stroke-linecap: round;"></circle>
+            </svg>
+            <div class="ring-text" style="position: absolute; font-size: 1.1rem; font-weight: 800; color: #ffffff;">{{ overallAchievement }}%</div>
+          </div>
+        </div>
       </div>
-      <div class="overall-chart">
-        <div class="progress-ring" style="position: relative; width: 100px; height: 100px; display: flex; align-items: center; justify-content: center;">
-          <svg viewBox="0 0 100 100" class="ring-svg" style="width: 100%; height: 100%; transform: rotate(-90deg);">
-            <circle cx="50" cy="50" r="45" class="ring-bg" style="fill: none; stroke: rgba(255, 255, 255, 0.2); stroke-width: 8;"></circle>
-            <circle cx="50" cy="50" r="45" class="ring-progress" 
-              [style.strokeDashoffset]="282.7 - (overallAchievement / 100) * 282.7"
-              style="fill: none; stroke: #ffffff; stroke-width: 8; stroke-dasharray: 282.7; transition: stroke-dashoffset 0.3s ease; stroke-linecap: round;"></circle>
-          </svg>
-          <div class="ring-text" style="position: absolute; font-size: 1.3rem; font-weight: 800; color: #ffffff;">{{ overallAchievement }}%</div>
+
+      <!-- Direct Attainment (80%) -->
+      <div style="background: var(--student-card-bg); border: 1px solid var(--student-border); border-left: 5px solid #3b82f6; border-radius: 16px; padding: 22px; display: flex; flex-direction: column; justify-content: space-between; box-shadow: 0 4px 16px rgba(0,0,0,0.03);">
+        <div>
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <span style="font-size: 0.75rem; font-weight: 800; color: #3b82f6; text-transform: uppercase;">Direct CIE & Lab (80%)</span>
+            <span style="font-size: 12px; background: rgba(59,130,246,0.1); color: #3b82f6; padding: 2px 8px; border-radius: 10px; font-weight: 700;">Weight: 0.80</span>
+          </div>
+          <div style="font-size: 2.2rem; font-weight: 900; color: var(--student-text); margin: 6px 0 2px 0;">{{ overallDirectScore }}%</div>
+          <p style="margin: 0; font-size: 0.82rem; color: var(--student-text-secondary);">Calculated from CIE Midterms & Assignments</p>
+        </div>
+      </div>
+
+      <!-- Indirect Exit Survey (20%) -->
+      <div style="background: var(--student-card-bg); border: 1px solid var(--student-border); border-left: 5px solid #8b5cf6; border-radius: 16px; padding: 22px; display: flex; flex-direction: column; justify-content: space-between; box-shadow: 0 4px 16px rgba(0,0,0,0.03);">
+        <div>
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <span style="font-size: 0.75rem; font-weight: 800; color: #8b5cf6; text-transform: uppercase;">Indirect Exit Survey (20%)</span>
+            <span style="font-size: 12px; background: rgba(139,92,246,0.1); color: #8b5cf6; padding: 2px 8px; border-radius: 10px; font-weight: 700;">Weight: 0.20</span>
+          </div>
+          <div style="font-size: 2.2rem; font-weight: 900; color: var(--student-text); margin: 6px 0 2px 0;">{{ overallIndirectScore }}%</div>
+          <p style="margin: 0; font-size: 0.82rem; color: var(--student-text-secondary);">Student Exit & Course End Feedback</p>
         </div>
       </div>
     </div>
@@ -70,20 +97,28 @@
       <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
         <div>
           <h2 style="margin: 0; font-size: 1.35rem; font-weight: 800; color: var(--student-text); display: flex; align-items: center; gap: 8px;">
-            🕸️ NBA Program Outcomes (PO1 - PO12) Spider / Radar Articulation
+            🕸️ NBA Program Outcomes 80:20 Radar Articulation
           </h2>
           <p style="margin: 4px 0 0 0; font-size: 0.88rem; color: var(--student-text-secondary);">
-            Visual 12-dimensional graduate attribute attainment index vs NBA benchmark target ({{ targetPercentage }}%)
+            Multi-layer direct vs indirect graduate attribute index vs NBA benchmark target ({{ targetPercentage }}%)
           </p>
         </div>
-        <div style="display: flex; align-items: center; gap: 16px; font-size: 12.5px; font-weight: 700;">
+        <div style="display: flex; align-items: center; gap: 16px; font-size: 12.5px; font-weight: 700; flex-wrap: wrap;">
+          <div style="display: flex; align-items: center; gap: 6px;">
+            <span style="display: inline-block; width: 12px; height: 12px; border-radius: 50%; background: #10b981;"></span>
+            <span style="color: var(--student-text);">Final Composite PO</span>
+          </div>
           <div style="display: flex; align-items: center; gap: 6px;">
             <span style="display: inline-block; width: 12px; height: 12px; border-radius: 50%; background: #3b82f6;"></span>
-            <span style="color: var(--student-text);">Attained Level</span>
+            <span style="color: var(--student-text);">Direct (80%)</span>
+          </div>
+          <div style="display: flex; align-items: center; gap: 6px;">
+            <span style="display: inline-block; width: 12px; height: 12px; border-radius: 50%; background: #8b5cf6;"></span>
+            <span style="color: var(--student-text);">Indirect (20%)</span>
           </div>
           <div style="display: flex; align-items: center; gap: 6px;">
             <span style="display: inline-block; width: 12px; height: 12px; border-radius: 50%; background: #ef4444; border: 2px dashed #ef4444;"></span>
-            <span style="color: var(--student-text);">Target Threshold ({{ targetPercentage }}%)</span>
+            <span style="color: var(--student-text);">Target ({{ targetPercentage }}%)</span>
           </div>
         </div>
       </div>
@@ -107,21 +142,35 @@
 
           <!-- Target Benchmark Polygon (75%) -->
           <polygon [attr.points]="targetRadarPoints" 
-            fill="rgba(239, 68, 68, 0.06)" 
+            fill="rgba(239, 68, 68, 0.05)" 
             stroke="#ef4444" 
             stroke-width="1.8" 
             stroke-dasharray="5,4" />
 
-          <!-- Attained Level Polygon with Glowing Gradient -->
+          <!-- Direct Attainment Polygon (80%) -->
+          <polygon [attr.points]="directRadarPoints" 
+            fill="none" 
+            stroke="#3b82f6" 
+            stroke-width="1.8" 
+            stroke-dasharray="4,3" />
+
+          <!-- Indirect Attainment Polygon (20%) -->
+          <polygon [attr.points]="indirectRadarPoints" 
+            fill="none" 
+            stroke="#8b5cf6" 
+            stroke-width="1.8" 
+            stroke-dasharray="2,2" />
+
+          <!-- Final Composite Level Polygon with Glowing Gradient -->
           <defs>
             <linearGradient id="radarFillGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" stop-color="#3b82f6" stop-opacity="0.45" />
-              <stop offset="100%" stop-color="#10b981" stop-opacity="0.25" />
+              <stop offset="0%" stop-color="#10b981" stop-opacity="0.45" />
+              <stop offset="100%" stop-color="#3b82f6" stop-opacity="0.25" />
             </linearGradient>
           </defs>
           <polygon [attr.points]="radarPoints" 
             fill="url(#radarFillGrad)" 
-            stroke="#3b82f6" 
+            stroke="#10b981" 
             stroke-width="2.5" 
             stroke-linejoin="round" />
 
@@ -129,7 +178,7 @@
           <g *ngFor="let sp of radarSpokes">
             <circle [attr.cx]="sp.labelX - (sp.labelX - sp.x1) * 0.15" 
               [attr.cy]="sp.labelY - (sp.labelY - sp.y1) * 0.15" 
-              r="4" 
+              r="4.5" 
               [attr.fill]="sp.achievement >= targetPercentage ? '#10b981' : '#f59e0b'" 
               stroke="#ffffff" 
               stroke-width="1.5" />
@@ -145,9 +194,6 @@
         </svg>
       </div>
     </div>
-
-    <!-- Stats Grid -->
-    <div class="stats-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 18px;">
       <div class="stat-card achieved" style="background: var(--student-card-bg); border: 1px solid var(--student-border); border-left: 5px solid #10b981; border-radius: 12px; padding: 18px; display: flex; flex-direction: column; gap: 6px;">
         <div class="stat-number" style="font-size: 1.8rem; font-weight: 800; color: #10b981;">{{ getAchievedCount() }}</div>
         <div class="stat-label" style="font-size: 0.85rem; font-weight: 700; color: var(--student-text-secondary); text-transform: uppercase;">Achieved (≥{{ targetPercentage }}%)</div>
@@ -207,7 +253,13 @@
 
         <div class="card-body" style="display: flex; flex-direction: column; gap: 12px; margin-top: auto;">
           <div class="achievement-display" style="display: flex; justify-content: space-between; align-items: baseline;">
-            <div class="achievement-value" style="font-size: 1.6rem; font-weight: 900; color: var(--student-text);">{{ po.achievement }}%</div>
+            <div>
+              <div class="achievement-value" style="font-size: 1.6rem; font-weight: 900; color: var(--student-text);">{{ po.achievement }}%</div>
+              <div style="display: flex; gap: 6px; margin-top: 3px; font-size: 10.5px; font-weight: 700;">
+                <span style="background: rgba(59,130,246,0.1); color: #3b82f6; padding: 1px 6px; border-radius: 4px;">Direct: {{ po.directScore || po.achievement }}%</span>
+                <span style="background: rgba(139,92,246,0.1); color: #8b5cf6; padding: 1px 6px; border-radius: 4px;">Survey: {{ po.indirectScore || 80 }}%</span>
+              </div>
+            </div>
             <div class="target-value" style="font-size: 0.82rem; font-weight: 600; color: var(--student-text-secondary);">Target: {{ po.targetPercentage }}%</div>
           </div>
 

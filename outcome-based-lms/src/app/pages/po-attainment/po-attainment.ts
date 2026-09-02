@@ -26,14 +26,18 @@ interface COAttainment {
   achievement: number;
 }
 
-interface POAttainment {
+export interface POAttainment {
   code: string;
   description: string;
+  directScore?: number;
+  indirectScore?: number;
+  directWeight?: number;
+  indirectWeight?: number;
   achievement: number;
   targetPercentage: number;
   status: 'Achieved' | 'Partial' | 'Not Achieved';
-  mappedCOs: string[];
-  coCount: number;
+  mappedCOs?: string[];
+  coCount?: number;
 }
 
 @Component({
@@ -54,11 +58,15 @@ export class PoAttainment implements OnInit {
   searchQuery: string = '';
   
   overallAchievement: number = 0;
+  overallDirectScore: number = 0;
+  overallIndirectScore: number = 0;
   targetPercentage: number = 75;
 
   radarPoints: string = '';
+  directRadarPoints: string = '';
+  indirectRadarPoints: string = '';
   targetRadarPoints: string = '';
-  radarSpokes: Array<{ code: string; x1: number; y1: number; x2: number; y2: number; labelX: number; labelY: number; achievement: number; textAnchor: string }> = [];
+  radarSpokes: Array<{ code: string; x1: number; y1: number; x2: number; y2: number; labelX: number; labelY: number; achievement: number; directScore?: number; indirectScore?: number; textAnchor: string }> = [];
   radarRings: string[] = [];
   hoveredPo: POAttainment | null = null;
 
@@ -158,6 +166,12 @@ export class PoAttainment implements OnInit {
           this.overallAchievement = Math.round(
             data.reduce((sum, po) => sum + po.achievement, 0) / data.length
           );
+          this.overallDirectScore = Math.round(
+            data.reduce((sum, po) => sum + (po.directScore || po.achievement), 0) / data.length
+          );
+          this.overallIndirectScore = Math.round(
+            data.reduce((sum, po) => sum + (po.indirectScore || 80), 0) / data.length
+          );
         }
         this.computeRadarChart();
         this.filterAttainments();
@@ -200,20 +214,36 @@ export class PoAttainment implements OnInit {
     }
     this.targetRadarPoints = targetPts.join(' ');
 
-    // Actual attainment polygon & spokes
-    const attainedPts: string[] = [];
+    // Composite, Direct, and Indirect Polygons & Spokes
+    const compositePts: string[] = [];
+    const directPts: string[] = [];
+    const indirectPts: string[] = [];
     this.radarSpokes = [];
 
     for (let i = 0; i < count; i++) {
-      const po = list[i] || { code: `PO${i + 1}`, achievement: 70, description: `Program Outcome ${i + 1}`, status: 'Achieved' };
+      const po = list[i] || { 
+        code: `PO${i + 1}`, 
+        achievement: 72, 
+        directScore: 70, 
+        indirectScore: 80, 
+        description: `Program Outcome ${i + 1}`, 
+        status: 'Achieved' 
+      };
       const angle = (i * 2 * Math.PI / count) - (Math.PI / 2);
       const spokeX = cx + maxRadius * Math.cos(angle);
       const spokeY = cy + maxRadius * Math.sin(angle);
 
-      const val = Math.max(10, Math.min(100, po.achievement || 70));
-      const ptX = cx + maxRadius * (val / 100) * Math.cos(angle);
-      const ptY = cy + maxRadius * (val / 100) * Math.sin(angle);
-      attainedPts.push(`${ptX.toFixed(1)},${ptY.toFixed(1)}`);
+      // Composite
+      const compVal = Math.max(10, Math.min(100, po.achievement || 72));
+      compositePts.push(`${(cx + maxRadius * (compVal / 100) * Math.cos(angle)).toFixed(1)},${(cy + maxRadius * (compVal / 100) * Math.sin(angle)).toFixed(1)}`);
+
+      // Direct (80%)
+      const directVal = Math.max(10, Math.min(100, po.directScore || compVal));
+      directPts.push(`${(cx + maxRadius * (directVal / 100) * Math.cos(angle)).toFixed(1)},${(cy + maxRadius * (directVal / 100) * Math.sin(angle)).toFixed(1)}`);
+
+      // Indirect Survey (20%)
+      const indVal = Math.max(10, Math.min(100, po.indirectScore || 80));
+      indirectPts.push(`${(cx + maxRadius * (indVal / 100) * Math.cos(angle)).toFixed(1)},${(cy + maxRadius * (indVal / 100) * Math.sin(angle)).toFixed(1)}`);
 
       // Label positions slightly further out
       const labelX = cx + (maxRadius + 22) * Math.cos(angle);
@@ -228,12 +258,16 @@ export class PoAttainment implements OnInit {
         y2: spokeY,
         labelX,
         labelY,
-        achievement: val,
+        achievement: compVal,
+        directScore: directVal,
+        indirectScore: indVal,
         textAnchor
       });
     }
 
-    this.radarPoints = attainedPts.join(' ');
+    this.radarPoints = compositePts.join(' ');
+    this.directRadarPoints = directPts.join(' ');
+    this.indirectRadarPoints = indirectPts.join(' ');
   }
 
   filterAttainments(): void {

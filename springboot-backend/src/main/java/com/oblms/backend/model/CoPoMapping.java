@@ -3,7 +3,11 @@ package com.oblms.backend.model;
 import jakarta.persistence.*;
 
 @Entity
-@Table(name = "copo_mappings")
+@Table(name = "copo_mappings", indexes = {
+    @Index(name = "idx_copo_course", columnList = "course"),
+    @Index(name = "idx_copo_po", columnList = "po"),
+    @Index(name = "idx_copo_co", columnList = "co")
+})
 public class CoPoMapping {
 
     @Id
