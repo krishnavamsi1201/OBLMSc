@@ -116,12 +116,31 @@ export class CopoMapping implements OnInit {
   selectedBranch: string = 'MY_BRANCH';
 
   branchCoursesMap: { [key: string]: string[] } = {
-    'CSE': ['CS101', 'CS102', 'CS103', 'CS301', 'CS302', 'CS102L', 'RLMCA205', 'CC', 'OOP'],
+    'CSE': ['CS101', 'CS102', 'CS103', 'CS301', 'CS302', 'CS102L', 'DS Lab', 'DS', 'RLMCA205', 'CC', 'OOP', 'Database', 'Data Structures', 'Operating Systems', 'Computer Networks', 'Software Engineering'],
     'IT': ['IT305', 'CS303', 'Linux', 'WT', 'CS361', 'Linux Lab', 'Open Lab'],
     'ECE': ['MES', 'DSLD', 'EC206', 'EE407', 'CS203', 'CS207', 'AMP', 'LD LAB'],
     'ME': ['ME210', 'KM', 'SMSE', '04ME6512', 'IC', 'AU203', 'EM IV'],
     'Civil': ['FMHM', 'SMSE', 'HS300', 'CE234', 'EMII', 'ECS']
   };
+
+  get studentAllowedCourses(): string[] {
+    const list: string[] = [...(this.branchCoursesMap[this.currentActiveBranch] || [])];
+    try {
+      const assigned = JSON.parse(localStorage.getItem('userAssignedCourses') || '[]');
+      assigned.forEach((a: string) => { if (!list.includes(a)) list.push(a); });
+    } catch {}
+    try {
+      const studentCourses = JSON.parse(localStorage.getItem('obslmsStudentCourses') || '[]');
+      const name = (this.studentName || '').toLowerCase();
+      studentCourses.forEach((sc: any) => {
+        if ((sc.studentName || '').toLowerCase().includes(name)) {
+          if (sc.courseCode && !list.includes(sc.courseCode)) list.push(sc.courseCode);
+          if (sc.courseTitle && !list.includes(sc.courseTitle)) list.push(sc.courseTitle);
+        }
+      });
+    } catch {}
+    return list;
+  }
 
   get currentActiveBranch(): string {
     if (this.selectedBranch === 'MY_BRANCH') {
@@ -137,18 +156,26 @@ export class CopoMapping implements OnInit {
   }
 
   get filteredGroupedMappings() {
-    if (this.selectedBranch === 'ALL') return this.groupedMappings;
-    const allowed = this.branchCoursesMap[this.currentActiveBranch] || [];
+    if (this.role !== 'student' && this.selectedBranch === 'ALL') return this.groupedMappings;
+    const allowed = this.studentAllowedCourses;
     return this.groupedMappings.filter(g => 
-      allowed.some(ac => g.courseName.toLowerCase().includes(ac.toLowerCase()))
+      allowed.some(ac => 
+        g.courseName.toLowerCase() === ac.toLowerCase() ||
+        g.courseName.toLowerCase().includes(ac.toLowerCase()) || 
+        ac.toLowerCase().includes(g.courseName.toLowerCase())
+      )
     );
   }
 
   get filteredCourseOutcomes() {
-    if (this.selectedBranch === 'ALL') return this.courseOutcomes;
-    const allowed = this.branchCoursesMap[this.currentActiveBranch] || [];
+    if (this.role !== 'student' && this.selectedBranch === 'ALL') return this.courseOutcomes;
+    const allowed = this.studentAllowedCourses;
     return this.courseOutcomes.filter(co => 
-      allowed.some(ac => (co.course || '').toLowerCase().includes(ac.toLowerCase()))
+      allowed.some(ac => 
+        (co.course || '').toLowerCase() === ac.toLowerCase() ||
+        (co.course || '').toLowerCase().includes(ac.toLowerCase()) || 
+        ac.toLowerCase().includes((co.course || '').toLowerCase())
+      )
     );
   }
 

@@ -66,7 +66,15 @@ interface ProgramOutcome {
                 />
             </div>
 
-            <div class="branch-filter-group">
+            <!-- Student View: Dedicated Department Badge -->
+            <div class="branch-filter-group" *ngIf="userRole === 'student'">
+                <div class="filter-pill-btn active" style="background: #1e40af; color: #fff; cursor: default; border-color: #1e40af;">
+                    💻 {{ userDept }} ({{ shortDept }})
+                </div>
+            </div>
+
+            <!-- Admin / Faculty: Full Branch Switcher -->
+            <div class="branch-filter-group" *ngIf="userRole !== 'student'">
                 <button 
                     type="button" 
                     class="filter-pill-btn" 
@@ -305,6 +313,17 @@ export class ProgramOutcomes implements OnInit {
   userName: string = '';
   facultyName: string = '';
   studentDept: string = 'Computer Science & Engineering';
+  userDept: string = 'Computer Science & Engineering';
+
+  get shortDept(): string {
+    const d = (this.userDept || this.studentDept || '').toLowerCase();
+    if (d.includes('computer') || d.includes('cse')) return 'CSE';
+    if (d.includes('information') || d.includes('it')) return 'IT';
+    if (d.includes('electronic') || d.includes('ece')) return 'ECE';
+    if (d.includes('mechanical') || d.includes('me')) return 'ME';
+    if (d.includes('civil') || d.includes('ce')) return 'Civil';
+    return 'CSE';
+  }
   
   programOutcomes: ProgramOutcome[] = [];
   searchQuery: string = '';
@@ -418,7 +437,10 @@ export class ProgramOutcomes implements OnInit {
       const matchesSearch = !q || code.includes(q) || title.includes(q) || desc.includes(q);
 
       let matchesDept = true;
-      if (this.selectedDeptFilter) {
+      if (this.userRole === 'student') {
+        const uDept = (this.userDept || '').toLowerCase();
+        matchesDept = prog.includes(this.shortDept.toLowerCase()) || uDept.includes(prog.split(' ')[0]) || this.shortDept === 'CSE';
+      } else if (this.selectedDeptFilter) {
         const filt = this.selectedDeptFilter.toLowerCase();
         matchesDept = prog.includes(filt) || filt === 'cse';
       }
