@@ -140,7 +140,7 @@
     <!-- Mappings grouped by Subject -->
     <div *ngFor="let group of filteredGroupedMappings" class="table-card" style="background: var(--student-card-bg); border: 1px solid var(--student-border); padding: 20px; border-radius: 12px; display: flex; flex-direction: column; gap: 14px; box-shadow: 0 1px 12px rgba(0,0,0,.06); margin-bottom: 16px;">
       <h2 style="margin: 0; color: var(--student-primary); border-bottom: 2px solid var(--student-border); padding-bottom: 8px; font-size: 1.15rem; display: flex; justify-content: space-between; align-items: center; cursor: pointer;" (click)="toggleGroup(group.courseName)">
-          <span style="display: flex; align-items: center; gap: 8px;">📖 {{ group.courseName }} CO-PO Mappings</span>
+          <span style="display: flex; align-items: center; gap: 8px;">📖 {{ getFullCourseName(group.courseName) }} CO-PO Mappings</span>
           <span style="font-size: 0.82rem; color: var(--student-text-secondary); font-weight: 600;">
               {{ collapsedGroups[group.courseName] ? '▼ Show' : '▲ Hide' }} ({{ group.mappings.length }} Mappings)
           </span>

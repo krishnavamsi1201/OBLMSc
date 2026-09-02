@@ -76,7 +76,7 @@ interface CourseOutcome {
                         <td [attr.colspan]="(role === 'admin' || role === 'faculty') ? 4 : 3">No course outcomes defined yet.</td>
                     </tr>
                     <tr *ngFor="let outcome of courseOutcomes; index as i">
-                        <td><strong>{{ outcome.course }}</strong></td>
+                        <td><strong style="color: #1e3a8a; font-size: 13.5px;">{{ getFullCourseName(outcome.course) }}</strong></td>
                         <td><span class="obe-badge obe-badge-co">{{ outcome.co }}</span></td>
                         <td>{{ outcome.description }}</td>
                         <td class="actions-cell" *ngIf="role === 'admin' || role === 'faculty'">
@@ -135,6 +135,45 @@ export class CourseOutcomes {
 
   createEmptyOutcome(): CourseOutcome {
     return { id: 0, course: '', co: '', description: '' };
+  }
+
+  courseFullNameMap: { [key: string]: string } = {
+    'CS101': 'CS101 - Database Management Systems',
+    'CS102': 'CS102 - Data Structures & Algorithms',
+    'CS103': 'CS103 - Object-Oriented Programming with Java',
+    'CS301': 'CS301 - Computer Networks & Protocols',
+    'CS302': 'CS302 - Software Engineering & Agile Methodology',
+    'DS Lab': 'DS Lab - Data Structures & Algorithms Laboratory in C',
+    'EMII': 'EM II - Engineering Mathematics II',
+    'IT305': 'IT305 - Operating Systems & Systems Programming',
+    'CS303': 'CS303 - Design and Analysis of Algorithms',
+    'WT': 'WT - Web Technologies & Full-Stack Development',
+    'Linux': 'Linux - Linux Administration & Shell Scripting',
+    'MES': 'MES - Microprocessors and Embedded Systems',
+    'DSLD': 'DSLD - Digital System and Logic Design',
+    'FMHM': 'FMHM - Fluid Mechanics and Hydraulic Machinery',
+    'ME210': 'ME210 - Kinematics & Dynamics of Machinery',
+    'KM': 'KM - Kinematics of Machinery',
+    'IC': 'IC - Internal Combustion Engines',
+    'SMSE': 'SMSE - Solid Mechanics & Structural Engineering',
+    'CE234': 'CE234 - Surveying & Geomatics',
+    'HS300': 'HS300 - Professional Ethics & Human Values'
+  };
+
+  getFullCourseName(courseStr: string): string {
+    if (!courseStr) return '';
+    const trimmed = courseStr.trim();
+    if (this.courseFullNameMap[trimmed]) return this.courseFullNameMap[trimmed];
+    
+    for (const [k, v] of Object.entries(this.courseFullNameMap)) {
+      if (trimmed.toLowerCase() === k.toLowerCase() || trimmed.toLowerCase().startsWith(k.toLowerCase())) {
+        return v;
+      }
+    }
+    const found = this.courses.find(c => c.toLowerCase().includes(trimmed.toLowerCase()) || trimmed.toLowerCase().includes(c.toLowerCase()));
+    if (found) return found;
+
+    return trimmed;
   }
 
   getRelevantCoursesForUser(): string[] {
