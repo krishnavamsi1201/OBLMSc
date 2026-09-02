@@ -150,7 +150,8 @@ export class PoAttainment implements OnInit {
   }
 
   calculatePOAttainment(): void {
-    this.http.get<POAttainment[]>('http://localhost:8080/api/obe/po-attainment?target=' + this.targetPercentage).subscribe({
+    const facultyParam = (this.role === 'faculty' && this.studentName) ? `&faculty=${encodeURIComponent(this.studentName)}` : '';
+    this.http.get<POAttainment[]>(`http://localhost:8080/api/obe/po-attainment?target=${this.targetPercentage}${facultyParam}`).subscribe({
       next: (data) => {
         this.poAttainments = data;
         if (data.length > 0) {

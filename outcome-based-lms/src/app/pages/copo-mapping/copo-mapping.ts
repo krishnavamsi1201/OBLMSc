@@ -193,7 +193,10 @@ export class CopoMapping implements OnInit {
   }
 
   private loadProgramOutcomes() {
-    this.http.get<ProgramOutcome[]>('http://localhost:8080/api/copo/po').subscribe({
+    const facultyParam = (this.role === 'faculty' && this.studentName) ? encodeURIComponent(this.studentName) : '';
+    const url = facultyParam ? `http://localhost:8080/api/copo/po?faculty=${facultyParam}` : 'http://localhost:8080/api/copo/po';
+
+    this.http.get<ProgramOutcome[]>(url).subscribe({
       next: (data) => {
         this.programOutcomes = data;
         this.cdr.detectChanges();
@@ -202,7 +205,10 @@ export class CopoMapping implements OnInit {
   }
 
   private loadCourseOutcomes() {
-    this.http.get<CourseOutcome[]>('http://localhost:8080/api/copo/co').subscribe({
+    const facultyParam = (this.role === 'faculty' && this.studentName) ? encodeURIComponent(this.studentName) : '';
+    const url = facultyParam ? `http://localhost:8080/api/copo/co?faculty=${facultyParam}` : 'http://localhost:8080/api/copo/co';
+
+    this.http.get<CourseOutcome[]>(url).subscribe({
       next: (data) => {
         let list = data;
         if (this.role === 'faculty') {
@@ -225,7 +231,10 @@ export class CopoMapping implements OnInit {
   }
 
   private loadMappings() {
-    this.http.get<CoMapping[]>('http://localhost:8080/api/copo/mappings').subscribe({
+    const facultyParam = (this.role === 'faculty' && this.studentName) ? encodeURIComponent(this.studentName) : '';
+    const url = facultyParam ? `http://localhost:8080/api/copo/mappings?faculty=${facultyParam}` : 'http://localhost:8080/api/copo/mappings';
+
+    this.http.get<CoMapping[]>(url).subscribe({
       next: (data) => {
         let list = data;
         if (this.role === 'faculty') {

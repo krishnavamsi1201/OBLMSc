@@ -59,13 +59,17 @@ public class OBEController {
     }
 
     @GetMapping("/co-attainment")
-    public ResponseEntity<?> getCOAttainment(@RequestParam(defaultValue = "75") double target) {
-        return ResponseEntity.ok(obeService.calculateCOAttainment(target));
+    public ResponseEntity<?> getCOAttainment(
+            @RequestParam(defaultValue = "75") double target,
+            @RequestParam(required = false) String faculty) {
+        return ResponseEntity.ok(obeService.calculateCOAttainment(target, faculty));
     }
 
     @GetMapping("/po-attainment")
-    public ResponseEntity<?> getPOAttainment(@RequestParam(defaultValue = "75") double target) {
-        return ResponseEntity.ok(obeService.calculatePOAttainment(target));
+    public ResponseEntity<?> getPOAttainment(
+            @RequestParam(defaultValue = "75") double target,
+            @RequestParam(required = false) String faculty) {
+        return ResponseEntity.ok(obeService.calculatePOAttainment(target, faculty));
     }
 
     // Assessment-CO Mappings REST APIs

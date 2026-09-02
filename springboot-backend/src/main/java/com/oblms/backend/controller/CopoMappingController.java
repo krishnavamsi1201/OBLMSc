@@ -24,6 +24,12 @@ public class CopoMappingController {
     @Autowired
     private CoPoMappingRepository coPoMappingRepository;
 
+    @Autowired
+    private UserRepository userRepository;
+
+    @Autowired
+    private CourseRepository courseRepository;
+
     // Defined branch course catalogs
     public static final Map<String, List<String>> BRANCH_COURSES = new LinkedHashMap<>();
     static {
@@ -32,6 +38,39 @@ public class CopoMappingController {
         BRANCH_COURSES.put("ECE", List.of("MES", "DSLD", "EC206", "EE407", "CS203", "CS207", "AMP", "LD LAB"));
         BRANCH_COURSES.put("ME", List.of("ME210", "KM", "SMSE", "04ME6512", "IC", "AU203", "EM IV"));
         BRANCH_COURSES.put("Civil", List.of("FMHM", "SMSE", "HS300", "CE234", "EMII", "ECS"));
+    }
+
+    public List<String> getFacultyCourseCodes(String facultyParam) {
+        if (facultyParam == null || facultyParam.trim().isEmpty()) {
+            return Collections.emptyList();
+        }
+        String q = facultyParam.trim();
+        List<String> codes = new ArrayList<>();
+
+        Optional<User> uOpt = userRepository.findById(q);
+        if (uOpt.isEmpty()) {
+            uOpt = userRepository.findByEmailIgnoreCase(q);
+        }
+        if (uOpt.isEmpty()) {
+            uOpt = userRepository.findAll().stream()
+                .filter(u -> u.getName() != null && u.getName().equalsIgnoreCase(q))
+                .findFirst();
+        }
+
+        if (uOpt.isPresent() && uOpt.get().getEnrolledCourses() != null && !uOpt.get().getEnrolledCourses().isEmpty()) {
+            codes.addAll(Arrays.stream(uOpt.get().getEnrolledCourses().split(","))
+                .map(String::trim)
+                .map(String::toUpperCase)
+                .toList());
+        }
+
+        List<Course> matchingCourses = courseRepository.findByFacultyContainingIgnoreCase(q);
+        for (Course c : matchingCourses) {
+            if (c.getCode() != null && !codes.contains(c.getCode().toUpperCase())) {
+                codes.add(c.getCode().toUpperCase());
+            }
+        }
+        return codes;
     }
 
     @PostConstruct
@@ -302,8 +341,29 @@ public class CopoMappingController {
 
     // Program Outcomes
     @GetMapping("/po")
-    public List<ProgramOutcome> getAllPOs(@RequestParam(required = false) String department, @RequestParam(required = false) String branch) {
-        return programOutcomeRepository.findAll();
+    public List<ProgramOutcome> getAllPOs(
+            @RequestParam(required = false) String department, 
+            @RequestParam(required = false) String branch,
+            @RequestParam(required = false) String faculty) {
+
+        List<ProgramOutcome> allPos = programOutcomeRepository.findAll();
+
+        if (faculty != null && !faculty.trim().isEmpty()) {
+            List<String> allowedCourses = getFacultyCourseCodes(faculty);
+            if (!allowedCourses.isEmpty()) {
+                List<CoPoMapping> facultyMappings = coPoMappingRepository.findAll().stream()
+                    .filter(m -> m.getCourse() != null && allowedCourses.stream().anyMatch(c -> c.equalsIgnoreCase(m.getCourse())))
+                    .toList();
+                Set<String> mappedPoCodes = facultyMappings.stream().map(CoPoMapping::getPo).collect(Collectors.toSet());
+                if (!mappedPoCodes.isEmpty()) {
+                    return allPos.stream()
+                        .filter(po -> mappedPoCodes.contains(po.getPoNumber()) || mappedPoCodes.contains(po.getPo()))
+                        .collect(Collectors.toList());
+                }
+            }
+        }
+
+        return allPos;
     }
 
     @PostMapping("/po")
@@ -319,11 +379,29 @@ public class CopoMappingController {
 
     // Course Outcomes
     @GetMapping("/co")
-    public List<CourseOutcome> getAllCOs(@RequestParam(required = false) String branch, @RequestParam(required = false) String course) {
+    public List<CourseOutcome> getAllCOs(
+            @RequestParam(required = false) String branch, 
+            @RequestParam(required = false) String course,
+            @RequestParam(required = false) String faculty) {
+
         List<CourseOutcome> all = courseOutcomeRepository.findAll();
+
+        // 1. Faculty specific filter
+        if (faculty != null && !faculty.trim().isEmpty()) {
+            List<String> allowed = getFacultyCourseCodes(faculty);
+            if (!allowed.isEmpty()) {
+                return all.stream()
+                    .filter(c -> c.getCourse() != null && allowed.stream().anyMatch(ac -> ac.equalsIgnoreCase(c.getCourse())))
+                    .collect(Collectors.toList());
+            }
+        }
+
+        // 2. Course specific filter
         if (course != null && !course.trim().isEmpty()) {
             return all.stream().filter(c -> c.getCourse() != null && c.getCourse().equalsIgnoreCase(course.trim())).collect(Collectors.toList());
         }
+
+        // 3. Branch specific filter
         if (branch != null && !branch.trim().isEmpty()) {
             String b = branch.toUpperCase().trim();
             if (BRANCH_COURSES.containsKey(b)) {
@@ -339,23 +417,34 @@ public class CopoMappingController {
         return courseOutcomeRepository.save(co);
     }
 
-    // Mappings strictly filtered by Branch / Course / Department
+    // Mappings strictly filtered by Faculty / Branch / Course / Department
     @GetMapping("/mappings")
     public List<CoPoMapping> getAllMappings(
             @RequestParam(required = false) String branch,
             @RequestParam(required = false) String department,
-            @RequestParam(required = false) String course) {
+            @RequestParam(required = false) String course,
+            @RequestParam(required = false) String faculty) {
 
         List<CoPoMapping> all = coPoMappingRepository.findAll();
 
-        // 1. Course specific filter
+        // 1. Faculty specific filter
+        if (faculty != null && !faculty.trim().isEmpty()) {
+            List<String> allowedCourses = getFacultyCourseCodes(faculty);
+            if (!allowedCourses.isEmpty()) {
+                return all.stream()
+                        .filter(m -> m.getCourse() != null && allowedCourses.stream().anyMatch(c -> c.equalsIgnoreCase(m.getCourse())))
+                        .collect(Collectors.toList());
+            }
+        }
+
+        // 2. Course specific filter
         if (course != null && !course.trim().isEmpty()) {
             return all.stream()
                     .filter(m -> m.getCourse() != null && m.getCourse().equalsIgnoreCase(course.trim()))
                     .collect(Collectors.toList());
         }
 
-        // 2. Branch specific filter (CSE, IT, ECE, ME, Civil)
+        // 3. Branch specific filter (CSE, IT, ECE, ME, Civil)
         String targetBranch = branch;
         if (targetBranch == null && department != null) {
             String d = department.toLowerCase();

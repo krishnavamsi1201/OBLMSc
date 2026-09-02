@@ -113,7 +113,11 @@ interface CourseOutcome {
 })
 export class CourseOutcomes {
   private toast = inject(ToastService);
+  private http = inject(HttpClient);
+  private cdr = inject(ChangeDetectorRef);
+
   role: string | null = null;
+  facultyName = '';
   showForm = false;
   editingIndex = -1;
   courseOutcomes: CourseOutcome[] = [];
@@ -123,6 +127,7 @@ export class CourseOutcomes {
 
   constructor() {
     this.role = localStorage.getItem('userRole')?.toLowerCase() || null;
+    this.facultyName = localStorage.getItem('userName') || '';
     this.loadCourses();
     this.loadOutcomes();
   }
@@ -132,24 +137,93 @@ export class CourseOutcomes {
   }
 
   loadCourses(): void {
-    try {
-      const stored = localStorage.getItem('obslmsCourses');
-      const courseList = stored ? JSON.parse(stored) as Array<{ code: string; title: string }> : [];
-      this.courses = courseList
-        .map(c => `${c.code ? c.code : ''}${c.code && c.title ? ' - ' : ''}${c.title ? c.title : ''}`)
-        .filter(Boolean);
-    } catch {
-      this.courses = [];
-    }
+    const facultyParam = (this.role === 'faculty' && this.facultyName) ? encodeURIComponent(this.facultyName) : '';
+    const url = facultyParam ? `http://localhost:8080/api/courses?faculty=${facultyParam}` : 'http://localhost:8080/api/courses';
+
+    this.http.get<Array<{ code: string; title: string }>>(url).subscribe({
+      next: (courseList) => {
+        let list = courseList;
+        if (this.role === 'faculty') {
+          let assigned: string[] = [];
+          try {
+            const storedAssigned = localStorage.getItem('userAssignedCourses');
+            if (storedAssigned) assigned = JSON.parse(storedAssigned);
+          } catch {}
+          if (assigned.length > 0) {
+            list = courseList.filter(c => 
+              assigned.includes(c.title) || assigned.includes(c.code) ||
+              assigned.some(a => c.title && c.title.toLowerCase().includes(a.toLowerCase()))
+            );
+          }
+        }
+        this.courses = list
+          .map(c => `${c.code ? c.code : ''}${c.code && c.title ? ' - ' : ''}${c.title ? c.title : ''}`)
+          .filter(Boolean);
+        this.cdr.detectChanges();
+      },
+      error: () => {
+        try {
+          const stored = localStorage.getItem('obslmsCourses');
+          const courseList = stored ? JSON.parse(stored) as Array<{ code: string; title: string }> : [];
+          this.courses = courseList
+            .map(c => `${c.code ? c.code : ''}${c.code && c.title ? ' - ' : ''}${c.title ? c.title : ''}`)
+            .filter(Boolean);
+        } catch {
+          this.courses = [];
+        }
+      }
+    });
   }
 
   loadOutcomes(): void {
-    try {
-      const stored = localStorage.getItem('obslmsCourseOutcomes');
-      this.courseOutcomes = stored ? JSON.parse(stored) as CourseOutcome[] : [];
-    } catch {
-      this.courseOutcomes = [];
-    }
+    const facultyParam = (this.role === 'faculty' && this.facultyName) ? encodeURIComponent(this.facultyName) : '';
+    const url = facultyParam ? `http://localhost:8080/api/copo/co?faculty=${facultyParam}` : 'http://localhost:8080/api/copo/co';
+
+    this.http.get<CourseOutcome[]>(url).subscribe({
+      next: (data) => {
+        let list = data;
+        if (this.role === 'faculty') {
+          let assigned: string[] = [];
+          try {
+            const storedAssigned = localStorage.getItem('userAssignedCourses');
+            if (storedAssigned) assigned = JSON.parse(storedAssigned);
+          } catch {}
+          if (assigned.length > 0) {
+            list = data.filter(co => 
+              assigned.includes(co.course) ||
+              assigned.some(a => (co.course || '').toLowerCase().includes(a.toLowerCase()))
+            );
+          }
+        }
+        this.courseOutcomes = list;
+        try {
+          localStorage.setItem('obslmsCourseOutcomes', JSON.stringify(this.courseOutcomes));
+        } catch {}
+        this.cdr.detectChanges();
+      },
+      error: () => {
+        try {
+          const stored = localStorage.getItem('obslmsCourseOutcomes');
+          let list = stored ? JSON.parse(stored) as CourseOutcome[] : [];
+          if (this.role === 'faculty') {
+            let assigned: string[] = [];
+            try {
+              const storedAssigned = localStorage.getItem('userAssignedCourses');
+              if (storedAssigned) assigned = JSON.parse(storedAssigned);
+            } catch {}
+            if (assigned.length > 0) {
+              list = list.filter(co => 
+                assigned.includes(co.course) ||
+                assigned.some(a => (co.course || '').toLowerCase().includes(a.toLowerCase()))
+              );
+            }
+          }
+          this.courseOutcomes = list;
+        } catch {
+          this.courseOutcomes = [];
+        }
+      }
+    });
   }
 
   saveOutcomes(): void {
@@ -171,31 +245,61 @@ export class CourseOutcomes {
       return;
     }
 
-    if (this.editingIndex >= 0) {
-      this.courseOutcomes[this.editingIndex] = { ...this.currentOutcome };
-      this.toast.success(`Course Outcome ${this.currentOutcome.co} updated.`);
-    } else {
-      const nextId = this.courseOutcomes.length ? Math.max(...this.courseOutcomes.map(o => o.id)) + 1 : 1;
-      this.courseOutcomes = [...this.courseOutcomes, { ...this.currentOutcome, id: nextId }];
-      this.toast.success(`Course Outcome ${this.currentOutcome.co} created.`);
-    }
+    // Extract raw course code from "CS101 - Database Management Systems"
+    const rawCourse = this.currentOutcome.course.split('-')[0].trim();
 
-    this.saveOutcomes();
-    this.resetForm();
-    this.showForm = false;
+    const payload = {
+      id: this.currentOutcome.id > 0 ? this.currentOutcome.id : null,
+      course: rawCourse,
+      co: this.currentOutcome.co.trim().toUpperCase(),
+      description: this.currentOutcome.description.trim()
+    };
+
+    this.http.post<CourseOutcome>('http://localhost:8080/api/copo/co', payload).subscribe({
+      next: (saved) => {
+        this.toast.success(`Course Outcome ${payload.co} saved successfully.`);
+        this.loadOutcomes();
+        this.resetForm();
+        this.showForm = false;
+      },
+      error: () => {
+        if (this.editingIndex >= 0) {
+          this.courseOutcomes[this.editingIndex] = { ...this.currentOutcome, course: rawCourse, co: payload.co };
+          this.toast.success(`Course Outcome ${payload.co} updated.`);
+        } else {
+          const nextId = this.courseOutcomes.length ? Math.max(...this.courseOutcomes.map(o => o.id)) + 1 : 1;
+          this.courseOutcomes = [...this.courseOutcomes, { ...this.currentOutcome, id: nextId, course: rawCourse, co: payload.co }];
+          this.toast.success(`Course Outcome ${payload.co} created.`);
+        }
+        this.saveOutcomes();
+        this.resetForm();
+        this.showForm = false;
+        this.cdr.detectChanges();
+      }
+    });
   }
 
   editOutcome(outcome: CourseOutcome, index: number): void {
     this.editingIndex = index;
-    this.currentOutcome = { ...outcome };
+    // Find matching dropdown string
+    const match = this.courses.find(c => c.toLowerCase().includes(outcome.course.toLowerCase())) || outcome.course;
+    this.currentOutcome = { ...outcome, course: match };
     this.showForm = true;
   }
 
   deleteOutcome(id: number): void {
-    const outcome = this.courseOutcomes.find(o => o.id === id);
-    this.courseOutcomes = this.courseOutcomes.filter(o => o.id !== id);
-    this.saveOutcomes();
-    this.toast.info(`Course Outcome ${outcome ? outcome.co : ''} removed.`);
+    this.http.delete('http://localhost:8080/api/copo/co/' + id).subscribe({
+      next: () => {
+        this.toast.info('Course Outcome removed.');
+        this.loadOutcomes();
+      },
+      error: () => {
+        this.courseOutcomes = this.courseOutcomes.filter(o => o.id !== id);
+        this.saveOutcomes();
+        this.toast.info('Course Outcome removed.');
+        this.cdr.detectChanges();
+      }
+    });
     if (this.editingIndex >= 0 && this.courseOutcomes[this.editingIndex]?.id !== id) {
       this.resetForm();
     }

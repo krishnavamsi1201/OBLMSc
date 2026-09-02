@@ -377,12 +377,15 @@ export class ProgramOutcomes implements OnInit {
   }
 
   private loadProgramOutcomes(): void {
-    this.http.get<ProgramOutcome[]>('http://localhost:8080/api/copo/po').subscribe({
+    const facultyParam = (this.userRole === 'faculty' && this.facultyName) ? encodeURIComponent(this.facultyName) : '';
+    const url = facultyParam ? `http://localhost:8080/api/copo/po?faculty=${facultyParam}` : 'http://localhost:8080/api/copo/po';
+
+    this.http.get<ProgramOutcome[]>(url).subscribe({
       next: (data) => {
-        if (Array.isArray(data) && data.length >= 10) {
+        if (Array.isArray(data) && data.length > 0) {
           this.programOutcomes = data.map((item, idx) => ({
             id: item.id || (idx + 1),
-            poNumber: this.getPoCode(item, idx),
+            poNumber: item.poNumber || item.po || this.getPoCode(item, idx),
             program: item.program || 'Computer Science & Engineering',
             description: item.description,
             attributeName: this.getAttributeTitle(item, idx)
