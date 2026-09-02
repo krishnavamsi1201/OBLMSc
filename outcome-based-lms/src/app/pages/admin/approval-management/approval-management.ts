@@ -36,7 +36,7 @@ export class ApprovalManagement implements OnInit {
   private http = inject(HttpClient);
   approvalItems: ApprovalItem[] = [];
   filteredItems: ApprovalItem[] = [];
-  filterStatus: string = 'Pending';
+  filterStatus: string = '';
   filterType: string = '';
   searchQuery: string = '';
 

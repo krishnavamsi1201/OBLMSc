@@ -74,8 +74,8 @@
             </div>
             <h3>{{ item.title }}</h3>
           </div>
-          <div class="status-badge" [style.backgroundColor]="getStatusBgColor(item.status)" [style.color]="getStatusColor(item.status)">
-            {{ item.status }}
+          <div class="status-badge" [style.backgroundColor]="getStatusBgColor(item.status)" [style.color]="getStatusColor(item.status)" style="font-weight: 800; font-size: 12px; padding: 6px 14px; border-radius: 20px; text-transform: uppercase; letter-spacing: 0.5px;">
+            {{ item.status === 'Approved' ? '✓ Request Accepted' : (item.status === 'Rejected' ? '✕ Request Rejected' : '⏳ Pending Review') }}
           </div>
         </div>
 
@@ -113,13 +113,23 @@
           <button class="btn btn-approve" (click)="approveItem(item)">✓ Approve</button>
           <button class="btn btn-reject" (click)="rejectItem(item)">✕ Reject</button>
         </div>
-        <div class="card-footer" *ngIf="item.status !== 'Pending'">
-          <span class="status-info">
-            <strong>Decision: {{ item.status }}</strong>
-            <span *ngIf="item.status === 'Rejected' && item.details?.rejectionReason">
-              - Reason: {{ item.details.rejectionReason }}
-            </span>
-          </span>
+        <div class="card-footer decision-footer" *ngIf="item.status === 'Approved'">
+          <div class="decision-pill approved-pill" style="display: flex; align-items: center; gap: 10px; background: rgba(16, 185, 129, 0.12); border: 1.5px solid #10b981; color: #065f46; padding: 10px 18px; border-radius: 10px; width: 100%;">
+            <span style="font-size: 1.3rem;">✅</span>
+            <div style="display: flex; flex-direction: column;">
+              <strong style="font-size: 0.98rem; color: #047857; font-weight: 800;">Request Accepted</strong>
+              <small style="font-size: 0.82rem; color: #065f46; opacity: 0.9;">Enrollment authorized & successfully reflected on student dashboard</small>
+            </div>
+          </div>
+        </div>
+        <div class="card-footer decision-footer" *ngIf="item.status === 'Rejected'">
+          <div class="decision-pill rejected-pill" style="display: flex; align-items: center; gap: 10px; background: rgba(239, 68, 68, 0.12); border: 1.5px solid #ef4444; color: #991b1b; padding: 10px 18px; border-radius: 10px; width: 100%;">
+            <span style="font-size: 1.3rem;">❌</span>
+            <div style="display: flex; flex-direction: column;">
+              <strong style="font-size: 0.98rem; color: #b91c1c; font-weight: 800;">Request Rejected</strong>
+              <small style="font-size: 0.82rem; color: #991b1b; opacity: 0.9;" *ngIf="item.details?.rejectionReason">Reason: {{ item.details.rejectionReason }}</small>
+            </div>
+          </div>
         </div>
       </div>
     </div>
