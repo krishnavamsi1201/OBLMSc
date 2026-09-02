@@ -398,14 +398,46 @@ export class Students implements OnInit, OnDestroy {
             this.studentRoll = data.studentInfo.roll || this.studentRoll;
             this.studentSemester = data.studentInfo.semester || this.studentSemester;
           }
+          this.enrolledCourseCards = data.enrolledCourseCards ? [...data.enrolledCourseCards] : [];
+
+          // Merge any newly approved courses from local student courses registry
+          try {
+            const storedLocal = localStorage.getItem('obslmsStudentCourses');
+            if (storedLocal) {
+              const localList = JSON.parse(storedLocal);
+              const currentName = this.studentName.toLowerCase();
+              localList.forEach((sc: any) => {
+                if (sc.studentName?.toLowerCase() === currentName) {
+                  const exists = this.enrolledCourseCards.some(ec => 
+                    ec.code.toLowerCase() === sc.courseCode?.toLowerCase() ||
+                    ec.title.toLowerCase() === (sc.courseTitle || sc.courseCode)?.toLowerCase()
+                  );
+                  if (!exists && sc.courseCode) {
+                    this.enrolledCourseCards.push({
+                      code: sc.courseCode,
+                      title: sc.courseTitle || sc.courseCode,
+                      faculty: 'Faculty Board',
+                      credits: 4,
+                      currentAvg: 85,
+                      attendancePct: 90
+                    });
+                  }
+                }
+              });
+            }
+          } catch {}
+
           if (data.stats) {
-            this.stats = data.stats;
+            this.stats = { ...data.stats };
+            this.stats.enrolledCourses = this.enrolledCourseCards.length;
             this.showAttendanceWarning = this.stats.attendancePercentage < 75;
             this.attendanceWarningMsg = this.showAttendanceWarning
               ? `Warning: Your overall attendance is ${this.stats.attendancePercentage}%, which is below the mandatory 75% threshold.`
               : '';
+          } else {
+            this.stats.enrolledCourses = this.enrolledCourseCards.length;
           }
-          this.enrolledCourseCards = data.enrolledCourseCards || [];
+
           this.coProgressList = data.coProgressList || [];
           this.groupedCOs = data.groupedCOs || [];
           this.todaySchedule = data.todaySchedule || [];

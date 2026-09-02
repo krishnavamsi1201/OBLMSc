@@ -1,6 +1,7 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { HttpClient } from '@angular/common/http';
 import { Navbar } from '../../../shared/navbar/navbar';
 import { Sidebar } from '../../../shared/sidebar/sidebar';
 import { Footer } from '../../../shared/footer/footer';
@@ -32,6 +33,7 @@ export interface ApprovalItem {
 export class ApprovalManagement implements OnInit {
   private toast = inject(ToastService);
   private syncService = inject(SyncService);
+  private http = inject(HttpClient);
   approvalItems: ApprovalItem[] = [];
   filteredItems: ApprovalItem[] = [];
   filterStatus: string = 'Pending';
@@ -263,30 +265,70 @@ export class ApprovalManagement implements OnInit {
 
     if (item.type === 'course-enrollment') {
       try {
+        const studentName = item.details?.studentName || item.createdBy;
+        const studentId = item.details?.studentId || item.requesterId || 'STU004';
+        const studentEmail = item.details?.studentEmail || item.requesterEmail || '';
+        const courseCode = item.details?.courseCode || item.details?.courseTitle || '';
+
+        // 1. Sync directly with Spring Boot MySQL database
+        if (courseCode) {
+          const payload = {
+            studentId: studentId,
+            studentName: studentName,
+            studentEmail: studentEmail,
+            courseCode: courseCode
+          };
+          this.http.post('http://localhost:8080/api/users/enroll-course', payload).subscribe({
+            next: (res: any) => {
+              console.log('[INFO] Successfully enrolled course in backend DB:', res);
+            },
+            error: (err: any) => {
+              console.warn('[WARN] Backend DB enrollment sync warning:', err);
+            }
+          });
+        }
+
+        // 2. Update local course requests state
         const stored = localStorage.getItem('obslmsCourseRequests');
         if (stored) {
           const list = JSON.parse(stored);
-          const req = list.find((r: any) => r.id === item.details?.id || r.studentName === item.details?.studentName);
+          const req = list.find((r: any) => r.id === item.details?.id || (r.studentName?.toLowerCase() === studentName.toLowerCase() && r.courseCode?.toLowerCase() === courseCode.toLowerCase()));
           if (req) {
             req.status = 'Approved';
             localStorage.setItem('obslmsCourseRequests', JSON.stringify(list));
           }
         }
 
-        // Add to official student courses
+        // 3. Update official student courses
         const storedStudentCourses = localStorage.getItem('obslmsStudentCourses');
         const studentCourses = storedStudentCourses ? JSON.parse(storedStudentCourses) : [];
-        if (!studentCourses.some((sc: any) => sc.studentName === item.details?.studentName && sc.courseCode === item.details?.courseCode)) {
+        if (!studentCourses.some((sc: any) => sc.studentName?.toLowerCase() === studentName?.toLowerCase() && sc.courseCode?.toLowerCase() === courseCode?.toLowerCase())) {
           studentCourses.push({
-            studentName: item.details?.studentName,
-            courseCode: item.details?.courseCode,
+            studentName: studentName,
+            courseCode: courseCode,
+            courseTitle: item.details?.courseTitle || courseCode,
             enrolledAt: new Date().toISOString()
           });
           localStorage.setItem('obslmsStudentCourses', JSON.stringify(studentCourses));
         }
 
+        // 4. Update assigned courses for active student session
+        const currentActiveStudent = localStorage.getItem('userName');
+        if (currentActiveStudent && currentActiveStudent.toLowerCase() === studentName.toLowerCase()) {
+          try {
+            const currentAssigned = JSON.parse(localStorage.getItem('userAssignedCourses') || '[]');
+            if (!currentAssigned.includes(courseCode)) {
+              currentAssigned.push(courseCode);
+              localStorage.setItem('userAssignedCourses', JSON.stringify(currentAssigned));
+            }
+          } catch {}
+        }
+
         this.syncService.emit('ENROLLMENTS_CHANGED', item.details);
-      } catch {}
+        this.toast.success(`Approved course enrollment for ${studentName} (${courseCode}).`);
+      } catch (err) {
+        console.error('Error in approve course enrollment:', err);
+      }
     } else if (item.type === 'assessment-co-mapping') {
       try {
         const stored = localStorage.getItem('obslmsAssessmentCOMappings');
@@ -298,6 +340,8 @@ export class ApprovalManagement implements OnInit {
             localStorage.setItem('obslmsAssessmentCOMappings', JSON.stringify(list));
           }
         }
+        this.syncService.emit('ASSESSMENTS_CHANGED', item.details);
+        this.toast.success(`Assessment mapping approved.`);
       } catch {}
     }
 
