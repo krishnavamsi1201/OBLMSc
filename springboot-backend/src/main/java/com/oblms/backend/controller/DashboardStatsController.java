@@ -171,7 +171,7 @@ public class DashboardStatsController {
     }
 
     @GetMapping("/faculty-dashboard")
-    public ResponseEntity<?> getFacultyDashboard(@RequestParam String facultyId) {
+    public ResponseEntity<?> getFacultyDashboard(@RequestParam(required = false, defaultValue = "FAC001") String facultyId) {
         // Try searching by ID
         Optional<com.oblms.backend.model.User> facultyOpt = userRepository.findById(facultyId);
         // If not found, try searching by Email
