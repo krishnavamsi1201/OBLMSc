@@ -471,35 +471,35 @@ export class Courses implements OnInit, OnDestroy {
   isCourseMatchingStudentBranch(course: Course): boolean {
     const code = (course.code || '').toUpperCase().trim();
     const title = (course.title || '').toLowerCase().trim();
-    const dept = (localStorage.getItem('userDepartment') || localStorage.getItem('userDept') || 'Mechanical Engineering').toLowerCase();
+    const dept = (localStorage.getItem('userDepartment') || localStorage.getItem('userDept') || '').toLowerCase();
 
-    // 1. Mechanical
+    // 1. Mechanical Engineering
     if (dept.includes('mech') || dept.includes('me')) {
       return code.startsWith('ME') || code.startsWith('AU') || code === 'KM' || code === 'IC' || code === '04ME6512' || code === 'SMSE' || code === 'EM IV' ||
-             title.includes('metallurgy') || title.includes('kinematics') || title.includes('combustion') || title.includes('engine') || title.includes('cad') || title.includes('chassis') || title.includes('mechanical');
+             title.includes('metallurgy') || title.includes('kinematics') || title.includes('combustion') || title.includes('engine') || title.includes('cad') || title.includes('chassis') || title.includes('mechanical') || title.includes('automobile');
     }
 
-    // 2. Civil
+    // 2. Civil Engineering
     if (dept.includes('civil') || dept.includes('ce')) {
-      return code.startsWith('CE') || code === 'FMHM' || code === 'SMSE' || code === 'EMII' || code === 'HS300' ||
-             title.includes('fluid') || title.includes('survey') || title.includes('structural') || title.includes('civil') || title.includes('hydraulic');
+      return code.startsWith('CE') || code === 'FMHM' || code === 'SMSE' || code === 'EMII' || code === 'HS300' || code === 'ECS' ||
+             title.includes('fluid') || title.includes('survey') || title.includes('structural') || title.includes('civil') || title.includes('hydraulic') || title.includes('concrete');
     }
 
-    // 3. ECE
-    if (dept.includes('elect') || dept.includes('ece')) {
-      return code.startsWith('EC') || code.startsWith('EE') || code === 'MES' || code === 'DSLD' || code === 'CS203' || code === 'CS207' || code === 'AMP' ||
-             title.includes('microprocessor') || title.includes('logic design') || title.includes('signal') || title.includes('electronics');
+    // 3. Electronics & Communication Engineering (ECE)
+    if (dept.includes('elect') || dept.includes('ece') || dept.includes('eee')) {
+      return code.startsWith('EC') || code.startsWith('EE') || code === 'MES' || code === 'DSLD' || code === 'CS203' || code === 'CS207' || code === 'AMP' || code === 'HARDWARE LAB' || code === 'LD LAB' || code === 'EE233' || code === 'EE407' ||
+             title.includes('microprocessor') || title.includes('logic design') || title.includes('signal') || title.includes('electronics') || title.includes('embedded') || title.includes('switching theory');
     }
 
-    // 4. IT
+    // 4. Information Technology (IT)
     if (dept.includes('info') || dept.includes('it')) {
-      return code.startsWith('IT') || code === 'LINUX' || code === 'WT' || code === 'CS361' || code === 'RLMCA108' ||
-             title.includes('linux') || title.includes('shell') || title.includes('web tech') || title.includes('cloud') || title.includes('devops');
+      return code.startsWith('IT') || code === 'LINUX' || code === 'WT' || code === 'CS361' || code === 'RLMCA108' || code === 'LINUX LAB' || code === 'OPEN LAB' ||
+             title.includes('linux') || title.includes('shell') || title.includes('web tech') || title.includes('cloud') || title.includes('devops') || title.includes('soft computing') || title.includes('operations research');
     }
 
-    // 5. CSE
-    return code.startsWith('CS') || code === 'DS' || code === 'OOP' || code === 'CC' || code === 'OOMD' || code === 'HPC' ||
-           title.includes('data structure') || title.includes('database') || title.includes('algorithm') || title.includes('compiler') || title.includes('networks') || title.includes('computer');
+    // 5. Computer Science & Engineering (CSE)
+    return code.startsWith('CS') || code === 'DS' || code === 'OOP' || code === 'CC' || code === 'OOMD' || code === 'HPC' || code === 'DS LAB' || code === 'C++ LAB' || code === 'RLMCA101' || code === 'RLMCA201' || code === 'RLMCA205' || code === 'RLMCA231' ||
+           title.includes('data structure') || title.includes('database') || title.includes('algorithm') || title.includes('compiler') || title.includes('networks') || title.includes('computer') || title.includes('machine learning') || title.includes('artificial intelligence') || title.includes('software engineering');
   }
 
   isEnrolled(courseCode: string): boolean {
