@@ -73,9 +73,97 @@ export class FacultyManagement implements OnInit {
     'Lecturer'
   ];
 
+  // Dedicated Allot Subjects Modal
+  showAllotModal = false;
+  allottingFaculty: Faculty | null = null;
+  selectedAllotCourses: string[] = [];
+  allotSearchQuery = '';
+  allotSemesterFilter = '';
+
+  get filteredAllotCourses(): any[] {
+    const q = this.allotSearchQuery.toLowerCase().trim();
+    const sem = this.allotSemesterFilter;
+    return this.allAvailableCourses.filter(c => {
+      const matchSearch = !q || (c.title && c.title.toLowerCase().includes(q)) || (c.code && c.code.toLowerCase().includes(q));
+      const matchSem = !sem || c.semester === sem;
+      return matchSearch && matchSem;
+    });
+  }
+
   ngOnInit(): void {
     this.loadFaculty();
     this.loadCourses();
+  }
+
+  openAllotModal(faculty: Faculty): void {
+    this.allottingFaculty = faculty;
+    this.selectedAllotCourses = faculty.courses ? [...faculty.courses] : [];
+    this.allotSearchQuery = '';
+    this.allotSemesterFilter = '';
+    this.showAllotModal = true;
+    this.loadCourses();
+  }
+
+  closeAllotModal(): void {
+    this.showAllotModal = false;
+    this.allottingFaculty = null;
+    this.selectedAllotCourses = [];
+  }
+
+  isAllotCourseSelected(course: any): boolean {
+    if (!course) return false;
+    const title = course.title || '';
+    const code = course.code || '';
+    return this.selectedAllotCourses.some(sc => 
+      (sc && title && sc.trim().toLowerCase() === title.trim().toLowerCase()) ||
+      (sc && code && sc.trim().toLowerCase() === code.trim().toLowerCase())
+    );
+  }
+
+  toggleAllotCourse(course: any): void {
+    if (!course) return;
+    const key = course.code || course.title;
+    const title = course.title || '';
+    const code = course.code || '';
+
+    const idx = this.selectedAllotCourses.findIndex(sc => 
+      (sc && title && sc.trim().toLowerCase() === title.trim().toLowerCase()) ||
+      (sc && code && sc.trim().toLowerCase() === code.trim().toLowerCase())
+    );
+
+    if (idx !== -1) {
+      this.selectedAllotCourses.splice(idx, 1);
+    } else {
+      this.selectedAllotCourses.push(key);
+    }
+  }
+
+  saveSubjectAllotment(): void {
+    if (!this.allottingFaculty) return;
+
+    const faculty = this.allottingFaculty;
+    const assigned = [...this.selectedAllotCourses];
+    const payload = {
+      id: faculty.id,
+      name: faculty.name,
+      email: faculty.email,
+      role: 'FACULTY',
+      department: faculty.department,
+      designation: faculty.designation,
+      assignedCourses: assigned
+    };
+
+    this.http.post('http://localhost:8080/api/users', payload).subscribe({
+      next: () => {
+        faculty.courses = assigned;
+        this.toast.success(`Subjects updated successfully for "${faculty.name}"! 🎉`);
+        this.closeAllotModal();
+        this.loadFaculty();
+      },
+      error: () => {
+        this.toast.error('Failed to update subject allotment in database.');
+      }
+    });
   }
 
   private loadFaculty(): void {
@@ -120,8 +208,21 @@ export class FacultyManagement implements OnInit {
   }
 
   private loadCourses(): void {
-    this.allAvailableCourses = this.courseService.ensureCoursesInitialized();
-    this.cdr.detectChanges();
+    this.http.get<any[]>('http://localhost:8080/api/courses').subscribe({
+      next: (data) => {
+        if (Array.isArray(data) && data.length > 0) {
+          this.allAvailableCourses = data;
+          this.cdr.detectChanges();
+        } else {
+          this.allAvailableCourses = this.courseService.ensureCoursesInitialized();
+          this.cdr.detectChanges();
+        }
+      },
+      error: () => {
+        this.allAvailableCourses = this.courseService.ensureCoursesInitialized();
+        this.cdr.detectChanges();
+      }
+    });
   }
 
   private filterFaculty(): void {
