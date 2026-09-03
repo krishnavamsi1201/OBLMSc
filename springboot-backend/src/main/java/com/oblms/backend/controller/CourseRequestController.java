@@ -1,8 +1,10 @@
 package com.oblms.backend.controller;
 
+import com.oblms.backend.model.AppNotification;
 import com.oblms.backend.model.CourseRequest;
 import com.oblms.backend.model.User;
 import com.oblms.backend.repository.CourseRequestRepository;
+import com.oblms.backend.repository.NotificationRepository;
 import com.oblms.backend.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -22,6 +24,9 @@ public class CourseRequestController {
     @Autowired
     private UserRepository userRepository;
 
+    @Autowired
+    private NotificationRepository notificationRepository;
+
     @GetMapping
     public List<CourseRequest> getAllRequests() {
         return courseRequestRepository.findAll();
@@ -40,7 +45,22 @@ public class CourseRequestController {
     public CourseRequest createRequest(@RequestBody CourseRequest request) {
         request.setStatus("Pending");
         request.setRequestedAt(new Date());
-        return courseRequestRepository.save(request);
+        CourseRequest saved = courseRequestRepository.save(request);
+
+        // Notify Admin of new request
+        AppNotification adminNotif = new AppNotification(
+            null,
+            "ADMIN",
+            "Administrator",
+            "ADMIN",
+            "📥 New Course Enrollment Request",
+            "Student " + saved.getStudentName() + " (" + saved.getDepartment() + ") has requested enrollment in " + saved.getCourseTitle() + " [" + saved.getCourseCode() + "].",
+            "approval",
+            "/admin/approval-management"
+        );
+        notificationRepository.save(adminNotif);
+
+        return saved;
     }
 
     @PutMapping("/{id}/approve")
@@ -85,7 +105,21 @@ public class CourseRequestController {
             }
         }
 
-        return ResponseEntity.ok(Map.of("message", "Enrollment approved and updated in database", "request", req));
+        // Send Real-Time Notification to Student
+        String studentIdentifier = req.getStudentEmail() != null ? req.getStudentEmail() : req.getStudentId();
+        AppNotification studentNotif = new AppNotification(
+            null,
+            studentIdentifier,
+            req.getStudentName(),
+            "STUDENT",
+            "🎉 Course Enrollment Approved!",
+            "Great news! Your enrollment request for \"" + req.getCourseTitle() + " (" + req.getCourseCode() + ")\" has been APPROVED by the Administrator. You can now access syllabus, lessons, and track attendance.",
+            "success",
+            "/courses"
+        );
+        notificationRepository.save(studentNotif);
+
+        return ResponseEntity.ok(Map.of("message", "Enrollment approved, student updated, and notification delivered!", "request", req));
     }
 
     @PutMapping("/{id}/reject")
@@ -99,8 +133,10 @@ public class CourseRequestController {
         CourseRequest req = reqOpt.get();
         req.setStatus("Rejected");
         req.setActionDate(new Date());
-        if (body != null && body.containsKey("remarks")) {
-            req.setRemarks(body.get("remarks"));
+        String reason = "Capacity full or prerequisites not met";
+        if (body != null && body.containsKey("remarks") && !body.get("remarks").trim().isEmpty()) {
+            reason = body.get("remarks").trim();
+            req.setRemarks(reason);
         }
         courseRequestRepository.save(req);
 
@@ -126,6 +162,20 @@ public class CourseRequestController {
             }
         }
 
-        return ResponseEntity.ok(Map.of("message", "Enrollment request rejected", "request", req));
+        // Send Real-Time Notification to Student
+        String studentIdentifier = req.getStudentEmail() != null ? req.getStudentEmail() : req.getStudentId();
+        AppNotification studentNotif = new AppNotification(
+            null,
+            studentIdentifier,
+            req.getStudentName(),
+            "STUDENT",
+            "⚠️ Course Enrollment Request Rejected",
+            "Your enrollment request for \"" + req.getCourseTitle() + " (" + req.getCourseCode() + ")\" was rejected by the Administrator. Reason: " + reason + ".",
+            "warning",
+            "/subjects"
+        );
+        notificationRepository.save(studentNotif);
+
+        return ResponseEntity.ok(Map.of("message", "Enrollment request rejected and notification delivered", "request", req));
     }
 }

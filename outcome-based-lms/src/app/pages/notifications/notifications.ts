@@ -1,7 +1,8 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, inject, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
+import { HttpClient } from '@angular/common/http';
 import { Navbar } from '../../shared/navbar/navbar';
 import { Sidebar } from '../../shared/sidebar/sidebar';
 import { Footer } from '../../shared/footer/footer';
@@ -25,6 +26,10 @@ interface Notification {
   styleUrls: ['./notifications.css']
 })
 export class Notifications implements OnInit {
+  private http = inject(HttpClient);
+  private cdr = inject(ChangeDetectorRef);
+  private router = inject(Router);
+
   allNotifications: Notification[] = [];
   filteredNotifications: Notification[] = [];
   
@@ -33,7 +38,8 @@ export class Notifications implements OnInit {
   searchQuery: string = '';
 
   userRole: string = 'student';
-  userName: string = 'Krishnavamsi';
+  userName: string = 'Student';
+  userId: string = '';
 
   notificationTypes = [
     { value: '', label: 'All Types' },
@@ -44,24 +50,47 @@ export class Notifications implements OnInit {
     { value: 'approval', label: 'Approval Required' }
   ];
 
-  constructor(private router: Router) {
+  constructor() {
     this.userRole = (localStorage.getItem('userRole') || 'student').toLowerCase();
-    this.userName = localStorage.getItem('userName') || (this.userRole === 'student' ? 'Krishnavamsi' : 'Faculty');
-    this.loadNotifications();
-    this.generateSmartSystemAlerts();
+    this.userName = localStorage.getItem('userName') || (this.userRole === 'student' ? 'Student' : 'Faculty');
+    this.userId = localStorage.getItem('userId') || localStorage.getItem('userEmail') || '';
   }
 
   ngOnInit(): void {
-    this.filterNotifications();
+    this.loadNotifications();
   }
 
   loadNotifications(): void {
-    try {
-      const stored = localStorage.getItem('obslmsNotifications');
-      this.allNotifications = stored ? JSON.parse(stored) : [];
-    } catch {
-      this.allNotifications = [];
-    }
+    const uId = this.userId || localStorage.getItem('userEmail') || this.userName;
+    const url = `http://localhost:8080/api/notifications?userId=${encodeURIComponent(uId)}&role=${encodeURIComponent(this.userRole.toUpperCase())}`;
+
+    this.http.get<any[]>(url).subscribe({
+      next: (backendNotifs) => {
+        if (Array.isArray(backendNotifs)) {
+          this.allNotifications = backendNotifs.map(b => ({
+            id: (b.id || Math.random()).toString(),
+            type: (b.type || 'info') as any,
+            title: b.title || 'Notification',
+            message: b.message || '',
+            timestamp: b.createdAt || new Date().toISOString(),
+            isRead: !!b.read,
+            actionUrl: b.actionUrl
+          }));
+          this.filterNotifications();
+          this.cdr.detectChanges();
+        }
+      },
+      error: () => {
+        try {
+          const stored = localStorage.getItem('obslmsNotifications');
+          this.allNotifications = stored ? JSON.parse(stored) : [];
+        } catch {
+          this.allNotifications = [];
+        }
+        this.filterNotifications();
+        this.cdr.detectChanges();
+      }
+    });
   }
 
   saveNotifications(): void {
@@ -169,6 +198,9 @@ export class Notifications implements OnInit {
 
   markAsRead(notification: Notification): void {
     notification.isRead = true;
+    if (notification.id && !notification.id.startsWith('alert-')) {
+      this.http.put(`http://localhost:8080/api/notifications/${notification.id}/read`, {}).subscribe();
+    }
     this.saveNotifications();
     this.filterNotifications();
   }
@@ -181,12 +213,17 @@ export class Notifications implements OnInit {
 
   markAllAsRead(): void {
     this.allNotifications.forEach(n => n.isRead = true);
+    const uId = this.userId || localStorage.getItem('userEmail') || this.userName;
+    this.http.put(`http://localhost:8080/api/notifications/read-all?userId=${encodeURIComponent(uId)}`, {}).subscribe();
     this.saveNotifications();
     this.filterNotifications();
   }
 
   deleteNotification(id: string): void {
     this.allNotifications = this.allNotifications.filter(n => n.id !== id);
+    if (!id.startsWith('alert-')) {
+      this.http.delete(`http://localhost:8080/api/notifications/${id}`).subscribe();
+    }
     this.saveNotifications();
     this.filterNotifications();
   }
