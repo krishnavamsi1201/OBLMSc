@@ -544,64 +544,6 @@ interface DayLectureEntry {
             </div>
         </div>
 
-        <!-- Attendance Logs History Table for Faculty/Admin (With Status Change & Delete) -->
-        <div class="logs-card">
-            <div class="logs-header">
-                <h2>📜 Attendance Records & Logs ({{ filteredLogs.length }})</h2>
-                <div class="logs-filter-group">
-                    <input type="text" [(ngModel)]="searchTerm" (input)="filterLogs()" placeholder="Search logs by student, date, course..." class="search-input" />
-                    <select [(ngModel)]="statusFilter" (change)="filterLogs()" class="status-select">
-                        <option value="">All Statuses</option>
-                        <option value="Present">Present Only</option>
-                        <option value="Absent">Absent Only</option>
-                    </select>
-                </div>
-            </div>
-
-            <table class="logs-table" *ngIf="filteredLogs.length > 0">
-                <thead>
-                    <tr>
-                        <th>Student</th>
-                        <th>RegNo</th>
-                        <th>Course</th>
-                        <th>Date</th>
-                        <th style="text-align: center; width: 250px;">Change Status (Present / Absent)</th>
-                        <th style="text-align: right; width: 120px;">Action</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr *ngFor="let log of filteredLogs; trackBy: trackByLogId">
-                        <td><strong>{{ log.student }}</strong></td>
-                        <td><span class="reg-pill">{{ log.regNo || '-' }}</span></td>
-                        <td><strong>{{ log.course }}</strong></td>
-                        <td>{{ log.date }}</td>
-                        
-                        <td style="text-align: center;">
-                            <div class="attendance-btn-pair">
-                                <button type="button" 
-                                        class="btn-attend-mini present-btn" 
-                                        [class.active]="log.status === 'Present'"
-                                        (click)="toggleLogStatus(log, 'Present')">
-                                    ✅ Present
-                                </button>
-                                <button type="button" 
-                                        class="btn-attend-mini absent-btn" 
-                                        [class.active]="log.status === 'Absent'"
-                                        (click)="toggleLogStatus(log, 'Absent')">
-                                    ❌ Absent
-                                </button>
-                            </div>
-                        </td>
-
-                        <td style="text-align: right;">
-                            <button type="button" class="btn-remove-log" (click)="removeLog(log)">🗑️ Delete</button>
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
-            <p *ngIf="filteredLogs.length === 0" class="no-logs">No attendance history records match your search filter.</p>
-        </div>
-
         <app-footer></app-footer>
     </div>
 </div>`,
