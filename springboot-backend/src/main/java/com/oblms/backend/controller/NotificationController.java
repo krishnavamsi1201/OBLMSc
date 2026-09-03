@@ -29,7 +29,7 @@ public class NotificationController {
             return d2.compareTo(d1);
         });
 
-        if (userId == null && role == null) {
+        if ((userId == null || userId.trim().isEmpty()) && (role == null || role.trim().isEmpty())) {
             return all;
         }
 
@@ -37,18 +37,27 @@ public class NotificationController {
         final String r = role != null ? role.trim().toUpperCase() : "";
 
         return all.stream().filter(n -> {
-            String recipId = n.getRecipientId() != null ? n.getRecipientId().toLowerCase() : "";
-            String recipRole = n.getRecipientRole() != null ? n.getRecipientRole().toUpperCase() : "";
+            String recipId = n.getRecipientId() != null ? n.getRecipientId().trim().toLowerCase() : "";
+            String recipRole = n.getRecipientRole() != null ? n.getRecipientRole().trim().toUpperCase() : "";
 
-            if ("ALL".equalsIgnoreCase(recipId) || "ALL".equalsIgnoreCase(recipRole)) {
+            // 1. Broadcast notifications for all users or role
+            if ("ALL".equalsIgnoreCase(recipId)) {
                 return true;
             }
-            if (!uId.isEmpty() && (recipId.equals(uId) || recipId.contains(uId) || uId.contains(recipId))) {
+            if ("ALL".equalsIgnoreCase(recipRole) && (recipId.isEmpty() || recipId.equals(uId))) {
                 return true;
             }
-            if (!r.isEmpty() && recipRole.equals(r)) {
-                return true;
+
+            // 2. Strict User ID / Email matching
+            if (!uId.isEmpty()) {
+                return recipId.equals(uId) || recipId.equalsIgnoreCase(uId);
             }
+
+            // 3. Fallback to Role matching if no userId specified
+            if (!r.isEmpty()) {
+                return recipRole.equals(r) && (recipId.isEmpty() || "ALL".equalsIgnoreCase(recipId));
+            }
+
             return false;
         }).toList();
     }
