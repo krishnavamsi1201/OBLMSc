@@ -77,7 +77,7 @@
                 <tbody>
                     <tr *ngIf="filteredCourses.length === 0">
                         <td colspan="5">
-                            {{ courses.length === 0 ? 'No courses created yet.' : 'No courses matching search/filter criteria.' }}
+                            {{ courses.length === 0 ? 'No courses created yet.' : (role === 'faculty' ? 'No courses currently allocated to your faculty account.' : 'No courses matching search/filter criteria.') }}
                         </td>
                     </tr>
                     <tr *ngFor="let course of filteredCourses; index as i">

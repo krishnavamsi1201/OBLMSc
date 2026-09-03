@@ -61,6 +61,14 @@ export class Courses implements OnInit, OnDestroy {
         }
       }
 
+      // Faculty Role: ONLY show subjects registered/assigned to this specific faculty
+      if (this.role === 'faculty') {
+        const matchesFaculty = this.isCourseAssignedToCurrentFaculty(c);
+        if (!matchesFaculty) {
+          return false;
+        }
+      }
+
       return matchesSearch && matchesSem;
     });
   }
@@ -91,6 +99,8 @@ export class Courses implements OnInit, OnDestroy {
     this.loadFacultyList();
     if (this.role === 'student') {
       this.loadStudentEnrollments();
+    } else if (this.role === 'faculty') {
+      this.loadFacultyAssignedCourses();
     }
 
     this.syncSub = this.syncService.events$.subscribe((event) => {
@@ -99,6 +109,8 @@ export class Courses implements OnInit, OnDestroy {
         this.loadCompletion();
         if (this.role === 'student') {
           this.loadStudentEnrollments();
+        } else if (this.role === 'faculty') {
+          this.loadFacultyAssignedCourses();
         }
         this.cdr.detectChanges();
       }
@@ -583,5 +595,63 @@ export class Courses implements OnInit, OnDestroy {
         this.toast.error('Failed to submit enrollment request to database.');
       }
     });
+  }
+
+  facultyAssignedCodes: string[] = [];
+
+  loadFacultyAssignedCourses(): void {
+    const facId = localStorage.getItem('userId') || localStorage.getItem('userEmail') || '';
+    const facName = (localStorage.getItem('userName') || '').trim().toLowerCase();
+
+    this.http.get<any[]>(`http://localhost:8080/api/users`).subscribe({
+      next: (users) => {
+        if (Array.isArray(users)) {
+          const currentFac = users.find(u => 
+            (u.id && u.id.toLowerCase() === facId.toLowerCase()) ||
+            (u.email && u.email.toLowerCase() === facId.toLowerCase()) ||
+            (u.name && u.name.toLowerCase() === facName)
+          );
+          if (currentFac && currentFac.enrolledCourses) {
+            this.facultyAssignedCodes = currentFac.enrolledCourses.split(',').map((s: string) => s.trim().toUpperCase());
+            this.cdr.detectChanges();
+          }
+        }
+      }
+    });
+  }
+
+  isCourseAssignedToCurrentFaculty(course: Course): boolean {
+    const currentFacName = (localStorage.getItem('userName') || '').trim().toLowerCase();
+    const currentFacEmail = (localStorage.getItem('userEmail') || '').trim().toLowerCase();
+    const courseFaculty = (course.faculty || '').trim().toLowerCase();
+    const code = (course.code || '').trim().toUpperCase();
+    const title = (course.title || '').trim().toLowerCase();
+
+    // 1. Match assigned faculty name
+    if (currentFacName && courseFaculty && (courseFaculty.includes(currentFacName) || currentFacName.includes(courseFaculty))) {
+      return true;
+    }
+
+    // 2. Match email
+    if (currentFacEmail && courseFaculty && courseFaculty.includes(currentFacEmail)) {
+      return true;
+    }
+
+    // 3. Match from backend enrolled courses
+    if (this.facultyAssignedCodes.includes(code) || this.facultyAssignedCodes.some(ac => title.includes(ac.toLowerCase()))) {
+      return true;
+    }
+
+    // 4. Match local assigned list
+    try {
+      const assigned = JSON.parse(localStorage.getItem('userAssignedCourses') || '[]');
+      if (Array.isArray(assigned)) {
+        if (assigned.some((a: string) => a.toUpperCase() === code || a.toLowerCase() === title)) {
+          return true;
+        }
+      }
+    } catch {}
+
+    return false;
   }
 }
