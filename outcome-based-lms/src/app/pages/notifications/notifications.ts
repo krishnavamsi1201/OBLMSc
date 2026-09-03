@@ -61,8 +61,10 @@ export class Notifications implements OnInit {
   }
 
   loadNotifications(): void {
-    const uId = this.userId || localStorage.getItem('userEmail') || this.userName;
-    const url = `http://localhost:8080/api/notifications?userId=${encodeURIComponent(uId)}&role=${encodeURIComponent(this.userRole.toUpperCase())}`;
+    const uId = localStorage.getItem('userId') || '';
+    const email = localStorage.getItem('userEmail') || '';
+    const name = localStorage.getItem('userName') || '';
+    const url = `http://localhost:8080/api/notifications?userId=${encodeURIComponent(uId)}&email=${encodeURIComponent(email)}&name=${encodeURIComponent(name)}&role=${encodeURIComponent(this.userRole.toUpperCase())}`;
 
     this.http.get<any[]>(url).subscribe({
       next: (backendNotifs) => {
