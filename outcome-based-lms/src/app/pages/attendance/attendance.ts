@@ -1088,33 +1088,45 @@ export class AttendancePage implements OnInit, OnDestroy {
   }
 
   private loadCourses(): void {
-    const all = this.courseService.ensureCoursesInitialized();
-    
-    if (this.role === 'faculty') {
-      const uName = (this.userName || localStorage.getItem('userName') || '').toLowerCase();
-      let assigned: string[] = [];
-      try {
-        const stored = localStorage.getItem('userAssignedCourses');
-        if (stored) assigned = JSON.parse(stored);
-      } catch {}
+    this.http.get<any[]>('http://localhost:8080/api/courses').subscribe({
+      next: (allCourses) => {
+        const all = Array.isArray(allCourses) && allCourses.length > 0 ? allCourses : [];
+        if (this.role === 'faculty') {
+          const uName = (this.userName || localStorage.getItem('userName') || '').toLowerCase();
+          const uEmail = (localStorage.getItem('userEmail') || '').toLowerCase();
+          let assigned: string[] = [];
+          try {
+            const stored = localStorage.getItem('userAssignedCourses');
+            if (stored) assigned = JSON.parse(stored);
+          } catch {}
 
-      const facultyCourses = all.filter(c => 
-        assigned.includes(c.title) || 
-        assigned.includes(c.code) ||
-        (c.faculty && c.faculty.toLowerCase() === uName) ||
-        (uName && uName.includes(c.faculty ? c.faculty.toLowerCase() : ''))
-      );
+          const facultyCourses = all.filter(c => 
+            assigned.some(a => a.toLowerCase() === (c.title || '').toLowerCase() || a.toLowerCase() === (c.code || '').toLowerCase()) ||
+            (c.faculty && (c.faculty.toLowerCase().includes(uName) || uName.includes(c.faculty.toLowerCase()) || c.faculty.toLowerCase().includes(uEmail)))
+          );
 
-      this.coursesList = facultyCourses.length > 0 ? facultyCourses : all;
-    } else {
-      this.coursesList = all;
-    }
+          this.coursesList = facultyCourses;
+        } else {
+          this.coursesList = all;
+        }
 
-    if (this.coursesList.length > 0) {
-      this.selectedCourse = this.coursesList[0].title;
-    } else {
-      this.selectedCourse = 'Advanced Java';
-    }
+        if (this.coursesList.length > 0) {
+          this.selectedCourse = this.coursesList[0].code ? `${this.coursesList[0].code} - ${this.coursesList[0].title}` : this.coursesList[0].title;
+        } else {
+          this.selectedCourse = '';
+        }
+
+        if (!this.isStudent) {
+          this.loadEnrolledStudents();
+        }
+        this.cdr.detectChanges();
+      },
+      error: () => {
+        this.coursesList = [];
+        this.selectedCourse = '';
+        this.cdr.detectChanges();
+      }
+    });
   }
 
   isCourseMatch(logCourse: string, courseCode: string, courseTitle: string): boolean {
@@ -1131,7 +1143,7 @@ export class AttendancePage implements OnInit, OnDestroy {
   }
 
   getStudentEnrolledCourses(): any[] {
-    const all = this.courseService.ensureCoursesInitialized();
+    const all = this.coursesList;
     try {
       const storedStudentCourses = localStorage.getItem('obslmsStudentCourses');
       const studentCourses = storedStudentCourses ? JSON.parse(storedStudentCourses) : [];
@@ -1145,7 +1157,7 @@ export class AttendancePage implements OnInit, OnDestroy {
         myCourseCodes.includes(c.title?.toLowerCase())
       );
     } catch {
-      return all.slice(0, 4); // Fallback to first 4 courses if error
+      return all;
     }
   }
 
@@ -1154,39 +1166,34 @@ export class AttendancePage implements OnInit, OnDestroy {
   }
 
   private loadAllLogs(): void {
-    try {
-      const stored = localStorage.getItem('obslmsAttendance');
-      this.allLogs = stored ? JSON.parse(stored) as AttendanceRecord[] : [];
-    } catch {
-      this.allLogs = [];
-    }
-    this.filterLogs();
-
-    // API-First Sync with MySQL backend
     this.http.get<any[]>('http://localhost:8080/api/attendance').subscribe({
       next: (backendLogs) => {
-        if (Array.isArray(backendLogs) && backendLogs.length > 0) {
+        if (Array.isArray(backendLogs)) {
           const mapped: AttendanceRecord[] = backendLogs.map((b, idx) => ({
             id: b.id || (Date.now() + idx),
             student: b.student,
             regNo: b.regNo || '240101120001',
-            course: b.courseCode || b.course || 'CS101 - Database Management Systems',
+            course: b.courseCode || b.course || '',
             date: b.date || this.attendanceDate,
             status: (b.status === 'Absent' ? 'Absent' : 'Present') as 'Present' | 'Absent',
             period: b.period,
             topic: b.topic
           }));
           this.allLogs = mapped;
-          localStorage.setItem('obslmsAttendance', JSON.stringify(mapped));
           this.filterLogs();
           if (this.isStudent) {
             this.calculateSubjectSummaries();
             this.loadDaySchedule();
+          } else {
+            this.loadEnrolledStudents();
           }
           this.cdr.detectChanges();
         }
       },
-      error: () => {}
+      error: () => {
+        this.allLogs = [];
+        this.filterLogs();
+      }
     });
   }
 
@@ -1280,94 +1287,65 @@ export class AttendancePage implements OnInit, OnDestroy {
   }
 
   get safeBunkClasses(): number {
-    // Safe classes you can miss: (Present - 0.75 * Total) / 0.75
     const safe = Math.floor((this.myPresentCount - (0.75 * this.myTotalLectures)) / 0.75);
     return Math.max(0, safe);
   }
 
   get neededConsecutiveClasses(): number {
-    // Needed consecutive classes to reach 75%: (0.75 * Total - Present) / 0.25
     const needed = Math.ceil(((0.75 * this.myTotalLectures) - this.myPresentCount) / 0.25);
     return Math.max(1, needed);
   }
 
   /**
-   * Loads students enrolled in the current course (For Faculty / Admin)
+   * Loads students enrolled in the current course (strictly from MySQL database)
    */
   loadEnrolledStudents(): void {
-    let rawRoster: any[] = [];
+    if (!this.selectedCourse) {
+      this.students = [];
+      this.cdr.detectChanges();
+      return;
+    }
 
-    try {
-      const stored = localStorage.getItem('obslmsStudents');
-      if (stored) {
-        const parsed = JSON.parse(stored);
-        if (Array.isArray(parsed) && parsed.length > 0) {
-          rawRoster = parsed.map((p: any, idx: number) => ({
-            id: p.id || `2401011200${idx + 1}`,
-            regNo: p.regNo || p.id || `2401011200${idx + 1}`,
-            name: p.name,
-            department: p.department || 'Computer Science',
-            semester: p.semester || 'Semester 3',
-            enrolledCourses: p.enrolledCourses || ''
-          }));
+    const courseTokens = this.selectedCourse.split(' - ');
+    const searchParam = courseTokens.length > 1 ? courseTokens[0].trim() : this.selectedCourse.trim();
+
+    this.http.get<any[]>(`http://localhost:8080/api/attendance/enrolled-students?courseCode=${encodeURIComponent(searchParam)}`).subscribe({
+      next: (enrolledList) => {
+        if (Array.isArray(enrolledList) && enrolledList.length > 0) {
+          this.students = enrolledList.map(s => {
+            const studentCourseLogs = this.allLogs.filter(l =>
+              l.student && l.student.toLowerCase() === s.name.toLowerCase() &&
+              l.course && (l.course.toLowerCase().includes(searchParam.toLowerCase()) || searchParam.toLowerCase().includes(l.course.toLowerCase()))
+            );
+
+            const todayLog = studentCourseLogs.find(l => l.date === this.attendanceDate);
+            const status: 'Present' | 'Absent' | 'Unmarked' = todayLog ? todayLog.status : 'Unmarked';
+            const totalLectures = studentCourseLogs.length;
+            const totalPresent = studentCourseLogs.filter(l => l.status === 'Present').length;
+            const pct = totalLectures > 0 ? Math.round((totalPresent / totalLectures) * 100) : 0;
+
+            return {
+              id: s.id,
+              regNo: s.regNo || s.id,
+              name: s.name,
+              department: s.department,
+              semester: s.semester || 'Semester 6',
+              totalPresent: totalPresent,
+              totalLectures: totalLectures,
+              attendancePercentage: pct,
+              status: status
+            };
+          });
+        } else {
+          this.students = [];
         }
+        this.cdr.detectChanges();
+      },
+      error: () => {
+        this.students = [];
+        this.cdr.detectChanges();
       }
-    } catch {}
-
-    if (rawRoster.length === 0) {
-      rawRoster = [
-        { id: 'STU004', regNo: 'STU004', name: 'Krishnavamsi', department: 'Computer Science & Engineering', semester: 'Semester 3', enrolledCourses: 'INMCA202,DS,MES,IT305,OOP' },
-        { id: 'STU001', regNo: 'STU001', name: 'Raj Kumar', department: 'Computer Science', semester: 'Semester 3', enrolledCourses: 'INMCA202,DS,MES,IT305,OOP' },
-        { id: 'STU002', regNo: 'STU002', name: 'Aarav Mehta', department: 'Computer Science & Engineering', semester: 'Semester 3', enrolledCourses: 'INMCA202,DS,MES,IT305,OOP' },
-        { id: 'STU003', regNo: 'STU003', name: 'Aditya Sen', department: 'Information Technology', semester: 'Semester 3', enrolledCourses: 'INMCA202,DS,MES,IT305,OOP' },
-        { id: 'STU005', regNo: 'STU005', name: 'Ananya Iyer', department: 'Electronics & Communication Engineering', semester: 'Semester 3', enrolledCourses: 'INMCA202,DS,MES,IT305,OOP' }
-      ];
-    }
-
-    if (this.selectedCourse) {
-      rawRoster = rawRoster.filter(student => {
-        const courses = student.enrolledCourses ? student.enrolledCourses.split(',') : [];
-        return courses.some((c: string) => 
-          c.trim().toLowerCase() === this.selectedCourse.toLowerCase() ||
-          this.selectedCourse.toLowerCase().includes(c.trim().toLowerCase())
-        );
-      });
-    }
-
-    // Map every student with dynamic attendance calculations
-    this.students = rawRoster.map(s => {
-      const studentCourseLogs = this.allLogs.filter(l =>
-        l.student && l.student.toLowerCase() === s.name.toLowerCase() &&
-        l.course && (l.course.toLowerCase().includes(this.selectedCourse.toLowerCase()) || this.selectedCourse.toLowerCase().includes(l.course.toLowerCase()))
-      );
-
-      const todayLog = studentCourseLogs.find(l => l.date === this.attendanceDate);
-      const status: 'Present' | 'Absent' | 'Unmarked' = todayLog ? todayLog.status : 'Unmarked';
-
-      let totalLectures = studentCourseLogs.length;
-      let totalPresent = studentCourseLogs.filter(l => l.status === 'Present').length;
-
-      if (totalLectures === 0) {
-        totalLectures = 15;
-        totalPresent = 13;
-      }
-
-      const pct = Math.round((totalPresent / totalLectures) * 100);
-
-      return {
-        id: s.id,
-        regNo: s.regNo,
-        name: s.name,
-        department: s.department,
-        semester: s.semester,
-        totalPresent: totalPresent,
-        totalLectures: totalLectures,
-        attendancePercentage: pct,
-        status: status
-      };
     });
-
-    this.cdr.detectChanges();
   }
 
   onCourseChanged(): void {

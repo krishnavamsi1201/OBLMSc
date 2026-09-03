@@ -243,24 +243,12 @@ public class CSVSeederService {
 
                     marksList.add(new StudentMark(null, stu.getName(), assName, obtained, max));
                 }
-
-                // 2. Seed attendance records
-                for (int d = 1; d <= 15; d++) {
-                    String date = "2026-08-" + String.format("%02d", d);
-                    boolean isPresent = ((stu.getName() + cCode + d).hashCode() % 10) != 0; // ~90% attendance
-
-                    attendanceList.add(new AttendanceRecord(null, stu.getName(), cCode, date, isPresent ? "Present" : "Absent"));
-                }
             }
         }
 
         if (marksRepository.count() == 0) {
             marksRepository.saveAll(marksList);
             System.out.println("[INFO] Seeded " + marksList.size() + " student marks records in MySQL database.");
-        }
-        if (attendanceRepository.count() == 0) {
-            attendanceRepository.saveAll(attendanceList);
-            System.out.println("[INFO] Seeded " + attendanceList.size() + " student attendance records in MySQL database.");
         }
     }
 
