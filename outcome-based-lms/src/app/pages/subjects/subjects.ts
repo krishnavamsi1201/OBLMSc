@@ -222,7 +222,17 @@ interface SubjectRecord {
                     <span *ngIf="isCourseEnrolled(subject.code, subject.name)" class="status-badge enrolled">
                       ✓ Registered
                     </span>
-                    <span *ngIf="!isCourseEnrolled(subject.code, subject.name)" class="status-badge accredited">
+                    <span *ngIf="!isCourseEnrolled(subject.code, subject.name) && isPending(subject.code)" class="status-badge pending" style="background: #fef3c7; color: #b45309; border: 1px solid #fde68a;">
+                      ⏳ Pending
+                    </span>
+                    <button *ngIf="!isCourseEnrolled(subject.code, subject.name) && !isPending(subject.code) && userRole === 'student'" 
+                            class="request-enroll-btn" 
+                            (click)="requestEnrollment(subject)"
+                            style="background: #2563eb; color: #ffffff; border: none; padding: 4px 10px; border-radius: 6px; font-size: 11px; font-weight: 700; cursor: pointer; transition: all 0.2s;"
+                            title="Request enrollment for this subject">
+                      + Enroll
+                    </button>
+                    <span *ngIf="!isCourseEnrolled(subject.code, subject.name) && !isPending(subject.code) && userRole !== 'student'" class="status-badge accredited">
                       Accredited
                     </span>
                   </td>
@@ -338,19 +348,21 @@ interface SubjectRecord {
 })
 export class Subjects implements OnInit {
   private http = inject(HttpClient);
+  private toast = inject(ToastService);
   private cdr = inject(ChangeDetectorRef);
 
   userRole: string = 'student';
-  userName: string = 'Krishnavamsi';
-  userEmail: string = 'krishnavamsi@gmail.com';
-  userDept: string = 'Computer Science & Engineering';
-  enrolledCourseCodes: string[] = ['CS101', 'CS102', 'CS103', 'CS301', 'CS302'];
+  userName: string = 'Student';
+  userEmail: string = '';
+  userDept: string = 'Engineering';
+  enrolledCourseCodes: string[] = [];
+  pendingCourseCodes: string[] = [];
 
   subjects: SubjectRecord[] = [];
   searchQuery = '';
   selectedType = '';
   selectedDeptFilter = '';
-  viewMode: 'registered' | 'branch' | 'all' = 'registered';
+  viewMode: 'registered' | 'branch' | 'all' = 'branch';
   currentPage = 1;
   pageSize = 25;
 
@@ -375,37 +387,79 @@ export class Subjects implements OnInit {
   ngOnInit(): void {
     this.loadUserProfile();
     this.loadSubjectsFromBackend();
+    this.loadStudentPendingRequests();
   }
 
   loadUserProfile(): void {
     try {
       this.userRole = localStorage.getItem('userRole')?.toLowerCase() || 'student';
-      this.userName = localStorage.getItem('userName') || 'Krishnavamsi';
-      this.userEmail = localStorage.getItem('userEmail') || 'krishnavamsi@gmail.com';
-      this.userDept = localStorage.getItem('userDept') || localStorage.getItem('userDepartment') || 'Computer Science & Engineering';
+      this.userName = localStorage.getItem('userName') || 'Student';
+      this.userEmail = localStorage.getItem('userEmail') || '';
+      this.userDept = localStorage.getItem('userDept') || localStorage.getItem('userDepartment') || 'Engineering';
 
-      const storedAssigned = localStorage.getItem('userAssignedCourses');
-      if (storedAssigned) {
-        this.enrolledCourseCodes = JSON.parse(storedAssigned);
-      } else {
-        const d = this.userDept.toLowerCase();
-        if (d.includes('computer') || d.includes('cse')) {
-          this.enrolledCourseCodes = ['CS101', 'CS102', 'CS103', 'CS301', 'CS302'];
-        } else if (d.includes('information') || d.includes('it')) {
-          this.enrolledCourseCodes = ['IT305', 'CS303', 'Linux', 'WT', 'CS361'];
-        } else if (d.includes('electronic') || d.includes('ece')) {
-          this.enrolledCourseCodes = ['MES', 'DSLD', 'EC206', 'EE407', 'CS203'];
-        } else if (d.includes('mechanical') || d.includes('me')) {
-          this.enrolledCourseCodes = ['ME210', 'KM', 'SMSE', '04ME6512', 'IC'];
-        } else if (d.includes('civil') || d.includes('ce')) {
-          this.enrolledCourseCodes = ['FMHM', 'SMSE', 'HS300', 'CE234', 'EMII'];
-        }
+      const studentId = localStorage.getItem('userId') || this.userEmail;
+      if (studentId) {
+        this.http.get<any>(`http://localhost:8080/api/users/${encodeURIComponent(studentId)}`).subscribe({
+          next: (u) => {
+            if (u && u.enrolledCourses) {
+              this.enrolledCourseCodes = u.enrolledCourses.split(',').map((s: string) => s.trim().toUpperCase());
+            } else {
+              this.enrolledCourseCodes = [];
+            }
+            this.cdr.detectChanges();
+          }
+        });
       }
 
       if (this.userRole !== 'student') {
         this.viewMode = 'all';
       }
     } catch {}
+  }
+
+  loadStudentPendingRequests(): void {
+    const studentId = localStorage.getItem('userId') || this.userEmail;
+    if (studentId) {
+      this.http.get<any[]>(`http://localhost:8080/api/courses/requests/student/${encodeURIComponent(studentId)}`).subscribe({
+        next: (reqs) => {
+          this.pendingCourseCodes = (reqs || [])
+            .filter(r => r.status?.toLowerCase() === 'pending')
+            .map(r => (r.courseCode || '').toUpperCase().trim());
+          this.cdr.detectChanges();
+        }
+      });
+    }
+  }
+
+  isPending(code: string): boolean {
+    if (!code) return false;
+    return this.pendingCourseCodes.includes(code.toUpperCase().trim());
+  }
+
+  requestEnrollment(subject: SubjectRecord): void {
+    const studentId = localStorage.getItem('userId') || this.userEmail || 'STUDENT';
+    const payload = {
+      studentId: studentId,
+      studentName: this.userName,
+      studentEmail: this.userEmail,
+      regNo: localStorage.getItem('userRoll') || studentId,
+      department: this.userDept,
+      courseCode: subject.code,
+      courseTitle: subject.name,
+      semester: subject.semester || 'Semester 6',
+      status: 'Pending'
+    };
+
+    this.http.post('http://localhost:8080/api/courses/requests', payload).subscribe({
+      next: (res: any) => {
+        this.pendingCourseCodes.push(subject.code.toUpperCase().trim());
+        this.toast.success(`Enrollment request submitted for "${subject.name}" (${subject.code})! Awaiting Admin approval. ⏳`);
+        this.cdr.detectChanges();
+      },
+      error: () => {
+        this.toast.error('Failed to submit enrollment request to database.');
+      }
+    });
   }
 
   setViewMode(mode: 'registered' | 'branch' | 'all'): void {

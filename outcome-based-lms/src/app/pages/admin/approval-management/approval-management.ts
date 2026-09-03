@@ -63,51 +63,29 @@ export class ApprovalManagement implements OnInit {
   }
 
   loadApprovalItems(): void {
+    this.http.get<any[]>('http://localhost:8080/api/courses/requests').subscribe({
+      next: (courseRequests) => {
+        this.buildApprovalList(courseRequests || []);
+      },
+      error: () => {
+        let courseRequests: any[] = [];
+        try {
+          courseRequests = JSON.parse(localStorage.getItem('obslmsCourseRequests') || '[]');
+        } catch {}
+        this.buildApprovalList(courseRequests);
+      }
+    });
+  }
+
+  private buildApprovalList(courseRequests: any[]): void {
     try {
       const items: ApprovalItem[] = [];
 
       // 1. Student Course Enrollment Requests
-      let courseRequests: any[] = [];
-      try {
-        courseRequests = JSON.parse(localStorage.getItem('obslmsCourseRequests') || '[]');
-      } catch {}
-
-      if (courseRequests.length === 0) {
-        courseRequests = [
-          {
-            id: 'REQ-101',
-            studentName: 'Krishnavamsi',
-            studentId: 'STU004',
-            regNo: '240101120001',
-            studentEmail: 'krishnavamsi1201@gmail.com',
-            department: 'Computer Science & Engineering',
-            courseCode: 'CS101',
-            courseTitle: 'Database Management Systems',
-            status: 'Pending',
-            requestedAt: new Date().toISOString()
-          },
-          {
-            id: 'REQ-102',
-            studentName: 'Raj Kumar',
-            studentId: 'STU001',
-            regNo: '240101120002',
-            studentEmail: 'raj.kumar@oblms.edu',
-            department: 'Computer Science',
-            courseCode: 'CS102',
-            courseTitle: 'Data Structures & Algorithms',
-            status: 'Pending',
-            requestedAt: new Date().toISOString()
-          }
-        ];
-        try {
-          localStorage.setItem('obslmsCourseRequests', JSON.stringify(courseRequests));
-        } catch {}
-      }
-
       courseRequests.forEach((req: any) => {
-        const sName = req.studentName || req.student || 'Krishnavamsi';
-        const sId = req.studentId || req.regNo || 'STU004';
-        const sEmail = req.studentEmail || (sName.toLowerCase().replace(/\s+/g, '') + '@gmail.com');
+        const sName = req.studentName || req.student || 'Student';
+        const sId = req.studentId || req.regNo || '';
+        const sEmail = req.studentEmail || '';
         const sDept = req.department || 'Computer Science & Engineering';
         const cTitle = req.courseTitle || req.courseName || req.courseCode || req.course || 'Course';
         const cCode = req.courseCode || req.course || '';

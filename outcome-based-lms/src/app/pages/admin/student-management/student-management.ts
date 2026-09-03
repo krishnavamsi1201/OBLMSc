@@ -220,39 +220,59 @@ export class StudentManagement implements OnInit {
 
 
   loadCourseRequests(): void {
-    try {
-      const stored = localStorage.getItem('obslmsCourseRequests');
-      this.courseRequests = stored ? JSON.parse(stored) : [];
-    } catch {
-      this.courseRequests = [];
-    }
+    this.http.get<any[]>('http://localhost:8080/api/courses/requests').subscribe({
+      next: (requests) => {
+        this.courseRequests = requests || [];
+        this.cdr.detectChanges();
+      },
+      error: () => {
+        try {
+          const stored = localStorage.getItem('obslmsCourseRequests');
+          this.courseRequests = stored ? JSON.parse(stored) : [];
+        } catch {
+          this.courseRequests = [];
+        }
+      }
+    });
   }
 
   approveEnrollment(request: any): void {
-    request.status = 'Approved';
-    try {
-      localStorage.setItem('obslmsCourseRequests', JSON.stringify(this.courseRequests));
-
-      const storedStudentCourses = localStorage.getItem('obslmsStudentCourses');
-      const studentCourses = storedStudentCourses ? JSON.parse(storedStudentCourses) : [];
-      if (!studentCourses.some((sc: any) => sc.studentName === request.studentName && sc.courseCode === request.courseCode)) {
-        studentCourses.push({
-          studentName: request.studentName,
-          courseCode: request.courseCode,
-          enrolledAt: new Date().toISOString()
-        });
-        localStorage.setItem('obslmsStudentCourses', JSON.stringify(studentCourses));
-      }
+    if (request.id && typeof request.id === 'number') {
+      this.http.put(`http://localhost:8080/api/courses/requests/${request.id}/approve`, {}).subscribe({
+        next: () => {
+          request.status = 'Approved';
+          this.toast.success(`Enrollment approved & recorded in database for ${request.studentName}! 🎉`);
+          this.loadCourseRequests();
+          this.loadUsers();
+          this.cdr.detectChanges();
+        },
+        error: () => {
+          this.toast.error('Failed to update approval in database.');
+        }
+      });
+    } else {
+      request.status = 'Approved';
       this.toast.success(`Enrollment approved for ${request.studentName}`);
-    } catch {}
+    }
   }
 
   rejectEnrollment(request: any): void {
-    request.status = 'Rejected';
-    try {
-      localStorage.setItem('obslmsCourseRequests', JSON.stringify(this.courseRequests));
+    if (request.id && typeof request.id === 'number') {
+      this.http.put(`http://localhost:8080/api/courses/requests/${request.id}/reject`, { remarks: 'Rejected by Administrator' }).subscribe({
+        next: () => {
+          request.status = 'Rejected';
+          this.toast.info(`Enrollment rejected in database for ${request.studentName}`);
+          this.loadCourseRequests();
+          this.cdr.detectChanges();
+        },
+        error: () => {
+          this.toast.error('Failed to reject request in database.');
+        }
+      });
+    } else {
+      request.status = 'Rejected';
       this.toast.info(`Enrollment rejected for ${request.studentName}`);
-    } catch {}
+    }
   }
 
   downloadUserListCsv(): void {
