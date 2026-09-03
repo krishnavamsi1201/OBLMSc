@@ -195,8 +195,20 @@ interface SubjectRecord {
               </thead>
               <tbody>
                 <tr *ngIf="filteredSubjects.length === 0">
-                  <td colspan="7" class="empty-state">
-                    📭 No subjects found matching "<strong>{{ searchQuery }}</strong>"
+                  <td colspan="7" class="empty-state" style="padding: 30px 20px; text-align: center;">
+                    <div *ngIf="viewMode === 'registered'" style="max-width: 500px; margin: 0 auto;">
+                      <span style="font-size: 2.5rem; display: block; margin-bottom: 0.5rem;">📚</span>
+                      <h3 style="color: #1e293b; margin-bottom: 0.5rem; font-size: 1.15rem; font-weight: 700;">No Subjects Registered Yet</h3>
+                      <p style="color: #64748b; margin-bottom: 1.2rem; font-size: 0.92rem; line-height: 1.5;">
+                        You have not registered for any subjects yet. Switch to your <strong>{{ userDept }}</strong> curriculum to view and request enrollment for your branch subjects!
+                      </p>
+                      <button type="button" (click)="setViewMode('branch')" style="background: #2563eb; color: #ffffff; border: none; padding: 10px 20px; border-radius: 8px; font-weight: 700; font-size: 0.95rem; cursor: pointer; box-shadow: 0 4px 12px rgba(37,99,235,0.25); display: inline-flex; align-items: center; gap: 8px;">
+                        🏛️ View {{ userDept }} Curriculum Subjects →
+                      </button>
+                    </div>
+                    <div *ngIf="viewMode !== 'registered'">
+                      📭 No subjects found matching "<strong>{{ searchQuery }}</strong>"
+                    </div>
                   </td>
                 </tr>
                 <tr *ngFor="let subject of paginatedSubjects">
@@ -395,20 +407,32 @@ export class Subjects implements OnInit {
       this.userRole = localStorage.getItem('userRole')?.toLowerCase() || 'student';
       this.userName = localStorage.getItem('userName') || 'Student';
       this.userEmail = localStorage.getItem('userEmail') || '';
-      this.userDept = localStorage.getItem('userDept') || localStorage.getItem('userDepartment') || 'Engineering';
+      this.userDept = localStorage.getItem('userDepartment') || localStorage.getItem('userDept') || 'Mechanical Engineering';
 
       const studentId = localStorage.getItem('userId') || this.userEmail;
       if (studentId) {
         this.http.get<any>(`http://localhost:8080/api/users/${encodeURIComponent(studentId)}`).subscribe({
           next: (u) => {
-            if (u && u.enrolledCourses) {
+            if (u && u.department) {
+              this.userDept = u.department;
+            }
+            if (u && u.enrolledCourses && u.enrolledCourses.trim().length > 0) {
               this.enrolledCourseCodes = u.enrolledCourses.split(',').map((s: string) => s.trim().toUpperCase());
+              this.viewMode = 'registered';
             } else {
               this.enrolledCourseCodes = [];
+              // If student has 0 registered subjects, immediately show branch curriculum so they can enroll!
+              this.viewMode = 'branch';
             }
+            this.cdr.detectChanges();
+          },
+          error: () => {
+            this.viewMode = this.enrolledCourseCodes.length > 0 ? 'registered' : 'branch';
             this.cdr.detectChanges();
           }
         });
+      } else {
+        this.viewMode = 'branch';
       }
 
       if (this.userRole !== 'student') {
@@ -599,10 +623,19 @@ export class Subjects implements OnInit {
         } else {
           // Branch curriculum mode: only student's department subjects
           const uDept = this.userDept.toLowerCase();
-          const matchesStudentDept = sDept.includes(this.shortDept.toLowerCase()) || 
-                                     uDept.includes(sDept.split(' ')[0]) || 
-                                     this.isCourseEnrolled(s.code, s.name);
-          if (!matchesStudentDept) {
+          let matchesStudentDept = false;
+          if (uDept.includes('mech') || uDept.includes('me')) {
+            matchesStudentDept = sDept.includes('mech') || sDept.includes('me') || sDept.includes('auto');
+          } else if (uDept.includes('civil') || uDept.includes('ce')) {
+            matchesStudentDept = sDept.includes('civil') || sDept.includes('ce');
+          } else if (uDept.includes('elect') || uDept.includes('ece')) {
+            matchesStudentDept = sDept.includes('elect') || sDept.includes('ece');
+          } else if (uDept.includes('info') || uDept.includes('it')) {
+            matchesStudentDept = sDept.includes('info') || sDept.includes('it');
+          } else {
+            matchesStudentDept = sDept.includes('comp') || sDept.includes('cse');
+          }
+          if (!matchesStudentDept && !this.isCourseEnrolled(s.code, s.name)) {
             return false;
           }
         }
