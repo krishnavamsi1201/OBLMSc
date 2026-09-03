@@ -1,4 +1,4 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, inject, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
@@ -34,6 +34,7 @@ export class ApprovalManagement implements OnInit {
   private toast = inject(ToastService);
   private syncService = inject(SyncService);
   private http = inject(HttpClient);
+  private cdr = inject(ChangeDetectorRef);
   approvalItems: ApprovalItem[] = [];
   filteredItems: ApprovalItem[] = [];
   filterStatus: string = '';
@@ -59,7 +60,12 @@ export class ApprovalManagement implements OnInit {
   }
 
   ngOnInit(): void {
-    this.filterApprovals();
+    this.loadApprovalItems();
+    this.syncService.events$.subscribe(e => {
+      if (e.type === 'ENROLLMENTS_CHANGED' || e.type === 'ASSESSMENTS_CHANGED') {
+        this.loadApprovalItems();
+      }
+    });
   }
 
   loadApprovalItems(): void {
@@ -209,10 +215,14 @@ export class ApprovalManagement implements OnInit {
       });
 
       this.approvalItems = items;
+      this.filterApprovals();
+      this.cdr.detectChanges();
 
     } catch (error) {
       console.error('Error loading approval items:', error);
       this.approvalItems = [];
+      this.filterApprovals();
+      this.cdr.detectChanges();
     }
   }
 
@@ -249,7 +259,13 @@ export class ApprovalManagement implements OnInit {
         const courseCode = item.details?.courseCode || item.details?.courseTitle || '';
 
         // 1. Sync directly with Spring Boot MySQL database
-        if (courseCode) {
+        if (item.details?.id && typeof item.details.id === 'number') {
+          this.http.put(`http://localhost:8080/api/courses/requests/${item.details.id}/approve`, {}).subscribe({
+            next: () => {
+              this.loadApprovalItems();
+            }
+          });
+        } else if (courseCode) {
           const payload = {
             studentId: studentId,
             studentName: studentName,
