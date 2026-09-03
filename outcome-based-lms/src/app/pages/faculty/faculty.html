@@ -25,21 +25,30 @@
 			</div>
 		</div>
 
-		<!-- Subject/Course Filter Selector Row -->
-		<div class="filter-row-container" style="background: #f8fafc; border: 1px solid #e2e8f0; padding: 12px 16px; border-radius: 8px; margin-bottom: 24px; display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap;">
+		<!-- Subject/Course & Semester Filter Selector Row -->
+		<div class="filter-row-container" style="background: #f8fafc; border: 1px solid #e2e8f0; padding: 14px 18px; border-radius: 10px; margin-bottom: 24px; display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap;">
 			<div style="display: flex; align-items: center; gap: 10px;">
-				<span style="font-size: 1.1rem;">📚</span>
+				<span style="font-size: 1.2rem;">📚</span>
 				<div>
-					<strong style="color: #1e293b; font-size: 0.95rem; display: block;">Active Subject Work Context</strong>
-					<span style="font-size: 0.8rem; color: #64748b;">Filter command center actions and KPIs by course</span>
+					<strong style="color: #1e293b; font-size: 0.95rem; display: block;">Active Workload & Semester Context</strong>
+					<span style="font-size: 0.8rem; color: #64748b;">Filter command center actions and KPIs by semester and course</span>
 				</div>
 			</div>
-			<div style="display: flex; align-items: center; gap: 12px;">
-				<label for="subjectSelect" style="font-weight: 600; color: #475569; font-size: 0.9rem;">Select Subject:</label>
-				<select id="subjectSelect" [(ngModel)]="selectedSubjectFilter" (ngModelChange)="applySubjectFilter()" style="padding: 8px 16px; border-radius: 6px; border: 1px solid #cbd5e1; outline: none; min-width: 250px; font-weight: 500; color: #1e293b; background-color: #ffffff;">
-					<option value="">✨ All Mapped Subjects</option>
-					<option *ngFor="let c of (rawDashboardData?.courses || [])" [value]="c.name">{{ c.name }} ({{ c.code }})</option>
-				</select>
+			<div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+				<div style="display: flex; align-items: center; gap: 6px;">
+					<label for="semSelect" style="font-weight: 600; color: #475569; font-size: 0.88rem;">Semester:</label>
+					<select id="semSelect" [(ngModel)]="selectedSemesterFilter" (ngModelChange)="applySubjectFilter()" style="padding: 8px 12px; border-radius: 6px; border: 1px solid #cbd5e1; outline: none; font-weight: 500; color: #1e293b; background-color: #ffffff;">
+						<option value="">🗓️ All Semesters</option>
+						<option *ngFor="let sem of availableSemesters" [value]="sem">{{ sem }}</option>
+					</select>
+				</div>
+				<div style="display: flex; align-items: center; gap: 6px;">
+					<label for="subjectSelect" style="font-weight: 600; color: #475569; font-size: 0.88rem;">Subject:</label>
+					<select id="subjectSelect" [(ngModel)]="selectedSubjectFilter" (ngModelChange)="applySubjectFilter()" style="padding: 8px 14px; border-radius: 6px; border: 1px solid #cbd5e1; outline: none; min-width: 220px; font-weight: 500; color: #1e293b; background-color: #ffffff;">
+						<option value="">✨ All Mapped Subjects</option>
+						<option *ngFor="let c of availableFilteredCourses" [value]="c.name">{{ c.name }} ({{ c.code }}) [{{ c.semester || 'Sem 1' }}]</option>
+					</select>
+				</div>
 			</div>
 		</div>
 

@@ -98,7 +98,23 @@ export class Faculty implements OnInit {
   // Filter
   selectedCourseFilter = '';
   selectedSubjectFilter = '';
+  selectedSemesterFilter = '';
   rawDashboardData: any = null;
+
+  get availableSemesters(): string[] {
+    const courses = this.rawDashboardData?.courses || [];
+    const set = new Set<string>();
+    courses.forEach((c: any) => {
+      if (c.semester) set.add(c.semester);
+    });
+    return Array.from(set).sort();
+  }
+
+  get availableFilteredCourses(): any[] {
+    const courses = this.rawDashboardData?.courses || [];
+    if (!this.selectedSemesterFilter) return courses;
+    return courses.filter((c: any) => c.semester === this.selectedSemesterFilter);
+  }
 
   // Faculty task widgets
   examinationItems: ExaminationItem[] = [];
@@ -246,62 +262,63 @@ export class Faculty implements OnInit {
     if (!this.rawDashboardData) return;
 
     const data = this.rawDashboardData;
-    const filter = this.selectedSubjectFilter;
+    const semFilter = this.selectedSemesterFilter;
+    const subFilter = this.selectedSubjectFilter;
 
-    if (!filter) {
-      // Show all data combined
-      this.courses = data.courses;
-      this.activeAssessments = data.activeAssessments;
-      this.studentProgressList = data.studentProgressSummary;
-      this.filteredProgressList = [...this.studentProgressList];
-      this.atRiskStudents = data.atRiskStudents;
-      this.courseCOAttainments = data.courseCOAttainments;
-      this.gradeDistribution = data.gradeDistribution;
-      this.notifications = data.notifications;
-      this.syllabusUnits = data.syllabusUnits;
+    // Filter courses by semester and subject if selected
+    let matchingCourses = data.courses || [];
+    if (semFilter) {
+      matchingCourses = matchingCourses.filter((c: any) => c.semester === semFilter);
+    }
+    if (subFilter) {
+      matchingCourses = matchingCourses.filter((c: any) => c.name === subFilter || c.code === subFilter);
+    }
 
-      this.totalCourses = data.totalCourses;
-      this.totalStudents = data.totalStudents;
-      this.overallAttainment = data.overallAttainment;
-      this.averageAttendance = data.averageAttendance;
-      this.activeAssessmentsCount = data.activeAssessmentsCount;
-      this.atRiskCount = data.atRiskCount;
-      this.pendingNotificationsCount = this.notifications.filter(n => !n.read).length;
+    const matchedCodes = new Set(matchingCourses.map((c: any) => (c.code || '').toLowerCase()));
+    const matchedNames = new Set(matchingCourses.map((c: any) => (c.name || '').toLowerCase()));
+
+    this.courses = matchingCourses;
+    this.activeAssessments = (data.activeAssessments || []).filter((a: any) => 
+      matchedCodes.has((a.courseId || '').toLowerCase()) || matchedNames.has((a.courseName || '').toLowerCase())
+    );
+    this.studentProgressList = (data.studentProgressSummary || []).filter((sp: any) => 
+      matchedCodes.has((sp.courseId || '').toLowerCase()) || matchedNames.has((sp.courseName || '').toLowerCase())
+    );
+    this.filteredProgressList = [...this.studentProgressList];
+    this.atRiskStudents = (data.atRiskStudents || []).filter((ar: any) => 
+      matchedCodes.has((ar.courseId || '').toLowerCase()) || matchedNames.has((ar.courseName || '').toLowerCase())
+    );
+    this.courseCOAttainments = (data.courseCOAttainments || []).filter((co: any) => 
+      matchedNames.has((co.courseName || '').toLowerCase()) || matchingCourses.some((c: any) => c.title === co.courseName || c.name === co.courseName)
+    );
+
+    this.syllabusUnits = subFilter 
+      ? this.getDynamicSyllabusUnits(subFilter)
+      : (data.syllabusUnits || []).filter((u: any) => matchedNames.has((u.courseName || '').toLowerCase()));
+
+    this.totalCourses = this.courses.length;
+    const uniqueStudents = new Set<string>();
+    this.studentProgressList.forEach(sp => uniqueStudents.add(sp.studentName.toLowerCase()));
+    this.totalStudents = uniqueStudents.size;
+
+    const validCOs = this.courseCOAttainments.filter(co => co.attainmentPercentage > 0);
+    this.overallAttainment = validCOs.length > 0
+      ? Math.round(validCOs.reduce((sum, co) => sum + co.attainmentPercentage, 0) / validCOs.length)
+      : (data.overallAttainment || 0);
+
+    const validProgress = this.studentProgressList.filter(sp => sp.attendance > 0);
+    this.averageAttendance = validProgress.length > 0
+      ? Math.round(validProgress.reduce((sum, sp) => sum + sp.attendance, 0) / validProgress.length)
+      : (data.averageAttendance || 0);
+
+    this.activeAssessmentsCount = this.activeAssessments.filter((a: any) => a.status === 'ongoing' || a.status === 'pending').length;
+    this.atRiskCount = this.atRiskStudents.length;
+    this.pendingNotificationsCount = (data.notifications || []).filter((n: any) => !n.read).length;
+
+    if (subFilter) {
+      this.recalculateGradeDistributionForSubject(subFilter);
     } else {
-      // Filter dashboard contents strictly by selected subject
-      this.courses = data.courses.filter((c: any) => c.name === filter || c.code === filter);
-      this.activeAssessments = data.activeAssessments.filter((a: any) => a.courseName === filter);
-      this.studentProgressList = data.studentProgressSummary.filter((sp: any) => sp.courseName.toLowerCase().includes(filter.toLowerCase()));
-      this.filteredProgressList = [...this.studentProgressList];
-      this.atRiskStudents = data.atRiskStudents.filter((ar: any) => ar.courseName.toLowerCase().includes(filter.toLowerCase()));
-      this.courseCOAttainments = data.courseCOAttainments.filter((co: any) => co.courseName === filter);
-      
-      // Recalculate syllabus units dynamically
-      this.syllabusUnits = this.getDynamicSyllabusUnits(filter);
-
-      // Recalculate statistics for selected subject
-      this.totalCourses = this.courses.length;
-      
-      const uniqueStudents = new Set<string>();
-      this.studentProgressList.forEach(sp => uniqueStudents.add(sp.studentName.toLowerCase()));
-      this.totalStudents = uniqueStudents.size;
-
-      const validCOs = this.courseCOAttainments.filter(co => co.attainmentPercentage > 0);
-      this.overallAttainment = validCOs.length > 0
-        ? Math.round(validCOs.reduce((sum, co) => sum + co.attainmentPercentage, 0) / validCOs.length)
-        : 0;
-
-      const validProgress = this.studentProgressList.filter(sp => sp.attendance > 0);
-      this.averageAttendance = validProgress.length > 0
-        ? Math.round(validProgress.reduce((sum, sp) => sum + sp.attendance, 0) / validProgress.length)
-        : 0;
-
-      this.activeAssessmentsCount = this.activeAssessments.filter((a: any) => a.status === 'ongoing' || a.status === 'pending').length;
-      this.atRiskCount = this.atRiskStudents.length;
-      this.pendingNotificationsCount = data.notifications.filter((n: any) => !n.read).length;
-
-      // Recalculate Grade Distribution for selected subject
-      this.recalculateGradeDistributionForSubject(filter);
+      this.gradeDistribution = data.gradeDistribution;
     }
 
     // Regroup Course Outcomes by Course Name
