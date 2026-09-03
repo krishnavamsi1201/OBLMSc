@@ -486,6 +486,72 @@ export class Timetable implements OnInit {
     { id: 28, day: 'Saturday', period: '11:30 AM - 12:30 PM', subject: 'Industry Expert Guest Lecture / Webinar', room: 'Seminar Hall' }
   ];
 
+  getBranchSchedule(dept: string): ScheduleEntry[] {
+    const d = (dept || '').toLowerCase();
+    if (d.includes('mech') || d.includes('me')) {
+      return [
+        { id: 1, day: 'Monday', period: '09:00 AM - 10:00 AM', subject: 'Metallurgy & Materials Engineering (ME210)', room: 'ME-LH-101' },
+        { id: 2, day: 'Monday', period: '10:15 AM - 11:15 AM', subject: 'Kinematics of Machinery (KM)', room: 'ME-LH-102' },
+        { id: 3, day: 'Monday', period: '11:30 AM - 12:30 PM', subject: 'Strength of Materials & Mechanics (SMSE)', room: 'ME-LH-101' },
+        { id: 4, day: 'Monday', period: '02:00 PM - 03:00 PM', subject: 'I C Engines and Combustion (IC)', room: 'ME-LH-204' },
+        { id: 5, day: 'Monday', period: '03:15 PM - 04:15 PM', subject: 'Auto Chassis & Dynamics (AU203)', room: 'ME-LH-204' },
+
+        { id: 6, day: 'Tuesday', period: '09:00 AM - 10:00 AM', subject: 'CAD/CAM Simulation & Modeling (04ME6512)', room: 'CAD Lab' },
+        { id: 7, day: 'Tuesday', period: '10:15 AM - 11:15 AM', subject: 'CAD/CAM Simulation & Modeling (04ME6512)', room: 'CAD Lab' },
+        { id: 8, day: 'Tuesday', period: '11:30 AM - 12:30 PM', subject: 'Metallurgy & Materials Engineering (ME210)', room: 'ME-LH-101' },
+        { id: 9, day: 'Tuesday', period: '02:00 PM - 03:00 PM', subject: 'Engineering Mathematics IV (EM IV)', room: 'ME-LH-102' },
+        { id: 10, day: 'Tuesday', period: '03:15 PM - 04:15 PM', subject: 'Thermal Engineering Practice / Seminar', room: 'Seminar Hall' },
+
+        { id: 11, day: 'Wednesday', period: '09:00 AM - 10:00 AM', subject: 'Kinematics of Machinery (KM)', room: 'ME-LH-102' },
+        { id: 12, day: 'Wednesday', period: '10:15 AM - 11:15 AM', subject: 'I C Engines and Combustion (IC)', room: 'ME-LH-204' },
+        { id: 13, day: 'Wednesday', period: '11:30 AM - 12:30 PM', subject: 'Metallurgy & Materials Engineering (ME210)', room: 'ME-LH-101' },
+        { id: 14, day: 'Wednesday', period: '02:00 PM - 03:00 PM', subject: 'Strength of Materials Lab / Testing', room: 'Mechanics Lab' },
+        { id: 15, day: 'Wednesday', period: '03:15 PM - 04:15 PM', subject: 'Strength of Materials Lab / Testing', room: 'Mechanics Lab' },
+
+        { id: 16, day: 'Thursday', period: '09:00 AM - 10:00 AM', subject: 'Auto Chassis & Dynamics (AU203)', room: 'ME-LH-204' },
+        { id: 17, day: 'Thursday', period: '10:15 AM - 11:15 AM', subject: 'Engineering Mathematics IV (EM IV)', room: 'ME-LH-102' },
+        { id: 18, day: 'Thursday', period: '11:30 AM - 12:30 PM', subject: 'Kinematics of Machinery (KM)', room: 'ME-LH-102' },
+        { id: 19, day: 'Thursday', period: '02:00 PM - 03:00 PM', subject: 'IC Engines & Automobile Lab', room: 'Auto Lab' },
+        { id: 20, day: 'Thursday', period: '03:15 PM - 04:15 PM', subject: 'IC Engines & Automobile Lab', room: 'Auto Lab' },
+
+        { id: 21, day: 'Friday', period: '09:00 AM - 10:00 AM', subject: 'Metallurgy & Materials Engineering (ME210)', room: 'ME-LH-101' },
+        { id: 22, day: 'Friday', period: '10:15 AM - 11:15 AM', subject: 'Strength of Materials & Mechanics (SMSE)', room: 'ME-LH-101' },
+        { id: 23, day: 'Friday', period: '11:30 AM - 12:30 PM', subject: 'CAD/CAM Simulation & Modeling (04ME6512)', room: 'CAD Lab' },
+        { id: 24, day: 'Friday', period: '02:00 PM - 03:00 PM', subject: 'Mechatronics & Robotics Workshop', room: 'ME-LH-204' },
+        { id: 25, day: 'Friday', period: '03:15 PM - 04:15 PM', subject: 'Outcome-Based Assessment / Remedial', room: 'ME-LH-101' }
+      ];
+    } else if (d.includes('civil') || d.includes('ce')) {
+      return [
+        { id: 1, day: 'Monday', period: '09:00 AM - 10:00 AM', subject: 'Fluid Mechanics & Hydraulic Machinery (FMHM)', room: 'CE-LH-101' },
+        { id: 2, day: 'Monday', period: '10:15 AM - 11:15 AM', subject: 'Structural Mechanics & Materials (SMSE)', room: 'CE-LH-102' },
+        { id: 3, day: 'Monday', period: '11:30 AM - 12:30 PM', subject: 'Engineering Mathematics II (EMII)', room: 'CE-LH-101' },
+        { id: 4, day: 'Monday', period: '02:00 PM - 03:00 PM', subject: 'Principles of Management (HS300)', room: 'CE-LH-204' },
+        { id: 5, day: 'Monday', period: '03:15 PM - 04:15 PM', subject: 'Fluid Mechanics Lab (CE234)', room: 'Fluid Lab' },
+        { id: 6, day: 'Tuesday', period: '09:00 AM - 10:00 AM', subject: 'Fluid Mechanics & Hydraulic Machinery (FMHM)', room: 'CE-LH-101' },
+        { id: 7, day: 'Tuesday', period: '10:15 AM - 11:15 AM', subject: 'Structural Mechanics & Materials (SMSE)', room: 'CE-LH-102' },
+        { id: 8, day: 'Tuesday', period: '11:30 AM - 12:30 PM', subject: 'Engineering Mathematics II (EMII)', room: 'CE-LH-101' },
+        { id: 9, day: 'Tuesday', period: '02:00 PM - 03:00 PM', subject: 'Surveying Field Practice Lab', room: 'Survey Field' }
+      ];
+    } else if (d.includes('elect') || d.includes('ece')) {
+      return [
+        { id: 1, day: 'Monday', period: '09:00 AM - 10:00 AM', subject: 'Microprocessors & Embedded Systems (MES)', room: 'EC-LH-101' },
+        { id: 2, day: 'Monday', period: '10:15 AM - 11:15 AM', subject: 'Digital Systems & Logic Designs (DSLD)', room: 'EC-LH-102' },
+        { id: 3, day: 'Monday', period: '11:30 AM - 12:30 PM', subject: 'Computer Organization (EC206)', room: 'EC-LH-101' },
+        { id: 4, day: 'Monday', period: '02:00 PM - 03:00 PM', subject: 'Digital Signal Processing (EE407)', room: 'EC-LH-204' },
+        { id: 5, day: 'Monday', period: '03:15 PM - 04:15 PM', subject: 'Microprocessors & Hardware Lab', room: 'Hardware Lab' }
+      ];
+    } else if (d.includes('info') || d.includes('it')) {
+      return [
+        { id: 1, day: 'Monday', period: '09:00 AM - 10:00 AM', subject: 'Operating Systems & Systems Programming (IT305)', room: 'IT-LH-101' },
+        { id: 2, day: 'Monday', period: '10:15 AM - 11:15 AM', subject: 'Linux & Shell Programming (Linux)', room: 'IT-LH-102' },
+        { id: 3, day: 'Monday', period: '11:30 AM - 12:30 PM', subject: 'Web Technologies & Frameworks (WT)', room: 'IT-LH-101' },
+        { id: 4, day: 'Monday', period: '02:00 PM - 03:00 PM', subject: 'Soft Computing (CS361)', room: 'IT-LH-204' },
+        { id: 5, day: 'Monday', period: '03:15 PM - 04:15 PM', subject: 'Linux & Open Source Lab', room: 'Linux Lab' }
+      ];
+    }
+    return this.defaultSchedule;
+  }
+
   // Form bindings
   currentEntry: ScheduleEntry = this.createEmptyEntry();
   editIndex = -1;
@@ -493,17 +559,19 @@ export class Timetable implements OnInit {
   // Filters
   dayFilter = '';
   searchSubject = '';
+  userDept: string = 'Computer Science & Engineering';
 
   constructor(private http: HttpClient) {
     try {
       this.role = localStorage.getItem('userRole')?.toLowerCase() || null;
+      this.userDept = localStorage.getItem('userDepartment') || localStorage.getItem('userDept') || 'Computer Science & Engineering';
     } catch {
       this.role = null;
     }
   }
 
   ngOnInit(): void {
-    this.weeklySchedule = [...this.defaultSchedule];
+    this.weeklySchedule = this.getBranchSchedule(this.userDept);
     this.applyFilters();
     this.loadTimetable();
   }
@@ -517,16 +585,13 @@ export class Timetable implements OnInit {
       next: (data) => {
         if (Array.isArray(data) && data.length > 0) {
           this.weeklySchedule = data;
-          try {
-            localStorage.setItem('obslmsTimetable', JSON.stringify(data));
-          } catch {}
         } else {
-          this.weeklySchedule = [...this.defaultSchedule];
+          this.weeklySchedule = this.getBranchSchedule(this.userDept);
         }
         this.applyFilters();
       },
       error: () => {
-        this.weeklySchedule = [...this.defaultSchedule];
+        this.weeklySchedule = this.getBranchSchedule(this.userDept);
         this.applyFilters();
       }
     });

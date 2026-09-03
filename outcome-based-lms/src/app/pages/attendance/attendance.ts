@@ -1150,44 +1150,7 @@ export class AttendancePage implements OnInit, OnDestroy {
   }
 
   private ensureDefaultStudentLogs(): void {
-    try {
-      const stored = localStorage.getItem('obslmsAttendance');
-      let logs: AttendanceRecord[] = stored ? JSON.parse(stored) : [];
-      
-      const sName = this.isStudent ? this.userName : 'Krishnavamsi';
-      const hasLogs = logs.some(l => l.student && l.student.toLowerCase() === sName.toLowerCase());
-
-      if (!hasLogs || logs.length < 5) {
-        const enrolled = this.getStudentEnrolledCourses();
-        const today = new Date();
-        const defaultRecords: AttendanceRecord[] = [];
-
-        if (enrolled.length > 0) {
-          // Generate past 25 class records using enrolled courses
-          for (let i = 0; i < 25; i++) {
-            const d = new Date(today);
-            d.setDate(d.getDate() - (i % 12));
-            const dateStr = d.toISOString().split('T')[0];
-            const course = enrolled[i % enrolled.length];
-            const isPresent = (i % 6 !== 0); // ~83% attendance
-
-            defaultRecords.push({
-              id: Date.now() + i * 100 + Math.floor(Math.random() * 50),
-              student: sName,
-              regNo: '240101120001',
-              course: `${course.code} - ${course.title}`,
-              date: dateStr,
-              status: isPresent ? 'Present' : 'Absent',
-              period: `Period ${(i % 4) + 1}`,
-              topic: `Regular Class Session on ${course.title}`
-            });
-          }
-        }
-
-        logs = [...defaultRecords, ...logs];
-        localStorage.setItem('obslmsAttendance', JSON.stringify(logs));
-      }
-    } catch {}
+    // Zero fake data: attendance logs are strictly loaded from MySQL backend
   }
 
   private loadAllLogs(): void {
