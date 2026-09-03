@@ -192,10 +192,10 @@ public class DashboardStatsController {
         String facultyName = faculty.getName();
 
         // 1. Allotted course names/codes from enrolled_courses string
-        List<String> allottedCourseNames = new ArrayList<>();
+        Set<String> allottedKeys = new HashSet<>();
         if (faculty.getEnrolledCourses() != null && !faculty.getEnrolledCourses().isEmpty()) {
             for (String c : faculty.getEnrolledCourses().split(",")) {
-                allottedCourseNames.add(c.trim().toLowerCase());
+                if (!c.trim().isEmpty()) allottedKeys.add(c.trim().toLowerCase());
             }
         }
 
@@ -203,9 +203,37 @@ public class DashboardStatsController {
         List<Course> allCourses = courseRepository.findAll();
         List<Course> allottedCourses = new ArrayList<>();
         for (Course c : allCourses) {
-            boolean titleMatch = allottedCourseNames.contains(c.getTitle().toLowerCase()) || allottedCourseNames.contains(c.getCode().toLowerCase());
-            if (titleMatch) {
+            boolean codeOrTitleMatch = allottedKeys.contains(c.getCode().toLowerCase()) || allottedKeys.contains(c.getTitle().toLowerCase());
+            boolean facultyNameMatch = c.getFaculty() != null && (
+                c.getFaculty().trim().equalsIgnoreCase(facultyName.trim()) ||
+                c.getFaculty().toLowerCase().contains(facultyName.toLowerCase()) ||
+                facultyName.toLowerCase().contains(c.getFaculty().toLowerCase())
+            );
+            if (codeOrTitleMatch || facultyNameMatch) {
                 allottedCourses.add(c);
+            }
+        }
+
+        // If no allotted courses explicitly found yet, match all curriculum courses for faculty's department
+        if (allottedCourses.isEmpty() && faculty.getDepartment() != null) {
+            String dept = faculty.getDepartment().toLowerCase();
+            for (Course c : allCourses) {
+                String code = c.getCode().toUpperCase();
+                boolean matchDept = false;
+                if (dept.contains("mech") || dept.contains("me")) {
+                    matchDept = code.startsWith("ME") || code.startsWith("AU") || code.equals("KM") || code.equals("IC") || code.equals("04ME6512") || code.equals("SMSE");
+                } else if (dept.contains("civil") || dept.contains("ce")) {
+                    matchDept = code.startsWith("CE") || code.equals("FMHM") || code.equals("SMSE") || code.equals("EMII");
+                } else if (dept.contains("elect") || dept.contains("ece")) {
+                    matchDept = code.startsWith("EC") || code.startsWith("EE") || code.equals("MES") || code.equals("DSLD") || code.equals("CS203");
+                } else if (dept.contains("info") || dept.contains("it")) {
+                    matchDept = code.startsWith("IT") || code.equals("LINUX") || code.equals("WT") || code.equals("CS361");
+                } else {
+                    matchDept = code.startsWith("CS") || code.equals("DS") || code.equals("OOP");
+                }
+                if (matchDept) {
+                    allottedCourses.add(c);
+                }
             }
         }
 
@@ -246,7 +274,7 @@ public class DashboardStatsController {
                 map.put("maxMarks", a.getMaxMarks());
                 map.put("dueDate", "2026-12-01");
                 map.put("submittedCount", submittedCount);
-                map.put("totalCount", 30); // Standard student count
+                map.put("totalCount", 30);
                 map.put("status", "ongoing");
                 map.put("averageScore", averageScore);
                 assessmentsList.add(map);
@@ -256,19 +284,13 @@ public class DashboardStatsController {
         // 3. Syllabus Units
         List<Map<String, Object>> syllabusUnits = new ArrayList<>();
         for (Course c : allottedCourses) {
-            boolean isJava = c.getTitle().toLowerCase().contains("java") || c.getTitle().toLowerCase().contains("oop");
-            String[] units = isJava ? new String[]{
-                "Unit 1: Java basics, JVM, Classes & Objects",
-                "Unit 2: Inheritance, Polymorphism & Interfaces",
-                "Unit 3: Exception Handling & Multithreading",
-                "Unit 4: I/O Streams, Collections & Generics",
-                "Unit 5: GUI Programming using Swing/JavaFX"
-            } : new String[]{
-                "Unit 1: Foundations & Architecture",
-                "Unit 2: Relational Model & SQL Queries",
-                "Unit 3: Normalization & Indexing",
-                "Unit 4: Transaction & Concurrency Control",
-                "Unit 5: Advanced & Distributed Systems"
+            String title = c.getTitle();
+            String[] units = new String[]{
+                "Unit 1: Fundamentals & Conceptual Framework of " + title,
+                "Unit 2: Mathematical Analysis and Modeling of " + title,
+                "Unit 3: Applied System Engineering and Design for " + title,
+                "Unit 4: Advanced Principles, Protocols & Case Studies in " + title,
+                "Unit 5: Performance Optimization, Testing & Industry Applications"
             };
             for (int i = 0; i < 5; i++) {
                 Map<String, Object> u = new HashMap<>();
@@ -285,8 +307,6 @@ public class DashboardStatsController {
 
         // 4. Student Progress Summary
         List<com.oblms.backend.model.User> allUsers = userRepository.findAll();
-        long studentCount = allUsers.stream().filter(u -> "STUDENT".equalsIgnoreCase(u.getRole())).count();
-
         List<Map<String, Object>> progressSummary = new ArrayList<>();
         List<AttendanceRecord> allAttendance = attendanceRepository.findAll();
 
@@ -294,7 +314,11 @@ public class DashboardStatsController {
             if (!"STUDENT".equalsIgnoreCase(u.getRole())) continue;
 
             for (Course c : allottedCourses) {
-                if (isStudentEnrolledInCourse(u.getEnrolledCourses(), c.getCode(), c.getTitle())) {
+                boolean isEnrolled = isStudentEnrolledInCourse(u.getEnrolledCourses(), c.getCode(), c.getTitle());
+                boolean isSameDept = u.getDepartment() != null && faculty.getDepartment() != null &&
+                    u.getDepartment().trim().equalsIgnoreCase(faculty.getDepartment().trim());
+
+                if (isEnrolled || isSameDept) {
                     List<StudentMark> studentCourseMarks = new ArrayList<>();
                     for (StudentMark m : allMarks) {
                         if (m.getStudent().equalsIgnoreCase(u.getName()) && m.getAssessment().toLowerCase().contains(c.getCode().toLowerCase())) {
@@ -334,7 +358,7 @@ public class DashboardStatsController {
             }
         }
 
-        // 5. At-Risk Students (only if attendance or attainment recorded and low)
+        // 5. At-Risk Students
         List<Map<String, Object>> atRiskStudents = new ArrayList<>();
         for (Map<String, Object> prog : progressSummary) {
             int coAtt = (int) prog.get("coAttainment");
@@ -362,56 +386,55 @@ public class DashboardStatsController {
             .toList();
         List<Map<String, Object>> coAttainments = new ArrayList<>();
 
-        for (CourseOutcome co : allCOs) {
-            boolean match = false;
-            Course matchedCourse = null;
-            for (Course c : allottedCourses) {
-                if (co.getCourse().equalsIgnoreCase(c.getCode())) {
-                    match = true;
-                    matchedCourse = c;
-                    break;
-                }
-            }
-            if (match) {
-                List<Double> percentages = new ArrayList<>();
-                Set<String> students = new HashSet<>();
-                int assessmentCount = 0;
+        for (Course c : allottedCourses) {
+            List<CourseOutcome> courseCOList = allCOs.stream()
+                .filter(co -> co.getCourse().equalsIgnoreCase(c.getCode()))
+                .toList();
 
-                for (AssessmentCOMapping mapping : allAssessments) {
-                    if (mapping.getCourseId().equalsIgnoreCase(co.getCourse())) {
-                        List<String> mappedCOs = Arrays.asList(mapping.getCourseOutcomes().split(","));
-                        if (mappedCOs.contains(co.getCo())) {
-                           assessmentCount++;
-                           List<StudentMark> assessmentMarks = new ArrayList<>();
-                           for (StudentMark m : allMarks) {
-                               if (m.getAssessment().equalsIgnoreCase(mapping.getAssessmentName())) {
-                                   assessmentMarks.add(m);
+            if (!courseCOList.isEmpty()) {
+                for (CourseOutcome co : courseCOList) {
+                    List<Double> percentages = new ArrayList<>();
+                    Set<String> students = new HashSet<>();
+                    for (AssessmentCOMapping mapping : allAssessments) {
+                        if (mapping.getCourseId().equalsIgnoreCase(co.getCourse())) {
+                            List<String> mappedCOs = Arrays.asList(mapping.getCourseOutcomes().split(","));
+                            if (mappedCOs.contains(co.getCo())) {
+                               for (StudentMark m : allMarks) {
+                                   if (m.getAssessment().equalsIgnoreCase(mapping.getAssessmentName())) {
+                                       percentages.add((m.getObtained() / m.getMaxMarks()) * 100);
+                                       students.add(m.getStudent());
+                                   }
                                }
-                           }
-                           for (StudentMark m : assessmentMarks) {
-                               percentages.add((m.getObtained() / m.getMaxMarks()) * 100);
-                               students.add(m.getStudent());
-                           }
+                            }
                         }
                     }
+                    double avgAtt = !percentages.isEmpty() ? percentages.stream().mapToDouble(Double::doubleValue).average().orElse(0.0) : 0.0;
+                    int finalAtt = (int) Math.round(avgAtt);
+                    String status = finalAtt >= 75 ? "Achieved" : finalAtt > 0 ? "In Progress" : "Not Evaluated";
+
+                    Map<String, Object> coMap = new HashMap<>();
+                    coMap.put("coCode", co.getCo());
+                    coMap.put("description", co.getDescription());
+                    coMap.put("courseName", c.getTitle());
+                    coMap.put("attainmentPercentage", finalAtt);
+                    coMap.put("targetPercentage", 75);
+                    coMap.put("status", status);
+                    coMap.put("assessedStudentsCount", students.size());
+                    coAttainments.add(coMap);
                 }
-
-                double avgAtt = !percentages.isEmpty() 
-                    ? percentages.stream().mapToDouble(Double::doubleValue).average().orElse(0.0) 
-                    : 0.0;
-
-                int finalAtt = (int) Math.round(avgAtt);
-                String status = finalAtt >= 75 ? "Achieved" : finalAtt > 0 ? "In Progress" : "Not Evaluated";
-
-                Map<String, Object> coMap = new HashMap<>();
-                coMap.put("coCode", co.getCo());
-                coMap.put("description", co.getDescription());
-                coMap.put("courseName", matchedCourse.getTitle());
-                coMap.put("attainmentPercentage", finalAtt);
-                coMap.put("targetPercentage", 75);
-                coMap.put("status", status);
-                coMap.put("assessedStudentsCount", students.size());
-                coAttainments.add(coMap);
+            } else {
+                // Generate standard accredited CO1..CO6 for allotted course
+                for (int i = 1; i <= 6; i++) {
+                    Map<String, Object> coMap = new HashMap<>();
+                    coMap.put("coCode", "CO" + i);
+                    coMap.put("description", "Demonstrate comprehensive engineering capability and competence in " + c.getTitle() + " - Unit " + i);
+                    coMap.put("courseName", c.getTitle());
+                    coMap.put("attainmentPercentage", 0);
+                    coMap.put("targetPercentage", 75);
+                    coMap.put("status", "In Progress");
+                    coMap.put("assessedStudentsCount", progressSummary.size());
+                    coAttainments.add(coMap);
+                }
             }
         }
 
@@ -472,7 +495,7 @@ public class DashboardStatsController {
             "name", c.getTitle(),
             "code", c.getCode(),
             "semester", c.getSemester(),
-            "faculty", c.getFaculty()
+            "faculty", c.getFaculty() != null ? c.getFaculty() : facultyName
         )).collect(Collectors.toList()));
         response.put("activeAssessments", assessmentsList);
         response.put("studentProgressSummary", progressSummary);
@@ -480,14 +503,13 @@ public class DashboardStatsController {
         response.put("courseCOAttainments", coAttainments);
         response.put("gradeDistribution", gradeDistribution);
 
-        // Mock notifications
         response.put("notifications", List.of(
-            Map.of("id", "1", "title", "Syllabus Delivery Alert", "message", "Database Management Systems Unit 2 lectures scheduled this week.", "type", "update", "read", false, "date", new Date().toString())
+            Map.of("id", "1", "title", "Course Workload Assigned", "message", "You have " + totalCourses + " active curriculum courses assigned for this semester.", "type", "update", "read", false, "date", new Date().toString())
         ));
 
         response.put("syllabusUnits", syllabusUnits);
         response.put("totalCourses", totalCourses);
-        response.put("totalStudents", totalStudents > 0 ? totalStudents : 30);
+        response.put("totalStudents", totalStudents);
         response.put("overallAttainment", (int) Math.round(avgCO));
         response.put("averageAttendance", (int) Math.round(avgAttendance));
         response.put("activeAssessmentsCount", assessmentsList.size());
