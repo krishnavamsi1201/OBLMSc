@@ -52,6 +52,15 @@ export class Courses implements OnInit, OnDestroy {
       const q = this.searchQuery.toLowerCase().trim();
       const matchesSearch = !q || c.code.toLowerCase().includes(q) || c.title.toLowerCase().includes(q) || (c.faculty && c.faculty.toLowerCase().includes(q));
       const matchesSem = !this.selectedSemester || c.semester === this.selectedSemester;
+
+      // Student Role: ONLY show subjects belonging to their branch or already enrolled
+      if (this.role === 'student') {
+        const matchesBranch = this.isCourseMatchingStudentBranch(c);
+        if (!matchesBranch && !this.isEnrolled(c.code)) {
+          return false;
+        }
+      }
+
       return matchesSearch && matchesSem;
     });
   }
@@ -80,11 +89,17 @@ export class Courses implements OnInit, OnDestroy {
     this.loadCourses();
     this.loadCompletion();
     this.loadFacultyList();
+    if (this.role === 'student') {
+      this.loadStudentEnrollments();
+    }
 
     this.syncSub = this.syncService.events$.subscribe((event) => {
       if (event.type === 'COURSES_CHANGED' || event.type === 'ENROLLMENTS_CHANGED') {
         this.loadCourses();
         this.loadCompletion();
+        if (this.role === 'student') {
+          this.loadStudentEnrollments();
+        }
         this.cdr.detectChanges();
       }
     });
@@ -425,96 +440,148 @@ export class Courses implements OnInit, OnDestroy {
     this.currentCourse = this.createEmptyCourse();
   }
 
-  isStudentCs(): boolean {
-    const dept = (localStorage.getItem('userDepartment') || localStorage.getItem('userDept') || 'Computer Science & Engineering').toLowerCase();
-    return dept.includes('computer') || dept.includes('cs') || dept.includes('cse') || dept.includes('it') || dept.includes('information');
+  pendingRequests: string[] = [];
+  enrolledCourseCodes: string[] = [];
+
+  loadStudentEnrollments(): void {
+    const studentId = localStorage.getItem('userId') || localStorage.getItem('userEmail');
+    if (studentId) {
+      this.http.get<any>(`http://localhost:8080/api/users/${encodeURIComponent(studentId)}`).subscribe({
+        next: (u) => {
+          if (u && u.enrolledCourses) {
+            this.enrolledCourseCodes = u.enrolledCourses.split(',').map((s: string) => s.trim().toUpperCase());
+          } else {
+            this.enrolledCourseCodes = [];
+          }
+          this.cdr.detectChanges();
+        }
+      });
+
+      this.http.get<any[]>(`http://localhost:8080/api/courses/requests/student/${encodeURIComponent(studentId)}`).subscribe({
+        next: (reqs) => {
+          this.pendingRequests = (reqs || [])
+            .filter(r => r.status?.toLowerCase() === 'pending')
+            .map(r => (r.courseCode || '').toUpperCase().trim());
+          this.cdr.detectChanges();
+        }
+      });
+    }
   }
 
-  isCsCourse(course: Course): boolean {
-    const code = (course.code || '').toLowerCase();
-    const title = (course.title || '').toLowerCase();
-    
-    // 1. Direct code/title keyword check
-    const csKeywords = [
-      'cs', 'cse', 'it', 'mca', 'inmca', 'ds', 'oop', 'comp', 'data', 
-      'programming', 'network', 'software', 'database', 'dbms', 'web', 
-      'system', 'security', 'structure', 'java', 'python', 'c++', 'algorithm'
-    ];
-    if (csKeywords.some(kw => code.includes(kw) || title.includes(kw))) {
-      return true;
+  isCourseMatchingStudentBranch(course: Course): boolean {
+    const code = (course.code || '').toUpperCase().trim();
+    const title = (course.title || '').toLowerCase().trim();
+    const dept = (localStorage.getItem('userDepartment') || localStorage.getItem('userDept') || 'Mechanical Engineering').toLowerCase();
+
+    // 1. Mechanical
+    if (dept.includes('mech') || dept.includes('me')) {
+      return code.startsWith('ME') || code.startsWith('AU') || code === 'KM' || code === 'IC' || code === '04ME6512' || code === 'SMSE' || code === 'EM IV' ||
+             title.includes('metallurgy') || title.includes('kinematics') || title.includes('combustion') || title.includes('engine') || title.includes('cad') || title.includes('chassis') || title.includes('mechanical');
     }
 
-    // 2. Assigned faculty department check
-    if (course.faculty && course.faculty !== 'Faculty Board') {
-      const faculty = this.facultyList.find(f => f.name?.toLowerCase() === course.faculty.toLowerCase());
-      if (faculty && faculty.department) {
-        const dept = faculty.department.toLowerCase();
-        if (dept.includes('computer') || dept.includes('information') || dept.includes('cs') || dept.includes('it')) {
-          return true;
-        }
-      }
+    // 2. Civil
+    if (dept.includes('civil') || dept.includes('ce')) {
+      return code.startsWith('CE') || code === 'FMHM' || code === 'SMSE' || code === 'EMII' || code === 'HS300' ||
+             title.includes('fluid') || title.includes('survey') || title.includes('structural') || title.includes('civil') || title.includes('hydraulic');
     }
-    
-    return false;
+
+    // 3. ECE
+    if (dept.includes('elect') || dept.includes('ece')) {
+      return code.startsWith('EC') || code.startsWith('EE') || code === 'MES' || code === 'DSLD' || code === 'CS203' || code === 'CS207' || code === 'AMP' ||
+             title.includes('microprocessor') || title.includes('logic design') || title.includes('signal') || title.includes('electronics');
+    }
+
+    // 4. IT
+    if (dept.includes('info') || dept.includes('it')) {
+      return code.startsWith('IT') || code === 'LINUX' || code === 'WT' || code === 'CS361' || code === 'RLMCA108' ||
+             title.includes('linux') || title.includes('shell') || title.includes('web tech') || title.includes('cloud') || title.includes('devops');
+    }
+
+    // 5. CSE
+    return code.startsWith('CS') || code === 'DS' || code === 'OOP' || code === 'CC' || code === 'OOMD' || code === 'HPC' ||
+           title.includes('data structure') || title.includes('database') || title.includes('algorithm') || title.includes('compiler') || title.includes('networks') || title.includes('computer');
   }
 
   isEnrolled(courseCode: string): boolean {
-    const storedStudentCourses = localStorage.getItem('obslmsStudentCourses');
-    const studentCourses = storedStudentCourses ? JSON.parse(storedStudentCourses) : [];
-    const currentStudentName = localStorage.getItem('userName') || 'Student';
-    return studentCourses.some((sc: any) => 
-      sc.studentName.toLowerCase() === currentStudentName.toLowerCase() && 
-      sc.courseCode.toLowerCase() === courseCode.toLowerCase()
-    );
+    if (!courseCode) return false;
+    const c = courseCode.toUpperCase().trim();
+    if (this.enrolledCourseCodes.includes(c)) return true;
+
+    try {
+      const storedStudentCourses = localStorage.getItem('obslmsStudentCourses');
+      const studentCourses = storedStudentCourses ? JSON.parse(storedStudentCourses) : [];
+      const currentStudentName = localStorage.getItem('userName') || 'Student';
+      return studentCourses.some((sc: any) => 
+        sc.studentName.toLowerCase() === currentStudentName.toLowerCase() && 
+        sc.courseCode.toUpperCase().trim() === c
+      );
+    } catch {
+      return false;
+    }
   }
 
   isRequestPending(courseCode: string): boolean {
-    const storedRequests = localStorage.getItem('obslmsCourseRequests');
-    const requests = storedRequests ? JSON.parse(storedRequests) : [];
-    const currentStudentName = localStorage.getItem('userName') || 'Student';
-    return requests.some((r: any) => 
-      r.studentName.toLowerCase() === currentStudentName.toLowerCase() && 
-      r.courseCode.toLowerCase() === courseCode.toLowerCase() && 
-      r.status === 'Pending'
-    );
+    if (!courseCode) return false;
+    const c = courseCode.toUpperCase().trim();
+    if (this.pendingRequests.includes(c)) return true;
+
+    try {
+      const storedRequests = localStorage.getItem('obslmsCourseRequests');
+      const requests = storedRequests ? JSON.parse(storedRequests) : [];
+      const currentStudentName = localStorage.getItem('userName') || 'Student';
+      return requests.some((r: any) => 
+        r.studentName.toLowerCase() === currentStudentName.toLowerCase() && 
+        (r.courseCode || '').toUpperCase().trim() === c && 
+        r.status === 'Pending'
+      );
+    } catch {
+      return false;
+    }
   }
 
   isRequestRejected(courseCode: string): boolean {
-    const storedRequests = localStorage.getItem('obslmsCourseRequests');
-    const requests = storedRequests ? JSON.parse(storedRequests) : [];
-    const currentStudentName = localStorage.getItem('userName') || 'Student';
-    return requests.some((r: any) => 
-      r.studentName.toLowerCase() === currentStudentName.toLowerCase() && 
-      r.courseCode.toLowerCase() === courseCode.toLowerCase() && 
-      r.status === 'Rejected'
-    );
+    try {
+      const storedRequests = localStorage.getItem('obslmsCourseRequests');
+      const requests = storedRequests ? JSON.parse(storedRequests) : [];
+      const currentStudentName = localStorage.getItem('userName') || 'Student';
+      return requests.some((r: any) => 
+        r.studentName.toLowerCase() === currentStudentName.toLowerCase() && 
+        (r.courseCode || '').toLowerCase() === (courseCode || '').toLowerCase() && 
+        r.status === 'Rejected'
+      );
+    } catch {
+      return false;
+    }
   }
 
   requestEnrollment(course: Course): void {
-    const storedRequests = localStorage.getItem('obslmsCourseRequests');
-    const requests = storedRequests ? JSON.parse(storedRequests) : [];
-    const currentStudentName = localStorage.getItem('userName') || 'Krishnavamsi';
-    const currentStudentId = localStorage.getItem('userId') || 'STU004';
-    const currentStudentEmail = localStorage.getItem('userEmail') || 'krishnavamsi1201@gmail.com';
-    const currentStudentDept = localStorage.getItem('userDept') || 'Computer Science & Engineering';
+    const currentStudentName = localStorage.getItem('userName') || 'Student';
+    const currentStudentId = localStorage.getItem('userId') || localStorage.getItem('userEmail') || 'STUDENT';
+    const currentStudentEmail = localStorage.getItem('userEmail') || '';
+    const currentStudentDept = localStorage.getItem('userDepartment') || localStorage.getItem('userDept') || 'Mechanical Engineering';
 
-    const newRequest = {
-      id: 'REQ-' + Date.now(),
-      studentName: currentStudentName,
+    const payload = {
       studentId: currentStudentId,
-      regNo: currentStudentId,
+      studentName: currentStudentName,
       studentEmail: currentStudentEmail,
+      regNo: localStorage.getItem('userRoll') || currentStudentId,
       department: currentStudentDept,
       courseCode: course.code,
       courseTitle: course.title,
-      status: 'Pending',
-      requestedAt: new Date().toISOString()
+      semester: course.semester || 'Semester 6',
+      status: 'Pending'
     };
 
-    requests.push(newRequest);
-    localStorage.setItem('obslmsCourseRequests', JSON.stringify(requests));
-    this.syncService.emit('ENROLLMENTS_CHANGED', newRequest);
-    this.toast.success(`Enrollment request sent for course "${course.title}".`);
-    this.cdr.detectChanges();
+    this.http.post('http://localhost:8080/api/courses/requests', payload).subscribe({
+      next: () => {
+        this.pendingRequests.push(course.code.toUpperCase().trim());
+        this.syncService.emit('ENROLLMENTS_CHANGED', payload);
+        this.toast.success(`Enrollment request sent for "${course.title}". ⏳`);
+        this.cdr.detectChanges();
+      },
+      error: () => {
+        this.toast.error('Failed to submit enrollment request to database.');
+      }
+    });
   }
 }
