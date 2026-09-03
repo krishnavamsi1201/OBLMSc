@@ -192,14 +192,14 @@ export class FacultyDataService {
 
     const totalCourses = courses.length;
     const uniqueStudents = new Set(studentProgressSummary.map(s => s.studentName));
-    const totalStudents = uniqueStudents.size || 30;
+    const totalStudents = uniqueStudents.size;
 
     const attainedCOs = courseCOAttainments.filter((c: CourseCOAttainmentSummary) => c.status === 'Achieved');
     const overallAttainment = courseCOAttainments.length > 0 
       ? Math.round((attainedCOs.length / courseCOAttainments.length) * 100) 
-      : 84;
+      : 0;
 
-    const averageAttendance = this.calculateOverallAttendanceForCourses(courses) || 88;
+    const averageAttendance = this.calculateOverallAttendanceForCourses(courses) || 0;
 
     return {
       courses,
@@ -232,34 +232,14 @@ export class FacultyDataService {
   }
 
   /**
-   * Get real-time courses for faculty (allocated or all stored if no specific allocation)
+   * Get real-time courses for faculty (strictly allocated to this faculty)
    */
   private getRealTimeCourses(facultyName: string): Course[] {
     try {
-      let allCourses = this.getSafeJson('obslmsCourses') as StorageCourse[];
-      if (!allCourses || allCourses.length === 0) {
-        allCourses = [
-          { id: 1, code: 'CS101', title: 'Database Management Systems', faculty: 'Dr. Ramesh Babu', semester: 'Semester 3' },
-          { id: 2, code: 'CS102', title: 'Data Structures & Algorithms', faculty: 'Prof. Sunita Sharma', semester: 'Semester 3' },
-          { id: 3, code: 'CS103', title: 'Object-Oriented Programming with Java', faculty: 'Dr. Ramesh Babu', semester: 'Semester 3' },
-          { id: 4, code: 'CS201', title: 'Operating Systems', faculty: 'Dr. Amit Patel', semester: 'Semester 4' },
-          { id: 5, code: 'CS202', title: 'Machine Learning & Data Science', faculty: 'Prof. Sunita Sharma', semester: 'Semester 5' },
-          { id: 6, code: 'CS301', title: 'Computer Networks', faculty: 'Dr. Priya Nair', semester: 'Semester 5' },
-          { id: 7, code: 'CS302', title: 'Software Engineering & Agile Methodologies', faculty: 'Prof. Rajesh Verma', semester: 'Semester 6' },
-          { id: 8, code: 'CS303', title: 'Cloud Computing & DevOps', faculty: 'Dr. Amit Patel', semester: 'Semester 6' },
-          { id: 9, code: 'CS401', title: 'Artificial Intelligence', faculty: 'Dr. Ramesh Babu', semester: 'Semester 7' },
-          { id: 10, code: 'CS402', title: 'Cyber Security & Cryptography', faculty: 'Prof. Rajesh Verma', semester: 'Semester 7' }
-        ];
-        try {
-          localStorage.setItem('obslmsCourses', JSON.stringify(allCourses));
-        } catch {}
+      const allCourses = (this.getSafeJson('obslmsCourses') || []) as StorageCourse[];
+      if (!facultyName || !allCourses || allCourses.length === 0) {
+        return [];
       }
-
-      const allocations = this.getSafeJson('obslmsFacultyAllocations') as FacultyAllocation[];
-      const marks = this.getSafeJson('obslmsMarkEntries');
-      const attendance = this.getSafeJson('obslmsAttendance');
-
-      let filteredCourses: Array<{ id: string; name: string; code: string; semester: string; faculty: string }> = [];
 
       // Try to load assigned courses from localStorage (saved on login)
       let assigned: string[] = [];
@@ -270,43 +250,30 @@ export class FacultyDataService {
         }
       } catch {}
 
-      const isFaculty = facultyName && facultyName.toLowerCase() !== 'faculty' && facultyName.toLowerCase() !== 'faculty member';
-
-      if (isFaculty) {
+      let matchingCourses = allCourses.filter(c => {
+        if (c.faculty && c.faculty !== 'Faculty Board' && c.faculty !== 'Unassigned') {
+          if (c.faculty.toLowerCase().includes(facultyName.toLowerCase()) || facultyName.toLowerCase().includes(c.faculty.toLowerCase())) {
+            return true;
+          }
+        }
         if (assigned && assigned.length > 0) {
-          const matchingCourses = allCourses.filter(c =>
-            assigned.includes(c.title) ||
-            assigned.includes(c.code) ||
-            assigned.some(a => c.title && c.title.toLowerCase().includes(a.toLowerCase())) ||
-            assigned.some(a => c.code && c.code.toLowerCase().includes(a.toLowerCase()))
-          );
-          if (matchingCourses.length > 0) {
-            filteredCourses = matchingCourses.map(c => ({
-              id: c.id.toString(),
-              name: c.title,
-              code: c.code,
-              semester: c.semester || 'Semester 1',
-              faculty: c.faculty || facultyName
-            }));
-          }
+          return assigned.includes(c.title) || assigned.includes(c.code);
         }
+        return false;
+      });
 
-        // If still no courses found, filter by faculty name check in course.faculty
-        if (filteredCourses.length === 0) {
-          const matchingCourses = allCourses.filter(c =>
-            c.faculty && (c.faculty.toLowerCase().includes(facultyName.toLowerCase()) || facultyName.toLowerCase().includes(c.faculty.toLowerCase()))
-          );
-          if (matchingCourses.length > 0) {
-            filteredCourses = matchingCourses.map(c => ({
-              id: c.id.toString(),
-              name: c.title,
-              code: c.code,
-              semester: c.semester || 'Semester 1',
-              faculty: c.faculty || facultyName
-            }));
-          }
-        }
-      }
+      return matchingCourses.map(c => ({
+        id: c.id ? c.id.toString() : '1',
+        code: c.code,
+        name: c.title,
+        semester: c.semester || 'Semester 1',
+        department: c.department || 'Engineering',
+        faculty: c.faculty || facultyName
+      }));
+    } catch {
+      return [];
+    }
+  }
 
       // If not faculty (or admin/general view), return all existing courses
       if (filteredCourses.length === 0 && !isFaculty) {

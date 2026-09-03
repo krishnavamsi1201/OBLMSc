@@ -204,36 +204,13 @@ public class DashboardStatsController {
         List<Course> allottedCourses = new ArrayList<>();
         for (Course c : allCourses) {
             boolean codeOrTitleMatch = allottedKeys.contains(c.getCode().toLowerCase()) || allottedKeys.contains(c.getTitle().toLowerCase());
-            boolean facultyNameMatch = c.getFaculty() != null && (
+            boolean facultyNameMatch = c.getFaculty() != null && !c.getFaculty().trim().isEmpty() && !"Faculty Board".equalsIgnoreCase(c.getFaculty().trim()) && !"Unassigned".equalsIgnoreCase(c.getFaculty().trim()) && (
                 c.getFaculty().trim().equalsIgnoreCase(facultyName.trim()) ||
                 c.getFaculty().toLowerCase().contains(facultyName.toLowerCase()) ||
                 facultyName.toLowerCase().contains(c.getFaculty().toLowerCase())
             );
             if (codeOrTitleMatch || facultyNameMatch) {
                 allottedCourses.add(c);
-            }
-        }
-
-        // If no allotted courses explicitly found yet, match all curriculum courses for faculty's department
-        if (allottedCourses.isEmpty() && faculty.getDepartment() != null) {
-            String dept = faculty.getDepartment().toLowerCase();
-            for (Course c : allCourses) {
-                String code = c.getCode().toUpperCase();
-                boolean matchDept = false;
-                if (dept.contains("mech") || dept.contains("me")) {
-                    matchDept = code.startsWith("ME") || code.startsWith("AU") || code.equals("KM") || code.equals("IC") || code.equals("04ME6512") || code.equals("SMSE");
-                } else if (dept.contains("civil") || dept.contains("ce")) {
-                    matchDept = code.startsWith("CE") || code.equals("FMHM") || code.equals("SMSE") || code.equals("EMII");
-                } else if (dept.contains("elect") || dept.contains("ece")) {
-                    matchDept = code.startsWith("EC") || code.startsWith("EE") || code.equals("MES") || code.equals("DSLD") || code.equals("CS203");
-                } else if (dept.contains("info") || dept.contains("it")) {
-                    matchDept = code.startsWith("IT") || code.equals("LINUX") || code.equals("WT") || code.equals("CS361");
-                } else {
-                    matchDept = code.startsWith("CS") || code.equals("DS") || code.equals("OOP");
-                }
-                if (matchDept) {
-                    allottedCourses.add(c);
-                }
             }
         }
 
@@ -431,8 +408,8 @@ public class DashboardStatsController {
                     coMap.put("courseName", c.getTitle());
                     coMap.put("attainmentPercentage", 0);
                     coMap.put("targetPercentage", 75);
-                    coMap.put("status", "In Progress");
-                    coMap.put("assessedStudentsCount", progressSummary.size());
+                    coMap.put("status", "Not Evaluated");
+                    coMap.put("assessedStudentsCount", 0);
                     coAttainments.add(coMap);
                 }
             }
