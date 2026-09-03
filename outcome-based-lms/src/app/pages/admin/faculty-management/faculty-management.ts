@@ -46,7 +46,7 @@ export class FacultyManagement implements OnInit {
     name: '',
     email: '',
     password: '',
-    department: 'Computer Science',
+    department: 'Computer Science & Engineering',
     designation: 'Assistant Professor',
     selectedCourses: [] as string[]
   };
@@ -56,13 +56,12 @@ export class FacultyManagement implements OnInit {
   filterDepartment = '';
   
   departments = [
-    'Computer Science', 
     'Computer Science & Engineering',
     'Information Technology',
-    'Electronics & Communication', 
+    'Electronics & Communication Engineering', 
     'Mechanical Engineering', 
     'Civil Engineering', 
-    'Electrical Engineering'
+    'Electrical & Electronics Engineering'
   ];
   
   designations = [
@@ -80,27 +79,31 @@ export class FacultyManagement implements OnInit {
   }
 
   private loadFaculty(): void {
-    try {
-      const stored = localStorage.getItem('obslmsFaculty');
-      if (stored) {
-        this.facultyList = JSON.parse(stored);
-        this.filterFaculty();
-      }
-    } catch {}
+    this.facultyList = this.getSafeJson('obslmsFaculty') || [];
+    this.filterFaculty();
 
     this.http.get<any[]>('http://localhost:8080/api/users').subscribe({
       next: (users) => {
         if (Array.isArray(users) && users.length > 0) {
           const backendFaculty = users
             .filter(u => u.role?.toUpperCase() === 'FACULTY')
-            .map(u => ({
-              id: u.id,
-              name: u.name,
-              email: u.email,
-              department: u.department || 'Computer Science',
-              designation: u.designation || 'Assistant Professor',
-              courses: u.assignedCourses || []
-            }));
+            .map(u => {
+              let courseList: string[] = [];
+              if (u.enrolledCourses && typeof u.enrolledCourses === 'string') {
+                courseList = u.enrolledCourses.split(',').map((s: string) => s.trim()).filter(Boolean);
+              } else if (Array.isArray(u.assignedCourses)) {
+                courseList = u.assignedCourses;
+              }
+              const dept = (u.department === 'Computer Science' || !u.department) ? 'Computer Science & Engineering' : u.department;
+              return {
+                id: u.id,
+                name: u.name,
+                email: u.email,
+                department: dept,
+                designation: u.designation || 'Assistant Professor',
+                courses: courseList
+              };
+            });
           
           if (backendFaculty.length > 0) {
             this.facultyList = backendFaculty;
@@ -169,23 +172,38 @@ export class FacultyManagement implements OnInit {
       name: '',
       email: '',
       password: '',
-      department: 'Computer Science',
+      department: 'Computer Science & Engineering',
       designation: 'Assistant Professor',
       selectedCourses: []
     };
     this.currentId = null;
   }
 
-  isCourseSelected(courseTitle: string): boolean {
-    return this.formData.selectedCourses.includes(courseTitle);
+  isCourseSelected(course: any): boolean {
+    if (!course) return false;
+    const title = typeof course === 'string' ? course : (course.title || '');
+    const code = typeof course === 'string' ? course : (course.code || '');
+    return this.formData.selectedCourses.some(sc => 
+      (sc && title && sc.trim().toLowerCase() === title.trim().toLowerCase()) || 
+      (sc && code && sc.trim().toLowerCase() === code.trim().toLowerCase())
+    );
   }
 
-  toggleCourseSelection(courseTitle: string): void {
-    const idx = this.formData.selectedCourses.indexOf(courseTitle);
+  toggleCourseSelection(course: any): void {
+    if (!course) return;
+    const title = typeof course === 'string' ? course : (course.title || '');
+    const code = typeof course === 'string' ? course : (course.code || '');
+    const key = code || title;
+
+    const idx = this.formData.selectedCourses.findIndex(sc => 
+      (sc && title && sc.trim().toLowerCase() === title.trim().toLowerCase()) || 
+      (sc && code && sc.trim().toLowerCase() === code.trim().toLowerCase())
+    );
+
     if (idx !== -1) {
       this.formData.selectedCourses.splice(idx, 1);
     } else {
-      this.formData.selectedCourses.push(courseTitle);
+      this.formData.selectedCourses.push(key);
     }
   }
 
@@ -301,7 +319,9 @@ export class FacultyManagement implements OnInit {
     };
 
     this.http.post('http://localhost:8080/api/users', payload).subscribe({
-      next: () => {},
+      next: () => {
+        this.loadFaculty();
+      },
       error: () => {}
     });
   }

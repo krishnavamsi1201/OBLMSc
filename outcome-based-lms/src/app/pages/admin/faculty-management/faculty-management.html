@@ -99,19 +99,22 @@
           </div>
 
           <div class="form-group">
-            <label>Assign Subjects / Courses</label>
-            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 8px; max-height: 160px; overflow-y: auto; padding: 10px; border: 1px solid #cbd5e1; border-radius: 8px; background: #f8fafc;">
-              <label *ngFor="let course of allAvailableCourses" style="display: flex; align-items: center; gap: 8px; font-size: 0.88rem; font-weight: normal; cursor: pointer;">
+            <label style="display: flex; justify-content: space-between; align-items: center;">
+              <span>Assign Subjects / Courses</span>
+              <small style="color: #2563eb; font-weight: 600;">Selected: {{ formData.selectedCourses.length }} subjects</small>
+            </label>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 8px; max-height: 180px; overflow-y: auto; padding: 12px; border: 1px solid #cbd5e1; border-radius: 8px; background: #f8fafc;">
+              <label *ngFor="let course of allAvailableCourses" style="display: flex; align-items: center; gap: 8px; font-size: 0.88rem; font-weight: normal; cursor: pointer; background: #ffffff; padding: 6px 10px; border-radius: 6px; border: 1px solid #e2e8f0;">
                 <input 
                   type="checkbox" 
-                  [checked]="isCourseSelected(course.title)" 
-                  (change)="toggleCourseSelection(course.title)"
-                  style="width: 16px; height: 16px;"
+                  [checked]="isCourseSelected(course)" 
+                  (change)="toggleCourseSelection(course)"
+                  style="width: 16px; height: 16px; accent-color: #2563eb;"
                 />
-                <span>{{ course.code ? course.code + ' - ' : '' }}{{ course.title }}</span>
+                <span><strong>{{ course.code ? course.code + ' : ' : '' }}</strong>{{ course.title }}</span>
               </label>
             </div>
-            <small style="color: #64748b; margin-top: 4px; display: block;">Select the subjects this faculty member will teach and manage.</small>
+            <small style="color: #64748b; margin-top: 4px; display: block;">Check or uncheck the subjects this faculty member teaches across all semesters.</small>
           </div>
 
           <div class="form-actions">
@@ -142,23 +145,31 @@
               <th>Department</th>
               <th>Designation</th>
               <th>Email</th>
-              <th>Courses</th>
-              <th style="width: 170px; text-align: center;">Actions</th>
+              <th>Allocated Subjects</th>
+              <th style="width: 240px; text-align: center;">Actions</th>
             </tr>
           </thead>
           <tbody>
             <tr *ngFor="let faculty of filteredFacultyList">
               <td class="faculty-id">{{ faculty.id }}</td>
-              <td class="faculty-name">{{ faculty.name }}</td>
+              <td class="faculty-name"><strong>{{ faculty.name }}</strong></td>
               <td><span class="badge badge-dept">{{ faculty.department }}</span></td>
               <td>{{ faculty.designation }}</td>
               <td class="faculty-email">{{ faculty.email }}</td>
               <td class="courses-cell">
-                <span class="courses-badge">{{ getCoursesDisplay(faculty.courses) }}</span>
+                <div *ngIf="faculty.courses && faculty.courses.length > 0" style="display: flex; flex-wrap: wrap; gap: 4px; max-width: 280px;">
+                  <span *ngFor="let c of faculty.courses" class="courses-badge" style="background: #eff6ff; color: #1e40af; border: 1px solid #bfdbfe; font-size: 0.76rem; font-weight: 600; padding: 2px 7px; border-radius: 4px;">{{ c }}</span>
+                </div>
+                <button *ngIf="!faculty.courses || faculty.courses.length === 0" (click)="openEditForm(faculty)" class="btn-action-pill edit" style="padding: 2px 8px; font-size: 0.75rem; color: #3b82f6; border-color: #3b82f6;">
+                  + Allot Subjects
+                </button>
               </td>
               <td class="actions-cell">
-                <div class="actions-btn-wrap">
-                  <button type="button" class="btn-action-pill edit" (click)="openEditForm(faculty)" title="Edit Faculty">
+                <div class="actions-btn-wrap" style="display: flex; gap: 6px; justify-content: center; flex-wrap: wrap;">
+                  <button type="button" class="btn-action-pill edit" (click)="openEditForm(faculty)" title="Allot or change subjects for this faculty" style="background: #2563eb; color: #ffffff; border-color: #2563eb; font-weight: 500;">
+                    📚 Allot Subjects
+                  </button>
+                  <button type="button" class="btn-action-pill edit" (click)="openEditForm(faculty)" title="Edit Faculty details">
                     ✎ Edit
                   </button>
                   <button type="button" class="btn-action-pill delete" (click)="deleteFaculty(faculty.id)" title="Delete Faculty">
