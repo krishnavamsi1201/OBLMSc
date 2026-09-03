@@ -408,4 +408,13 @@ export class FacultyManagement implements OnInit {
   getCoursesDisplay(courses: string[]): string {
     return courses && courses.length > 0 ? courses.slice(0, 2).join(', ') + (courses.length > 2 ? `... +${courses.length - 2}` : '') : 'None';
   }
+
+  private getSafeJson(key: string): any {
+    try {
+      const item = localStorage.getItem(key);
+      return item ? JSON.parse(item) : null;
+    } catch {
+      return null;
+    }
+  }
 }
