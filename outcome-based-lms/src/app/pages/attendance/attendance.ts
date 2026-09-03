@@ -1037,6 +1037,9 @@ export class AttendancePage implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
+    try {
+      localStorage.removeItem('obslmsAttendance');
+    } catch {}
     this.refreshUserRole();
     this.loadCourses();
     this.ensureDefaultStudentLogs();
@@ -1500,6 +1503,17 @@ export class AttendancePage implements OnInit, OnDestroy {
         (l.student && l.student.toLowerCase() === 'student') ||
         (l.student && l.student.toLowerCase() === 'krishnavamsi')
       );
+    } else if (this.role === 'faculty') {
+      // Faculty should ONLY see logs for courses allocated to them!
+      const myCourseCodes = this.coursesList.map(c => (c.code || '').toLowerCase()).filter(Boolean);
+      const myCourseTitles = this.coursesList.map(c => (c.title || '').toLowerCase()).filter(Boolean);
+      
+      results = results.filter(l => {
+        if (!l.course) return false;
+        const lc = l.course.toLowerCase();
+        return myCourseCodes.some(c => lc.includes(c) || c.includes(lc)) ||
+               myCourseTitles.some(t => lc.includes(t) || t.includes(lc));
+      });
     }
 
     if (this.searchTerm.trim()) {
