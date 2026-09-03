@@ -1121,6 +1121,7 @@ export class AttendancePage implements OnInit, OnDestroy {
 
         if (!this.isStudent) {
           this.loadEnrolledStudents();
+          this.filterLogs();
         }
         this.cdr.detectChanges();
       },
