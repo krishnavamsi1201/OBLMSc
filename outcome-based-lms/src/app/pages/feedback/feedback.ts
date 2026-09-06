@@ -76,7 +76,17 @@ interface FeedbackEntry {
     </div>
 
 </div>`,
-  styles: [`.page{padding:24px}.empty-state{padding:18px 14px;border:1px dashed #90a4ae;border-radius:10px;color:#546e7a;}`]
+  styles: [`
+    .page { padding: 24px; }
+    .summary-grid { display: grid; gap: 18px; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); margin-bottom: 24px; }
+    .section-card { background: #101b38; border: 1px solid #1f2f54; border-radius: 18px; padding: 22px; box-shadow: 0 8px 24px rgba(0,0,0,0.3); }
+    .section-card h3 { margin: 0 0 10px; font-size: 1.05rem; color: #d4af37; }
+    .section-card strong { display: block; font-size: 2rem; margin: 8px 0; color: #ffffff; }
+    .section-card p { margin: 0; font-size: 0.88rem; color: #94a3b8; }
+    .table-card { background: #101b38; border: 1px solid #1f2f54; border-radius: 18px; padding: 24px; box-shadow: 0 8px 24px rgba(0,0,0,0.3); }
+    .table-card h2 { margin: 0 0 16px; font-size: 1.2rem; color: #ffffff; }
+    .empty-state { padding: 24px; border: 1px dashed #1f2f54; border-radius: 12px; color: #94a3b8; text-align: center; background: #091024; }
+  `]
 })
 export class Feedback {
   feedbackEntries: FeedbackEntry[] = [];

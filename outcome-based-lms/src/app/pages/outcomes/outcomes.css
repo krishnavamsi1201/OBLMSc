@@ -42,18 +42,19 @@ table td {
 }
 
 table th {
-  color: #3d69ad;
+  color: #d4af37;
   text-transform: uppercase;
   letter-spacing: 0.08em;
   font-size: 0.82rem;
 }
 
 .table-card {
-  background: rgba(255, 255, 255, 0.94);
-  border: 1px solid rgba(74, 140, 234, 0.16);
+  background: #101b38;
+  border: 1px solid #1f2f54;
   border-radius: 24px;
   padding: 24px;
-  box-shadow: 0 18px 30px rgba(74, 140, 234, 0.08);
+  box-shadow: 0 18px 30px rgba(0, 0, 0, 0.35);
+  color: #ffffff;
 }
 
 .full-width {
