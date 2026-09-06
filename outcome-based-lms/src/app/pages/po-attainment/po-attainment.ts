@@ -161,16 +161,68 @@ export class PoAttainment implements OnInit {
     const facultyParam = (this.role === 'faculty' && this.studentName) ? `&faculty=${encodeURIComponent(this.studentName)}` : '';
     this.http.get<POAttainment[]>(`http://localhost:8080/api/obe/po-attainment?target=${this.targetPercentage}${facultyParam}`).subscribe({
       next: (data) => {
-        this.poAttainments = data;
-        if (data.length > 0) {
+        // Group and deduplicate PO records by unique code (e.g. PO1, PO2... PO12, PSO1)
+        const grouped = new Map<string, POAttainment[]>();
+        (data || []).forEach(item => {
+          const code = (item.code || '').trim().toUpperCase();
+          if (!code) return;
+          if (!grouped.has(code)) grouped.set(code, []);
+          grouped.get(code)!.push(item);
+        });
+
+        const deduplicated: POAttainment[] = [];
+        grouped.forEach((items, code) => {
+          const avgAch = Math.round(items.reduce((s, it) => s + (it.achievement || 0), 0) / items.length);
+          const avgDirect = Math.round(items.reduce((s, it) => s + (it.directScore || it.achievement || 0), 0) / items.length);
+          const avgIndirect = Math.round(items.reduce((s, it) => s + (it.indirectScore || 80), 0) / items.length);
+          const description = items[0].description || `Program Outcome ${code}`;
+          const target = items[0].targetPercentage || this.targetPercentage;
+          const status = avgAch >= target ? 'Achieved' : avgAch >= 50 ? 'Partial' : 'Not Achieved';
+          
+          const allCOs = new Set<string>();
+          items.forEach(it => {
+            if (it.mappedCOs) it.mappedCOs.forEach(co => allCOs.add(co));
+          });
+
+          deduplicated.push({
+            code,
+            description,
+            achievement: avgAch,
+            directScore: avgDirect,
+            indirectScore: avgIndirect,
+            targetPercentage: target,
+            status,
+            mappedCOs: Array.from(allCOs),
+            coCount: allCOs.size > 0 ? allCOs.size : 2
+          });
+        });
+
+        // Natural sort by PO1..PO12, PSO1..
+        deduplicated.sort((a, b) => {
+          try {
+            const numA = parseInt(a.code.replace(/\D+/g, '') || '0', 10);
+            const numB = parseInt(b.code.replace(/\D+/g, '') || '0', 10);
+            const isPsoA = a.code.startsWith('PSO');
+            const isPsoB = b.code.startsWith('PSO');
+            if (isPsoA && !isPsoB) return 1;
+            if (!isPsoA && isPsoB) return -1;
+            return numA - numB;
+          } catch {
+            return a.code.localeCompare(b.code);
+          }
+        });
+
+        this.poAttainments = deduplicated.length > 0 ? deduplicated : data;
+
+        if (this.poAttainments.length > 0) {
           this.overallAchievement = Math.round(
-            data.reduce((sum, po) => sum + po.achievement, 0) / data.length
+            this.poAttainments.reduce((sum, po) => sum + po.achievement, 0) / this.poAttainments.length
           );
           this.overallDirectScore = Math.round(
-            data.reduce((sum, po) => sum + (po.directScore || po.achievement), 0) / data.length
+            this.poAttainments.reduce((sum, po) => sum + (po.directScore || po.achievement), 0) / this.poAttainments.length
           );
           this.overallIndirectScore = Math.round(
-            data.reduce((sum, po) => sum + (po.indirectScore || 80), 0) / data.length
+            this.poAttainments.reduce((sum, po) => sum + (po.indirectScore || 80), 0) / this.poAttainments.length
           );
         }
         this.computeRadarChart();
@@ -187,9 +239,9 @@ export class PoAttainment implements OnInit {
   computeRadarChart(): void {
     const list = this.poAttainments && this.poAttainments.length > 0 ? this.poAttainments : [];
     const count = Math.max(list.length, 12);
-    const cx = 220;
-    const cy = 220;
-    const maxRadius = 150;
+    const cx = 260;
+    const cy = 260;
+    const maxRadius = 160;
 
     // Rings at 25%, 50%, 75% (Target), 100%
     const levels = [0.25, 0.50, 0.75, 1.0];
@@ -245,10 +297,11 @@ export class PoAttainment implements OnInit {
       const indVal = Math.max(10, Math.min(100, po.indirectScore || 80));
       indirectPts.push(`${(cx + maxRadius * (indVal / 100) * Math.cos(angle)).toFixed(1)},${(cy + maxRadius * (indVal / 100) * Math.sin(angle)).toFixed(1)}`);
 
-      // Label positions slightly further out
-      const labelX = cx + (maxRadius + 22) * Math.cos(angle);
-      const labelY = cy + (maxRadius + 18) * Math.sin(angle);
-      const textAnchor = Math.abs(Math.cos(angle)) < 0.1 ? 'middle' : (Math.cos(angle) > 0 ? 'start' : 'end');
+      // Label positions with generous offset to prevent text overlap
+      const labelX = cx + (maxRadius + 26) * Math.cos(angle);
+      const labelY = cy + (maxRadius + 20) * Math.sin(angle);
+      const cosVal = Math.cos(angle);
+      const textAnchor = Math.abs(cosVal) < 0.2 ? 'middle' : (cosVal > 0 ? 'start' : 'end');
 
       this.radarSpokes.push({
         code: po.code,
