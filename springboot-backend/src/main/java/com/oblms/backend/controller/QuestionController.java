@@ -49,6 +49,13 @@ public class QuestionController {
         return questionRepository.findAll();
     }
 
+    @GetMapping("/{id}")
+    public ResponseEntity<QuestionItem> getQuestionById(@PathVariable Long id) {
+        return questionRepository.findById(id)
+                .map(ResponseEntity::ok)
+                .orElseGet(() -> ResponseEntity.notFound().build());
+    }
+
     @GetMapping("/subject/{subject}")
     public List<QuestionItem> getQuestionsBySubject(@PathVariable String subject) {
         return questionRepository.findBySubjectIgnoreCase(subject);
