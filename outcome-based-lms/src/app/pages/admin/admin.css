@@ -200,8 +200,8 @@
 	display: flex;
 	align-items: center;
 	justify-content: center;
-	border: 2px solid rgba(147, 197, 253, 0.5);
-	box-shadow: 0 0 25px rgba(59, 130, 246, 0.4);
+	border: 1.5px solid rgba(255, 255, 255, 0.18);
+	box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
 	flex-shrink: 0;
 }
 
@@ -222,15 +222,15 @@
 }
 
 .admin-chip {
-	background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+	background: #2563eb;
 	color: #ffffff;
 	font-size: 0.76rem;
-	font-weight: 800;
+	font-weight: 700;
 	padding: 4px 12px;
 	border-radius: 999px;
 	text-transform: uppercase;
-	letter-spacing: 0.05em;
-	box-shadow: 0 4px 12px rgba(59, 130, 246, 0.35);
+	letter-spacing: 0.04em;
+	box-shadow: 0 2px 8px rgba(37, 99, 235, 0.25);
 }
 
 .admin-meta-row {
@@ -258,17 +258,11 @@
 
 .status-indicator-dot {
 	display: inline-block;
-	width: 9px;
-	height: 9px;
+	width: 8px;
+	height: 8px;
 	border-radius: 50%;
 	background-color: #10b981;
-	box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.3), 0 0 12px #10b981;
-	animation: pulseGreen 2s infinite ease-in-out;
-}
-
-@keyframes pulseGreen {
-	0%, 100% { transform: scale(1); opacity: 1; }
-	50% { transform: scale(1.2); opacity: 0.8; }
+	box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.25);
 }
 
 .banner-right {
@@ -303,7 +297,7 @@
 }
 
 /* ==========================================================================
-   3. Glowing VIBRANT Multi-Color KPI Cards (Rich Jewel Tones)
+   3. Refined Balanced Dark Slate KPI Cards (Enterprise Minimalist)
    ========================================================================== */
 
 .kpi-grid {
@@ -314,15 +308,18 @@
 }
 
 .kpi-card {
+	background: rgba(18, 24, 38, 0.88);
+	border: 1px solid rgba(255, 255, 255, 0.08);
 	border-radius: 18px;
 	padding: 22px 20px;
 	position: relative;
 	overflow: hidden;
-	transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+	transition: all 0.22s ease;
 	display: flex;
 	flex-direction: column;
 	backdrop-filter: blur(12px);
 	-webkit-backdrop-filter: blur(12px);
+	box-shadow: 0 4px 18px rgba(0, 0, 0, 0.25);
 }
 
 .kpi-card::before {
@@ -331,84 +328,55 @@
 	top: 0;
 	left: 0;
 	right: 0;
-	height: 4.5px;
+	height: 3.5px;
 }
 
-/* Card 1: Students (Ocean Blue & Cyan Glow) */
-.kpi-card:nth-child(1) {
-	background: linear-gradient(135deg, rgba(30, 58, 138, 0.4) 0%, rgba(15, 23, 42, 0.9) 100%);
-	border: 1.5px solid rgba(59, 130, 246, 0.45);
-	box-shadow: 0 8px 24px rgba(37, 99, 235, 0.2);
-}
-.kpi-card:nth-child(1)::before { background: linear-gradient(90deg, #38bdf8, #2563eb); }
-.kpi-card:nth-child(1) .kpi-icon { background: linear-gradient(135deg, #2563eb, #38bdf8); color: #ffffff; box-shadow: 0 0 20px rgba(56, 189, 248, 0.5); }
-.kpi-card:nth-child(1) .kpi-num { color: #60a5fa; }
-.kpi-card:nth-child(1) .kpi-label { color: #93c5fd; font-weight: 700; }
-.kpi-card:nth-child(1) .kpi-link { color: #38bdf8; }
+/* Card 1: Students (Ocean Blue) */
+.kpi-card:nth-child(1)::before { background: #3b82f6; }
+.kpi-card:nth-child(1) .kpi-icon { background: rgba(59, 130, 246, 0.12); color: #60a5fa; border: 1px solid rgba(59, 130, 246, 0.25); }
+.kpi-card:nth-child(1) .kpi-num { color: #ffffff; }
+.kpi-card:nth-child(1) .kpi-label { color: #94a3b8; font-weight: 600; }
+.kpi-card:nth-child(1) .kpi-link { color: #60a5fa; }
 
-/* Card 2: Faculty (Emerald & Mint Glow) */
-.kpi-card:nth-child(2) {
-	background: linear-gradient(135deg, rgba(6, 78, 59, 0.4) 0%, rgba(15, 23, 42, 0.9) 100%);
-	border: 1.5px solid rgba(16, 185, 129, 0.45);
-	box-shadow: 0 8px 24px rgba(16, 185, 129, 0.2);
-}
-.kpi-card:nth-child(2)::before { background: linear-gradient(90deg, #34d399, #059669); }
-.kpi-card:nth-child(2) .kpi-icon { background: linear-gradient(135deg, #059669, #10b981); color: #ffffff; box-shadow: 0 0 20px rgba(52, 211, 153, 0.5); }
-.kpi-card:nth-child(2) .kpi-num { color: #34d399; }
-.kpi-card:nth-child(2) .kpi-label { color: #6ee7b7; font-weight: 700; }
+/* Card 2: Faculty (Emerald Mint) */
+.kpi-card:nth-child(2)::before { background: #10b981; }
+.kpi-card:nth-child(2) .kpi-icon { background: rgba(16, 185, 129, 0.12); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.25); }
+.kpi-card:nth-child(2) .kpi-num { color: #ffffff; }
+.kpi-card:nth-child(2) .kpi-label { color: #94a3b8; font-weight: 600; }
 .kpi-card:nth-child(2) .kpi-link { color: #34d399; }
 
-/* Card 3: Active Courses (Royal Indigo Glow) */
-.kpi-card:nth-child(3) {
-	background: linear-gradient(135deg, rgba(49, 46, 129, 0.4) 0%, rgba(15, 23, 42, 0.9) 100%);
-	border: 1.5px solid rgba(99, 102, 241, 0.45);
-	box-shadow: 0 8px 24px rgba(99, 102, 241, 0.2);
-}
-.kpi-card:nth-child(3)::before { background: linear-gradient(90deg, #818cf8, #4f46e5); }
-.kpi-card:nth-child(3) .kpi-icon { background: linear-gradient(135deg, #4f46e5, #6366f1); color: #ffffff; box-shadow: 0 0 20px rgba(129, 140, 248, 0.5); }
-.kpi-card:nth-child(3) .kpi-num { color: #818cf8; }
-.kpi-card:nth-child(3) .kpi-label { color: #a5b4fc; font-weight: 700; }
+/* Card 3: Active Courses (Royal Indigo) */
+.kpi-card:nth-child(3)::before { background: #6366f1; }
+.kpi-card:nth-child(3) .kpi-icon { background: rgba(99, 102, 241, 0.12); color: #818cf8; border: 1px solid rgba(99, 102, 241, 0.25); }
+.kpi-card:nth-child(3) .kpi-num { color: #ffffff; }
+.kpi-card:nth-child(3) .kpi-label { color: #94a3b8; font-weight: 600; }
 .kpi-card:nth-child(3) .kpi-link { color: #818cf8; }
 
-/* Card 4: Curriculum Subjects (Vibrant Violet / Purple Glow) */
-.kpi-card:nth-child(4) {
-	background: linear-gradient(135deg, rgba(88, 28, 135, 0.4) 0%, rgba(15, 23, 42, 0.9) 100%);
-	border: 1.5px solid rgba(168, 85, 247, 0.45);
-	box-shadow: 0 8px 24px rgba(168, 85, 247, 0.2);
-}
-.kpi-card:nth-child(4)::before { background: linear-gradient(90deg, #c084fc, #7c3aed); }
-.kpi-card:nth-child(4) .kpi-icon { background: linear-gradient(135deg, #7c3aed, #a855f7); color: #ffffff; box-shadow: 0 0 20px rgba(192, 132, 252, 0.5); }
-.kpi-card:nth-child(4) .kpi-num { color: #c084fc; }
-.kpi-card:nth-child(4) .kpi-label { color: #d8b4fe; font-weight: 700; }
-.kpi-card:nth-child(4) .kpi-link { color: #c084fc; }
+/* Card 4: Curriculum Subjects (Vibrant Violet) */
+.kpi-card:nth-child(4)::before { background: #8b5cf6; }
+.kpi-card:nth-child(4) .kpi-icon { background: rgba(139, 92, 246, 0.12); color: #a78bfa; border: 1px solid rgba(139, 92, 246, 0.25); }
+.kpi-card:nth-child(4) .kpi-num { color: #ffffff; }
+.kpi-card:nth-child(4) .kpi-label { color: #94a3b8; font-weight: 600; }
+.kpi-card:nth-child(4) .kpi-link { color: #a78bfa; }
 
-/* Card 5: CO-PO Mappings (Warm Gold & Amber Glow) */
-.kpi-card:nth-child(5) {
-	background: linear-gradient(135deg, rgba(120, 53, 15, 0.4) 0%, rgba(15, 23, 42, 0.9) 100%);
-	border: 1.5px solid rgba(245, 158, 11, 0.45);
-	box-shadow: 0 8px 24px rgba(245, 158, 11, 0.2);
-}
-.kpi-card:nth-child(5)::before { background: linear-gradient(90deg, #fbbf24, #d97706); }
-.kpi-card:nth-child(5) .kpi-icon { background: linear-gradient(135deg, #d97706, #f59e0b); color: #ffffff; box-shadow: 0 0 20px rgba(251, 191, 36, 0.5); }
-.kpi-card:nth-child(5) .kpi-num { color: #fbbf24; }
-.kpi-card:nth-child(5) .kpi-label { color: #fde68a; font-weight: 700; }
+/* Card 5: CO-PO Mappings (Warm Amber) */
+.kpi-card:nth-child(5)::before { background: #f59e0b; }
+.kpi-card:nth-child(5) .kpi-icon { background: rgba(245, 158, 11, 0.12); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.25); }
+.kpi-card:nth-child(5) .kpi-num { color: #ffffff; }
+.kpi-card:nth-child(5) .kpi-label { color: #94a3b8; font-weight: 600; }
 .kpi-card:nth-child(5) .kpi-link { color: #fbbf24; }
 
-/* Card 6: Pending Approvals (Rose & Crimson Glow) */
-.kpi-card:nth-child(6) {
-	background: linear-gradient(135deg, rgba(136, 19, 55, 0.4) 0%, rgba(15, 23, 42, 0.9) 100%);
-	border: 1.5px solid rgba(239, 68, 68, 0.45);
-	box-shadow: 0 8px 24px rgba(225, 29, 72, 0.2);
-}
-.kpi-card:nth-child(6)::before { background: linear-gradient(90deg, #f87171, #e11d48); }
-.kpi-card:nth-child(6) .kpi-icon { background: linear-gradient(135deg, #e11d48, #f43f5e); color: #ffffff; box-shadow: 0 0 20px rgba(248, 113, 113, 0.5); }
-.kpi-card:nth-child(6) .kpi-num { color: #f87171; }
-.kpi-card:nth-child(6) .kpi-label { color: #fca5a5; font-weight: 700; }
-.kpi-card:nth-child(6) .kpi-link { color: #f87171; }
+/* Card 6: Pending Approvals (Rose Crimson) */
+.kpi-card:nth-child(6)::before { background: #f43f5e; }
+.kpi-card:nth-child(6) .kpi-icon { background: rgba(244, 63, 94, 0.12); color: #fb7185; border: 1px solid rgba(244, 63, 94, 0.25); }
+.kpi-card:nth-child(6) .kpi-num { color: #ffffff; }
+.kpi-card:nth-child(6) .kpi-label { color: #94a3b8; font-weight: 600; }
+.kpi-card:nth-child(6) .kpi-link { color: #fb7185; }
 
 .kpi-card:hover {
-	transform: translateY(-5px);
-	box-shadow: 0 20px 35px -8px rgba(0, 0, 0, 0.4), 0 0 20px rgba(255, 255, 255, 0.1);
+	transform: translateY(-4px);
+	border-color: rgba(255, 255, 255, 0.16);
+	box-shadow: 0 12px 28px rgba(0, 0, 0, 0.38);
 }
 
 .kpi-top {
@@ -419,18 +387,18 @@
 }
 
 .kpi-icon {
-	width: 46px;
-	height: 46px;
-	border-radius: 14px;
+	width: 44px;
+	height: 44px;
+	border-radius: 12px;
 	display: flex;
 	align-items: center;
 	justify-content: center;
-	font-size: 1.45rem;
+	font-size: 1.35rem;
 }
 
 .kpi-link {
-	font-size: 0.86rem;
-	font-weight: 800;
+	font-size: 0.84rem;
+	font-weight: 700;
 	text-decoration: none;
 	display: inline-flex;
 	align-items: center;
@@ -444,15 +412,15 @@
 }
 
 .kpi-num {
-	font-size: 2.3rem;
+	font-size: 2.2rem;
 	font-weight: 800;
 	line-height: 1.1;
-	letter-spacing: -0.03em;
+	letter-spacing: -0.02em;
 }
 
 .kpi-label {
 	font-size: 0.82rem;
-	margin-top: 6px;
+	margin-top: 5px;
 	line-height: 1.35;
 }
 
@@ -699,7 +667,7 @@
 	background: #2563eb;
 	color: #ffffff;
 	border-color: #2563eb;
-	box-shadow: 0 0 14px rgba(37, 99, 235, 0.5);
+	box-shadow: 0 2px 8px rgba(37, 99, 235, 0.3);
 }
 
 /* Security Matrix Box */
@@ -813,10 +781,9 @@
 }
 
 .compliance-status-pill.compliant {
-	background: rgba(16, 185, 129, 0.2);
+	background: rgba(16, 185, 129, 0.15);
 	color: #34d399;
-	border: 1.5px solid rgba(16, 185, 129, 0.4);
-	box-shadow: 0 0 14px rgba(16, 185, 129, 0.3);
+	border: 1px solid rgba(16, 185, 129, 0.35);
 }
 
 .readiness-sub {
@@ -859,7 +826,6 @@
 	height: 100%;
 	background: linear-gradient(90deg, #2563eb 0%, #7c3aed 50%, #10b981 100%);
 	border-radius: 7px;
-	box-shadow: 0 0 16px rgba(16, 185, 129, 0.5);
 	transition: width 0.6s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
@@ -1011,15 +977,18 @@
 }
 
 .dashboard-card {
+	background: rgba(18, 24, 38, 0.88);
+	border: 1px solid rgba(255, 255, 255, 0.08);
 	border-radius: 18px;
 	padding: 24px 22px 20px;
 	position: relative;
 	display: flex;
 	flex-direction: column;
 	overflow: hidden;
-	transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+	transition: all 0.22s ease;
 	backdrop-filter: blur(14px);
 	-webkit-backdrop-filter: blur(14px);
+	box-shadow: 0 4px 18px rgba(0, 0, 0, 0.25);
 }
 
 .dashboard-card::before {
@@ -1028,72 +997,43 @@
 	top: 0;
 	left: 0;
 	right: 0;
-	height: 4.5px;
+	height: 3.5px;
 }
 
-/* Card 1: Curriculum Assignment (Blue Glow) */
-.dashboard-card:nth-child(1) {
-	background: linear-gradient(135deg, rgba(30, 58, 138, 0.3) 0%, rgba(15, 23, 42, 0.85) 100%);
-	border: 1.5px solid rgba(59, 130, 246, 0.4);
-	box-shadow: 0 8px 24px rgba(37, 99, 235, 0.15);
-}
-.dashboard-card:nth-child(1)::before { background: linear-gradient(90deg, #38bdf8, #2563eb); }
-.dashboard-card:nth-child(1) .card-badge { background: rgba(59, 130, 246, 0.25); color: #93c5fd; border: 1px solid rgba(59, 130, 246, 0.45); }
-.dashboard-card:nth-child(1) .metric-action { color: #38bdf8; }
+/* Card 1: Curriculum Assignment (Blue) */
+.dashboard-card:nth-child(1)::before { background: #3b82f6; }
+.dashboard-card:nth-child(1) .card-badge { background: rgba(59, 130, 246, 0.12); color: #93c5fd; border: 1px solid rgba(59, 130, 246, 0.3); }
+.dashboard-card:nth-child(1) .metric-action { color: #60a5fa; }
 
-/* Card 2: Faculty Allocation (Emerald Glow) */
-.dashboard-card:nth-child(2) {
-	background: linear-gradient(135deg, rgba(6, 78, 59, 0.3) 0%, rgba(15, 23, 42, 0.85) 100%);
-	border: 1.5px solid rgba(16, 185, 129, 0.4);
-	box-shadow: 0 8px 24px rgba(16, 185, 129, 0.15);
-}
-.dashboard-card:nth-child(2)::before { background: linear-gradient(90deg, #34d399, #059669); }
-.dashboard-card:nth-child(2) .card-badge { background: rgba(16, 185, 129, 0.25); color: #6ee7b7; border: 1px solid rgba(16, 185, 129, 0.45); }
+/* Card 2: Faculty Allocation (Emerald) */
+.dashboard-card:nth-child(2)::before { background: #10b981; }
+.dashboard-card:nth-child(2) .card-badge { background: rgba(16, 185, 129, 0.12); color: #6ee7b7; border: 1px solid rgba(16, 185, 129, 0.3); }
 .dashboard-card:nth-child(2) .metric-action { color: #34d399; }
 
-/* Card 3: Assessment-CO Mapping (Purple Glow) */
-.dashboard-card:nth-child(3) {
-	background: linear-gradient(135deg, rgba(88, 28, 135, 0.3) 0%, rgba(15, 23, 42, 0.85) 100%);
-	border: 1.5px solid rgba(168, 85, 247, 0.4);
-	box-shadow: 0 8px 24px rgba(168, 85, 247, 0.15);
-}
-.dashboard-card:nth-child(3)::before { background: linear-gradient(90deg, #c084fc, #7c3aed); }
-.dashboard-card:nth-child(3) .card-badge { background: rgba(168, 85, 247, 0.25); color: #d8b4fe; border: 1px solid rgba(168, 85, 247, 0.45); }
-.dashboard-card:nth-child(3) .metric-action { color: #c084fc; }
+/* Card 3: Assessment-CO Mapping (Purple) */
+.dashboard-card:nth-child(3)::before { background: #8b5cf6; }
+.dashboard-card:nth-child(3) .card-badge { background: rgba(139, 92, 246, 0.12); color: #d8b4fe; border: 1px solid rgba(139, 92, 246, 0.3); }
+.dashboard-card:nth-child(3) .metric-action { color: #a78bfa; }
 
-/* Card 4: Unified Approvals (Gold / Amber Glow) */
-.dashboard-card:nth-child(4) {
-	background: linear-gradient(135deg, rgba(120, 53, 15, 0.3) 0%, rgba(15, 23, 42, 0.85) 100%);
-	border: 1.5px solid rgba(245, 158, 11, 0.4);
-	box-shadow: 0 8px 24px rgba(245, 158, 11, 0.15);
-}
-.dashboard-card:nth-child(4)::before { background: linear-gradient(90deg, #fbbf24, #d97706); }
-.dashboard-card:nth-child(4) .card-badge { background: rgba(245, 158, 11, 0.25); color: #fde68a; border: 1px solid rgba(245, 158, 11, 0.45); }
+/* Card 4: Unified Approvals (Amber) */
+.dashboard-card:nth-child(4)::before { background: #f59e0b; }
+.dashboard-card:nth-child(4) .card-badge { background: rgba(245, 158, 11, 0.12); color: #fde68a; border: 1px solid rgba(245, 158, 11, 0.3); }
 .dashboard-card:nth-child(4) .metric-action { color: #fbbf24; }
 
-/* Card 5: Institutional Attainment (Teal / Cyan Glow) */
-.dashboard-card:nth-child(5) {
-	background: linear-gradient(135deg, rgba(14, 116, 144, 0.3) 0%, rgba(15, 23, 42, 0.85) 100%);
-	border: 1.5px solid rgba(6, 182, 212, 0.4);
-	box-shadow: 0 8px 24px rgba(6, 182, 212, 0.15);
-}
-.dashboard-card:nth-child(5)::before { background: linear-gradient(90deg, #38bdf8, #0891b2); }
-.dashboard-card:nth-child(5) .card-badge { background: rgba(6, 182, 212, 0.25); color: #a5f3fc; border: 1px solid rgba(6, 182, 212, 0.45); }
+/* Card 5: Institutional Attainment (Cyan) */
+.dashboard-card:nth-child(5)::before { background: #06b6d4; }
+.dashboard-card:nth-child(5) .card-badge { background: rgba(6, 182, 212, 0.12); color: #a5f3fc; border: 1px solid rgba(6, 182, 212, 0.3); }
 .dashboard-card:nth-child(5) .metric-action { color: #38bdf8; }
 
-/* Card 6: Student Grievances (Rose / Coral Glow) */
-.dashboard-card:nth-child(6) {
-	background: linear-gradient(135deg, rgba(136, 19, 55, 0.3) 0%, rgba(15, 23, 42, 0.85) 100%);
-	border: 1.5px solid rgba(239, 68, 68, 0.4);
-	box-shadow: 0 8px 24px rgba(225, 29, 72, 0.15);
-}
-.dashboard-card:nth-child(6)::before { background: linear-gradient(90deg, #f87171, #e11d48); }
-.dashboard-card:nth-child(6) .card-badge { background: rgba(239, 68, 68, 0.25); color: #fecdd3; border: 1px solid rgba(239, 68, 68, 0.45); }
-.dashboard-card:nth-child(6) .metric-action { color: #f87171; }
+/* Card 6: Student Grievances (Rose) */
+.dashboard-card:nth-child(6)::before { background: #f43f5e; }
+.dashboard-card:nth-child(6) .card-badge { background: rgba(244, 63, 94, 0.12); color: #fecdd3; border: 1px solid rgba(244, 63, 94, 0.3); }
+.dashboard-card:nth-child(6) .metric-action { color: #fb7185; }
 
 .dashboard-card:hover {
-	transform: translateY(-5px);
-	box-shadow: 0 20px 35px -8px rgba(0, 0, 0, 0.4), 0 0 20px rgba(255, 255, 255, 0.1);
+	transform: translateY(-4px);
+	border-color: rgba(255, 255, 255, 0.16);
+	box-shadow: 0 12px 28px rgba(0, 0, 0, 0.38);
 }
 
 .card-badge {
