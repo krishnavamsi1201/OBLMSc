@@ -237,7 +237,12 @@ export class FacultyDataService {
   private getRealTimeCourses(facultyName: string): Course[] {
     try {
       const allCourses = (this.getSafeJson('obslmsCourses') || []) as StorageCourse[];
-      if (!facultyName || !allCourses || allCourses.length === 0) {
+      const marks = this.getSafeJson('obslmsMarkEntries');
+      const attendance = this.getSafeJson('obslmsAttendance');
+      const userRole = (localStorage.getItem('userRole') || '').toLowerCase();
+      const isFaculty = userRole === 'faculty' || userRole === 'teacher';
+
+      if (!allCourses || allCourses.length === 0) {
         return [];
       }
 
@@ -252,7 +257,7 @@ export class FacultyDataService {
 
       let matchingCourses = allCourses.filter(c => {
         if (c.faculty && c.faculty !== 'Faculty Board' && c.faculty !== 'Unassigned') {
-          if (c.faculty.toLowerCase().includes(facultyName.toLowerCase()) || facultyName.toLowerCase().includes(c.faculty.toLowerCase())) {
+          if (facultyName && (c.faculty.toLowerCase().includes(facultyName.toLowerCase()) || facultyName.toLowerCase().includes(c.faculty.toLowerCase()))) {
             return true;
           }
         }
@@ -262,21 +267,100 @@ export class FacultyDataService {
         return false;
       });
 
-      return matchingCourses.map(c => ({
+      let filteredCourses = matchingCourses.map(c => ({
         id: c.id ? c.id.toString() : '1',
         code: c.code,
         name: c.title,
         semester: c.semester || 'Semester 1',
-        faculty: c.faculty || facultyName,
-        studentCount: 0,
-        averageAttainment: 0,
-        averageAttendance: 0
+        faculty: c.faculty || facultyName
       }));
-    } catch {
+
+      // If not faculty (or admin/general view), return all existing courses
+      if (filteredCourses.length === 0 && !isFaculty) {
+        filteredCourses = allCourses.map(c => ({
+          id: c.id ? c.id.toString() : '1',
+          name: c.title,
+          code: c.code,
+          semester: c.semester || 'Semester 1',
+          faculty: c.faculty || 'Faculty Board'
+        }));
+      }
+
+      // Calculate real-time dynamic stats per course
+      return filteredCourses.map(course => {
+        // Find unique students with marks or attendance for this course
+        const courseStudentSet = new Set<string>();
+
+        marks.forEach((m: any) => {
+          if (m.student && m.assessment && (
+            m.assessment.toLowerCase().includes(course.name.toLowerCase()) ||
+            m.assessment.toLowerCase().includes(course.code.toLowerCase()) ||
+            m.assessment.toLowerCase().includes(course.id.toLowerCase())
+          )) {
+            courseStudentSet.add(m.student.toLowerCase());
+          }
+        });
+
+        attendance.forEach((a: any) => {
+          if (a.student && a.course && (
+            a.course.toLowerCase().includes(course.name.toLowerCase()) ||
+            a.course.toLowerCase().includes(course.code.toLowerCase()) ||
+            course.name.toLowerCase().includes(a.course.toLowerCase())
+          )) {
+            courseStudentSet.add(a.student.toLowerCase());
+          }
+        });
+
+        const studentCount = courseStudentSet.size;
+
+        // Calculate course average attainment from marks
+        const courseMarks = marks.filter((m: any) =>
+          m.assessment && (
+            m.assessment.toLowerCase().includes(course.name.toLowerCase()) ||
+            m.assessment.toLowerCase().includes(course.code.toLowerCase()) ||
+            m.assessment.toLowerCase().includes(course.id.toLowerCase())
+          )
+        );
+
+        let avgAttainment = 0;
+        if (courseMarks.length > 0) {
+          const totalObtained = courseMarks.reduce((sum: number, m: any) => sum + (Number(m.obtained) || 0), 0);
+          const totalMax = courseMarks.reduce((sum: number, m: any) => sum + (Number(m.maxMarks) || 100), 0);
+          avgAttainment = totalMax > 0 ? Math.round((totalObtained / totalMax) * 100) : 0;
+        }
+
+        // Calculate course average attendance
+        const courseAttendance = attendance.filter((a: any) =>
+          a.course && (
+            a.course.toLowerCase().includes(course.name.toLowerCase()) ||
+            a.course.toLowerCase().includes(course.code.toLowerCase()) ||
+            course.name.toLowerCase().includes(a.course.toLowerCase())
+          )
+        );
+
+        let avgAttendance = 0;
+        if (courseAttendance.length > 0) {
+          const present = courseAttendance.filter((a: any) => a.status === 'Present').length;
+          avgAttendance = Math.round((present / courseAttendance.length) * 100);
+        }
+
+        return {
+          id: course.id,
+          name: course.name,
+          code: course.code,
+          semester: course.semester,
+          faculty: course.faculty,
+          studentCount,
+          averageAttainment: avgAttainment,
+          averageAttendance: avgAttendance
+        };
+      });
+
+    } catch (error) {
+      console.error('Error loading real-time courses:', error);
       return [];
     }
   }
-
   /**
    * Get real-time assessments calculated from stored assessments & marks
    */
