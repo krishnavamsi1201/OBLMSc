@@ -754,7 +754,7 @@ body, html {
     color: #0f172a;
 }
 
-/* Custom Sleek Neon Scrollbar */
+/* Custom Sleek Scrollbar */
 ::-webkit-scrollbar {
     width: 7px;
     height: 7px;
@@ -772,5 +772,290 @@ body, html {
 ::-webkit-scrollbar-thumb:hover {
     background: linear-gradient(180deg, #3b82f6 0%, #9333ea 100%);
 }
+
+/* ==========================================================================
+   GLOBAL DARK ENTERPRISE THEME SYSTEM (UNIVERSAL OVERRIDES)
+   ========================================================================== */
+
+/* Universal Layout & Containers */
+.container,
+.main-wrapper,
+.dashboard-container,
+.admin-container {
+    background: transparent !important;
+}
+
+.content {
+    background: radial-gradient(circle at 50% 0%, #1e1b4b 0%, #0f172a 45%, #020617 100%) !important;
+    color: #e2e8f0;
+}
+
+/* Universal Page Headers */
+.page-header,
+.section-header,
+.sub-header {
+    background: rgba(18, 24, 38, 0.88) !important;
+    border: 1px solid rgba(255, 255, 255, 0.08) !important;
+    border-radius: 16px !important;
+    box-shadow: 0 4px 18px rgba(0, 0, 0, 0.25) !important;
+    backdrop-filter: blur(12px) !important;
+    -webkit-backdrop-filter: blur(12px) !important;
+}
+
+.page-header h1,
+.page-header h2,
+.header-title h1,
+.header-title h2,
+.section-header h2,
+.section-header h3 {
+    color: #ffffff !important;
+}
+
+.page-header p,
+.header-title p,
+.section-header p {
+    color: #94a3b8 !important;
+}
+
+/* Universal Control Bars & Filter Sections */
+.controls-section,
+.filters-bar,
+.filter-card,
+.search-container {
+    background: rgba(18, 24, 38, 0.88) !important;
+    border: 1px solid rgba(255, 255, 255, 0.08) !important;
+    border-radius: 14px !important;
+    box-shadow: 0 4px 18px rgba(0, 0, 0, 0.2) !important;
+}
+
+/* Universal Inputs & Dropdowns */
+.search-box input,
+.search-input-wrapper input,
+input[type="text"],
+input[type="email"],
+input[type="password"],
+input[type="number"],
+textarea,
+select,
+.filters select {
+    background: rgba(15, 23, 42, 0.8) !important;
+    color: #ffffff !important;
+    border: 1px solid rgba(255, 255, 255, 0.12) !important;
+    border-radius: 8px !important;
+}
+
+input::placeholder,
+textarea::placeholder {
+    color: #64748b !important;
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+    border-color: #3b82f6 !important;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2) !important;
+    outline: none !important;
+}
+
+/* Universal Tab Navigation */
+.tab-nav-bar .tab-btn,
+.tab-btn {
+    background: rgba(15, 23, 42, 0.7) !important;
+    color: #94a3b8 !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+}
+
+.tab-nav-bar .tab-btn:hover,
+.tab-btn:hover {
+    background: rgba(30, 41, 59, 0.8) !important;
+    color: #ffffff !important;
+    border-color: rgba(255, 255, 255, 0.18) !important;
+}
+
+.tab-nav-bar .tab-btn.active,
+.tab-btn.active {
+    background: #2563eb !important;
+    color: #ffffff !important;
+    border-color: #2563eb !important;
+    box-shadow: 0 2px 8px rgba(37, 99, 235, 0.3) !important;
+}
+
+/* Universal Table Cards & Data Tables */
+.table-section,
+.table-card,
+.pro-table-wrapper,
+.card-table-wrap {
+    background: rgba(18, 24, 38, 0.88) !important;
+    border: 1px solid rgba(255, 255, 255, 0.08) !important;
+    border-radius: 16px !important;
+    box-shadow: 0 4px 18px rgba(0, 0, 0, 0.25) !important;
+}
+
+.table-header h3,
+.table-card h3 {
+    color: #ffffff !important;
+}
+
+.table-wrapper {
+    border: 1px solid rgba(255, 255, 255, 0.08) !important;
+    border-radius: 10px !important;
+}
+
+.data-table,
+.pro-table,
+table {
+    background: transparent !important;
+    color: #e2e8f0 !important;
+}
+
+.data-table thead,
+.pro-table thead,
+table thead,
+.data-table th,
+.pro-table th,
+table th {
+    background: rgba(15, 23, 42, 0.95) !important;
+    color: #94a3b8 !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+}
+
+.data-table td,
+.pro-table td,
+table td {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06) !important;
+    color: #e2e8f0 !important;
+}
+
+.data-table tbody tr:hover,
+.pro-table tbody tr:hover,
+table tbody tr:hover {
+    background: rgba(255, 255, 255, 0.04) !important;
+}
+
+/* Universal ID Pills & Badges */
+.id-pill.stu-id {
+    background: rgba(59, 130, 246, 0.15) !important;
+    color: #60a5fa !important;
+    border: 1px solid rgba(59, 130, 246, 0.3) !important;
+}
+
+.id-pill.fac-id {
+    background: rgba(236, 72, 153, 0.15) !important;
+    color: #f472b6 !important;
+    border: 1px solid rgba(236, 72, 153, 0.3) !important;
+}
+
+.cred-pass-badge {
+    background: rgba(15, 23, 42, 0.8) !important;
+    color: #cbd5e1 !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+}
+
+.badge-semester,
+.badge-dept {
+    background: rgba(255, 255, 255, 0.06) !important;
+    color: #94a3b8 !important;
+    border: 1px solid rgba(255, 255, 255, 0.08) !important;
+}
+
+.badge-approved {
+    background: rgba(16, 185, 129, 0.15) !important;
+    color: #34d399 !important;
+    border: 1px solid rgba(16, 185, 129, 0.3) !important;
+}
+
+.badge-pending {
+    background: rgba(245, 158, 11, 0.15) !important;
+    color: #fbbf24 !important;
+    border: 1px solid rgba(245, 158, 11, 0.3) !important;
+}
+
+/* Universal Action Buttons */
+.btn-secondary,
+.pro-btn-secondary {
+    background: rgba(255, 255, 255, 0.08) !important;
+    color: #cbd5e1 !important;
+    border: 1px solid rgba(255, 255, 255, 0.12) !important;
+}
+
+.btn-secondary:hover,
+.pro-btn-secondary:hover {
+    background: rgba(255, 255, 255, 0.14) !important;
+    color: #ffffff !important;
+    border-color: rgba(255, 255, 255, 0.2) !important;
+}
+
+.btn-action-pill.copy {
+    background: rgba(59, 130, 246, 0.15) !important;
+    color: #60a5fa !important;
+    border: 1px solid rgba(59, 130, 246, 0.3) !important;
+}
+
+.btn-action-pill.copy:hover {
+    background: #2563eb !important;
+    color: #ffffff !important;
+}
+
+.btn-action-pill.edit {
+    background: rgba(16, 185, 129, 0.15) !important;
+    color: #34d399 !important;
+    border: 1px solid rgba(16, 185, 129, 0.3) !important;
+}
+
+.btn-action-pill.edit:hover {
+    background: #10b981 !important;
+    color: #ffffff !important;
+}
+
+.btn-action-pill.delete {
+    background: rgba(239, 68, 68, 0.15) !important;
+    color: #f87171 !important;
+    border: 1px solid rgba(239, 68, 68, 0.3) !important;
+}
+
+.btn-action-pill.delete:hover {
+    background: #ef4444 !important;
+    color: #ffffff !important;
+}
+
+/* Universal Modals */
+.modal-overlay {
+    background: rgba(2, 6, 23, 0.75) !important;
+    backdrop-filter: blur(8px) !important;
+}
+
+.modal-content {
+    background: #0f172a !important;
+    border: 1px solid rgba(255, 255, 255, 0.12) !important;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5) !important;
+    color: #ffffff !important;
+}
+
+.modal-header {
+    background: rgba(18, 24, 38, 0.95) !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
+}
+
+.modal-header h2 {
+    color: #ffffff !important;
+}
+
+.close-btn {
+    color: #94a3b8 !important;
+}
+
+.close-btn:hover {
+    background: rgba(239, 68, 68, 0.2) !important;
+    color: #f87171 !important;
+}
+
+.form-group label {
+    color: #cbd5e1 !important;
+}
+
+.form-actions {
+    border-top: 1px solid rgba(255, 255, 255, 0.08) !important;
+}
+
 
 
