@@ -108,96 +108,98 @@
 		</div>
 
 		<div *ngIf="!isLoading">
-			<!-- Add/Edit Question Form -->
-			<div class="form-card" *ngIf="showQuestionForm">
-				<div class="form-header">
-					<h2>{{ editIndex >= 0 ? 'Edit Question Details' : 'Add New Question (Bloom\'s Detection)' }}</h2>
-					<button class="btn-close-form" (click)="closeQuestionForm()">✕</button>
+			<!-- Add/Edit Question Modal Dialog -->
+			<div class="modal-overlay" *ngIf="showQuestionForm" (click)="closeQuestionForm()">
+				<div class="modal-card" (click)="$event.stopPropagation()" style="max-width: 760px;">
+					<div class="modal-header">
+						<h2>{{ (currentQuestion.id || editIndex >= 0) ? '✏️ Edit Question Details' : '➕ Add New Question (Bloom\'s Detection)' }}</h2>
+						<button class="btn-close-modal" (click)="closeQuestionForm()">✕</button>
+					</div>
+					<form (ngSubmit)="saveQuestion()" style="padding: 24px;">
+						<div class="grid-row">
+							<label>
+								Subject / Course Name *
+								<select name="subject" [(ngModel)]="currentQuestion.subject" required>
+									<option value="Database Management Systems">Database Management Systems</option>
+									<option value="Data Structures & Algorithms">Data Structures & Algorithms</option>
+									<option value="Operating Systems">Operating Systems</option>
+									<option value="Computer Networks">Computer Networks</option>
+									<option value="Artificial Intelligence">Artificial Intelligence</option>
+									<option value="Software Engineering">Software Engineering</option>
+								</select>
+							</label>
+							<label>
+								Bloom's Cognitive Level *
+								<select name="bloomsLevel" [(ngModel)]="currentQuestion.bloomsLevel" required>
+									<option value="L1: Remember">L1: Remember (Recall definitions/terms)</option>
+									<option value="L2: Understand">L2: Understand (Explain concepts)</option>
+									<option value="L3: Apply">L3: Apply (Compute/Implement solutions)</option>
+									<option value="L4: Analyze">L4: Analyze (Compare/Deconstruct)</option>
+									<option value="L5: Evaluate">L5: Evaluate (Assess/Critique)</option>
+									<option value="L6: Create">L6: Create (Design/Synthesize)</option>
+								</select>
+							</label>
+							<label>
+								Mapped Course Outcome (CO) *
+								<select name="coMapped" [(ngModel)]="currentQuestion.coMapped" required>
+									<option value="CO1">CO1 - Foundational Knowledge & Concepts</option>
+									<option value="CO2">CO2 - Procedural Application & Computation</option>
+									<option value="CO3">CO3 - Critical Analysis & Optimization</option>
+									<option value="CO4">CO4 - System Evaluation & Diagnostics</option>
+									<option value="CO5">CO5 - Complex Synthesis & Design</option>
+								</select>
+							</label>
+						</div>
+
+						<div class="grid-row">
+							<label>
+								Question Type *
+								<select name="type" [(ngModel)]="currentQuestion.type" required>
+									<option value="Short Answer">Short Answer (5-8 Marks)</option>
+									<option value="Essay">Essay / Long Form (10-15 Marks)</option>
+									<option value="MCQ">Multiple Choice Question (MCQ)</option>
+								</select>
+							</label>
+							<label>
+								Difficulty Level *
+								<select name="difficulty" [(ngModel)]="currentQuestion.difficulty" required>
+									<option value="Easy">Easy (Foundational)</option>
+									<option value="Medium">Medium (Application)</option>
+									<option value="Hard">Hard (Higher Order)</option>
+								</select>
+							</label>
+							<label>
+								Marks Allocation *
+								<input type="number" name="marks" [(ngModel)]="currentQuestion.marks" min="1" max="25" required />
+							</label>
+						</div>
+
+						<div class="grid-row">
+							<label style="grid-column: span 3;">
+								Question Text *
+								<textarea 
+									name="questionText" 
+									[(ngModel)]="currentQuestion.questionText" 
+									(input)="analyzeBloomsTaxonomy()" 
+									placeholder="Type question here (e.g. 'Design a relational schema...' or 'Compare Dijkstra vs Bellman-Ford...')" 
+									rows="4" 
+									required>
+								</textarea>
+							</label>
+						</div>
+
+						<!-- Suggestion Chip -->
+						<div class="ai-suggestion-pill" *ngIf="aiSuggestedBlooms">
+							<span class="ai-sparkle">Suggested:</span>
+							<strong>{{ aiSuggestedBlooms }}</strong> | Target Outcome: <strong>{{ aiSuggestedCO }}</strong>
+						</div>
+
+						<div class="form-actions" style="margin-top: 18px; display: flex; justify-content: flex-end; gap: 12px;">
+							<button type="button" class="btn btn-secondary" (click)="closeQuestionForm()">Cancel</button>
+							<button type="submit" class="btn btn-primary" style="background: linear-gradient(135deg, #d4af37 0%, #b8860b 100%); color: #0a1128; font-weight: 800;">{{ (currentQuestion.id || editIndex >= 0) ? '💾 Save Edits' : '➕ Add to Bank' }}</button>
+						</div>
+					</form>
 				</div>
-				<form (ngSubmit)="saveQuestion()">
-					<div class="grid-row">
-						<label>
-							Subject / Course Name
-							<select name="subject" [(ngModel)]="currentQuestion.subject" required>
-								<option value="Database Management Systems">Database Management Systems</option>
-								<option value="Data Structures & Algorithms">Data Structures & Algorithms</option>
-								<option value="Operating Systems">Operating Systems</option>
-								<option value="Computer Networks">Computer Networks</option>
-								<option value="Artificial Intelligence">Artificial Intelligence</option>
-								<option value="Software Engineering">Software Engineering</option>
-							</select>
-						</label>
-						<label>
-							Bloom's Cognitive Level
-							<select name="bloomsLevel" [(ngModel)]="currentQuestion.bloomsLevel" required>
-								<option value="L1: Remember">L1: Remember (Recall definitions/terms)</option>
-								<option value="L2: Understand">L2: Understand (Explain concepts)</option>
-								<option value="L3: Apply">L3: Apply (Compute/Implement solutions)</option>
-								<option value="L4: Analyze">L4: Analyze (Compare/Deconstruct)</option>
-								<option value="L5: Evaluate">L5: Evaluate (Assess/Critique)</option>
-								<option value="L6: Create">L6: Create (Design/Synthesize)</option>
-							</select>
-						</label>
-						<label>
-							Mapped Course Outcome (CO)
-							<select name="coMapped" [(ngModel)]="currentQuestion.coMapped" required>
-								<option value="CO1">CO1 - Foundational Knowledge & Concepts</option>
-								<option value="CO2">CO2 - Procedural Application & Computation</option>
-								<option value="CO3">CO3 - Critical Analysis & Optimization</option>
-								<option value="CO4">CO4 - System Evaluation & Diagnostics</option>
-								<option value="CO5">CO5 - Complex Synthesis & Design</option>
-							</select>
-						</label>
-					</div>
-
-					<div class="grid-row">
-						<label>
-							Question Type
-							<select name="type" [(ngModel)]="currentQuestion.type" required>
-								<option value="Short Answer">Short Answer (5-8 Marks)</option>
-								<option value="Essay">Essay / Long Form (10-15 Marks)</option>
-								<option value="MCQ">Multiple Choice Question (MCQ)</option>
-							</select>
-						</label>
-						<label>
-							Difficulty Level
-							<select name="difficulty" [(ngModel)]="currentQuestion.difficulty" required>
-								<option value="Easy">Easy (Foundational)</option>
-								<option value="Medium">Medium (Application)</option>
-								<option value="Hard">Hard (Higher Order)</option>
-							</select>
-						</label>
-						<label>
-							Marks Allocation
-							<input type="number" name="marks" [(ngModel)]="currentQuestion.marks" min="1" max="25" required />
-						</label>
-					</div>
-
-					<div class="grid-row">
-						<label style="grid-column: span 3;">
-							Question Text
-							<textarea 
-								name="questionText" 
-								[(ngModel)]="currentQuestion.questionText" 
-								(input)="analyzeBloomsTaxonomy()" 
-								placeholder="Type question here (e.g. 'Design a relational schema...' or 'Compare Dijkstra vs Bellman-Ford...')" 
-								rows="3" 
-								required>
-							</textarea>
-						</label>
-					</div>
-
-					<!-- Suggestion Chip -->
-					<div class="ai-suggestion-pill" *ngIf="aiSuggestedBlooms">
-						<span class="ai-sparkle">Suggested:</span>
-						<strong>{{ aiSuggestedBlooms }}</strong> | Target Outcome: <strong>{{ aiSuggestedCO }}</strong>
-					</div>
-
-					<div class="form-actions">
-						<button type="submit" class="btn btn-success">{{ editIndex >= 0 ? 'Save Edits' : 'Add to Bank' }}</button>
-						<button type="button" class="btn btn-secondary" (click)="closeQuestionForm()">Cancel</button>
-					</div>
-				</form>
 			</div>
 
 			<!-- Filters Card -->
