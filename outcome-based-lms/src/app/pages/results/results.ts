@@ -210,31 +210,32 @@ interface StudentResult {
 <app-footer></app-footer>`,
   styles: [
     `.summary-grid { display: grid; gap: 16px; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); margin-bottom: 24px; }
-    .section-card, .table-card { padding: 20px; background: #fff; border-radius: 10px; box-shadow: 0 1px 12px rgba(0,0,0,.06); margin-bottom: 24px; }
-    .section-card h3, .table-card h2 { margin-top: 0; font-size: 1.1rem; color: #1f3d7a; }
-    .section-card strong { display: block; font-size: 2rem; margin-top: 8px; margin-bottom: 8px; color: #333; }
-    .pass-standing { color: #2e7d32 !important; }
+    .section-card, .table-card { padding: 22px; background: #101b38; border: 1px solid #1f2f54; border-radius: 14px; box-shadow: 0 8px 24px rgba(0,0,0,.35); margin-bottom: 24px; }
+    .section-card h3, .table-card h2 { margin-top: 0; font-size: 1.1rem; color: #ffffff; font-weight: 800; }
+    .section-card strong { display: block; font-size: 2rem; margin-top: 8px; margin-bottom: 8px; color: #ffffff; }
+    .pass-standing { color: #4ade80 !important; }
     .action-row { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; margin-bottom: 20px; }
-    .action-row button { padding: 10px 18px; border: none; border-radius: 8px; background: #1976d2; color: #fff; cursor: pointer; font-weight: 600; }
-    .btn-print { background: #10b981 !important; margin-left: 10px; }
-    .status-message { color: #2e7d32; font-weight: 600; }
+    .action-row button { padding: 10px 18px; border: none; border-radius: 8px; background: linear-gradient(135deg, #d4af37 0%, #b38f28 100%); color: #0a1128; cursor: pointer; font-weight: 700; box-shadow: 0 4px 14px rgba(212,175,55,0.3); }
+    .btn-print { background: #10b981 !important; margin-left: 10px; color: white !important; }
+    .status-message { color: #4ade80; font-weight: 600; }
     .table-header-row { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; margin-bottom: 12px; }
     .table-filter-inputs { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
-    .table-search-input { padding: 8px 14px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 13.5px; min-width: 220px; outline: none; }
-    .table-search-input:focus { border-color: #1976d2; }
-    .table-filter-select { padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 13.5px; outline: none; }
+    .table-search-input { padding: 8px 14px; border: 1px solid #1f2f54; border-radius: 8px; font-size: 13.5px; min-width: 220px; outline: none; background: #091024; color: #ffffff; }
+    .table-search-input:focus { border-color: #d4af37; }
+    .table-filter-select { padding: 8px 12px; border: 1px solid #1f2f54; border-radius: 8px; font-size: 13.5px; outline: none; background: #091024; color: #ffffff; }
     .table-card table { width: 100%; border-collapse: collapse; margin-top: 16px; }
-    .table-card th, .table-card td { padding: 12px 10px; border-bottom: 1px solid #e8e8e8; text-align: left; }
-    .table-card th { font-weight: 700; color: #1f3d7a; background: #f5f5f5; }
-    .table-card tbody tr:hover { background: #fafafa; }
+    .table-card th, .table-card td { padding: 12px 14px; border-bottom: 1px solid #1f2f54; text-align: left; }
+    .table-card th { font-weight: 700; color: #d4af37; background: #132247; text-transform: uppercase; font-size: 0.84rem; }
+    .table-card td { color: #e2e8f0; }
+    .table-card tbody tr:hover { background: #18284e; }
     
-    .grade-badge { background: #e2e3e5; color: #383d41; padding: 4px 8px; border-radius: 12px; font-size: 0.8rem; font-weight: 700; }
-    .grade-badge.excellent { background: #d4edda; color: #155724; }
+    .grade-badge { background: #091024; color: #d4af37; border: 1px solid #1f2f54; padding: 4px 8px; border-radius: 12px; font-size: 0.8rem; font-weight: 700; }
+    .grade-badge.excellent { background: rgba(34, 197, 94, 0.15); color: #4ade80; border: 1px solid rgba(74, 222, 128, 0.3); }
     
     .status-pill { font-size: 0.8rem; font-weight: 700; padding: 3px 8px; border-radius: 4px; text-transform: uppercase; }
-    .status-pill.pass { background: #e8f5e9; color: #2e7d32; }
-    .status-pill.fail { background: #ffebee; color: #c62828; }
-    .empty-state { text-align: center; color: #999; padding: 40px 20px; }
+    .status-pill.pass { background: rgba(34, 197, 94, 0.15); color: #4ade80; border: 1px solid rgba(74, 222, 128, 0.3); }
+    .status-pill.fail { background: rgba(239, 68, 68, 0.15); color: #f87171; border: 1px solid rgba(248, 113, 113, 0.3); }
+    .empty-state { text-align: center; color: #94a3b8; padding: 40px 20px; background: #091024; border: 1px solid #1f2f54; border-radius: 12px; }
     .print-header-details { display: none; margin-bottom: 20px; border-bottom: 2px solid #e2e8f0; padding-bottom: 12px; }
     .batch-print-container { display: none; }
     

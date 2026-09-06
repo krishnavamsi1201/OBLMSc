@@ -5,21 +5,23 @@
   justify-content: space-between;
   align-items: flex-start;
   margin-bottom: 24px;
-  background: white;
-  padding: 20px;
-  border-radius: 12px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  background: #101b38;
+  border: 1px solid #1f2f54;
+  padding: 24px;
+  border-radius: 14px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
 }
 
 .header-title h1 {
   margin: 0 0 8px 0;
   font-size: 2rem;
-  color: #2c3e50;
+  color: #ffffff;
+  font-weight: 800;
 }
 
 .header-title p {
   margin: 0;
-  color: #7f8c8d;
+  color: #94a3b8;
   font-size: 0.95rem;
 }
 
@@ -29,19 +31,21 @@
   border: none;
   border-radius: 8px;
   font-size: 0.95rem;
-  font-weight: 600;
+  font-weight: 700;
   cursor: pointer;
   transition: all 0.3s ease;
 }
 
 .btn-primary {
-  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
-  color: white;
+  background: linear-gradient(135deg, #d4af37 0%, #b38f28 100%);
+  color: #0a1128;
+  box-shadow: 0 4px 14px rgba(212, 175, 55, 0.3);
 }
 
 .btn-primary:hover {
+  filter: brightness(1.1);
   transform: translateY(-2px);
-  box-shadow: 0 8px 16px rgba(59, 130, 246, 0.4);
+  box-shadow: 0 8px 20px rgba(212, 175, 55, 0.4);
 }
 
 /* Overall Achievement Card */
@@ -49,30 +53,32 @@
   display: grid;
   grid-template-columns: 1fr 200px;
   gap: 24px;
-  background: linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, rgba(16, 185, 129, 0.1) 100%);
-  border: 2px solid rgba(59, 130, 246, 0.2);
-  border-radius: 12px;
+  background: linear-gradient(135deg, #101b38 0%, #18284e 100%);
+  border: 1px solid #1f2f54;
+  border-radius: 14px;
   padding: 24px;
   margin-bottom: 24px;
   align-items: center;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
 }
 
 .overall-content h2 {
   margin: 0 0 12px 0;
   font-size: 1.5rem;
-  color: #2c3e50;
+  color: #ffffff;
+  font-weight: 800;
 }
 
 .overall-value {
   font-size: 3rem;
   font-weight: 800;
-  color: #3b82f6;
+  color: #d4af37;
   margin: 12px 0;
 }
 
 .overall-content p {
   margin: 0;
-  color: #7f8c8d;
+  color: #94a3b8;
   font-size: 0.9rem;
 }
 
@@ -97,13 +103,13 @@
 
 .ring-bg {
   fill: none;
-  stroke: #ecf0f1;
+  stroke: #091024;
   stroke-width: 8;
 }
 
 .ring-progress {
   fill: none;
-  stroke: url(#grad);
+  stroke: #d4af37;
   stroke-width: 8;
   stroke-linecap: round;
   stroke-dasharray: 282.7;
@@ -117,7 +123,7 @@
   transform: translate(-50%, -50%);
   font-size: 1.3rem;
   font-weight: 800;
-  color: #3b82f6;
+  color: #ffffff;
 }
 
 /* Stats Grid */
@@ -129,37 +135,42 @@
 }
 
 .stat-card {
-  padding: 16px;
+  padding: 18px;
   border-radius: 12px;
   text-align: center;
   color: white;
   font-weight: 600;
+  border: 1px solid #1f2f54;
 }
 
 .stat-card.achieved {
-  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+  background: #101b38;
+  border-top: 4px solid #4ade80;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
 }
 
 .stat-card.partial {
-  background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
-  box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);
+  background: #101b38;
+  border-top: 4px solid #fbbf24;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
 }
 
 .stat-card.not-achieved {
-  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
-  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+  background: #101b38;
+  border-top: 4px solid #f87171;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
 }
 
 .stat-number {
   font-size: 2rem;
   font-weight: 800;
+  color: #ffffff;
   margin-bottom: 4px;
 }
 
 .stat-label {
   font-size: 0.85rem;
-  opacity: 0.9;
+  color: #94a3b8;
 }
 
 /* Toolbar */
@@ -167,10 +178,11 @@
   display: flex;
   gap: 12px;
   margin-bottom: 20px;
-  background: white;
+  background: #101b38;
+  border: 1px solid #1f2f54;
   padding: 16px;
   border-radius: 12px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
   flex-wrap: wrap;
 }
 
@@ -182,24 +194,27 @@
 .search-input {
   width: 100%;
   padding: 10px 16px;
-  border: 1px solid #ddd;
+  border: 1px solid #1f2f54;
   border-radius: 8px;
   font-size: 0.95rem;
+  background: #091024;
+  color: #ffffff;
   transition: all 0.3s ease;
 }
 
 .search-input:focus {
   outline: none;
-  border-color: #3b82f6;
-  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+  border-color: #d4af37;
+  box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.15);
 }
 
 .filter-select {
   padding: 10px 16px;
-  border: 1px solid #ddd;
+  border: 1px solid #1f2f54;
   border-radius: 8px;
   font-size: 0.95rem;
-  background: white;
+  background: #091024;
+  color: #ffffff;
   cursor: pointer;
   transition: all 0.3s ease;
   min-width: 150px;
@@ -207,8 +222,8 @@
 
 .filter-select:focus {
   outline: none;
-  border-color: #3b82f6;
-  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+  border-color: #d4af37;
+  box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.15);
 }
 
 /* Attainment Grid */
@@ -220,15 +235,17 @@
 }
 
 .attainment-card {
-  background: white;
-  border-radius: 12px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  background: #101b38;
+  border: 1px solid #1f2f54;
+  border-radius: 14px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
   overflow: hidden;
   transition: all 0.3s ease;
 }
 
 .attainment-card:hover {
-  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 8px 24px rgba(212, 175, 55, 0.15);
+  border-color: #d4af37;
   transform: translateY(-4px);
 }
 
@@ -237,19 +254,19 @@
   justify-content: space-between;
   align-items: flex-start;
   padding: 16px;
-  border-bottom: 1px solid #ecf0f1;
+  border-bottom: 1px solid #1f2f54;
 }
 
 .co-info h3 {
   margin: 0 0 4px 0;
   font-size: 1.2rem;
-  color: #2c3e50;
+  color: #ffffff;
   font-weight: 700;
 }
 
 .co-info p {
   margin: 0;
-  color: #7f8c8d;
+  color: #94a3b8;
   font-size: 0.85rem;
   line-height: 1.4;
 }
@@ -258,8 +275,26 @@
   padding: 6px 12px;
   border-radius: 20px;
   font-size: 0.8rem;
-  font-weight: 600;
+  font-weight: 700;
   white-space: nowrap;
+}
+
+.status-badge.achieved {
+  background: rgba(34, 197, 94, 0.15);
+  color: #4ade80;
+  border: 1px solid rgba(74, 222, 128, 0.3);
+}
+
+.status-badge.partial {
+  background: rgba(245, 158, 11, 0.15);
+  color: #fbbf24;
+  border: 1px solid rgba(251, 191, 36, 0.3);
+}
+
+.status-badge.not-achieved {
+  background: rgba(239, 68, 68, 0.15);
+  color: #f87171;
+  border: 1px solid rgba(248, 113, 113, 0.3);
 }
 
 .card-body {
@@ -276,12 +311,12 @@
 .achievement-value {
   font-size: 2rem;
   font-weight: 800;
-  color: #3b82f6;
+  color: #d4af37;
 }
 
 .target-value {
   font-size: 0.9rem;
-  color: #7f8c8d;
+  color: #94a3b8;
 }
 
 /* Progress Bar */
@@ -292,7 +327,8 @@
 .progress-bar {
   width: 100%;
   height: 8px;
-  background: #ecf0f1;
+  background: #091024;
+  border: 1px solid #1f2f54;
   border-radius: 4px;
   overflow: hidden;
   margin-bottom: 4px;
@@ -302,13 +338,14 @@
   height: 100%;
   border-radius: 4px;
   transition: width 0.5s ease;
+  background: linear-gradient(90deg, #d4af37, #f59e0b);
 }
 
 .progress-labels {
   display: flex;
   justify-content: space-between;
   font-size: 0.75rem;
-  color: #95a5a6;
+  color: #94a3b8;
 }
 
 /* CO Stats */
@@ -319,7 +356,8 @@
 }
 
 .stat {
-  background: #f8f9fa;
+  background: #091024;
+  border: 1px solid #1f2f54;
   border-radius: 8px;
   padding: 8px;
   text-align: center;
@@ -328,7 +366,7 @@
 .stat .stat-label {
   display: block;
   font-size: 0.8rem;
-  color: #7f8c8d;
+  color: #94a3b8;
   margin-bottom: 4px;
 }
 
@@ -336,7 +374,7 @@
   display: block;
   font-size: 1.3rem;
   font-weight: 700;
-  color: #2c3e50;
+  color: #ffffff;
 }
 
 /* Empty State */
@@ -344,20 +382,21 @@
   grid-column: 1 / -1;
   text-align: center;
   padding: 60px 20px;
-  background: white;
-  border-radius: 12px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  background: #101b38;
+  border: 1px solid #1f2f54;
+  border-radius: 14px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
 }
 
 .empty-state p {
   margin: 0 0 12px 0;
-  color: #7f8c8d;
+  color: #ffffff;
   font-size: 1.1rem;
 }
 
 .empty-state .hint {
   font-size: 0.9rem;
-  color: #95a5a6;
+  color: #94a3b8;
 }
 
 /* Responsive */

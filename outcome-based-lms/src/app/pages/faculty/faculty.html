@@ -177,13 +177,13 @@
 						<button class="view-all-btn" (click)="goToCOAttainment()">Detailed OBE Matrix →</button>
 					</div>
 				</div>
-				<div *ngFor="let group of groupedCOAttainments" class="co-group-block" style="margin-bottom: 24px; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 8px; padding: 16px; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
-					<h3 style="margin: 0; color: #1e3a8a; border-bottom: 2px solid #3b82f6; padding-bottom: 8px; font-size: 1.1rem; display: flex; justify-content: space-between; align-items: center; cursor: pointer;" (click)="toggleCoGroup(group.courseName)">
+				<div *ngFor="let group of groupedCOAttainments" class="co-group-block" style="margin-bottom: 24px; background: #101b38; border: 1px solid #1f2f54; border-radius: 14px; padding: 18px; box-shadow: 0 8px 24px rgba(0,0,0,0.35);">
+					<h3 style="margin: 0; color: #ffffff; border-bottom: 2px solid #d4af37; padding-bottom: 10px; font-size: 1.15rem; display: flex; justify-content: space-between; align-items: center; cursor: pointer;" (click)="toggleCoGroup(group.courseName)">
 						<span style="display: flex; align-items: center; gap: 8px;">
-							<span class="material-icons" style="font-size: 1.2rem; color: #2563eb;">menu_book</span>
+							<span class="material-icons" style="font-size: 1.2rem; color: #d4af37;">menu_book</span>
 							{{ group.courseName }} Outcomes
 						</span>
-						<span style="font-size: 0.85rem; color: #64748b; font-weight: 600; display: flex; align-items: center; gap: 4px;">
+						<span style="font-size: 0.85rem; color: #94a3b8; font-weight: 600; display: flex; align-items: center; gap: 4px;">
 							{{ collapsedCoGroups[group.courseName] ? 'Show' : 'Hide' }} ({{ group.cos.length }} COs)
 						</span>
 					</h3>

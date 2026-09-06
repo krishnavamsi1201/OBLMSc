@@ -141,18 +141,18 @@
 
         <!-- Mini Add Faculty Modal Overlay -->
         <div class="modal-overlay" *ngIf="showAddFacultyModal">
-            <div class="modal-card" style="max-width: 400px; padding: 24px; border-radius: 12px; background: #fff; box-shadow: 0 10px 30px rgba(0,0,0,0.15);">
-                <h2 style="margin-top: 0; color: #1e293b; font-size: 1.3rem;">Add New Faculty</h2>
-                <p style="color: #64748b; font-size: 0.88rem; margin-bottom: 16px;">Create a new faculty account to assign to courses.</p>
+            <div class="modal-card" style="max-width: 400px; padding: 24px; border-radius: 14px; background: #101b38; border: 1px solid #1f2f54; box-shadow: 0 10px 30px rgba(0,0,0,0.5);">
+                <h2 style="margin-top: 0; color: #ffffff; font-size: 1.3rem; font-weight: 800;">Add New Faculty</h2>
+                <p style="color: #94a3b8; font-size: 0.88rem; margin-bottom: 16px;">Create a new faculty account to assign to courses.</p>
                 
                 <div class="modal-form-row" style="margin-bottom: 14px;">
-                    <label style="display:block; margin-bottom: 5px; color:#475569; font-weight:600; font-size: 0.88rem;">Faculty Name *</label>
-                    <input type="text" [(ngModel)]="newFacultyForm.name" placeholder="e.g. Dr. Satish Kumar" style="width:100%; padding:8px 10px; border:1px solid #cbd5e1; border-radius:6px; font-size: 0.9rem;" />
+                    <label style="display:block; margin-bottom: 5px; color:#cbd5e1; font-weight:600; font-size: 0.88rem;">Faculty Name *</label>
+                    <input type="text" [(ngModel)]="newFacultyForm.name" placeholder="e.g. Dr. Satish Kumar" style="width:100%; padding:8px 10px; border:1px solid #1f2f54; border-radius:6px; font-size: 0.9rem; background: #091024; color: #ffffff;" />
                 </div>
                 
                 <div class="modal-form-row" style="margin-bottom: 20px;">
-                    <label style="display:block; margin-bottom: 5px; color:#475569; font-weight:600; font-size: 0.88rem;">Department *</label>
-                    <select [(ngModel)]="newFacultyForm.department" style="width:100%; padding:8px 10px; border:1px solid #cbd5e1; border-radius:6px; font-size: 0.9rem; background: #fff;">
+                    <label style="display:block; margin-bottom: 5px; color:#cbd5e1; font-weight:600; font-size: 0.88rem;">Department *</label>
+                    <select [(ngModel)]="newFacultyForm.department" style="width:100%; padding:8px 10px; border:1px solid #1f2f54; border-radius:6px; font-size: 0.9rem; background: #091024; color: #ffffff;">
                         <option value="Computer Science">Computer Science</option>
                         <option value="Computer Science & Engineering">Computer Science & Engineering</option>
                         <option value="Information Technology">Information Technology</option>
@@ -164,8 +164,8 @@
                 </div>
                 
                 <div class="modal-actions" style="display: flex; gap: 8px; justify-content: flex-end;">
-                    <button mat-raised-button color="primary" (click)="saveNewFacultyFromCourses()">Save & Select</button>
-                    <button mat-button (click)="closeAddFacultyModal()">Cancel</button>
+                    <button class="btn btn-primary" (click)="saveNewFacultyFromCourses()">Save & Select</button>
+                    <button class="btn btn-secondary" (click)="closeAddFacultyModal()">Cancel</button>
                 </div>
             </div>
         </div>

@@ -278,12 +278,12 @@
 			<!-- Grouped Questions by Subject for Faculty/Admin -->
 			<div class="qb-container">
 				<div style="display: flex; flex-direction: column; gap: 20px;">
-					<div *ngFor="let group of groupedSubjectQuestions" class="subject-qb-block" style="border: 1px solid #e2e8f0; border-radius: 12px; padding: 16px; background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
-						<h3 style="margin: 0; color: #1e3a8a; border-bottom: 2px solid #3b82f6; padding-bottom: 8px; font-size: 1.1rem; display: flex; justify-content: space-between; align-items: center; cursor: pointer;" (click)="toggleSubjectGroup(group.subject)">
+					<div *ngFor="let group of groupedSubjectQuestions" class="subject-qb-block" style="border: 1px solid #1f2f54; border-radius: 12px; padding: 18px; background: #101b38; box-shadow: 0 8px 24px rgba(0,0,0,0.35);">
+						<h3 style="margin: 0; color: #ffffff; border-bottom: 2px solid #d4af37; padding-bottom: 10px; font-size: 1.15rem; display: flex; justify-content: space-between; align-items: center; cursor: pointer;" (click)="toggleSubjectGroup(group.subject)">
 							<span style="display: flex; align-items: center; gap: 8px;">
-								<span class="material-icons" style="font-size: 18px;">menu_book</span> {{ group.subject }} Question Bank
+								<span class="material-icons" style="font-size: 20px; color: #d4af37;">menu_book</span> {{ group.subject }} Question Bank
 							</span>
-							<span style="font-size: 0.85rem; color: #64748b; font-weight: 600;">
+							<span style="font-size: 0.85rem; color: #94a3b8; font-weight: 600;">
 								{{ collapsedSubjectGroups[group.subject] ? 'Show' : 'Hide' }} ({{ group.questions.length }} Questions)
 							</span>
 						</h3>

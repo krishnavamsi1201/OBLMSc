@@ -418,11 +418,11 @@ interface ProfileData {
       gap: 22px;
       align-items: center;
       padding: 20px;
-      background: #ffffff;
-      border: 1px solid #e2e8f0;
+      background: #101b38;
+      border: 1px solid #1f2f54;
       border-radius: 16px;
       margin-bottom: 10px;
-      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.04);
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
     }
 
     .picture-container {
@@ -433,8 +433,8 @@ interface ProfileData {
       overflow: hidden;
       cursor: pointer;
       flex-shrink: 0;
-      border: 3px solid #3b82f6;
-      box-shadow: 0 4px 12px rgba(59, 130, 246, 0.2);
+      border: 3px solid #d4af37;
+      box-shadow: 0 4px 14px rgba(212, 175, 55, 0.3);
     }
 
     .profile-pic {
@@ -447,7 +447,7 @@ interface ProfileData {
     .profile-pic-placeholder {
       width: 100%;
       height: 100%;
-      background: #eff6ff;
+      background: #091024;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -457,80 +457,82 @@ interface ProfileData {
     .pic-hover-overlay {
       position: absolute;
       inset: 0;
-      background: rgba(15, 23, 42, 0.55);
-      color: #ffffff;
+      background: rgba(10, 17, 40, 0.7);
       display: flex;
+      flex-direction: column;
       align-items: center;
       justify-content: center;
+      color: #ffffff;
       opacity: 0;
       transition: opacity 0.2s ease;
-      font-size: 12px;
-      font-weight: 600;
+      border-radius: 50%;
     }
 
     .picture-container:hover .pic-hover-overlay {
       opacity: 1;
     }
 
-    .picture-controls {
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
+    .pic-hover-overlay span {
+      font-size: 22px;
     }
 
-    .picture-label {
+    .pic-hover-overlay p {
+      font-size: 11px;
       font-weight: 700;
-      color: #1e293b;
-      margin: 0;
-      font-size: 15px;
+      margin: 2px 0 0 0;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
     }
 
-    .picture-hint {
-      color: #64748b;
+    .picture-details h3 {
+      font-size: 18px;
+      font-weight: 800;
+      color: #ffffff;
+      margin: 0 0 4px 0;
+    }
+
+    .picture-details p {
+      font-size: 13px;
+      color: #94a3b8;
+      margin: 0 0 10px 0;
+    }
+
+    .picture-actions {
+      display: flex;
+      gap: 8px;
+    }
+
+    .btn-pic-change {
+      padding: 6px 14px;
       font-size: 12px;
-      margin-bottom: 4px;
-    }
-
-    .pic-action-buttons {
-      display: flex;
-      gap: 10px;
-      flex-wrap: wrap;
-    }
-
-    .btn-upload {
-      padding: 8px 16px;
-      background: #2563eb;
-      color: white;
-      border: none;
-      border-radius: 8px;
+      font-weight: 700;
+      border-radius: 6px;
+      border: 1px solid #1f2f54;
+      background: #091024;
+      color: #d4af37;
       cursor: pointer;
-      font-weight: 600;
-      font-size: 13px;
-      transition: all 0.2s ease;
-      display: flex;
-      align-items: center;
-      gap: 6px;
+      transition: all 0.2s;
     }
 
-    .btn-upload:hover {
-      background: #1d4ed8;
-      transform: translateY(-1px);
+    .btn-pic-change:hover {
+      background: #18284e;
+      border-color: #d4af37;
     }
 
-    .btn-remove-pic {
-      padding: 8px 14px;
-      background: #fee2e2;
-      color: #b91c1c;
-      border: 1px solid #fca5a5;
-      border-radius: 8px;
+    .btn-pic-remove {
+      padding: 6px 14px;
+      font-size: 12px;
+      font-weight: 700;
+      border-radius: 6px;
+      border: 1px solid rgba(239, 68, 68, 0.4);
+      background: rgba(239, 68, 68, 0.1);
+      color: #f87171;
       cursor: pointer;
-      font-weight: 600;
-      font-size: 13px;
-      transition: all 0.2s ease;
+      transition: all 0.2s;
     }
 
-    .btn-remove-pic:hover {
-      background: #fecaca;
+    .btn-pic-remove:hover {
+      background: rgba(239, 68, 68, 0.25);
     }
 
     .file-input {
@@ -544,41 +546,42 @@ interface ProfileData {
 
     .form-group label {
       font-weight: 600;
-      color: #1f3051;
+      color: #cbd5e1;
       font-size: 14px;
     }
 
     .form-input {
-      border: 1px solid #cbd5e1;
+      border: 1px solid #1f2f54;
       border-radius: 10px;
       padding: 12px 14px;
       font-size: 15px;
       width: 100%;
       box-sizing: border-box;
-      background: #ffffff;
+      background: #091024;
+      color: #ffffff;
       transition: all 0.2s ease;
     }
 
     .form-input:focus {
-      outline: 2px solid rgba(59, 130, 246, 0.35);
-      border-color: rgba(59, 130, 246, 0.5);
-      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+      outline: 2px solid rgba(212, 175, 55, 0.35);
+      border-color: #d4af37;
+      box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.15);
     }
 
     .form-input:read-only {
-      background: #f8fafc;
-      color: #475569;
+      background: #0d162f;
+      color: #94a3b8;
       cursor: default;
     }
 
     .form-input.input-error {
       border-color: #ef4444;
-      background: #fef2f2;
+      background: rgba(239, 68, 68, 0.1);
     }
 
     .error-message {
       font-size: 13px;
-      color: #dc2626;
+      color: #f87171;
       font-weight: 500;
     }
 
@@ -596,30 +599,31 @@ interface ProfileData {
       border: none;
       cursor: pointer;
       transition: all 0.2s ease;
-      font-weight: 600;
+      font-weight: 700;
       display: flex;
       align-items: center;
       gap: 6px;
     }
 
     .btn-primary {
-      background: #2563eb;
-      color: white;
+      background: linear-gradient(135deg, #d4af37 0%, #b38f28 100%);
+      color: #0a1128;
     }
 
     .btn-primary:hover:not(:disabled) {
-      background: #1d4ed8;
+      filter: brightness(1.1);
       transform: translateY(-2px);
-      box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+      box-shadow: 0 4px 14px rgba(212, 175, 55, 0.35);
     }
 
     .btn-secondary {
-      background: #e2e8f0;
-      color: #1f2937;
+      background: #1f2f54;
+      color: #cbd5e1;
     }
 
     .btn-secondary:hover:not(:disabled) {
-      background: #cbd5e1;
+      background: #253966;
+      color: #ffffff;
       transform: translateY(-2px);
     }
 

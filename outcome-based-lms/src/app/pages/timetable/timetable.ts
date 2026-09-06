@@ -94,15 +94,15 @@ interface ScheduleEntry {
         <div class="table-card matrix-container">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 10px;">
                 <div>
-                    <h2 style="margin: 0; font-size: 1.25rem; color: #1e3a8a; font-weight: 800;">📅 Weekly Timetable Matrix</h2>
-                    <p style="color: #64748b; font-size: 0.88rem; margin: 4px 0 0 0;">Visual schedule representation of lectures, lab sessions, and classroom distribution.</p>
+                    <h2 style="margin: 0; font-size: 1.25rem; color: #ffffff; font-weight: 800;">📅 Weekly Timetable Matrix</h2>
+                    <p style="color: #94a3b8; font-size: 0.88rem; margin: 4px 0 0 0;">Visual schedule representation of lectures, lab sessions, and classroom distribution.</p>
                 </div>
                 <div class="matrix-legend" style="display: flex; gap: 12px; font-size: 12px; font-weight: 600;">
-                    <span style="display: inline-flex; align-items: center; gap: 5px; color: #0369a1;">
-                        <span style="width: 10px; height: 10px; border-radius: 3px; background: #e0f2fe; border: 1px solid #7dd3fc;"></span> Theory Lecture
+                    <span style="display: inline-flex; align-items: center; gap: 5px; color: #fde68a;">
+                        <span style="width: 10px; height: 10px; border-radius: 3px; background: rgba(212, 175, 55, 0.2); border: 1px solid #d4af37;"></span> Theory Lecture
                     </span>
-                    <span style="display: inline-flex; align-items: center; gap: 5px; color: #047857;">
-                        <span style="width: 10px; height: 10px; border-radius: 3px; background: #d1fae5; border: 1px solid #6ee7b7;"></span> Lab / Practical
+                    <span style="display: inline-flex; align-items: center; gap: 5px; color: #34d399;">
+                        <span style="width: 10px; height: 10px; border-radius: 3px; background: rgba(16, 185, 129, 0.2); border: 1px solid #10b981;"></span> Lab / Practical
                     </span>
                 </div>
             </div>
@@ -220,15 +220,17 @@ interface ScheduleEntry {
   styles: [
     `
     .summary-grid { display: grid; gap: 16px; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); margin-bottom: 24px; }
-    .section-card, .table-card, .form-card { padding: 22px; background: #fff; border-radius: 14px; box-shadow: 0 4px 16px rgba(0,0,0,0.05); margin-bottom: 24px; border: 1px solid rgba(74, 140, 234, 0.14); }
-    .section-card h3, .table-card h2, .form-card h2 { margin-top: 0; }
-    .section-card strong { display: block; font-size: 2.2rem; margin-bottom: 8px; color: #1e40af; }
+    .section-card, .table-card, .form-card { padding: 22px; background: #101b38; border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.35); margin-bottom: 24px; border: 1px solid #1f2f54; color: #ffffff; }
+    .section-card h3, .table-card h2, .form-card h2 { margin-top: 0; color: #ffffff; font-weight: 800; }
+    .section-card strong { display: block; font-size: 2.2rem; margin-bottom: 8px; color: #fde68a; font-weight: 800; }
+    .section-card p { color: #94a3b8; margin: 0; }
     
     .table-scroll-wrapper {
       width: 100%;
       overflow-x: auto;
-      border: 1px solid #e2e8f0;
+      border: 1px solid #1f2f54;
       border-radius: 10px;
+      background: #091024;
     }
 
     /* Timetable Matrix Table Styles */
@@ -238,20 +240,20 @@ interface ScheduleEntry {
       min-width: 920px !important;
       border-collapse: collapse !important;
       table-layout: fixed !important;
-      background: #ffffff;
+      background: #091024;
       margin: 0;
     }
 
     table.tt-matrix-table th, table.tt-matrix-table td {
-      border: 1px solid #e2e8f0 !important;
+      border: 1px solid #1f2f54 !important;
       padding: 10px 8px !important;
       vertical-align: middle !important;
       box-sizing: border-box !important;
     }
 
     table.tt-matrix-table th {
-      background: #f8fafc;
-      color: #1e293b;
+      background: #0d1730;
+      color: #fde68a;
       font-weight: 700;
       text-align: center;
       padding: 12px 8px !important;
@@ -260,8 +262,8 @@ interface ScheduleEntry {
     th.day-col-header {
       width: 130px;
       font-size: 13px;
-      background: #f1f5f9 !important;
-      color: #0f172a;
+      background: #0d1730 !important;
+      color: #ffffff;
     }
 
     th.period-col-header {
@@ -281,7 +283,7 @@ interface ScheduleEntry {
     td.day-cell {
       width: 130px;
       text-align: center;
-      background: #f8fafc;
+      background: #0d1730;
       font-weight: 700;
     }
 
@@ -291,22 +293,22 @@ interface ScheduleEntry {
       align-items: center;
       gap: 3px;
       font-size: 13px;
-      color: #334155;
+      color: #cbd5e1;
     }
 
     .today-row {
-      background-color: #f0fdf4 !important;
+      background-color: rgba(212, 175, 55, 0.08) !important;
     }
 
     .today-badge {
-      color: #166534;
+      color: #fde68a;
       font-weight: 800;
     }
 
     .today-tag {
       font-size: 9px;
-      background: #22c55e;
-      color: #ffffff;
+      background: #d4af37;
+      color: #0a1128;
       padding: 1px 5px;
       border-radius: 4px;
       font-weight: 800;
@@ -316,12 +318,12 @@ interface ScheduleEntry {
     td.slot-cell {
       height: 80px;
       padding: 6px !important;
-      background: #ffffff;
+      background: #091024;
     }
 
     .matrix-slot-card {
-      background: #f0f9ff;
-      border: 1px solid #bae6fd;
+      background: #101b38;
+      border: 1px solid #1f2f54;
       border-radius: 8px;
       padding: 8px 6px;
       height: 100%;
@@ -336,27 +338,28 @@ interface ScheduleEntry {
 
     .matrix-slot-card:hover {
       transform: translateY(-2px);
-      box-shadow: 0 4px 10px rgba(2, 132, 199, 0.15);
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+      border-color: #d4af37;
     }
 
     .matrix-slot-card.lab-card {
-      background: #ecfdf5;
-      border-color: #a7f3d0;
+      background: rgba(16, 185, 129, 0.15);
+      border-color: rgba(16, 185, 129, 0.35);
     }
 
     .matrix-slot-card.lab-card .slot-subject {
-      color: #065f46;
+      color: #34d399;
     }
 
     .matrix-slot-card.lab-card .slot-room {
-      background: #d1fae5;
-      color: #047857;
+      background: rgba(16, 185, 129, 0.25);
+      color: #34d399;
     }
 
     .slot-subject {
       font-size: 11.5px;
       font-weight: 700;
-      color: #0369a1;
+      color: #ffffff;
       line-height: 1.25;
       display: -webkit-box;
       -webkit-line-clamp: 2;
@@ -367,8 +370,9 @@ interface ScheduleEntry {
     .slot-room {
       font-size: 10px;
       font-weight: 700;
-      color: #0284c7;
-      background: #e0f2fe;
+      color: #fde68a;
+      background: #091024;
+      border: 1px solid #1f2f54;
       padding: 2px 6px;
       border-radius: 4px;
       white-space: nowrap;
@@ -379,7 +383,7 @@ interface ScheduleEntry {
       align-items: center;
       justify-content: center;
       height: 100%;
-      color: #cbd5e1;
+      color: #64748b;
       font-size: 14px;
     }
 
@@ -388,24 +392,30 @@ interface ScheduleEntry {
       width: 100%;
       border-collapse: collapse;
       margin-top: 12px;
+      background: #091024;
     }
 
     table.list-table th, table.list-table td {
       padding: 12px 10px;
-      border-bottom: 1px solid #e2e8f0;
+      border-bottom: 1px solid #132247;
       text-align: left;
     }
 
     table.list-table th {
       font-weight: 700;
-      background: #f8fafc;
-      color: #334155;
+      background: #0d1730;
+      color: #fde68a;
       font-size: 13px;
     }
 
+    table.list-table td {
+      color: #e2e8f0;
+    }
+
     .room-badge {
-      background: #e0f2fe;
-      color: #0369a1;
+      background: rgba(59, 130, 246, 0.15);
+      color: #93c5fd;
+      border: 1px solid rgba(59, 130, 246, 0.35);
       padding: 3px 8px;
       border-radius: 6px;
       font-weight: 700;
@@ -414,19 +424,20 @@ interface ScheduleEntry {
 
     .form-card form { display: grid; gap: 16px; }
     .grid-row { display: grid; gap: 16px; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); }
-    label { display: flex; flex-direction: column; font-weight: 600; color: #333; font-size: 13px; }
-    input[type=text], select { margin-top: 6px; padding: 10px 12px; border: 1px solid #cfd8dc; border-radius: 8px; font-size: 14px; outline: none; }
+    label { display: flex; flex-direction: column; font-weight: 600; color: #cbd5e1; font-size: 13px; }
+    input[type=text], select { margin-top: 6px; padding: 10px 12px; border: 1px solid #1f2f54; border-radius: 8px; font-size: 14px; outline: none; background: #091024; color: #ffffff; }
+    input[type=text]:focus, select:focus { border-color: #d4af37; box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.2); }
     
     .form-actions { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 8px; }
-    .btn { padding: 10px 18px; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 14px; }
-    .btn-primary { background: #1976d2; color: #fff; }
-    .btn-secondary { background: #616161; color: #fff; }
+    .btn { padding: 10px 18px; border: none; border-radius: 8px; cursor: pointer; font-weight: 700; font-size: 14px; }
+    .btn-primary { background: linear-gradient(135deg, #d4af37 0%, #b8860b 100%); color: #0a1128; font-weight: 800; }
+    .btn-secondary { background: #16244a; color: #cbd5e1; border: 1px solid #1f2f54; }
     
     .actions-cell { display: flex; gap: 8px; }
-    .edit-btn { background: #4CAF50; color: white; padding: 6px 12px; font-size: 12px; border: none; border-radius: 4px; cursor: pointer; }
-    button.danger { background: #d32f2f; color: white; padding: 6px 12px; font-size: 12px; border: none; border-radius: 4px; cursor: pointer; }
+    .edit-btn { background: #10b981; color: #0a1128; padding: 6px 12px; font-size: 12px; border: none; border-radius: 4px; cursor: pointer; font-weight: 700; }
+    button.danger { background: #ef4444; color: white; padding: 6px 12px; font-size: 12px; border: none; border-radius: 4px; cursor: pointer; font-weight: 700; }
     
-    .filter-row { display: flex; gap: 20px; flex-wrap: wrap; margin-bottom: 16px; background: #f8fafc; padding: 14px; border-radius: 10px; border: 1px solid #e2e8f0; }
+    .filter-row { display: flex; gap: 20px; flex-wrap: wrap; margin-bottom: 16px; background: #0d1730; padding: 14px; border-radius: 10px; border: 1px solid #1f2f54; }
     .filter-row label { flex: 1; min-width: 180px; }
     .filter-row select, .filter-row input { margin-top: 4px; }
     .empty-state { padding: 40px; text-align: center; color: #94a3b8; font-weight: 600; }

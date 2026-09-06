@@ -6,7 +6,7 @@
 .content {
     flex: 1;
     padding: 30px;
-    background: linear-gradient(135deg, #f5f7fb 0%, #eef2f8 100%);
+    background: #0a1128;
 }
 
 .page-header {
@@ -15,12 +15,13 @@
 
 .page-header h1 {
     font-size: 32px;
-    color: #1f3d7a;
+    color: #ffffff;
+    font-weight: 800;
     margin: 0 0 10px;
 }
 
 .page-header p {
-    color: #4b5f84;
+    color: #94a3b8;
     margin: 0;
     font-size: 16px;
 }
@@ -33,18 +34,20 @@
 
 /* Card layout for filters and form */
 .form-card, .filter-card, .exam-container {
-    background: white;
-    border-radius: 12px;
+    background: #101b38;
+    border: 1px solid #1f2f54;
+    border-radius: 14px;
     padding: 24px;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
     margin-bottom: 24px;
 }
 
 .form-card h2 {
     margin-top: 0;
     font-size: 1.3rem;
-    color: #1f3d7a;
-    border-bottom: 1px solid #eee;
+    color: #ffffff;
+    font-weight: 800;
+    border-bottom: 1px solid #1f2f54;
     padding-bottom: 10px;
 }
 
@@ -63,16 +66,18 @@ label {
     display: flex;
     flex-direction: column;
     font-weight: 600;
-    color: #333;
+    color: #cbd5e1;
     font-size: 0.95rem;
 }
 
 input[type=text], input[type=number], input[type=datetime-local], select {
     margin-top: 6px;
     padding: 10px 12px;
-    border: 1px solid #cfd8dc;
-    border-radius: 6px;
+    border: 1px solid #1f2f54;
+    border-radius: 8px;
     font-size: 14px;
+    background: #091024;
+    color: #ffffff;
 }
 
 .form-actions {
@@ -107,19 +112,20 @@ input[type=text], input[type=number], input[type=datetime-local], select {
 }
 
 .exam-card {
-    background: #f8f9fa;
-    border: 1px solid #e9ecef;
-    border-radius: 10px;
+    background: #101b38;
+    border: 1px solid #1f2f54;
+    border-radius: 14px;
     padding: 20px;
     display: flex;
     flex-direction: column;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.02);
+    box-shadow: 0 4px 16px rgba(0,0,0,0.3);
     transition: transform 0.2s, box-shadow 0.2s;
 }
 
 .exam-card:hover {
     transform: translateY(-3px);
-    box-shadow: 0 6px 15px rgba(0,0,0,0.06);
+    box-shadow: 0 8px 24px rgba(212, 175, 55, 0.15);
+    border-color: #d4af37;
 }
 
 .exam-card-header {
@@ -127,14 +133,15 @@ input[type=text], input[type=number], input[type=datetime-local], select {
     justify-content: space-between;
     align-items: flex-start;
     margin-bottom: 12px;
-    border-bottom: 1px solid #e9ecef;
+    border-bottom: 1px solid #1f2f54;
     padding-bottom: 8px;
 }
 
 .exam-card-header h3 {
     margin: 0;
     font-size: 1.1rem;
-    color: #1f3d7a;
+    color: #ffffff;
+    font-weight: 700;
     line-height: 1.3;
 }
 
@@ -147,18 +154,21 @@ input[type=text], input[type=number], input[type=datetime-local], select {
 }
 
 .status-badge.scheduled {
-    background: #e3f2fd;
-    color: #0d47a1;
+    background: rgba(59, 130, 246, 0.15);
+    color: #60a5fa;
+    border: 1px solid rgba(96, 165, 250, 0.3);
 }
 
 .status-badge.ongoing {
-    background: #e8f5e9;
-    color: #2e7d32;
+    background: rgba(245, 158, 11, 0.15);
+    color: #fbbf24;
+    border: 1px solid rgba(251, 191, 36, 0.3);
 }
 
 .status-badge.completed {
-    background: #eceff1;
-    color: #455a64;
+    background: rgba(34, 197, 94, 0.15);
+    color: #4ade80;
+    border: 1px solid rgba(74, 222, 128, 0.3);
 }
 
 .exam-card-body {
@@ -168,13 +178,14 @@ input[type=text], input[type=number], input[type=datetime-local], select {
 .exam-card-body p {
     margin: 0 0 8px 0;
     font-size: 0.9rem;
-    color: #555;
+    color: #cbd5e1;
 }
 
 .venue-pill {
-    background: #ede7f6;
-    color: #4a148c;
-    padding: 2px 6px;
+    background: #091024;
+    color: #d4af37;
+    border: 1px solid #1f2f54;
+    padding: 2px 8px;
     border-radius: 4px;
     font-size: 0.85rem;
     font-weight: 600;
@@ -184,7 +195,7 @@ input[type=text], input[type=number], input[type=datetime-local], select {
     display: flex;
     gap: 8px;
     margin-top: 15px;
-    border-top: 1px solid #e9ecef;
+    border-top: 1px solid #1f2f54;
     padding-top: 12px;
 }
 
@@ -192,50 +203,56 @@ input[type=text], input[type=number], input[type=datetime-local], select {
 .btn {
     padding: 8px 16px;
     border: none;
-    border-radius: 6px;
+    border-radius: 8px;
     cursor: pointer;
-    font-weight: 600;
+    font-weight: 700;
     font-size: 0.9rem;
-    transition: background-color 0.2s;
+    transition: all 0.2s;
 }
 
 .btn-primary {
-    background: #1976d2;
-    color: white;
+    background: linear-gradient(135deg, #d4af37 0%, #b38f28 100%);
+    color: #0a1128;
+    box-shadow: 0 4px 14px rgba(212, 175, 55, 0.3);
 }
 
 .btn-primary:hover {
-    background: #1565c0;
+    filter: brightness(1.1);
+    transform: translateY(-1px);
 }
 
 .btn-success {
-    background: #2e7d32;
-    color: white;
+    background: rgba(34, 197, 94, 0.2);
+    color: #4ade80;
+    border: 1px solid rgba(74, 222, 128, 0.4);
 }
 
 .btn-success:hover {
-    background: #1b5e20;
+    background: rgba(34, 197, 94, 0.3);
 }
 
 .btn-secondary {
-    background: #757575;
-    color: white;
+    background: #1f2f54;
+    color: #cbd5e1;
 }
 
 .btn-secondary:hover {
-    background: #616161;
+    background: #253966;
+    color: #ffffff;
 }
 
 .btn-edit {
-    background: #4CAF50;
-    color: white;
+    background: rgba(34, 197, 94, 0.2);
+    color: #4ade80;
+    border: 1px solid rgba(74, 222, 128, 0.4);
     font-size: 0.8rem;
     padding: 6px 12px;
 }
 
 .btn-delete {
-    background: #f44336;
-    color: white;
+    background: rgba(239, 68, 68, 0.2);
+    color: #f87171;
+    border: 1px solid rgba(248, 113, 113, 0.4);
     font-size: 0.8rem;
     padding: 6px 12px;
 }
@@ -243,11 +260,14 @@ input[type=text], input[type=number], input[type=datetime-local], select {
 .empty-state {
     text-align: center;
     padding: 40px 20px;
-    color: #999;
+    color: #94a3b8;
+    background: #101b38;
+    border: 1px solid #1f2f54;
+    border-radius: 12px;
 }
 
 .loading-spinner {
     text-align: center;
     padding: 60px 20px;
-    color: #4b5f84;
+    color: #d4af37;
 }

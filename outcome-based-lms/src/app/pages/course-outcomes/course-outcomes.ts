@@ -95,21 +95,23 @@ interface CourseOutcome {
   styles: [
     `.page { padding: 24px; }`,
     `.page-actions { margin-bottom: 24px; display: flex; justify-content: flex-end; }`,
-    `.form-card, .table-card { background: #fff; border-radius: 18px; padding: 24px; box-shadow: 0 16px 40px rgba(23, 58, 113, 0.08); margin-bottom: 24px; }`,
-    `.form-card label, .form-card textarea, .form-card select, .form-card input { width: 100%; display: block; margin-bottom: 16px; font-weight: 600; color: #1e293b; }`,
-    `.form-card input, .form-card select, .form-card textarea { padding: 10px 12px; border: 1px solid #d8e3f1; border-radius: 10px; font-size: 14px; margin-top: 6px; }`,
+    `.form-card, .table-card { background: #101b38; border: 1px solid #1f2f54; border-radius: 18px; padding: 24px; box-shadow: 0 16px 40px rgba(0, 0, 0, 0.35); margin-bottom: 24px; }`,
+    `.form-card label, .form-card textarea, .form-card select, .form-card input { width: 100%; display: block; margin-bottom: 16px; font-weight: 600; color: #cbd5e1; }`,
+    `.form-card input, .form-card select, .form-card textarea { padding: 10px 12px; border: 1px solid #1f2f54; border-radius: 10px; font-size: 14px; margin-top: 6px; background: #091024; color: #ffffff; }`,
     `.form-actions { display: flex; flex-wrap: wrap; gap: 12px; }`,
-    `.primary-button { background: #1565c0; color: #fff; border: none; padding: 10px 22px; border-radius: 8px; cursor: pointer; font-weight: 600; transition: all 0.2s ease; }`,
-    `.primary-button:hover { background: #0d47a1; transform: translateY(-1px); }`,
-    `.secondary-button { background: #e3eaf7; color: #1d3f76; border: none; padding: 10px 22px; border-radius: 8px; cursor: pointer; font-weight: 600; }`,
-    `.danger-button { background: #fee2e2; color: #b91c1c; border: 1px solid #fca5a5; padding: 6px 14px; border-radius: 8px; cursor: pointer; font-weight: 600; }`,
-    `.danger-button:hover { background: #fecaca; }`,
+    `.primary-button { background: linear-gradient(135deg, #d4af37 0%, #b38f28 100%); color: #0a1128; border: none; padding: 10px 22px; border-radius: 8px; cursor: pointer; font-weight: 700; transition: all 0.2s ease; box-shadow: 0 4px 14px rgba(212,175,55,0.3); }`,
+    `.primary-button:hover { filter: brightness(1.1); transform: translateY(-1px); }`,
+    `.secondary-button { background: #1f2f54; color: #cbd5e1; border: none; padding: 10px 22px; border-radius: 8px; cursor: pointer; font-weight: 600; }`,
+    `.danger-button { background: rgba(239, 68, 68, 0.15); color: #f87171; border: 1px solid rgba(248, 113, 113, 0.3); padding: 6px 14px; border-radius: 8px; cursor: pointer; font-weight: 600; }`,
+    `.danger-button:hover { background: rgba(239, 68, 68, 0.25); }`,
     `.table-card table { width: 100%; border-collapse: collapse; }`,
-    `.table-card th, .table-card td { padding: 14px 12px; border-bottom: 1px solid #eef2fb; text-align: left; }`,
-    `.table-card th { color: #1f3d7a; font-weight: 700; background: #f8fafc; }`,
+    `.table-card th, .table-card td { padding: 14px 12px; border-bottom: 1px solid #1f2f54; text-align: left; }`,
+    `.table-card th { color: #d4af37; font-weight: 700; background: #132247; text-transform: uppercase; font-size: 0.84rem; }`,
+    `.table-card td { color: #e2e8f0; }`,
+    `.table-card tr:hover td { background: #18284e; }`,
     `.actions-cell { display: flex; gap: 8px; flex-wrap: wrap; }`,
-    `.small-button { background: #e3eaf7; color: #1d3f76; border: none; padding: 6px 14px; border-radius: 8px; cursor: pointer; font-weight: 600; }`,
-    `.small-button:hover { background: #d0def2; }`
+    `.small-button { background: #1f2f54; color: #cbd5e1; border: 1px solid #1f2f54; padding: 6px 14px; border-radius: 8px; cursor: pointer; font-weight: 600; }`,
+    `.small-button:hover { background: #18284e; color: #ffffff; border-color: #d4af37; }`
   ]
 })
 export class CourseOutcomes {

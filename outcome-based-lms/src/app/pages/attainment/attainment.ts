@@ -171,29 +171,31 @@ interface StudentAttainment {
 </div>`,
   styles: [
     `.metrics-grid { display: grid; gap: 16px; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); margin-bottom: 30px; }
-    .metric-card { padding: 20px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border-radius: 12px; box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3); }
-    .metric-card h3 { margin: 0 0 10px; font-size: 14px; opacity: 0.9; }
-    .metric-card strong { display: block; font-size: 2.5rem; margin: 10px 0; }
-    .metric-card p { margin: 0; font-size: 12px; opacity: 0.8; }
-    .report-section { padding: 20px; background: #fff; border-radius: 10px; box-shadow: 0 1px 12px rgba(0,0,0,.06); margin-bottom: 24px; }
-    .report-section h2 { margin: 0; font-size: 1.3rem; }
-    .generate-btn { padding: 10px 20px; background: #2196F3; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 14px; transition: all 0.2s ease; }
+    .metric-card { padding: 22px; background: #101b38; border: 1px solid #1f2f54; color: #ffffff; border-radius: 14px; box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35); }
+    .metric-card h3 { margin: 0 0 10px; font-size: 14px; color: #94a3b8; }
+    .metric-card strong { display: block; font-size: 2.5rem; margin: 10px 0; color: #ffffff; font-weight: 800; }
+    .metric-card p { margin: 0; font-size: 12px; color: #94a3b8; }
+    .report-section { padding: 22px; background: #101b38; border: 1px solid #1f2f54; border-radius: 14px; box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35); margin-bottom: 24px; }
+    .report-section h2 { margin: 0; font-size: 1.3rem; color: #ffffff; font-weight: 800; }
+    .generate-btn { padding: 10px 20px; background: linear-gradient(135deg, #d4af37 0%, #b38f28 100%); color: #0a1128; border: none; border-radius: 8px; cursor: pointer; font-weight: 700; font-size: 14px; transition: all 0.2s ease; box-shadow: 0 4px 14px rgba(212,175,55,0.3); }
     .generate-btn:hover { filter: brightness(1.1); transform: translateY(-1px); }
-    .report-message { margin-top: 15px; padding: 12px; background: #e8f5e9; color: #2e7d32; border-left: 4px solid #4caf50; border-radius: 4px; }
-    .table-card { padding: 20px; background: #fff; border-radius: 10px; box-shadow: 0 1px 12px rgba(0,0,0,.06); margin-bottom: 24px; }
-    .table-card h2 { margin-top: 0; font-size: 1.25rem; }
+    .report-message { margin-top: 15px; padding: 12px; background: rgba(34, 197, 94, 0.12); color: #4ade80; border-left: 4px solid #22c55e; border-radius: 6px; }
+    .table-card { padding: 22px; background: #101b38; border: 1px solid #1f2f54; border-radius: 14px; box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35); margin-bottom: 24px; }
+    .table-card h2 { margin-top: 0; font-size: 1.25rem; color: #ffffff; font-weight: 800; }
     table { width: 100%; border-collapse: collapse; margin-top: 16px; }
-    th, td { padding: 12px 10px; border-bottom: 1px solid #e8e8e8; text-align: left; }
-    th { font-weight: 700; background: #f5f5f5; color: #1e293b; }
-    tbody tr:hover { background: #fafafa; }
-    .status-on-track { color: #4caf50; font-weight: 600; }
-    .status-at-risk { color: #ff9800; font-weight: 600; }
-    .status-off-track { color: #f44336; font-weight: 600; }
-    .good { color: #4caf50; font-weight: 600; }
-    .fair { color: #ff9800; font-weight: 600; }
-    .poor { color: #f44336; font-weight: 600; }
-    .empty-state { padding: 40px; text-align: center; color: #999; background: #f9f9f9; border-radius: 8px; }
-    .page-header p { margin: 8px 0 0; color: #555; }
+    th, td { padding: 12px 14px; border-bottom: 1px solid #1f2f54; text-align: left; }
+    th { font-weight: 700; background: #132247; color: #d4af37; text-transform: uppercase; font-size: 0.84rem; }
+    td { color: #e2e8f0; }
+    tbody tr:hover { background: #18284e; }
+    .status-on-track { color: #4ade80; font-weight: 600; }
+    .status-at-risk { color: #fbbf24; font-weight: 600; }
+    .status-off-track { color: #f87171; font-weight: 600; }
+    .good { color: #4ade80; font-weight: 600; }
+    .fair { color: #fbbf24; font-weight: 600; }
+    .poor { color: #f87171; font-weight: 600; }
+    .empty-state { padding: 40px; text-align: center; color: #94a3b8; background: #091024; border: 1px solid #1f2f54; border-radius: 12px; }
+    .page-header h1 { color: #ffffff; font-weight: 800; }
+    .page-header p { margin: 8px 0 0; color: #94a3b8; }
     `
   ]
 })

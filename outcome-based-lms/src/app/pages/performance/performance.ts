@@ -356,23 +356,25 @@ interface CoAttainmentStatus {
 </ng-template>`,
   styles: [
     `.summary-grid { display: grid; gap: 16px; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); margin-bottom: 24px; }
-    .section-card, .table-card, .chart-card, .filter-card { padding: 20px; background: #fff; border-radius: 10px; box-shadow: 0 1px 12px rgba(0,0,0,.06); margin-bottom: 24px; }
-    .section-card h3 { margin: 0 0 10px; font-size: 1rem; color: #1f3d7a; }
-    .section-card strong { display: block; font-size: 2rem; margin-bottom: 8px; color: #333; }
-    .filter-card label { display: flex; align-items: center; gap: 10px; font-weight: 600; }
-    .filter-card input { padding: 8px 12px; border: 1px solid #ccc; border-radius: 6px; font-size: 14px; flex: 1; }
+    .section-card, .table-card, .chart-card, .filter-card { padding: 22px; background: #101b38; border: 1px solid #1f2f54; border-radius: 14px; box-shadow: 0 8px 24px rgba(0,0,0,.3); margin-bottom: 24px; }
+    .section-card h3, .table-card h3, .chart-card h3 { margin: 0 0 10px; font-size: 1.1rem; color: #ffffff; font-weight: 700; }
+    .section-card strong { display: block; font-size: 2.2rem; margin-bottom: 8px; color: #ffffff; font-weight: 800; }
+    .filter-card label { display: flex; align-items: center; gap: 10px; font-weight: 600; color: #cbd5e1; }
+    .filter-card input { padding: 8px 12px; border: 1px solid #1f2f54; border-radius: 8px; font-size: 14px; flex: 1; background: #091024; color: #ffffff; }
     table { width: 100%; border-collapse: collapse; margin-top: 16px; }
-    th, td { padding: 12px 10px; border-bottom: 1px solid #e8e8e8; text-align: left; }
-    th { font-weight: 700; color: #1f3d7a; background: #f5f5f5; }
-    tbody tr:hover { background: #fafafa; }
+    th, td { padding: 12px 14px; border-bottom: 1px solid #1f2f54; text-align: left; }
+    th { font-weight: 700; color: #d4af37; background: #132247; text-transform: uppercase; font-size: 0.84rem; }
+    td { color: #e2e8f0; }
+    tbody tr:hover { background: #18284e; }
     .chart-list { display: grid; gap: 18px; margin-top: 16px; }
     .chart-row { display: grid; gap: 8px; }
-    .chart-bar-background { height: 16px; width: 100%; background: #e0e0e0; border-radius: 999px; overflow: hidden; }
-    .chart-bar { height: 100%; background: linear-gradient(90deg, #1976d2, #42a5f5); border-radius: 999px; }
-    .page-header p { margin: 8px 0 0; color: #555; }
-    .subtitle { color: #666; font-size: 0.9rem; margin-top: 4px; }
-    .co-info-row { display: flex; justify-content: space-between; font-size: 0.9rem; }
-    .empty-state { padding: 40px; text-align: center; color: #999; background: #f9f9f9; border-radius: 8px; }
+    .chart-bar-background { height: 16px; width: 100%; background: #091024; border-radius: 999px; overflow: hidden; border: 1px solid #1f2f54; }
+    .chart-bar { height: 100%; background: linear-gradient(90deg, #d4af37, #f59e0b); border-radius: 999px; }
+    .page-header h1 { color: #ffffff; font-weight: 800; }
+    .page-header p { margin: 8px 0 0; color: #94a3b8; }
+    .subtitle { color: #94a3b8; font-size: 0.9rem; margin-top: 4px; }
+    .co-info-row { display: flex; justify-content: space-between; font-size: 0.9rem; color: #cbd5e1; }
+    .empty-state { padding: 40px; text-align: center; color: #94a3b8; background: #091024; border: 1px solid #1f2f54; border-radius: 12px; }
 
     /* Student Shell & Sidebar Styles */
     .student-shell {
@@ -385,20 +387,20 @@ interface CoAttainmentStatus {
       width: 100%;
       min-height: 0;
       align-items: stretch;
-      background: var(--student-bg, rgba(240, 249, 255, 0.92));
-      color: var(--student-text, #1e293b);
+      background: var(--student-bg, #0a1128);
+      color: var(--student-text, #f8fafc);
       overflow: hidden;
       box-sizing: border-box;
 
-      --student-primary: #1976d2;
-      --student-primary-rgb: 25, 118, 210;
-      --student-hero-bg: linear-gradient(135deg, #1e3a8a 0%, #1e40af 50%, #2563eb 100%);
-      --student-bg: rgba(240, 249, 255, 0.92);
-      --student-card-bg: rgba(255, 255, 255, 0.98);
-      --student-text: #1e293b;
-      --student-text-secondary: #64748b;
-      --student-border: rgba(74, 140, 234, 0.16);
-      --student-sidebar-bg: rgba(255, 255, 255, 0.98);
+      --student-primary: #d4af37;
+      --student-primary-rgb: 212, 175, 55;
+      --student-hero-bg: linear-gradient(135deg, #0a1128 0%, #101b38 50%, #18284e 100%);
+      --student-bg: #0a1128;
+      --student-card-bg: #101b38;
+      --student-text: #ffffff;
+      --student-text-secondary: #94a3b8;
+      --student-border: #1f2f54;
+      --student-sidebar-bg: #091024;
     }
     .student-sidebar {
       width: 270px;
