@@ -1,148 +1,110 @@
 <app-navbar></app-navbar>
 
-<div class="student-shell" [ngStyle]="themeStyles">
-  <!-- Categorized Sidebar Navigation -->
-  <div class="student-sidebar">
-    <div class="logo">
-      <h2>🎓 OBLMS</h2>
-      <p>Outcome Based LMS</p>
-    </div>
+<div class="container">
+  <app-sidebar></app-sidebar>
 
-    <div class="nav-groups-container">
-      <div *ngFor="let group of studentNavGroups" class="nav-group-block">
-        <span class="group-title">{{ group.title }}</span>
-        <div class="group-items">
-          <button mat-button *ngFor="let item of group.items" (click)="navigate(item.path)" [class.active]="item.path === '/po-attainment'">
-            <span class="icon">{{ item.icon }}</span>
-            <span class="nav-label">{{ item.label }}</span>
-          </button>
-        </div>
-      </div>
-    </div>
-
-    <!-- Mini Profile Card at Bottom of Sidebar -->
-    <div class="sidebar-user-card" (click)="navigate('/profile')" title="View profile details" style="margin-top: auto; padding: 10px 12px; background: var(--student-card-bg); border: 1px solid var(--student-border); border-radius: 12px; display: flex; align-items: center; gap: 10px; cursor: pointer; transition: all 0.2s ease;">
-      <div class="user-avatar-mini" style="width: 36px; height: 36px; border-radius: 50%; overflow: hidden; background: rgba(var(--student-primary-rgb), 0.1); display: flex; align-items: center; justify-content: center; flex-shrink: 0; border: 1.5px solid var(--student-primary);">
-        <img *ngIf="studentPhoto" [src]="studentPhoto" alt="Profile" style="width: 100%; height: 100%; object-fit: cover;" />
-        <span *ngIf="!studentPhoto">👨‍🎓</span>
-      </div>
-      <div class="user-meta-mini" style="flex: 1; display: flex; flex-direction: column; overflow: hidden;">
-        <strong class="user-name-mini" style="font-size: 12.5px; color: var(--student-text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: 700;">{{ studentName }}</strong>
-        <span class="user-roll-mini" style="font-size: 11px; color: var(--student-text-secondary);">{{ studentRoll }}</span>
-      </div>
-      <button class="logout-icon-btn" (click)="$event.stopPropagation(); logout()" title="Logout" style="background: transparent; border: none; font-size: 15px; cursor: pointer; padding: 4px; opacity: 0.7;">🚪</button>
-    </div>
-  </div>
-
-  <!-- Student Scrollable Content Area -->
-  <div class="student-content" style="flex: 1; height: 100%; box-sizing: border-box; padding: 24px 28px 40px; overflow-y: auto; display: flex; flex-direction: column; gap: 20px;">
-    
-    <div class="page-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+  <div class="content">
+    <div class="page-header">
       <div class="header-title">
-        <h1 style="margin: 0; font-size: 1.8rem; color: var(--student-text); font-weight: 800;">🎓 PO Attainment Analysis (NBA 80:20 Framework)</h1>
-        <p style="margin: 4px 0 0 0; color: var(--student-text-secondary); font-size: 0.95rem;">Track 80% Direct Assessment + 20% Indirect Exit Feedback composite attainment</p>
+        <h1>🎓 PO Attainment Analysis (NBA 80:20 Framework)</h1>
+        <p>Track 80% Direct Assessment + 20% Indirect Exit Feedback composite attainment</p>
       </div>
-      <button class="btn btn-primary" (click)="exportToCSV()" style="background: var(--student-primary); border-radius: 8px; font-weight: 600; padding: 10px 18px; color: #fff; border: none; cursor: pointer;">📥 Export CSV</button>
+      <button class="btn btn-primary" (click)="exportToCSV()">📥 Export CSV</button>
     </div>
 
     <!-- Overall 80:20 NBA Achievement Grid -->
-    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px;">
+    <div class="overall-metrics-grid">
       <!-- Composite PO Score -->
-      <div class="overall-card" style="background: linear-gradient(135deg, var(--student-primary) 0%, #1e40af 100%); border-radius: 16px; padding: 22px; color: #ffffff; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 10px 25px -5px rgba(30, 64, 175, 0.3);">
+      <div class="overall-card">
         <div class="overall-content">
-          <span style="font-size: 0.75rem; font-weight: 800; background: rgba(255,255,255,0.2); padding: 3px 8px; border-radius: 12px; text-transform: uppercase;">NBA Criteria-3 Composite</span>
-          <div class="overall-value" style="font-size: 2.4rem; font-weight: 900; margin: 8px 0 4px 0;">{{ overallAchievement }}%</div>
-          <p style="margin: 0; font-size: 0.85rem; color: rgba(255, 255, 255, 0.9);">80% Direct + 20% Indirect</p>
+          <span class="badge-tag">NBA Criteria-3 Composite</span>
+          <div class="overall-value">{{ overallAchievement }}%</div>
+          <p>80% Direct + 20% Indirect</p>
         </div>
         <div class="overall-chart">
-          <div class="progress-ring" style="position: relative; width: 75px; height: 75px; display: flex; align-items: center; justify-content: center;">
-            <svg viewBox="0 0 100 100" class="ring-svg" style="width: 100%; height: 100%; transform: rotate(-90deg);">
-              <circle cx="50" cy="50" r="45" class="ring-bg" style="fill: none; stroke: rgba(255, 255, 255, 0.2); stroke-width: 8;"></circle>
+          <div class="progress-ring">
+            <svg viewBox="0 0 100 100" class="ring-svg">
+              <circle cx="50" cy="50" r="45" class="ring-bg"></circle>
               <circle cx="50" cy="50" r="45" class="ring-progress" 
-                [style.strokeDashoffset]="282.7 - (overallAchievement / 100) * 282.7"
-                style="fill: none; stroke: #ffffff; stroke-width: 8; stroke-dasharray: 282.7; transition: stroke-dashoffset 0.3s ease; stroke-linecap: round;"></circle>
+                [style.strokeDashoffset]="282.7 - (overallAchievement / 100) * 282.7"></circle>
             </svg>
-            <div class="ring-text" style="position: absolute; font-size: 1.1rem; font-weight: 800; color: #ffffff;">{{ overallAchievement }}%</div>
+            <div class="ring-text">{{ overallAchievement }}%</div>
           </div>
         </div>
       </div>
 
       <!-- Direct Attainment (80%) -->
-      <div style="background: var(--student-card-bg); border: 1px solid var(--student-border); border-left: 5px solid #3b82f6; border-radius: 16px; padding: 22px; display: flex; flex-direction: column; justify-content: space-between; box-shadow: 0 4px 16px rgba(0,0,0,0.03);">
+      <div class="summary-metric-card direct">
         <div>
-          <div style="display: flex; justify-content: space-between; align-items: center;">
-            <span style="font-size: 0.75rem; font-weight: 800; color: #3b82f6; text-transform: uppercase;">Direct CIE & Lab (80%)</span>
-            <span style="font-size: 12px; background: rgba(59,130,246,0.1); color: #3b82f6; padding: 2px 8px; border-radius: 10px; font-weight: 700;">Weight: 0.80</span>
+          <div class="metric-top-row">
+            <span class="metric-title-badge direct-badge">Direct CIE & Lab (80%)</span>
+            <span class="weight-chip">Weight: 0.80</span>
           </div>
-          <div style="font-size: 2.2rem; font-weight: 900; color: var(--student-text); margin: 6px 0 2px 0;">{{ overallDirectScore }}%</div>
-          <p style="margin: 0; font-size: 0.82rem; color: var(--student-text-secondary);">Calculated from CIE Midterms & Assignments</p>
+          <div class="metric-big-value">{{ overallDirectScore }}%</div>
+          <p class="metric-subtext">Calculated from CIE Midterms & Assignments</p>
         </div>
       </div>
 
       <!-- Indirect Exit Survey (20%) -->
-      <div style="background: var(--student-card-bg); border: 1px solid var(--student-border); border-left: 5px solid #8b5cf6; border-radius: 16px; padding: 22px; display: flex; flex-direction: column; justify-content: space-between; box-shadow: 0 4px 16px rgba(0,0,0,0.03);">
+      <div class="summary-metric-card indirect">
         <div>
-          <div style="display: flex; justify-content: space-between; align-items: center;">
-            <span style="font-size: 0.75rem; font-weight: 800; color: #8b5cf6; text-transform: uppercase;">Indirect Exit Survey (20%)</span>
-            <span style="font-size: 12px; background: rgba(139,92,246,0.1); color: #8b5cf6; padding: 2px 8px; border-radius: 10px; font-weight: 700;">Weight: 0.20</span>
+          <div class="metric-top-row">
+            <span class="metric-title-badge indirect-badge">Indirect Exit Survey (20%)</span>
+            <span class="weight-chip">Weight: 0.20</span>
           </div>
-          <div style="font-size: 2.2rem; font-weight: 900; color: var(--student-text); margin: 6px 0 2px 0;">{{ overallIndirectScore }}%</div>
-          <p style="margin: 0; font-size: 0.82rem; color: var(--student-text-secondary);">Student Exit & Course End Feedback</p>
+          <div class="metric-big-value">{{ overallIndirectScore }}%</div>
+          <p class="metric-subtext">Student Exit & Course End Feedback</p>
         </div>
       </div>
     </div>
 
     <!-- 12-Axis NBA Program Outcomes (PO1-PO12) Interactive Radar / Spider Chart -->
-    <div class="radar-chart-card" style="background: var(--student-card-bg); border: 1px solid var(--student-border); border-radius: 16px; padding: 24px; box-shadow: 0 4px 20px rgba(0,0,0,0.04); display: flex; flex-direction: column; gap: 16px;">
-      <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
+    <div class="radar-chart-card">
+      <div class="radar-header">
         <div>
-          <h2 style="margin: 0; font-size: 1.35rem; font-weight: 800; color: var(--student-text); display: flex; align-items: center; gap: 8px;">
-            🕸️ NBA Program Outcomes 80:20 Radar Articulation
-          </h2>
-          <p style="margin: 4px 0 0 0; font-size: 0.88rem; color: var(--student-text-secondary);">
-            Multi-layer direct vs indirect graduate attribute index vs NBA benchmark target ({{ targetPercentage }}%)
-          </p>
+          <h2>🕸️ NBA Program Outcomes 80:20 Radar Articulation</h2>
+          <p>Multi-layer direct vs indirect graduate attribute index vs NBA benchmark target ({{ targetPercentage }}%)</p>
         </div>
-        <div style="display: flex; align-items: center; gap: 16px; font-size: 12.5px; font-weight: 700; flex-wrap: wrap;">
-          <div style="display: flex; align-items: center; gap: 6px;">
-            <span style="display: inline-block; width: 12px; height: 12px; border-radius: 50%; background: #10b981;"></span>
-            <span style="color: var(--student-text);">Final Composite PO</span>
+        <div class="radar-legend">
+          <div class="legend-item">
+            <span class="dot green"></span>
+            <span>Final Composite PO</span>
           </div>
-          <div style="display: flex; align-items: center; gap: 6px;">
-            <span style="display: inline-block; width: 12px; height: 12px; border-radius: 50%; background: #3b82f6;"></span>
-            <span style="color: var(--student-text);">Direct (80%)</span>
+          <div class="legend-item">
+            <span class="dot blue"></span>
+            <span>Direct (80%)</span>
           </div>
-          <div style="display: flex; align-items: center; gap: 6px;">
-            <span style="display: inline-block; width: 12px; height: 12px; border-radius: 50%; background: #8b5cf6;"></span>
-            <span style="color: var(--student-text);">Indirect (20%)</span>
+          <div class="legend-item">
+            <span class="dot purple"></span>
+            <span>Indirect (20%)</span>
           </div>
-          <div style="display: flex; align-items: center; gap: 6px;">
-            <span style="display: inline-block; width: 12px; height: 12px; border-radius: 50%; background: #ef4444; border: 2px dashed #ef4444;"></span>
-            <span style="color: var(--student-text);">Target ({{ targetPercentage }}%)</span>
+          <div class="legend-item">
+            <span class="dot red-dashed"></span>
+            <span>Target ({{ targetPercentage }}%)</span>
           </div>
         </div>
       </div>
 
       <!-- Centered SVG Radar Visual -->
-      <div style="display: flex; justify-content: center; align-items: center; padding: 10px 0; overflow-x: auto;">
-        <svg viewBox="0 0 440 440" style="width: 100%; max-width: 440px; height: auto; font-family: inherit;">
+      <div class="radar-svg-container">
+        <svg viewBox="0 0 440 440" class="radar-svg">
           <!-- Concentric Background Rings -->
           <polygon *ngFor="let ring of radarRings; let idx = index" 
             [attr.points]="ring" 
             fill="none" 
-            [attr.stroke]="idx === 2 ? '#ef4444' : 'var(--student-border)'" 
+            [attr.stroke]="idx === 2 ? '#ef4444' : '#1f2f54'" 
             [attr.stroke-dasharray]="idx === 2 ? '4,4' : 'none'"
             [attr.stroke-width]="idx === 2 ? '1.5' : '1'" 
-            opacity="0.75" />
+            opacity="0.8" />
 
           <!-- Radial Spokes from Center -->
           <line *ngFor="let sp of radarSpokes" 
             [attr.x1]="sp.x1" [attr.y1]="sp.y1" [attr.x2]="sp.x2" [attr.y2]="sp.y2" 
-            stroke="var(--student-border)" stroke-width="1" opacity="0.6" />
+            stroke="#1f2f54" stroke-width="1" opacity="0.7" />
 
           <!-- Target Benchmark Polygon (75%) -->
           <polygon [attr.points]="targetRadarPoints" 
-            fill="rgba(239, 68, 68, 0.05)" 
+            fill="rgba(239, 68, 68, 0.08)" 
             stroke="#ef4444" 
             stroke-width="1.8" 
             stroke-dasharray="5,4" />
@@ -150,14 +112,14 @@
           <!-- Direct Attainment Polygon (80%) -->
           <polygon [attr.points]="directRadarPoints" 
             fill="none" 
-            stroke="#3b82f6" 
+            stroke="#60a5fa" 
             stroke-width="1.8" 
             stroke-dasharray="4,3" />
 
           <!-- Indirect Attainment Polygon (20%) -->
           <polygon [attr.points]="indirectRadarPoints" 
             fill="none" 
-            stroke="#8b5cf6" 
+            stroke="#c084fc" 
             stroke-width="1.8" 
             stroke-dasharray="2,2" />
 
@@ -187,44 +149,46 @@
               dominant-baseline="central" 
               font-size="11.5" 
               font-weight="800" 
-              fill="var(--student-text)">
+              fill="#ffffff">
               {{ sp.code }} ({{ sp.achievement }}%)
             </text>
           </g>
         </svg>
       </div>
-    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px;">
-      <div class="stat-card achieved" style="background: var(--student-card-bg); border: 1px solid var(--student-border); border-left: 5px solid #10b981; border-radius: 12px; padding: 18px; display: flex; flex-direction: column; gap: 6px;">
-        <div class="stat-number" style="font-size: 1.8rem; font-weight: 800; color: #10b981;">{{ getAchievedCount() }}</div>
-        <div class="stat-label" style="font-size: 0.85rem; font-weight: 700; color: var(--student-text-secondary); text-transform: uppercase;">Achieved (≥{{ targetPercentage }}%)</div>
-      </div>
-      <div class="stat-card partial" style="background: var(--student-card-bg); border: 1px solid var(--student-border); border-left: 5px solid #f59e0b; border-radius: 12px; padding: 18px; display: flex; flex-direction: column; gap: 6px;">
-        <div class="stat-number" style="font-size: 1.8rem; font-weight: 800; color: #f59e0b;">{{ getPartialCount() }}</div>
-        <div class="stat-label" style="font-size: 0.85rem; font-weight: 700; color: var(--student-text-secondary); text-transform: uppercase;">Partial (50-{{ targetPercentage }}%)</div>
-      </div>
-      <div class="stat-card not-achieved" style="background: var(--student-card-bg); border: 1px solid var(--student-border); border-left: 5px solid #ef4444; border-radius: 12px; padding: 18px; display: flex; flex-direction: column; gap: 6px;">
-        <div class="stat-number" style="font-size: 1.8rem; font-weight: 800; color: #ef4444;">{{ getNotAchievedCount() }}</div>
-        <div class="stat-label" style="font-size: 0.85rem; font-weight: 700; color: var(--student-text-secondary); text-transform: uppercase;">Not Achieved (<50%)</div>
+
+      <!-- Attainment Status Cards -->
+      <div class="stats-grid">
+        <div class="stat-card achieved">
+          <div class="stat-number">{{ getAchievedCount() }}</div>
+          <div class="stat-label">Achieved (≥{{ targetPercentage }}%)</div>
+        </div>
+        <div class="stat-card partial">
+          <div class="stat-number">{{ getPartialCount() }}</div>
+          <div class="stat-label">Partial (50-{{ targetPercentage }}%)</div>
+        </div>
+        <div class="stat-card not-achieved">
+          <div class="stat-number">{{ getNotAchievedCount() }}</div>
+          <div class="stat-label">Not Achieved (&lt;50%)</div>
+        </div>
       </div>
     </div>
 
-    <!-- Search and Filter -->
-    <div class="toolbar" style="display: flex; gap: 14px; align-items: center; background: var(--student-card-bg); border: 1px solid var(--student-border); padding: 12px 16px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.02);">
-      <div class="search-box" style="flex: 1; display: flex; align-items: center;">
+    <!-- Search and Filter Toolbar -->
+    <div class="toolbar">
+      <div class="search-box">
+        <span class="material-icons search-icon">search</span>
         <input 
           type="text" 
-          placeholder="🔍 Search by PO code or description..."
+          placeholder="Search by PO code or description..."
           [(ngModel)]="searchQuery"
           (input)="onSearchChange()"
           class="search-input"
-          style="width: 100%; border: none; outline: none; background: transparent; color: var(--student-text); font-size: 0.95rem;"
         />
       </div>
       <select 
         [(ngModel)]="filterStatus"
         (change)="onFilterChange()"
         class="filter-select"
-        style="border: 1px solid var(--student-border); border-radius: 8px; padding: 8px 14px; background: var(--student-card-bg); color: var(--student-text); outline: none; font-size: 0.9rem;"
       >
         <option value="">All Status</option>
         <option value="Achieved">Achieved</option>
@@ -233,44 +197,43 @@
       </select>
     </div>
 
-    <!-- PO Attainment Cards -->
-    <div class="attainment-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 20px;">
-      <div *ngIf="filteredAttainments.length === 0" class="empty-state" style="grid-column: 1 / -1; text-align: center; color: var(--student-text-secondary); padding: 40px;">
-        <p style="font-size: 1.2rem; font-weight: 600;">📭 No program outcomes found</p>
-        <p style="font-size: 0.9rem;">Create program outcomes and CO-PO mappings to view attainment analysis</p>
+    <!-- PO Attainment Cards Grid -->
+    <div class="attainment-grid">
+      <div *ngIf="filteredAttainments.length === 0" class="empty-state">
+        <p class="empty-title">📭 No program outcomes found</p>
+        <p class="empty-sub">Create program outcomes and CO-PO mappings to view attainment analysis</p>
       </div>
 
-      <div *ngFor="let po of filteredAttainments" class="attainment-card" style="background: var(--student-card-bg); border: 1px solid var(--student-border); border-radius: 14px; padding: 20px; display: flex; flex-direction: column; gap: 14px; transition: transform 0.2s; box-shadow: 0 4px 16px rgba(0,0,0,0.03);" onmouseover="this.style.transform='translateY(-3px)'" onmouseout="this.style.transform='none'">
-        <div class="card-header" style="display: flex; justify-content: space-between; align-items: flex-start; gap: 14px;">
-          <div class="po-info" style="display: flex; flex-direction: column; gap: 4px;">
-            <h3 style="margin: 0; font-size: 1.15rem; color: var(--student-primary); font-weight: 800;">{{ po.code }}</h3>
-            <p style="margin: 0; font-size: 0.88rem; color: var(--student-text); line-height: 1.4; font-weight: 500;">{{ po.description }}</p>
+      <div *ngFor="let po of filteredAttainments" class="attainment-card">
+        <div class="card-header">
+          <div class="po-info">
+            <h3 class="po-code">{{ po.code }}</h3>
+            <p class="po-desc">{{ po.description }}</p>
           </div>
-          <div class="status-badge" style="font-size: 11px; font-weight: 700; padding: 4px 10px; border-radius: 12px;" [style.backgroundColor]="getStatusBgColor(po.status)" [style.color]="getStatusColor(po.status)">
+          <div class="status-badge" [style.backgroundColor]="getStatusBgColor(po.status)" [style.color]="getStatusColor(po.status)">
             {{ po.status }}
           </div>
         </div>
 
-        <div class="card-body" style="display: flex; flex-direction: column; gap: 12px; margin-top: auto;">
-          <div class="achievement-display" style="display: flex; justify-content: space-between; align-items: baseline;">
+        <div class="card-body">
+          <div class="achievement-display">
             <div>
-              <div class="achievement-value" style="font-size: 1.6rem; font-weight: 900; color: var(--student-text);">{{ po.achievement }}%</div>
-              <div style="display: flex; gap: 6px; margin-top: 3px; font-size: 10.5px; font-weight: 700;">
-                <span style="background: rgba(59,130,246,0.1); color: #3b82f6; padding: 1px 6px; border-radius: 4px;">Direct: {{ po.directScore || po.achievement }}%</span>
-                <span style="background: rgba(139,92,246,0.1); color: #8b5cf6; padding: 1px 6px; border-radius: 4px;">Survey: {{ po.indirectScore || 80 }}%</span>
+              <div class="achievement-value">{{ po.achievement }}%</div>
+              <div class="sub-scores-row">
+                <span class="direct-pill">Direct: {{ po.directScore || po.achievement }}%</span>
+                <span class="survey-pill">Survey: {{ po.indirectScore || 80 }}%</span>
               </div>
             </div>
-            <div class="target-value" style="font-size: 0.82rem; font-weight: 600; color: var(--student-text-secondary);">Target: {{ po.targetPercentage }}%</div>
+            <div class="target-value">Target: {{ po.targetPercentage }}%</div>
           </div>
 
           <div class="progress-bar-container">
-            <div class="progress-bar" style="height: 6px; background: #e2e8f0; border-radius: 4px; overflow: hidden; width: 100%;">
+            <div class="progress-bar">
               <div class="progress-fill" 
                 [style.width]="getProgressWidth(po.achievement) + '%'"
-                [style.backgroundColor]="getStatusColor(po.status)"
-                style="height: 100%; transition: width 0.3s ease;"></div>
+                [style.backgroundColor]="getStatusColor(po.status)"></div>
             </div>
-            <div class="progress-labels" style="display: flex; justify-content: space-between; font-size: 10px; color: var(--student-text-secondary); margin-top: 4px; font-weight: 600;">
+            <div class="progress-labels">
               <span>0%</span>
               <span>50%</span>
               <span>{{ po.targetPercentage }}%</span>
@@ -278,11 +241,11 @@
             </div>
           </div>
 
-          <div class="po-mapping-info" style="border-top: 1px dashed var(--student-border); padding-top: 10px; margin-top: 4px;">
-            <div class="mapped-cos" style="display: flex; flex-direction: column; gap: 6px;">
-              <span class="label" style="font-size: 11.5px; font-weight: 700; color: var(--student-text-secondary); text-transform: uppercase; letter-spacing: 0.02em;">Mapped COs ({{ po.coCount }}):</span>
-              <div class="co-tags" style="display: flex; flex-wrap: wrap; gap: 6px;">
-                <span *ngFor="let coCode of po.mappedCOs" class="co-tag" style="background: rgba(var(--student-primary-rgb), 0.08); color: var(--student-primary); padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 600;">{{ coCode }}</span>
+          <div class="po-mapping-info">
+            <div class="mapped-cos">
+              <span class="mapped-label">Mapped COs ({{ po.coCount }}):</span>
+              <div class="co-tags">
+                <span *ngFor="let coCode of po.mappedCOs" class="co-tag">{{ coCode }}</span>
               </div>
             </div>
           </div>
