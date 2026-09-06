@@ -4,13 +4,11 @@
   justify-content: space-between;
   align-items: center;
   margin-bottom: 24px;
-  background: rgba(18, 24, 38, 0.88);
+  background: #ffffff;
   padding: 20px 24px;
-  border-radius: 14px;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.25);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+  border-radius: 16px;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 4px 20px -2px rgba(15, 23, 42, 0.05), 0 2px 6px -1px rgba(15, 23, 42, 0.03);
   flex-shrink: 0;
   width: 100%;
 }
@@ -18,14 +16,14 @@
 .header-title h1 {
   margin: 0 0 4px 0;
   font-size: 1.85rem;
-  color: #ffffff;
+  color: #0f172a;
   font-weight: 800;
   letter-spacing: -0.01em;
 }
 
 .header-title p {
   margin: 0;
-  color: #94a3b8;
+  color: #64748b;
   font-size: 0.95rem;
 }
 
@@ -46,7 +44,7 @@
 .btn-primary {
   background: #2563eb;
   color: white;
-  box-shadow: 0 2px 8px rgba(37, 99, 235, 0.3);
+  box-shadow: 0 2px 8px rgba(37, 99, 235, 0.25);
 }
 
 .btn-primary:hover {
@@ -55,14 +53,14 @@
 }
 
 .btn-secondary {
-  background: rgba(255, 255, 255, 0.08);
-  color: #cbd5e1;
-  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: #ffffff;
+  color: #334155;
+  border: 1px solid #cbd5e1;
 }
 
 .btn-secondary:hover {
-  background: rgba(255, 255, 255, 0.14);
-  color: #ffffff;
+  background: #f8fafc;
+  color: #0f172a;
 }
 
 /* Toolbar */
@@ -70,11 +68,11 @@
   display: flex;
   gap: 14px;
   margin-bottom: 24px;
-  background: rgba(18, 24, 38, 0.88);
+  background: #ffffff;
   padding: 18px 20px;
   border-radius: 14px;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.2);
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.04);
   flex-wrap: wrap;
   flex-shrink: 0;
   width: 100%;
@@ -88,11 +86,11 @@
 .search-input {
   width: 100%;
   padding: 10px 14px;
-  border: 1px solid rgba(255, 255, 255, 0.12);
+  border: 1px solid #cbd5e1;
   border-radius: 8px;
   font-size: 0.95rem;
-  background: rgba(15, 23, 42, 0.8);
-  color: #ffffff;
+  background: #ffffff;
+  color: #0f172a;
   outline: none;
   transition: all 0.2s ease;
   box-sizing: border-box;
@@ -100,16 +98,16 @@
 
 .search-input:focus {
   border-color: #2563eb;
-  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.2);
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
 }
 
 .filter-select {
   padding: 10px 14px;
-  border: 1px solid rgba(255, 255, 255, 0.12);
+  border: 1px solid #cbd5e1;
   border-radius: 8px;
   font-size: 0.95rem;
-  background: rgba(15, 23, 42, 0.8);
-  color: #ffffff;
+  background: #ffffff;
+  color: #0f172a;
   cursor: pointer;
   outline: none;
   transition: all 0.2s ease;
@@ -118,15 +116,14 @@
 
 .filter-select:focus {
   border-color: #2563eb;
-  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.2);
 }
 
 /* Table Section */
 .table-section {
-  background: rgba(18, 24, 38, 0.88);
-  border-radius: 14px;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.25);
+  background: #ffffff;
+  border-radius: 16px;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 4px 20px -2px rgba(15, 23, 42, 0.05);
   overflow: hidden;
   margin-bottom: 28px;
   flex-shrink: 0;
@@ -136,14 +133,14 @@
 
 .table-header {
   padding: 18px 24px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-  background: rgba(15, 23, 42, 0.95);
+  border-bottom: 1px solid #e2e8f0;
+  background: #f8fafc;
 }
 
 .table-header h3 {
   margin: 0;
   font-size: 1.15rem;
-  color: #ffffff;
+  color: #0f172a;
   font-weight: 700;
 }
 
@@ -159,35 +156,35 @@
 }
 
 .data-table thead {
-  background: rgba(15, 23, 42, 0.95);
+  background: #f8fafc;
 }
 
 .data-table th {
   padding: 14px 18px;
   font-weight: 700;
-  color: #94a3b8;
+  color: #475569;
   font-size: 0.84rem;
   text-transform: uppercase;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  border-bottom: 2px solid #e2e8f0;
 }
 
 .data-table td {
   padding: 14px 18px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
-  color: #e2e8f0;
+  border-bottom: 1px solid #f1f5f9;
+  color: #334155;
   font-size: 0.95rem;
   vertical-align: middle;
 }
 
 .data-table tbody tr:hover {
-  background: rgba(255, 255, 255, 0.04);
+  background: #f8fafc;
 }
 
 .faculty-id {
   font-family: monospace;
-  background: rgba(236, 72, 153, 0.15);
-  color: #f472b6;
-  border: 1px solid rgba(236, 72, 153, 0.3);
+  background: #fdf2f8;
+  color: #be185d;
+  border: 1px solid #fbcfe8;
   padding: 4px 8px;
   border-radius: 6px;
   font-weight: 700;
@@ -197,11 +194,11 @@
 
 .faculty-name {
   font-weight: 700;
-  color: #ffffff;
+  color: #0f172a;
 }
 
 .faculty-email {
-  color: #60a5fa;
+  color: #2563eb;
   font-size: 0.9rem;
 }
 
@@ -215,9 +212,9 @@
 }
 
 .badge-dept {
-  background: rgba(59, 130, 246, 0.15);
-  color: #60a5fa;
-  border: 1px solid rgba(59, 130, 246, 0.3);
+  background: #eff6ff;
+  color: #1d4ed8;
+  border: 1px solid #bfdbfe;
 }
 
 .courses-cell {
@@ -225,9 +222,9 @@
 }
 
 .courses-badge {
-  background: rgba(255, 255, 255, 0.06);
-  color: #cbd5e1;
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: #f8fafc;
+  color: #475569;
+  border: 1px solid #e2e8f0;
   padding: 4px 10px;
   border-radius: 6px;
   font-size: 0.82rem;
@@ -265,9 +262,9 @@
 }
 
 .btn-action-pill.edit {
-  background: rgba(59, 130, 246, 0.15);
-  color: #60a5fa;
-  border-color: rgba(59, 130, 246, 0.3);
+  background: #eff6ff;
+  color: #2563eb;
+  border-color: #bfdbfe;
 }
 
 .btn-action-pill.edit:hover {
@@ -278,9 +275,9 @@
 }
 
 .btn-action-pill.delete {
-  background: rgba(239, 68, 68, 0.15);
-  color: #f87171;
-  border-color: rgba(239, 68, 68, 0.3);
+  background: #fef2f2;
+  color: #dc2626;
+  border-color: #fecaca;
 }
 
 .btn-action-pill.delete:hover {
@@ -297,8 +294,8 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(2, 6, 23, 0.75);
-  backdrop-filter: blur(8px);
+  background: rgba(15, 23, 42, 0.6);
+  backdrop-filter: blur(6px);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -307,15 +304,15 @@
 }
 
 .modal-content {
-  background: #0f172a;
-  border-radius: 14px;
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+  background: #ffffff;
+  border-radius: 16px;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
   width: 100%;
   max-width: 540px;
   max-height: 90vh;
   overflow-y: auto;
-  color: #ffffff;
+  color: #0f172a;
 }
 
 .modal-header {
@@ -323,14 +320,14 @@
   justify-content: space-between;
   align-items: center;
   padding: 20px 24px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-  background: rgba(18, 24, 38, 0.95);
+  border-bottom: 1px solid #e2e8f0;
+  background: #f8fafc;
 }
 
 .modal-header h2 {
   margin: 0;
   font-size: 1.35rem;
-  color: #ffffff;
+  color: #0f172a;
   font-weight: 800;
 }
 
@@ -339,7 +336,7 @@
   border: none;
   font-size: 1.4rem;
   cursor: pointer;
-  color: #94a3b8;
+  color: #64748b;
   padding: 0;
   width: 32px;
   height: 32px;
@@ -350,8 +347,8 @@
 }
 
 .close-btn:hover {
-  background: rgba(239, 68, 68, 0.2);
-  color: #f87171;
+  background: #fee2e2;
+  color: #dc2626;
 }
 
 /* Form */
@@ -367,7 +364,7 @@
   display: block;
   margin-bottom: 6px;
   font-weight: 700;
-  color: #cbd5e1;
+  color: #334155;
   font-size: 0.9rem;
 }
 
@@ -375,19 +372,19 @@
 .form-group select {
   width: 100%;
   padding: 10px 14px;
-  border: 1px solid rgba(255, 255, 255, 0.12);
+  border: 1px solid #cbd5e1;
   border-radius: 8px;
   font-size: 0.95rem;
   box-sizing: border-box;
-  background: rgba(15, 23, 42, 0.8);
-  color: #ffffff;
+  background: #ffffff;
+  color: #0f172a;
   outline: none;
 }
 
 .form-group input:focus,
 .form-group select:focus {
   border-color: #2563eb;
-  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.2);
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
 }
 
 .form-actions {
@@ -396,16 +393,16 @@
   justify-content: flex-end;
   margin-top: 24px;
   padding-top: 18px;
-  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  border-top: 1px solid #e2e8f0;
 }
 
 .courses-checklist-box {
   max-height: 160px;
   overflow-y: auto;
-  border: 1px solid rgba(255, 255, 255, 0.12);
+  border: 1px solid #cbd5e1;
   border-radius: 8px;
   padding: 10px 14px;
-  background: rgba(15, 23, 42, 0.8);
+  background: #ffffff;
 }
 
 .course-checkbox-label {
@@ -413,10 +410,10 @@
   align-items: center;
   gap: 10px;
   padding: 6px 0;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  border-bottom: 1px solid #f1f5f9;
   cursor: pointer;
   font-weight: 500 !important;
-  color: #cbd5e1 !important;
+  color: #1e293b !important;
 }
 
 .course-checkbox-label input[type="checkbox"] {
@@ -433,6 +430,6 @@
 
 .empty-state p {
   margin: 0 0 16px 0;
-  color: #94a3b8;
+  color: #64748b;
   font-size: 1rem;
 }

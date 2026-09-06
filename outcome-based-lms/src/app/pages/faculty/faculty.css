@@ -176,11 +176,9 @@
     position: relative;
     overflow: hidden;
     transition: all 0.22s ease;
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-    background: rgba(18, 24, 38, 0.88);
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    box-shadow: 0 4px 18px rgba(0, 0, 0, 0.25);
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    box-shadow: 0 4px 20px -2px rgba(15, 23, 42, 0.05), 0 2px 6px -1px rgba(15, 23, 42, 0.03);
 }
 
 .stat-card::before {
@@ -192,35 +190,35 @@
     height: 3.5px;
 }
 
-.stat-card.stat-classes::before { background: #3b82f6; }
-.stat-card.stat-classes .stat-icon { background: rgba(59, 130, 246, 0.12); color: #60a5fa; border: 1px solid rgba(59, 130, 246, 0.25); }
-.stat-card.stat-classes .stat-value { color: #ffffff; }
-.stat-card.stat-classes .stat-label { color: #94a3b8; font-weight: 600; }
+.stat-card.stat-classes::before { background: #2563eb; }
+.stat-card.stat-classes .stat-icon { background: #eff6ff; color: #2563eb; }
+.stat-card.stat-classes .stat-value { color: #0f172a; }
+.stat-card.stat-classes .stat-label { color: #64748b; font-weight: 600; }
 
-.stat-card.stat-students::before { background: #8b5cf6; }
-.stat-card.stat-students .stat-icon { background: rgba(139, 92, 246, 0.12); color: #a78bfa; border: 1px solid rgba(139, 92, 246, 0.25); }
-.stat-card.stat-students .stat-value { color: #ffffff; }
-.stat-card.stat-students .stat-label { color: #94a3b8; font-weight: 600; }
+.stat-card.stat-students::before { background: #7c3aed; }
+.stat-card.stat-students .stat-icon { background: #faf5ff; color: #7c3aed; }
+.stat-card.stat-students .stat-value { color: #0f172a; }
+.stat-card.stat-students .stat-label { color: #64748b; font-weight: 600; }
 
-.stat-card.stat-attainment::before { background: #10b981; }
-.stat-card.stat-attainment .stat-icon { background: rgba(16, 185, 129, 0.12); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.25); }
-.stat-card.stat-attainment .stat-value { color: #ffffff; }
-.stat-card.stat-attainment .stat-label { color: #94a3b8; font-weight: 600; }
+.stat-card.stat-attainment::before { background: #059669; }
+.stat-card.stat-attainment .stat-icon { background: #ecfdf5; color: #059669; }
+.stat-card.stat-attainment .stat-value { color: #0f172a; }
+.stat-card.stat-attainment .stat-label { color: #64748b; font-weight: 600; }
 
-.stat-card.stat-attendance::before { background: #06b6d4; }
-.stat-card.stat-attendance .stat-icon { background: rgba(6, 182, 212, 0.12); color: #38bdf8; border: 1px solid rgba(6, 182, 212, 0.25); }
-.stat-card.stat-attendance .stat-value { color: #ffffff; }
-.stat-card.stat-attendance .stat-label { color: #94a3b8; font-weight: 600; }
+.stat-card.stat-attendance::before { background: #0284c7; }
+.stat-card.stat-attendance .stat-icon { background: #f0f9ff; color: #0284c7; }
+.stat-card.stat-attendance .stat-value { color: #0f172a; }
+.stat-card.stat-attendance .stat-label { color: #64748b; font-weight: 600; }
 
-.stat-card.stat-atrisk::before { background: #f43f5e; }
-.stat-card.stat-atrisk .stat-icon { background: rgba(244, 63, 94, 0.12); color: #fb7185; border: 1px solid rgba(244, 63, 94, 0.25); }
-.stat-card.stat-atrisk .stat-value { color: #ffffff; }
-.stat-card.stat-atrisk .stat-label { color: #94a3b8; font-weight: 600; }
+.stat-card.stat-atrisk::before { background: #e11d48; }
+.stat-card.stat-atrisk .stat-icon { background: #fff1f2; color: #e11d48; }
+.stat-card.stat-atrisk .stat-value { color: #0f172a; }
+.stat-card.stat-atrisk .stat-label { color: #64748b; font-weight: 600; }
 
 .stat-card:hover {
-    transform: translateY(-4px);
-    border-color: rgba(255, 255, 255, 0.16);
-    box-shadow: 0 12px 28px rgba(0, 0, 0, 0.38);
+    transform: translateY(-3px);
+    border-color: #cbd5e1;
+    box-shadow: 0 12px 24px -4px rgba(15, 23, 42, 0.08);
 }
 
 .stat-icon {
