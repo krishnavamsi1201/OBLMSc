@@ -161,13 +161,14 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(5, 10, 25, 0.8);
+  background: rgba(5, 10, 25, 0.85);
   backdrop-filter: blur(8px);
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: center;
   z-index: 1000;
-  padding: 20px;
+  padding: 50px 20px 40px;
+  overflow-y: auto;
 }
 
 .modal-content {
@@ -176,10 +177,10 @@
   border: 1px solid #1f2f54;
   box-shadow: 0 25px 60px rgba(0, 0, 0, 0.6);
   width: 100%;
-  max-width: 600px;
-  max-height: 90vh;
-  overflow-y: auto;
+  max-width: 520px;
   color: #ffffff;
+  position: relative;
+  margin-bottom: 40px;
 }
 
 .modal-header {
