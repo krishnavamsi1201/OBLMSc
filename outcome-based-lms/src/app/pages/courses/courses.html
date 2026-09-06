@@ -17,34 +17,43 @@
             <button class="btn btn-primary" (click)="openCourseForm()">+ Create Course</button>
         </div>
 
-        <div class="course-form-card" *ngIf="showCourseForm && role === 'admin'">
-            <h2>{{ editingIndex >= 0 ? 'Edit Course' : 'Create Course' }}</h2>
-            <form (ngSubmit)="saveCourse()" class="course-form">
-                <label>
-                    Course Code
-                    <input type="text" [(ngModel)]="currentCourse.code" name="code" required />
-                </label>
-                <label>
-                    Course Name
-                    <input type="text" [(ngModel)]="currentCourse.title" name="title" required />
-                </label>
-                <label>
-                    Faculty
-                    <select [(ngModel)]="currentCourse.faculty" (ngModelChange)="onFacultySelectChange($event, 'courseForm')" name="faculty" style="width: 100%; padding: 10px 12px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 0.95rem; color: #334155; background: #f8fafc; outline: none; margin-top: 4px;">
-                        <option value="Faculty Board">Faculty Board</option>
-                        <option *ngFor="let fac of facultyList" [value]="fac.name">{{ fac.name }} ({{ fac.department }})</option>
-                        <option value="ADD_NEW">+ Add New Faculty...</option>
-                    </select>
-                </label>
-                <label>
-                    Semester
-                    <input type="text" [(ngModel)]="currentCourse.semester" name="semester" required />
-                </label>
-                <div class="form-actions" style="margin-top: 14px; display: flex; gap: 10px;">
-                    <button class="btn btn-primary" type="submit">{{ editingIndex >= 0 ? 'Save Changes' : 'Save Course' }}</button>
-                    <button class="btn btn-secondary" type="button" (click)="resetCourseForm()">Cancel</button>
+        <!-- Create / Edit Course Modal -->
+        <div class="modal-overlay" *ngIf="showCourseForm && role === 'admin'">
+            <div class="modal-card" style="max-width: 520px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; border-bottom: 1px solid #1f2f54; padding-bottom: 12px;">
+                    <h2 style="margin: 0; font-size: 1.35rem; color: #ffffff; display: flex; align-items: center; gap: 8px;">
+                        <span class="material-icons" style="color: #d4af37; font-size: 24px;">menu_book</span>
+                        {{ editingIndex >= 0 ? 'Edit Course Details' : 'Create New Course' }}
+                    </h2>
+                    <button type="button" (click)="resetCourseForm()" style="background: none; border: none; color: #94a3b8; font-size: 1.25rem; cursor: pointer;">✕</button>
                 </div>
-            </form>
+                <form (ngSubmit)="saveCourse()" class="course-form" style="display: flex; flex-direction: column; gap: 14px;">
+                    <div>
+                        <label style="display: block; font-weight: 700; color: #cbd5e1; font-size: 0.85rem; margin-bottom: 6px;">Course Code *</label>
+                        <input type="text" [(ngModel)]="currentCourse.code" name="code" placeholder="e.g. CS101, IT202" required style="width: 100%; padding: 10px 14px; border: 1px solid #1f2f54; border-radius: 8px; font-size: 0.92rem; background: #091024; color: #ffffff; outline: none; box-sizing: border-box;" />
+                    </div>
+                    <div>
+                        <label style="display: block; font-weight: 700; color: #cbd5e1; font-size: 0.85rem; margin-bottom: 6px;">Course Name *</label>
+                        <input type="text" [(ngModel)]="currentCourse.title" name="title" placeholder="e.g. Database Management Systems" required style="width: 100%; padding: 10px 14px; border: 1px solid #1f2f54; border-radius: 8px; font-size: 0.92rem; background: #091024; color: #ffffff; outline: none; box-sizing: border-box;" />
+                    </div>
+                    <div>
+                        <label style="display: block; font-weight: 700; color: #cbd5e1; font-size: 0.85rem; margin-bottom: 6px;">Assigned Faculty</label>
+                        <select [(ngModel)]="currentCourse.faculty" (ngModelChange)="onFacultySelectChange($event, 'courseForm')" name="faculty" style="width: 100%; padding: 10px 14px; border: 1px solid #1f2f54; border-radius: 8px; font-size: 0.92rem; color: #ffffff; background: #091024; outline: none; box-sizing: border-box;">
+                            <option value="Faculty Board">Faculty Board (Unassigned)</option>
+                            <option *ngFor="let fac of facultyList" [value]="fac.name">{{ fac.name }} ({{ fac.department }})</option>
+                            <option value="ADD_NEW">+ Add New Faculty...</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label style="display: block; font-weight: 700; color: #cbd5e1; font-size: 0.85rem; margin-bottom: 6px;">Semester *</label>
+                        <input type="text" [(ngModel)]="currentCourse.semester" name="semester" placeholder="e.g. Semester 3" required style="width: 100%; padding: 10px 14px; border: 1px solid #1f2f54; border-radius: 8px; font-size: 0.92rem; background: #091024; color: #ffffff; outline: none; box-sizing: border-box;" />
+                    </div>
+                    <div class="form-actions" style="margin-top: 10px; display: flex; justify-content: flex-end; gap: 10px;">
+                        <button class="btn btn-secondary" type="button" (click)="resetCourseForm()">Cancel</button>
+                        <button class="btn btn-primary" type="submit" style="background: linear-gradient(135deg, #d4af37 0%, #b8860b 100%); color: #0a1128; font-weight: 800;">{{ editingIndex >= 0 ? '💾 Save Changes' : '➕ Save Course' }}</button>
+                    </div>
+                </form>
+            </div>
         </div>
 
         <div class="courses-table-card">

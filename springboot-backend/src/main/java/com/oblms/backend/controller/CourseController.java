@@ -78,10 +78,38 @@ public class CourseController {
         return courseRepository.findAll();
     }
 
+    @GetMapping("/{id}")
+    public ResponseEntity<Course> getCourseById(@PathVariable Long id) {
+        return courseRepository.findById(id)
+                .map(ResponseEntity::ok)
+                .orElseGet(() -> ResponseEntity.notFound().build());
+    }
+
     @PostMapping
     @Transactional
     public Course saveCourse(@RequestBody Course course) {
-        Course saved = courseRepository.save(course);
+        Course target = course;
+        if (course.getId() != null && course.getId() > 0) {
+            Optional<Course> existingById = courseRepository.findById(course.getId());
+            if (existingById.isPresent()) {
+                Course ex = existingById.get();
+                ex.setCode(course.getCode());
+                ex.setTitle(course.getTitle());
+                ex.setFaculty(course.getFaculty());
+                ex.setSemester(course.getSemester());
+                target = ex;
+            }
+        } else if (course.getCode() != null) {
+            Optional<Course> existingByCode = courseRepository.findByCodeIgnoreCase(course.getCode().trim());
+            if (existingByCode.isPresent()) {
+                Course ex = existingByCode.get();
+                ex.setTitle(course.getTitle());
+                ex.setFaculty(course.getFaculty());
+                ex.setSemester(course.getSemester());
+                target = ex;
+            }
+        }
+        Course saved = courseRepository.save(target);
 
         // If faculty name is assigned, update that faculty user's enrolledCourses in MySQL
         String facName = course.getFaculty();
@@ -102,7 +130,7 @@ public class CourseController {
                         if (!s.trim().isEmpty()) set.add(s.trim());
                     }
                 }
-                set.add(course.getCode());
+                set.add(saved.getCode());
                 fac.setEnrolledCourses(String.join(",", set));
                 userRepository.save(fac);
             }
@@ -110,9 +138,27 @@ public class CourseController {
         return saved;
     }
 
+    @PutMapping("/{id}")
+    @Transactional
+    public ResponseEntity<Course> updateCourse(@PathVariable Long id, @RequestBody Course course) {
+        return courseRepository.findById(id)
+                .map(existing -> {
+                    existing.setCode(course.getCode());
+                    existing.setTitle(course.getTitle());
+                    existing.setFaculty(course.getFaculty());
+                    existing.setSemester(course.getSemester());
+                    Course saved = courseRepository.save(existing);
+                    return ResponseEntity.ok(saved);
+                })
+                .orElseGet(() -> ResponseEntity.notFound().build());
+    }
+
     @DeleteMapping("/{id}")
     public ResponseEntity<?> deleteCourse(@PathVariable Long id) {
-        courseRepository.deleteById(id);
-        return ResponseEntity.ok().build();
+        if (courseRepository.existsById(id)) {
+            courseRepository.deleteById(id);
+            return ResponseEntity.ok().build();
+        }
+        return ResponseEntity.notFound().build();
     }
 }

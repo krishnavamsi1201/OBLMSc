@@ -36,9 +36,81 @@ interface SubjectRecord {
             <h1>Curriculum Subjects Repository</h1>
             <p>Accredited syllabus subjects tailored to student registered courses and academic branch.</p>
           </div>
-          <div class="stats-badge-card" *ngIf="subjects.length > 0">
-            <span class="count-num">{{ filteredSubjects.length }}</span>
-            <span class="count-lbl">{{ viewMode === 'registered' ? 'Registered' : (viewMode === 'branch' ? 'Branch Subjects' : 'Total Subjects') }}</span>
+          <div style="display: flex; gap: 12px; align-items: center;">
+            <div class="stats-badge-card" *ngIf="subjects.length > 0">
+              <span class="count-num">{{ filteredSubjects.length }}</span>
+              <span class="count-lbl">{{ viewMode === 'registered' ? 'Registered' : (viewMode === 'branch' ? 'Branch Subjects' : 'Total Subjects') }}</span>
+            </div>
+            <button *ngIf="userRole === 'admin'" type="button" class="btn-add-subject" (click)="openAddSubjectModal()" style="background: linear-gradient(135deg, #d4af37 0%, #b8860b 100%); color: #0a1128; border: none; padding: 10px 18px; border-radius: 8px; font-weight: 800; font-size: 0.92rem; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; box-shadow: 0 4px 14px rgba(212, 175, 55, 0.35);">
+              <span class="material-icons" style="font-size: 18px;">add</span> Add Subject
+            </button>
+          </div>
+        </div>
+
+        <!-- Add/Edit Subject Modal for Admin -->
+        <div class="modal-overlay" *ngIf="showSubjectModal && userRole === 'admin'">
+          <div class="modal-card">
+            <div class="modal-header">
+              <h2 style="margin: 0; font-size: 1.3rem; color: #ffffff; display: flex; align-items: center; gap: 8px;">
+                <span class="material-icons" style="color: #d4af37;">menu_book</span>
+                {{ editingSubjectIndex >= 0 ? 'Edit Curriculum Subject' : 'Add New Curriculum Subject' }}
+              </h2>
+              <button type="button" class="close-btn" (click)="closeSubjectModal()">✕</button>
+            </div>
+            <form (ngSubmit)="saveSubject()" style="display: flex; flex-direction: column; gap: 14px; padding: 20px 0 0 0;">
+              <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 12px;">
+                <label style="display: flex; flex-direction: column; font-size: 0.85rem; font-weight: 700; color: #cbd5e1;">
+                  Subject Code *
+                  <input type="text" [(ngModel)]="currentSubject.code" name="code" placeholder="e.g. CS403, IT306" required style="margin-top: 6px; padding: 10px 12px; background: #091024; border: 1px solid #1f2f54; border-radius: 8px; color: #ffffff; outline: none;" />
+                </label>
+                <label style="display: flex; flex-direction: column; font-size: 0.85rem; font-weight: 700; color: #cbd5e1;">
+                  Credits *
+                  <input type="number" [(ngModel)]="currentSubject.credits" name="credits" min="1" max="8" required style="margin-top: 6px; padding: 10px 12px; background: #091024; border: 1px solid #1f2f54; border-radius: 8px; color: #ffffff; outline: none;" />
+                </label>
+              </div>
+              <label style="display: flex; flex-direction: column; font-size: 0.85rem; font-weight: 700; color: #cbd5e1;">
+                Subject Title *
+                <input type="text" [(ngModel)]="currentSubject.name" name="name" placeholder="e.g. Advanced Operating Systems" required style="margin-top: 6px; padding: 10px 12px; background: #091024; border: 1px solid #1f2f54; border-radius: 8px; color: #ffffff; outline: none;" />
+              </label>
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                <label style="display: flex; flex-direction: column; font-size: 0.85rem; font-weight: 700; color: #cbd5e1;">
+                  Department *
+                  <select [(ngModel)]="currentSubject.department" name="department" required style="margin-top: 6px; padding: 10px 12px; background: #091024; border: 1px solid #1f2f54; border-radius: 8px; color: #ffffff; outline: none;">
+                    <option value="Computer Science & Engineering">Computer Science & Engineering</option>
+                    <option value="Information Technology">Information Technology</option>
+                    <option value="Electronics & Communication Engineering">Electronics & Communication Engineering</option>
+                    <option value="Mechanical Engineering">Mechanical Engineering</option>
+                    <option value="Civil Engineering">Civil Engineering</option>
+                    <option value="General Engineering">General Engineering</option>
+                  </select>
+                </label>
+                <label style="display: flex; flex-direction: column; font-size: 0.85rem; font-weight: 700; color: #cbd5e1;">
+                  Subject Type *
+                  <select [(ngModel)]="currentSubject.type" name="type" required style="margin-top: 6px; padding: 10px 12px; background: #091024; border: 1px solid #1f2f54; border-radius: 8px; color: #ffffff; outline: none;">
+                    <option value="Theory">Theory</option>
+                    <option value="Lab">Lab / Practical</option>
+                    <option value="Elective">Elective</option>
+                  </select>
+                </label>
+              </div>
+              <label style="display: flex; flex-direction: column; font-size: 0.85rem; font-weight: 700; color: #cbd5e1;">
+                Curriculum Semester
+                <select [(ngModel)]="currentSubject.semester" name="semester" style="margin-top: 6px; padding: 10px 12px; background: #091024; border: 1px solid #1f2f54; border-radius: 8px; color: #ffffff; outline: none;">
+                  <option value="Semester 1">Semester 1</option>
+                  <option value="Semester 2">Semester 2</option>
+                  <option value="Semester 3">Semester 3</option>
+                  <option value="Semester 4">Semester 4</option>
+                  <option value="Semester 5">Semester 5</option>
+                  <option value="Semester 6">Semester 6</option>
+                  <option value="Semester 7">Semester 7</option>
+                  <option value="Semester 8">Semester 8</option>
+                </select>
+              </label>
+              <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 10px; border-top: 1px solid #1f2f54; padding-top: 14px;">
+                <button type="button" class="btn btn-secondary" (click)="closeSubjectModal()" style="background: #16244a; color: #cbd5e1; border: 1px solid #1f2f54; padding: 9px 18px; border-radius: 8px; font-weight: 700; cursor: pointer;">Cancel</button>
+                <button type="submit" class="btn btn-primary" style="background: linear-gradient(135deg, #d4af37 0%, #b8860b 100%); color: #0a1128; border: none; padding: 9px 20px; border-radius: 8px; font-weight: 800; cursor: pointer;">{{ editingSubjectIndex >= 0 ? '💾 Save Changes' : '➕ Save Subject' }}</button>
+              </div>
+            </form>
           </div>
         </div>
 
@@ -190,7 +262,7 @@ interface SubjectRecord {
                   <th style="width: 150px;">Department</th>
                   <th style="width: 130px;">Type</th>
                   <th style="width: 90px; text-align: center;">Credits</th>
-                  <th style="width: 140px; text-align: center;">Registration</th>
+                  <th style="width: 160px; text-align: center;">{{ userRole === 'admin' ? 'Actions' : 'Registration' }}</th>
                 </tr>
               </thead>
               <tbody>
@@ -231,20 +303,35 @@ interface SubjectRecord {
                     <span class="credits-badge">{{ subject.credits }}</span>
                   </td>
                   <td style="text-align: center;">
-                    <span *ngIf="isCourseEnrolled(subject.code, subject.name)" class="status-badge enrolled">
-                      ✓ Registered
-                    </span>
-                    <span *ngIf="!isCourseEnrolled(subject.code, subject.name) && isPending(subject.code)" class="status-badge pending" style="background: #fef3c7; color: #b45309; border: 1px solid #fde68a;">
-                      ⏳ Pending
-                    </span>
-                    <button *ngIf="!isCourseEnrolled(subject.code, subject.name) && !isPending(subject.code) && userRole === 'student'" 
-                            class="request-enroll-btn" 
-                            (click)="requestEnrollment(subject)"
-                            style="background: linear-gradient(135deg, #d4af37 0%, #b38f28 100%); color: #0a1128; border: none; padding: 4px 12px; border-radius: 6px; font-size: 11px; font-weight: 700; cursor: pointer; transition: all 0.2s;"
-                            title="Request enrollment for this subject">
-                      + Enroll
-                    </button>
-                    <span *ngIf="!isCourseEnrolled(subject.code, subject.name) && !isPending(subject.code) && userRole !== 'student'" class="status-badge accredited">
+                    <!-- Admin Actions -->
+                    <div *ngIf="userRole === 'admin'" style="display: flex; gap: 6px; justify-content: center;">
+                      <button type="button" (click)="openEditSubjectModal(subject)" style="background: #16244a; color: #d4af37; border: 1px solid #1f2f54; padding: 4px 8px; border-radius: 6px; cursor: pointer; font-size: 11px; font-weight: 700; display: inline-flex; align-items: center; gap: 4px;" title="Edit Subject">
+                        <span class="material-icons" style="font-size: 14px;">edit</span> Edit
+                      </button>
+                      <button type="button" (click)="deleteSubject(subject)" style="background: rgba(239, 68, 68, 0.15); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.3); padding: 4px 8px; border-radius: 6px; cursor: pointer; font-size: 11px; font-weight: 700; display: inline-flex; align-items: center; gap: 4px;" title="Delete Subject">
+                        <span class="material-icons" style="font-size: 14px;">delete</span>
+                      </button>
+                    </div>
+
+                    <!-- Student Actions -->
+                    <ng-container *ngIf="userRole === 'student'">
+                      <span *ngIf="isCourseEnrolled(subject.code, subject.name)" class="status-badge enrolled">
+                        ✓ Registered
+                      </span>
+                      <span *ngIf="!isCourseEnrolled(subject.code, subject.name) && isPending(subject.code)" class="status-badge pending" style="background: #fef3c7; color: #b45309; border: 1px solid #fde68a;">
+                        ⏳ Pending
+                      </span>
+                      <button *ngIf="!isCourseEnrolled(subject.code, subject.name) && !isPending(subject.code)" 
+                              class="request-enroll-btn" 
+                              (click)="requestEnrollment(subject)"
+                              style="background: linear-gradient(135deg, #d4af37 0%, #b38f28 100%); color: #0a1128; border: none; padding: 4px 12px; border-radius: 6px; font-size: 11px; font-weight: 700; cursor: pointer; transition: all 0.2s;"
+                              title="Request enrollment for this subject">
+                        + Enroll
+                      </button>
+                    </ng-container>
+
+                    <!-- Faculty Actions -->
+                    <span *ngIf="userRole === 'faculty'" class="status-badge accredited">
                       Accredited
                     </span>
                   </td>
@@ -354,8 +441,56 @@ interface SubjectRecord {
     
     .credits-badge { background: #091024; color: #cbd5e1; border: 1px solid #1f2f54; font-weight: 700; padding: 2px 8px; border-radius: 6px; display: inline-block; }
     .status-badge { display: inline-block; padding: 3px 8px; border-radius: 999px; font-size: 0.75rem; font-weight: 700; }
-    .status-badge.enrolled { background: rgba(34, 197, 94, 0.15); color: #4ade80; border: 1px solid rgba(74, 222, 128, 0.3); }
     .empty-state { text-align: center; padding: 40px; color: #94a3b8; font-size: 1rem; }
+    
+    /* Modal Styles */
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(5, 10, 25, 0.85);
+      backdrop-filter: blur(8px);
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      z-index: 10000;
+      padding: 50px 20px 40px;
+      overflow-y: auto;
+    }
+    .modal-card {
+      background: #101b38;
+      border: 1px solid #1f2f54;
+      border-radius: 16px;
+      box-shadow: 0 25px 60px rgba(0, 0, 0, 0.6);
+      padding: 24px;
+      width: 100%;
+      max-width: 540px;
+      margin-bottom: 40px;
+      animation: modalSlideDown 0.2s ease-out;
+    }
+    @keyframes modalSlideDown {
+      from { opacity: 0; transform: translateY(-15px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid #1f2f54;
+      padding-bottom: 14px;
+    }
+    .close-btn {
+      background: none;
+      border: none;
+      color: #94a3b8;
+      font-size: 1.3rem;
+      cursor: pointer;
+      padding: 4px;
+      line-height: 1;
+    }
+    .close-btn:hover { color: #f87171; }
     `
   ]
 })
@@ -378,6 +513,92 @@ export class Subjects implements OnInit {
   viewMode: 'registered' | 'branch' | 'all' = 'branch';
   currentPage = 1;
   pageSize = 25;
+
+  // Admin Subject Modal State
+  showSubjectModal = false;
+  editingSubjectIndex = -1;
+  currentSubject: SubjectRecord = this.createEmptySubject();
+
+  createEmptySubject(): SubjectRecord {
+    return {
+      id: Date.now(),
+      code: '',
+      name: '',
+      type: 'Theory',
+      credits: 4,
+      semester: 'Semester 6',
+      department: 'Computer Science & Engineering',
+      isRegistered: false
+    };
+  }
+
+  openAddSubjectModal(): void {
+    if (this.userRole !== 'admin') {
+      this.toast.error('Only administrators can add subjects.');
+      return;
+    }
+    this.editingSubjectIndex = -1;
+    this.currentSubject = this.createEmptySubject();
+    this.showSubjectModal = true;
+  }
+
+  openEditSubjectModal(sub: SubjectRecord): void {
+    if (this.userRole !== 'admin') {
+      this.toast.error('Only administrators can edit subjects.');
+      return;
+    }
+    this.currentSubject = { ...sub };
+    this.editingSubjectIndex = this.subjects.findIndex(s => s.id === sub.id || s.code === sub.code);
+    this.showSubjectModal = true;
+  }
+
+  closeSubjectModal(): void {
+    this.showSubjectModal = false;
+    this.editingSubjectIndex = -1;
+    this.currentSubject = this.createEmptySubject();
+  }
+
+  saveSubject(): void {
+    if (this.userRole !== 'admin') return;
+    if (!this.currentSubject.code.trim() || !this.currentSubject.name.trim()) {
+      this.toast.warning('Please enter both Subject Code and Title.');
+      return;
+    }
+
+    const formatted: SubjectRecord = {
+      ...this.currentSubject,
+      code: this.currentSubject.code.trim().toUpperCase(),
+      name: this.currentSubject.name.trim(),
+      credits: Number(this.currentSubject.credits) || 3
+    };
+
+    if (this.editingSubjectIndex >= 0) {
+      this.subjects[this.editingSubjectIndex] = formatted;
+      this.toast.success(`Subject "${formatted.name}" updated successfully.`);
+    } else {
+      this.subjects.unshift(formatted);
+      this.toast.success(`Subject "${formatted.name}" (${formatted.code}) added to catalog.`);
+    }
+
+    try {
+      localStorage.setItem('obslmsSubjects', JSON.stringify(this.subjects));
+    } catch {}
+
+    this.closeSubjectModal();
+    this.cdr.detectChanges();
+  }
+
+  deleteSubject(sub: SubjectRecord): void {
+    if (this.userRole !== 'admin') return;
+    if (confirm(`Are you sure you want to remove subject "${sub.name}" (${sub.code}) from the catalog?`)) {
+      this.subjects = this.subjects.filter(s => s.id !== sub.id && s.code !== sub.code);
+      try {
+        localStorage.setItem('obslmsSubjects', JSON.stringify(this.subjects));
+      } catch {}
+      this.toast.info(`Subject "${sub.name}" removed from catalog.`);
+      this.cdr.detectChanges();
+    }
+  }
 
   get shortDept(): string {
     const d = this.userDept.toLowerCase();
@@ -494,6 +715,18 @@ export class Subjects implements OnInit {
   }
 
   loadSubjectsFromBackend(): void {
+    const stored = localStorage.getItem('obslmsSubjects');
+    if (stored) {
+      try {
+        const parsed = JSON.parse(stored);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          this.subjects = parsed;
+          this.cdr.detectChanges();
+          return;
+        }
+      } catch {}
+    }
+
     this.http.get<any[]>('http://localhost:8080/api/dataset/subjects').subscribe({
       next: (data) => {
         if (Array.isArray(data) && data.length > 0) {
@@ -513,6 +746,9 @@ export class Subjects implements OnInit {
               isRegistered: isReg
             };
           });
+          try {
+            localStorage.setItem('obslmsSubjects', JSON.stringify(this.subjects));
+          } catch {}
           this.cdr.detectChanges();
         } else {
           this.loadFallbackSubjects();
