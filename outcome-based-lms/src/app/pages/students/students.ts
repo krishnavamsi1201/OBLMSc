@@ -718,4 +718,136 @@ export class Students implements OnInit, OnDestroy {
   navigate(path: string): void {
     this.router.navigate([path]);
   }
+
+  // =========================================================================
+  // Live Student Course Enrollment Request Modal Logic
+  // =========================================================================
+  showEnrollModal = false;
+  availableCourses: any[] = [];
+  filteredAvailableCourses: any[] = [];
+  enrollSearchQuery = '';
+  enrollSemesterFilter = '';
+  pendingEnrollmentRequests: any[] = [];
+
+  openEnrollModal(): void {
+    this.showEnrollModal = true;
+    this.enrollSearchQuery = '';
+    this.enrollSemesterFilter = '';
+    this.loadAllAvailableCourses();
+  }
+
+  closeEnrollModal(): void {
+    this.showEnrollModal = false;
+  }
+
+  loadAllAvailableCourses(): void {
+    const studentId = localStorage.getItem('userId') || localStorage.getItem('userEmail') || this.studentName || '';
+
+    // 1. Fetch live courses list
+    this.http.get<any[]>('http://localhost:8080/api/courses').subscribe({
+      next: (courses) => {
+        this.availableCourses = courses || [];
+        this.filterEnrollCourses();
+      },
+      error: () => {
+        try {
+          const stored = localStorage.getItem('obslmsCourses');
+          this.availableCourses = stored ? JSON.parse(stored) : [];
+        } catch {
+          this.availableCourses = [];
+        }
+        this.filterEnrollCourses();
+      }
+    });
+
+    // 2. Fetch student existing enrollment requests
+    this.http.get<any[]>(`http://localhost:8080/api/courses/requests/student/${encodeURIComponent(studentId)}`).subscribe({
+      next: (reqs) => {
+        this.pendingEnrollmentRequests = reqs || [];
+        this.cdr.detectChanges();
+      },
+      error: () => {
+        try {
+          const stored = localStorage.getItem('obslmsCourseRequests');
+          const allReqs = stored ? JSON.parse(stored) : [];
+          this.pendingEnrollmentRequests = allReqs.filter((r: any) => 
+            (r.studentEmail && r.studentEmail.toLowerCase() === this.studentEmail.toLowerCase()) ||
+            (r.studentName && r.studentName.toLowerCase() === this.studentName.toLowerCase())
+          );
+        } catch {
+          this.pendingEnrollmentRequests = [];
+        }
+        this.cdr.detectChanges();
+      }
+    });
+  }
+
+  filterEnrollCourses(): void {
+    const q = this.enrollSearchQuery.toLowerCase().trim();
+    const sem = this.enrollSemesterFilter;
+
+    this.filteredAvailableCourses = this.availableCourses.filter(c => {
+      const matchSearch = !q || (c.code && c.code.toLowerCase().includes(q)) || 
+                         (c.title && c.title.toLowerCase().includes(q)) ||
+                         (c.faculty && c.faculty.toLowerCase().includes(q));
+      const matchSem = !sem || c.semester === sem;
+      return matchSearch && matchSem;
+    });
+    this.cdr.detectChanges();
+  }
+
+  isCourseEnrolled(code: string): boolean {
+    if (!code) return false;
+    const c = code.toUpperCase().trim();
+    return this.enrolledCourseCards.some(ec => (ec.code || '').toUpperCase().trim() === c);
+  }
+
+  isCoursePending(code: string): boolean {
+    if (!code) return false;
+    const c = code.toUpperCase().trim();
+    return this.pendingEnrollmentRequests.some(r => 
+      (r.courseCode || '').toUpperCase().trim() === c && 
+      r.status?.toLowerCase() === 'pending'
+    );
+  }
+
+  requestCourseEnrollment(course: any): void {
+    const studentId = localStorage.getItem('userId') || localStorage.getItem('userEmail') || this.studentName || 'STUDENT';
+    const studentName = this.studentName;
+    const studentEmail = this.studentEmail || localStorage.getItem('userEmail') || '';
+    const studentDept = this.studentDept;
+
+    const payload = {
+      studentId: studentId,
+      studentName: studentName,
+      studentEmail: studentEmail,
+      regNo: this.studentRoll || studentId,
+      department: studentDept,
+      courseCode: course.code,
+      courseTitle: course.title,
+      semester: course.semester || 'Semester 6',
+      status: 'Pending'
+    };
+
+    this.http.post('http://localhost:8080/api/courses/requests', payload).subscribe({
+      next: (res: any) => {
+        this.pendingEnrollmentRequests.push(res || payload);
+        
+        // Also persist locally in case of offline fallback
+        try {
+          const stored = localStorage.getItem('obslmsCourseRequests');
+          const list = stored ? JSON.parse(stored) : [];
+          list.push(res || payload);
+          localStorage.setItem('obslmsCourseRequests', JSON.stringify(list));
+        } catch {}
+
+        this.syncService.emit('ENROLLMENTS_CHANGED', payload);
+        this.toast.success(`Enrollment request submitted for "${course.title}"! Sent to Admin Approval Queue. ⏳`);
+        this.cdr.detectChanges();
+      },
+      error: () => {
+        this.toast.error('Failed to submit enrollment request.');
+      }
+    });
+  }
 }

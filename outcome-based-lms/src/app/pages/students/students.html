@@ -179,13 +179,18 @@
     </div>
 
     <!-- Enrolled Courses Quick Summary Grid -->
-    <div class="courses-preview-section">
       <div class="section-title-row">
         <div>
           <h2>My Enrolled Courses ({{ filteredCourses.length }})</h2>
           <p class="section-subtext">Click any course card to review syllabus, outcomes, and progress</p>
         </div>
-        <button class="link-btn" (click)="navigate('/courses')">View All Courses →</button>
+        <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+          <button class="enroll-action-btn" (click)="openEnrollModal()">
+            <span class="material-icons" style="font-size: 18px;">add_circle</span>
+            Request Course Enrollment
+          </button>
+          <button class="link-btn" (click)="navigate('/courses')">View All Courses →</button>
+        </div>
       </div>
       <div class="courses-mini-grid" *ngIf="filteredCourses.length > 0">
         <div *ngFor="let course of filteredCourses" class="course-mini-card" (click)="navigate('/courses')">
@@ -674,10 +679,93 @@
 
     </div>
 
+    <!-- Live Course Enrollment Request Modal (Oxford Navy & Gold Theme) -->
+    <div *ngIf="showEnrollModal" class="modal-overlay" (click)="closeEnrollModal()">
+      <div class="modal-card enroll-modal-card" (click)="$event.stopPropagation()">
+        
+        <div class="modal-header-row">
+          <div>
+            <span class="modal-pill-tag">ACADEMIC ENROLLMENT</span>
+            <h2>🎓 Request Course Enrollment</h2>
+            <p style="margin: 4px 0 0; font-size: 0.85rem; color: #94a3b8;">
+              Select available curriculum subjects to submit formal enrollment request to the Administrator.
+            </p>
+          </div>
+          <button class="close-icon-btn" (click)="closeEnrollModal()">✕</button>
+        </div>
+
+        <!-- Filter & Search Toolbar -->
+        <div class="enroll-toolbar" style="display: flex; gap: 10px; margin-bottom: 16px; flex-wrap: wrap;">
+          <input 
+            type="text" 
+            [(ngModel)]="enrollSearchQuery" 
+            (ngModelChange)="filterEnrollCourses()" 
+            placeholder="Search by course code, title, or faculty..."
+            style="flex: 1; min-width: 200px; padding: 9px 14px; background: #091024; border: 1px solid #1f2f54; border-radius: 8px; color: #ffffff; font-size: 0.88rem; outline: none;"
+          />
+          <select 
+            [(ngModel)]="enrollSemesterFilter" 
+            (ngModelChange)="filterEnrollCourses()"
+            style="padding: 9px 12px; background: #091024; border: 1px solid #1f2f54; border-radius: 8px; color: #fde68a; font-size: 0.88rem; outline: none;"
+          >
+            <option value="">All Semesters</option>
+            <option value="Semester 1">Semester 1</option>
+            <option value="Semester 2">Semester 2</option>
+            <option value="Semester 3">Semester 3</option>
+            <option value="Semester 4">Semester 4</option>
+            <option value="Semester 5">Semester 5</option>
+            <option value="Semester 6">Semester 6</option>
+            <option value="Semester 7">Semester 7</option>
+            <option value="Semester 8">Semester 8</option>
+          </select>
+        </div>
+
+        <!-- Courses Scroll List -->
+        <div class="enroll-courses-list" style="max-height: 50vh; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; padding-right: 4px;">
+          
+          <div *ngFor="let course of filteredAvailableCourses" class="enroll-course-item" style="display: flex; justify-content: space-between; align-items: center; padding: 14px 16px; background: #091024; border: 1px solid #1f2f54; border-radius: 12px; gap: 14px; flex-wrap: wrap;">
+            
+            <div style="flex: 1; min-width: 220px;">
+              <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
+                <span style="background: rgba(212, 175, 55, 0.15); color: #fde68a; font-weight: 800; font-size: 11px; padding: 2px 7px; border-radius: 4px; font-family: monospace;">{{ course.code }}</span>
+                <span style="font-size: 11px; color: #94a3b8; background: #101b38; padding: 2px 7px; border-radius: 4px;">{{ course.semester || 'Semester 6' }}</span>
+              </div>
+              <h4 style="margin: 0 0 3px 0; font-size: 1rem; color: #ffffff; font-weight: 700;">{{ course.title }}</h4>
+              <p style="margin: 0; font-size: 0.82rem; color: #94a3b8;">Faculty: <strong style="color: #cbd5e1;">{{ course.faculty || 'Faculty Board' }}</strong></p>
+            </div>
+
+            <!-- Action State Button -->
+            <div>
+              <span *ngIf="isCourseEnrolled(course.code)" style="display: inline-flex; align-items: center; gap: 4px; padding: 6px 14px; background: rgba(16, 185, 129, 0.15); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.3); border-radius: 8px; font-size: 0.82rem; font-weight: 700;">
+                ✓ Enrolled
+              </span>
+
+              <span *ngIf="!isCourseEnrolled(course.code) && isCoursePending(course.code)" style="display: inline-flex; align-items: center; gap: 4px; padding: 6px 14px; background: rgba(245, 158, 11, 0.15); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.3); border-radius: 8px; font-size: 0.82rem; font-weight: 700;">
+                ⏳ Pending Admin Approval
+              </span>
+
+              <button 
+                *ngIf="!isCourseEnrolled(course.code) && !isCoursePending(course.code)"
+                (click)="requestCourseEnrollment(course)"
+                style="padding: 7px 16px; background: linear-gradient(135deg, #d4af37 0%, #b8860b 100%); color: #0a1128; border: none; border-radius: 8px; font-size: 0.84rem; font-weight: 800; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; box-shadow: 0 2px 8px rgba(212, 175, 55, 0.35);"
+              >
+                Request Enrollment ➕
+              </button>
+            </div>
+
+          </div>
+
+          <div *ngIf="filteredAvailableCourses.length === 0" style="text-align: center; padding: 24px; color: #94a3b8;">
+            No matching courses found for the specified query.
+          </div>
+
+        </div>
+
+      </div>
+    </div>
+
     <app-footer></app-footer>
   </div>
-
-</div>
 
 <ng-template #fullApp>
   <div class="container">

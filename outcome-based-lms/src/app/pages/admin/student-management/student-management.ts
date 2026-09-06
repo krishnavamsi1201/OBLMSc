@@ -5,6 +5,7 @@ import { Navbar } from '../../../shared/navbar/navbar';
 import { Sidebar } from '../../../shared/sidebar/sidebar';
 import { Footer } from '../../../shared/footer/footer';
 import { ToastService } from '../../../shared/services/toast.service';
+import { SyncService } from '../../../shared/services/sync.service';
 import { HttpClient } from '@angular/common/http';
 
 interface Student {
@@ -35,6 +36,7 @@ interface FacultyUser {
 })
 export class StudentManagement implements OnInit {
   private toast = inject(ToastService);
+  private syncService = inject(SyncService);
   private http = inject(HttpClient);
   private cdr = inject(ChangeDetectorRef);
 
@@ -197,6 +199,7 @@ export class StudentManagement implements OnInit {
       next: () => {
         this.loadUsers();
         this.closeForm();
+        this.syncService.emit('STUDENTS_CHANGED', payload);
         this.toast.success(`Student "${this.formData.name}" saved with login credentials! 🎉`);
       },
       error: () => {
@@ -209,6 +212,7 @@ export class StudentManagement implements OnInit {
     this.http.delete('http://localhost:8080/api/users/' + id).subscribe({
       next: () => {
         this.loadUsers();
+        this.syncService.emit('STUDENTS_CHANGED', { id });
         this.toast.info('Student removed.');
       },
       error: () => {

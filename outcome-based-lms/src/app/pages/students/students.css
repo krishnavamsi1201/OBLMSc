@@ -1430,3 +1430,48 @@
     align-items: flex-start;
   }
 }
+
+/* ==========================================================================
+   LIVE COURSE ENROLLMENT MODAL & BUTTON STYLES (Oxford Navy & Gold Theme)
+   ========================================================================== */
+.enroll-action-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  background: linear-gradient(135deg, #d4af37 0%, #b8860b 100%);
+  color: #0a1128;
+  font-weight: 800;
+  font-size: 0.86rem;
+  border-radius: 9px;
+  border: none;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(212, 175, 55, 0.35);
+  transition: all 0.2s ease;
+}
+
+.enroll-action-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(212, 175, 55, 0.45);
+  background: linear-gradient(135deg, #f59e0b 0%, #d4af37 100%);
+}
+
+.enroll-modal-card {
+  max-width: 680px !important;
+  width: 95% !important;
+  background: #101b38 !important;
+  border: 1px solid #233560 !important;
+  color: #ffffff !important;
+  border-radius: 18px !important;
+  padding: 24px !important;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.6) !important;
+}
+
+.enroll-course-item {
+  transition: all 0.15s ease;
+}
+
+.enroll-course-item:hover {
+  border-color: #d4af37 !important;
+  background: #0e1730 !important;
+}

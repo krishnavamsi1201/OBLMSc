@@ -3,6 +3,7 @@ import { Subject, Observable } from 'rxjs';
 
 export type SyncEventType =
   | 'COURSES_CHANGED'
+  | 'STUDENTS_CHANGED'
   | 'ENROLLMENTS_CHANGED'
   | 'ATTENDANCE_CHANGED'
   | 'MARKS_CHANGED'
