@@ -656,8 +656,6 @@
 }
 
 .stat-card {
-  background: #ffffff;
-  border: 1px solid #e2e8f0;
   border-radius: 16px;
   padding: 20px;
   display: flex;
@@ -666,8 +664,9 @@
   cursor: pointer;
   position: relative;
   overflow: hidden;
-  transition: all 0.22s ease;
-  box-shadow: 0 4px 20px -2px rgba(15, 23, 42, 0.05), 0 2px 6px -1px rgba(15, 23, 42, 0.03);
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
 }
 
 .stat-card::before {
@@ -676,47 +675,66 @@
   top: 0;
   left: 0;
   right: 0;
-  height: 3.5px;
+  height: 4px;
 }
 
-.stat-card:nth-child(1)::before { background: #2563eb; }
-.stat-card:nth-child(1) .stat-val { color: #0f172a; }
-.stat-card:nth-child(1) .stat-label { color: #64748b; font-weight: 600; }
+.stat-card:nth-child(1) {
+  background: linear-gradient(135deg, rgba(30, 58, 138, 0.4) 0%, rgba(15, 23, 42, 0.9) 100%);
+  border: 1.5px solid rgba(59, 130, 246, 0.45);
+  box-shadow: 0 8px 24px rgba(37, 99, 235, 0.2);
+}
+.stat-card:nth-child(1)::before { background: linear-gradient(90deg, #38bdf8, #2563eb); }
+.stat-card:nth-child(1) .stat-val { color: #60a5fa; }
+.stat-card:nth-child(1) .stat-label { color: #93c5fd; }
 
-.stat-card:nth-child(2)::before { background: #059669; }
-.stat-card:nth-child(2) .stat-val { color: #0f172a; }
-.stat-card:nth-child(2) .stat-label { color: #64748b; font-weight: 600; }
+.stat-card:nth-child(2) {
+  background: linear-gradient(135deg, rgba(6, 78, 59, 0.4) 0%, rgba(15, 23, 42, 0.9) 100%);
+  border: 1.5px solid rgba(16, 185, 129, 0.45);
+  box-shadow: 0 8px 24px rgba(16, 185, 129, 0.2);
+}
+.stat-card:nth-child(2)::before { background: linear-gradient(90deg, #34d399, #059669); }
+.stat-card:nth-child(2) .stat-val { color: #34d399; }
+.stat-card:nth-child(2) .stat-label { color: #6ee7b7; }
 
-.stat-card:nth-child(3)::before { background: #7c3aed; }
-.stat-card:nth-child(3) .stat-val { color: #0f172a; }
-.stat-card:nth-child(3) .stat-label { color: #64748b; font-weight: 600; }
+.stat-card:nth-child(3) {
+  background: linear-gradient(135deg, rgba(88, 28, 135, 0.4) 0%, rgba(15, 23, 42, 0.9) 100%);
+  border: 1.5px solid rgba(168, 85, 247, 0.45);
+  box-shadow: 0 8px 24px rgba(168, 85, 247, 0.2);
+}
+.stat-card:nth-child(3)::before { background: linear-gradient(90deg, #c084fc, #7c3aed); }
+.stat-card:nth-child(3) .stat-val { color: #c084fc; }
+.stat-card:nth-child(3) .stat-label { color: #d8b4fe; }
 
-.stat-card:nth-child(4)::before { background: #d97706; }
-.stat-card:nth-child(4) .stat-val { color: #0f172a; }
-.stat-card:nth-child(4) .stat-label { color: #64748b; font-weight: 600; }
+.stat-card:nth-child(4) {
+  background: linear-gradient(135deg, rgba(120, 53, 15, 0.4) 0%, rgba(15, 23, 42, 0.9) 100%);
+  border: 1.5px solid rgba(245, 158, 11, 0.45);
+  box-shadow: 0 8px 24px rgba(245, 158, 11, 0.2);
+}
+.stat-card:nth-child(4)::before { background: linear-gradient(90deg, #fbbf24, #d97706); }
+.stat-card:nth-child(4) .stat-val { color: #fbbf24; }
+.stat-card:nth-child(4) .stat-label { color: #fde68a; }
 
 .stat-card:hover {
-  transform: translateY(-3px);
-  border-color: #cbd5e1;
-  box-shadow: 0 12px 24px -4px rgba(15, 23, 42, 0.08);
+  transform: translateY(-4px);
+  box-shadow: 0 16px 32px rgba(0, 0, 0, 0.4), 0 0 20px rgba(255, 255, 255, 0.1);
 }
 
 .stat-icon-wrap {
-  font-size: 1.5rem;
-  width: 46px;
-  height: 46px;
-  border-radius: 12px;
+  font-size: 1.8rem;
+  width: 54px;
+  height: 54px;
+  border-radius: 14px;
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
 }
 
-.icon-blue { background: #eff6ff; color: #2563eb; }
-.icon-green { background: #ecfdf5; color: #059669; }
-.icon-red { background: #fff1f2; color: #e11d48; }
-.icon-purple { background: #faf5ff; color: #7c3aed; }
-.icon-amber { background: #fffbeb; color: #d97706; }
+.icon-blue { background: linear-gradient(135deg, #2563eb, #38bdf8); color: #ffffff; box-shadow: 0 0 20px rgba(56, 189, 248, 0.5); }
+.icon-green { background: linear-gradient(135deg, #059669, #10b981); color: #ffffff; box-shadow: 0 0 20px rgba(52, 211, 153, 0.5); }
+.icon-red { background: linear-gradient(135deg, #e11d48, #f43f5e); color: #ffffff; box-shadow: 0 0 20px rgba(248, 113, 113, 0.5); }
+.icon-purple { background: linear-gradient(135deg, #7c3aed, #a855f7); color: #ffffff; box-shadow: 0 0 20px rgba(192, 132, 252, 0.5); }
+.icon-amber { background: linear-gradient(135deg, #d97706, #f59e0b); color: #ffffff; box-shadow: 0 0 20px rgba(251, 191, 36, 0.5); }
 
 .stat-info {
   flex: 1;

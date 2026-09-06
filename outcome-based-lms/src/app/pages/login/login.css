@@ -1,5 +1,5 @@
 /* ==========================================================================
-   Clean Pristine Executive Light Login Theme
+   Clean Sleek Centered Glassmorphic Login
    ========================================================================== */
 
 .login-scene {
@@ -10,12 +10,9 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  background: #f8fafc;
-  background-image: 
-    radial-gradient(at 10% 10%, rgba(219, 234, 254, 0.6) 0px, transparent 50%),
-    radial-gradient(at 90% 90%, rgba(241, 245, 249, 0.9) 0px, transparent 50%);
+  background: radial-gradient(circle at 50% 20%, #1e3a8a 0%, #0f172a 70%, #020617 100%);
   font-family: 'Plus Jakarta Sans', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  color: #0f172a;
+  color: #ffffff;
   overflow-x: hidden;
   padding: 30px 16px;
   box-sizing: border-box;
@@ -25,25 +22,25 @@
 .bg-glow {
   position: absolute;
   border-radius: 50%;
-  filter: blur(120px);
+  filter: blur(100px);
   pointer-events: none;
   z-index: 0;
 }
 
 .glow-one {
-  width: 550px;
-  height: 550px;
-  background: rgba(191, 219, 254, 0.5);
-  top: 5%;
-  left: 15%;
+  width: 500px;
+  height: 500px;
+  background: rgba(37, 99, 235, 0.25);
+  top: 10%;
+  left: 20%;
 }
 
 .glow-two {
-  width: 500px;
-  height: 500px;
-  background: rgba(224, 231, 255, 0.5);
-  bottom: 5%;
-  right: 15%;
+  width: 450px;
+  height: 450px;
+  background: rgba(124, 58, 237, 0.2);
+  bottom: 10%;
+  right: 20%;
 }
 
 .login-shell {
@@ -56,11 +53,13 @@
   align-items: center;
 }
 
-/* Main Centered White Card */
+/* Main Centered Glass Card */
 .glass-panel {
-  background: #ffffff;
-  border: 1px solid #e2e8f0;
-  box-shadow: 0 20px 40px -15px rgba(15, 23, 42, 0.08), 0 4px 12px rgba(15, 23, 42, 0.03);
+  background: rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.15);
   border-radius: 20px;
 }
 
@@ -82,14 +81,14 @@
 .logo-icon-pill {
   width: 52px;
   height: 52px;
-  background: linear-gradient(135deg, #2563eb, #1d4ed8);
+  background: linear-gradient(135deg, #3b82f6, #1d4ed8);
   border-radius: 14px;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 8px 20px rgba(37, 99, 235, 0.25);
+  box-shadow: 0 8px 20px rgba(37, 99, 235, 0.35);
   margin-bottom: 10px;
-  border: 1px solid rgba(255, 255, 255, 0.4);
+  border: 1px solid rgba(255, 255, 255, 0.25);
 }
 
 .brand-icon {
@@ -101,28 +100,28 @@
   font-size: 1.5rem;
   font-weight: 800;
   letter-spacing: 0.08em;
-  color: #0f172a;
+  color: #ffffff;
   margin: 0;
 }
 
 .logo-tagline {
   font-size: 0.78rem;
-  color: #2563eb;
+  color: #93c5fd;
   margin: 3px 0 0;
-  font-weight: 600;
+  font-weight: 500;
 }
 
 .login-panel h1 {
   font-size: 1.6rem;
   font-weight: 800;
   margin: 0 0 6px 0;
-  color: #0f172a;
+  color: #ffffff;
   letter-spacing: -0.02em;
 }
 
 .subtitle {
   font-size: 0.86rem;
-  color: #64748b;
+  color: #cbd5e1;
   margin: 0 0 20px 0;
 }
 
@@ -131,11 +130,11 @@
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 6px;
-  background: #f1f5f9;
+  background: rgba(15, 23, 42, 0.5);
   padding: 4px;
   border-radius: 12px;
   margin-bottom: 20px;
-  border: 1px solid #e2e8f0;
+  border: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 .role-tab-btn {
@@ -146,7 +145,7 @@
   padding: 8px 6px;
   border: none;
   background: transparent;
-  color: #64748b;
+  color: #94a3b8;
   font-size: 0.82rem;
   font-weight: 600;
   border-radius: 8px;
@@ -159,15 +158,14 @@
 }
 
 .role-tab-btn:hover {
-  color: #0f172a;
-  background: rgba(255, 255, 255, 0.6);
+  color: #ffffff;
 }
 
 .role-tab-btn.active {
-  background: #2563eb;
+  background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
   color: #ffffff;
   font-weight: 700;
-  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25);
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
 }
 
 /* Form Fields */
@@ -181,8 +179,8 @@ form {
   position: relative;
   display: flex;
   align-items: center;
-  background: #ffffff;
-  border: 1.5px solid #cbd5e1;
+  background: rgba(15, 23, 42, 0.4);
+  border: 1.5px solid rgba(255, 255, 255, 0.14);
   border-radius: 12px;
   padding: 0 14px;
   height: 48px;
@@ -191,14 +189,14 @@ form {
 }
 
 .field:focus-within {
-  border-color: #2563eb;
-  background: #ffffff;
-  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+  border-color: #60a5fa;
+  background: rgba(15, 23, 42, 0.6);
+  box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.2);
 }
 
 .field-icon {
   font-size: 19px;
-  color: #64748b;
+  color: #94a3b8;
   margin-right: 10px;
   flex-shrink: 0;
 }
@@ -208,21 +206,21 @@ form {
   background: transparent;
   border: none;
   outline: none;
-  color: #0f172a;
+  color: #ffffff;
   font-size: 0.92rem;
   font-family: inherit;
   height: 100%;
 }
 
 .field input::placeholder {
-  color: #94a3b8;
+  color: #64748b;
   font-size: 0.88rem;
 }
 
 .password-toggle {
   background: transparent;
   border: none;
-  color: #64748b;
+  color: #94a3b8;
   cursor: pointer;
   padding: 4px;
   display: flex;
@@ -232,7 +230,7 @@ form {
 }
 
 .password-toggle:hover {
-  color: #0f172a;
+  color: #ffffff;
 }
 
 .meta-row {
@@ -240,7 +238,7 @@ form {
   align-items: center;
   justify-content: space-between;
   font-size: 0.82rem;
-  color: #64748b;
+  color: #cbd5e1;
   margin: 2px 0;
 }
 
@@ -252,14 +250,14 @@ form {
 }
 
 .check-wrap input {
-  accent-color: #2563eb;
+  accent-color: #3b82f6;
   width: 15px;
   height: 15px;
   cursor: pointer;
 }
 
 .meta-row a {
-  color: #2563eb;
+  color: #93c5fd;
   text-decoration: none;
   font-weight: 500;
 }
@@ -282,7 +280,7 @@ form {
   font-size: 1rem;
   font-weight: 700;
   cursor: pointer;
-  box-shadow: 0 8px 20px rgba(37, 99, 235, 0.28);
+  box-shadow: 0 8px 20px rgba(37, 99, 235, 0.35);
   transition: all 0.2s ease;
   margin-top: 4px;
 }
@@ -290,7 +288,7 @@ form {
 .primary-button:hover:not(:disabled) {
   background: linear-gradient(135deg, #1d4ed8 0%, #1e40af 100%);
   transform: translateY(-2px);
-  box-shadow: 0 12px 24px rgba(37, 99, 235, 0.38);
+  box-shadow: 0 12px 24px rgba(37, 99, 235, 0.45);
 }
 
 .primary-button:disabled {
@@ -307,7 +305,7 @@ form {
 .quick-demo-box {
   margin-top: 14px;
   padding-top: 14px;
-  border-top: 1px solid #e2e8f0;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
   display: flex;
   flex-direction: column;
   gap: 8px;
@@ -316,7 +314,7 @@ form {
 .demo-label {
   font-size: 0.72rem;
   font-weight: 700;
-  color: #64748b;
+  color: #94a3b8;
   text-transform: uppercase;
   letter-spacing: 0.05em;
 }
@@ -329,10 +327,10 @@ form {
 
 .demo-btn {
   flex: 1;
-  padding: 7px 10px;
-  background: #f8fafc;
-  border: 1px solid #cbd5e1;
-  color: #334155;
+  padding: 6px 10px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: #e2e8f0;
   border-radius: 8px;
   font-size: 0.78rem;
   font-weight: 600;
@@ -341,9 +339,9 @@ form {
 }
 
 .demo-btn:hover {
-  background: #eff6ff;
-  border-color: #93c5fd;
-  color: #1d4ed8;
+  background: rgba(37, 99, 235, 0.3);
+  border-color: #3b82f6;
+  color: #ffffff;
 }
 
 /* Bottom Stats Panel */
@@ -352,7 +350,7 @@ form {
   grid-template-columns: repeat(4, 1fr);
   gap: 8px;
   width: 100%;
-  padding: 14px 16px;
+  padding: 12px 16px;
   margin-top: 16px;
   box-sizing: border-box;
 }
@@ -362,14 +360,14 @@ form {
   align-items: center;
   gap: 8px;
   padding: 6px 8px;
-  background: #f8fafc;
+  background: rgba(255, 255, 255, 0.05);
   border-radius: 10px;
-  border: 1px solid #e2e8f0;
+  border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .stat-icon {
   font-size: 20px;
-  color: #2563eb;
+  color: #60a5fa;
   flex-shrink: 0;
 }
 
@@ -381,7 +379,7 @@ form {
 
 .stat-label {
   font-size: 0.68rem;
-  color: #64748b;
+  color: #94a3b8;
   font-weight: 600;
   text-transform: uppercase;
 }
@@ -389,7 +387,7 @@ form {
 .stat-value {
   font-size: 1.05rem;
   font-weight: 800;
-  color: #0f172a;
+  color: #ffffff;
   line-height: 1.1;
 }
 

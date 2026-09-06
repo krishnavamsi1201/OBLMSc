@@ -7,7 +7,10 @@
 .content {
   flex: 1;
   padding: 1rem;
-  background: transparent;
+  background: rgba(255,255,255,0.14);
+  border: 1px solid rgba(255,255,255,0.20);
+  border-radius: 24px;
+  backdrop-filter: blur(18px);
 }
 
 .page-header {
@@ -17,12 +20,12 @@
 .page-header h1 {
   margin: 0;
   font-size: 2rem;
-  color: #0f172a;
+  color: var(--text-light);
 }
 
 .page-header p {
   margin: 0.5rem 0 0;
-  color: #64748b;
+  color: var(--text-secondary);
 }
 
 table {
