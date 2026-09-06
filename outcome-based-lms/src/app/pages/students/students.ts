@@ -655,15 +655,15 @@ export class Students implements OnInit, OnDestroy {
   }
 
   private applyThemeStyleMapping(): void {
-    const isLight = this.appearance.theme === 'light';
+    const isDark = this.appearance.theme !== 'light';
 
     // 1. Map Theme Colors
-    const bg = isLight ? '#f1f5f9' : '#0a1128';
-    const cardBg = isLight ? '#ffffff' : '#101b38';
-    const text = isLight ? '#1e293b' : '#ffffff';
-    const textSecondary = isLight ? '#64748b' : '#94a3b8';
-    const border = isLight ? '#cbd5e1' : '#1f2f54';
-    const sidebarBg = isLight ? '#ffffff' : '#101b38';
+    const bg = isDark ? '#0a1128' : 'rgba(240, 249, 255, 0.92)';
+    const cardBg = isDark ? '#101b38' : 'rgba(255, 255, 255, 0.98)';
+    const text = isDark ? '#ffffff' : '#1e293b';
+    const textSecondary = isDark ? '#94a3b8' : '#64748b';
+    const border = isDark ? '#1f2f54' : 'rgba(74, 140, 234, 0.16)';
+    const sidebarBg = isDark ? '#101b38' : 'rgba(255, 255, 255, 0.98)';
 
     // 2. Map Color Scheme
     let primary = '#d4af37';

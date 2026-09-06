@@ -53,12 +53,14 @@ export class CopoMapping implements OnInit {
   studentDept = 'Computer Science & Engineering';
 
   appearance = {
-    theme: 'light',
-    colorScheme: 'blue',
+    theme: 'dark',
+    colorScheme: 'gold',
     layout: 'comfortable',
     showSidebar: true,
     fontSize: 'medium'
   };
+
+  isApproved = (m: CoMapping): boolean => m && m.status === 'Approved';
 
   themeStyles: { [key: string]: string } = {};
 

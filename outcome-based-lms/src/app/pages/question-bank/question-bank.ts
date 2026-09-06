@@ -44,8 +44,8 @@ export class QuestionBank implements OnInit {
   studentDept = 'Computer Science & Engineering';
 
   appearance = {
-    theme: 'light',
-    colorScheme: 'blue',
+    theme: 'dark',
+    colorScheme: 'gold',
     layout: 'comfortable',
     showSidebar: true,
     fontSize: 'medium'
@@ -382,19 +382,18 @@ export class QuestionBank implements OnInit {
   }
 
   private applyThemeStyleMapping(): void {
-    const isDark = this.appearance.theme === 'dark' || 
-      (this.appearance.theme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+    const isDark = this.appearance.theme !== 'light';
 
-    const bg = isDark ? '#0f172a' : 'rgba(240, 249, 255, 0.92)';
-    const cardBg = isDark ? '#1e293b' : 'rgba(255, 255, 255, 0.98)';
-    const text = isDark ? '#f8fafc' : '#1e293b';
+    const bg = isDark ? '#0a1128' : 'rgba(240, 249, 255, 0.92)';
+    const cardBg = isDark ? '#101b38' : 'rgba(255, 255, 255, 0.98)';
+    const text = isDark ? '#ffffff' : '#1e293b';
     const textSecondary = isDark ? '#94a3b8' : '#64748b';
-    const border = isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(74, 140, 234, 0.16)';
-    const sidebarBg = isDark ? '#1e293b' : 'rgba(255, 255, 255, 0.98)';
+    const border = isDark ? '#1f2f54' : 'rgba(74, 140, 234, 0.16)';
+    const sidebarBg = isDark ? '#101b38' : 'rgba(255, 255, 255, 0.98)';
 
-    let primary = '#1976d2';
-    let primaryRgb = '25, 118, 210';
-    let heroBg = 'linear-gradient(135deg, #1e3a8a 0%, #1e40af 50%, #2563eb 100%)';
+    let primary = '#d4af37';
+    let primaryRgb = '212, 175, 55';
+    let heroBg = 'linear-gradient(135deg, #0a1128 0%, #101b38 50%, #1f2f54 100%)';
 
     switch (this.appearance.colorScheme) {
       case 'purple':
@@ -412,15 +411,15 @@ export class QuestionBank implements OnInit {
         primaryRgb = '239, 68, 68';
         heroBg = 'linear-gradient(135deg, #7f1d1d 0%, #991b1b 50%, #ef4444 100%)';
         break;
-      case 'orange':
-        primary = '#f97316';
-        primaryRgb = '249, 115, 22';
-        heroBg = 'linear-gradient(135deg, #7c2d12 0%, #9a3412 50%, #f97316 100%)';
-        break;
-      default:
-        primary = '#1976d2';
-        primaryRgb = '25, 118, 210';
+      case 'blue':
+        primary = '#3b82f6';
+        primaryRgb = '59, 130, 246';
         heroBg = 'linear-gradient(135deg, #1e3a8a 0%, #1e40af 50%, #2563eb 100%)';
+        break;
+      default: // gold / oxford
+        primary = '#d4af37';
+        primaryRgb = '212, 175, 55';
+        heroBg = 'linear-gradient(135deg, #0a1128 0%, #101b38 50%, #1f2f54 100%)';
     }
 
     this.themeStyles = {

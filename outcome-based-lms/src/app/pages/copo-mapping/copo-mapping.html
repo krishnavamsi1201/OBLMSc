@@ -1,240 +1,22 @@
 <app-navbar></app-navbar>
 
-<div *ngIf="role === 'student'; else fullApp" class="student-shell" [ngStyle]="themeStyles">
-  <!-- Categorized Sidebar Navigation -->
-  <div class="student-sidebar">
-    <div class="logo">
-      <h2>🎓 OBLMS</h2>
-      <p>Outcome Based LMS</p>
-    </div>
-
-    <div class="nav-groups-container">
-      <div *ngFor="let group of studentNavGroups" class="nav-group-block">
-        <span class="group-title">{{ group.title }}</span>
-        <div class="group-items">
-          <button mat-button *ngFor="let item of group.items" (click)="navigate(item.path)" [class.active]="item.path === '/copo-mapping'">
-            <span class="icon">{{ item.icon }}</span>
-            <span class="nav-label">{{ item.label }}</span>
-          </button>
-        </div>
-      </div>
-    </div>
-
-    <!-- Mini Profile Card at Bottom of Sidebar -->
-    <div class="sidebar-user-card" (click)="navigate('/profile')" title="View profile details" style="margin-top: auto; padding: 10px 12px; background: var(--student-card-bg); border: 1px solid var(--student-border); border-radius: 12px; display: flex; align-items: center; gap: 10px; cursor: pointer; transition: all 0.2s ease;">
-      <div class="user-avatar-mini" style="width: 36px; height: 36px; border-radius: 50%; overflow: hidden; background: rgba(var(--student-primary-rgb), 0.1); display: flex; align-items: center; justify-content: center; flex-shrink: 0; border: 1.5px solid var(--student-primary);">
-        <img *ngIf="studentPhoto" [src]="studentPhoto" alt="Profile" style="width: 100%; height: 100%; object-fit: cover;" />
-        <span *ngIf="!studentPhoto">👨‍🎓</span>
-      </div>
-      <div class="user-meta-mini" style="flex: 1; display: flex; flex-direction: column; overflow: hidden;">
-        <strong class="user-name-mini" style="font-size: 12.5px; color: var(--student-text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: 700;">{{ studentName }}</strong>
-        <span class="user-roll-mini" style="font-size: 11px; color: var(--student-text-secondary);">{{ studentRoll }}</span>
-      </div>
-      <button class="logout-icon-btn" (click)="$event.stopPropagation(); logout()" title="Logout" style="background: transparent; border: none; font-size: 15px; cursor: pointer; padding: 4px; opacity: 0.7;">🚪</button>
-    </div>
-  </div>
-
-  <!-- Student Scrollable Content Area -->
-  <div class="student-content" style="flex: 1; height: 100%; box-sizing: border-box; padding: 24px 28px 40px; overflow-y: auto; display: flex; flex-direction: column; gap: 20px;">
-    
-    <div class="page-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; flex-wrap: wrap; gap: 12px;">
-      <div class="header-title">
-        <h1 style="margin: 0; font-size: 1.8rem; color: var(--student-text); font-weight: 800;">🔗 CO-PO Mapping Matrix (NBA Criteria-3)</h1>
-        <p style="margin: 4px 0 0 0; color: var(--student-text-secondary); font-size: 0.95rem;">Official course outcome correlations & graduate attribute articulation matrix.</p>
-      </div>
-      <div style="display: flex; gap: 10px; align-items: center;">
-        <button (click)="exportMatrixCsv()" style="background: var(--student-card-bg); border: 1px solid var(--student-border); color: var(--student-text); border-radius: 8px; font-weight: 700; padding: 9px 15px; font-size: 12.5px; cursor: pointer; display: flex; align-items: center; gap: 6px;">
-          📥 Export CSV
-        </button>
-        <button (click)="downloadNBAPdfReport()" style="background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%); border: none; color: #fff; border-radius: 8px; font-weight: 800; padding: 9px 18px; font-size: 12.5px; cursor: pointer; display: flex; align-items: center; gap: 6px; box-shadow: 0 4px 12px rgba(30,64,175,0.25);">
-          📄 Download NBA PDF Dossier
-        </button>
-      </div>
-    </div>
-
-    <div class="summary-grid" style="display: grid; gap: 16px; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));">
-      <div class="section-card" style="background: var(--student-card-bg); border: 1px solid var(--student-border); color: var(--student-text); padding: 20px; border-radius: 12px; box-shadow: 0 1px 12px rgba(0,0,0,.06);">
-          <h3 style="color: var(--student-primary); font-size: 0.95rem; margin-top: 0; margin-bottom: 10px;">POs Defined</h3>
-          <strong style="font-size: 1.8rem; font-weight: 800; color: var(--student-text); display: block; margin-bottom: 8px;">{{ programOutcomes.length }}</strong>
-          <p style="font-size: 0.85rem; color: var(--student-text-secondary); margin: 0;">Program outcomes available for mapping.</p>
-      </div>
-      <div class="section-card" style="background: var(--student-card-bg); border: 1px solid var(--student-border); color: var(--student-text); padding: 20px; border-radius: 12px; box-shadow: 0 1px 12px rgba(0,0,0,.06);">
-          <h3 style="color: var(--student-primary); font-size: 0.95rem; margin-top: 0; margin-bottom: 10px;">CO-PO Maps</h3>
-          <strong style="font-size: 1.8rem; font-weight: 800; color: var(--student-text); display: block; margin-bottom: 8px;">{{ mappings.length }}</strong>
-          <p style="font-size: 0.85rem; color: var(--student-text-secondary); margin: 0;">Course outcome mappings currently tracked.</p>
-      </div>
-      <div class="section-card" style="background: var(--student-card-bg); border: 1px solid var(--student-border); color: var(--student-text); padding: 20px; border-radius: 12px; box-shadow: 0 1px 12px rgba(0,0,0,.06);">
-          <h3 style="color: var(--student-primary); font-size: 0.95rem; margin-top: 0; margin-bottom: 10px;">Approved Mappings</h3>
-          <strong style="font-size: 1.8rem; font-weight: 800; color: var(--student-text); display: block; margin-bottom: 8px;">{{ mappings.filter(m => m.status === 'Approved').length }}</strong>
-          <p style="font-size: 0.85rem; color: var(--student-text-secondary); margin: 0;">Mappings approved by admin.</p>
-      </div>
-    </div>
-
-    <!-- Branch Filter Navigation Bar -->
-    <div class="branch-filter-toolbar" style="display: flex; gap: 8px; flex-wrap: wrap; background: var(--student-card-bg); padding: 12px 16px; border-radius: 12px; border: 1px solid var(--student-border); margin-bottom: 20px;">
-      <button type="button" 
-        class="filter-pill-btn" 
-        [style.background]="selectedBranch === 'MY_BRANCH' ? 'var(--student-primary)' : 'transparent'"
-        [style.color]="selectedBranch === 'MY_BRANCH' ? '#fff' : 'var(--student-text)'"
-        [style.borderColor]="selectedBranch === 'MY_BRANCH' ? 'var(--student-primary)' : 'var(--student-border)'"
-        style="padding: 6px 14px; border-radius: 8px; border: 1px solid; font-weight: 700; font-size: 12.5px; cursor: pointer; transition: all 0.15s ease;"
-        (click)="selectedBranch = 'MY_BRANCH'">
-        🌟 My Branch ({{ currentActiveBranch }})
-      </button>
-      <button type="button" 
-        class="filter-pill-btn" 
-        [style.background]="selectedBranch === 'CSE' ? 'var(--student-primary)' : 'transparent'"
-        [style.color]="selectedBranch === 'CSE' ? '#fff' : 'var(--student-text)'"
-        [style.borderColor]="selectedBranch === 'CSE' ? 'var(--student-primary)' : 'var(--student-border)'"
-        style="padding: 6px 14px; border-radius: 8px; border: 1px solid; font-weight: 700; font-size: 12.5px; cursor: pointer; transition: all 0.15s ease;"
-        (click)="selectedBranch = 'CSE'">
-        💻 CSE
-      </button>
-      <button type="button" 
-        class="filter-pill-btn" 
-        [style.background]="selectedBranch === 'IT' ? 'var(--student-primary)' : 'transparent'"
-        [style.color]="selectedBranch === 'IT' ? '#fff' : 'var(--student-text)'"
-        [style.borderColor]="selectedBranch === 'IT' ? 'var(--student-primary)' : 'var(--student-border)'"
-        style="padding: 6px 14px; border-radius: 8px; border: 1px solid; font-weight: 700; font-size: 12.5px; cursor: pointer; transition: all 0.15s ease;"
-        (click)="selectedBranch = 'IT'">
-        🌐 IT
-      </button>
-      <button type="button" 
-        class="filter-pill-btn" 
-        [style.background]="selectedBranch === 'ECE' ? 'var(--student-primary)' : 'transparent'"
-        [style.color]="selectedBranch === 'ECE' ? '#fff' : 'var(--student-text)'"
-        [style.borderColor]="selectedBranch === 'ECE' ? 'var(--student-primary)' : 'var(--student-border)'"
-        style="padding: 6px 14px; border-radius: 8px; border: 1px solid; font-weight: 700; font-size: 12.5px; cursor: pointer; transition: all 0.15s ease;"
-        (click)="selectedBranch = 'ECE'">
-        📡 ECE
-      </button>
-      <button type="button" 
-        class="filter-pill-btn" 
-        [style.background]="selectedBranch === 'ME' ? 'var(--student-primary)' : 'transparent'"
-        [style.color]="selectedBranch === 'ME' ? '#fff' : 'var(--student-text)'"
-        [style.borderColor]="selectedBranch === 'ME' ? 'var(--student-primary)' : 'var(--student-border)'"
-        style="padding: 6px 14px; border-radius: 8px; border: 1px solid; font-weight: 700; font-size: 12.5px; cursor: pointer; transition: all 0.15s ease;"
-        (click)="selectedBranch = 'ME'">
-        ⚙️ Mechanical
-      </button>
-      <button type="button" 
-        class="filter-pill-btn" 
-        [style.background]="selectedBranch === 'Civil' ? 'var(--student-primary)' : 'transparent'"
-        [style.color]="selectedBranch === 'Civil' ? '#fff' : 'var(--student-text)'"
-        [style.borderColor]="selectedBranch === 'Civil' ? 'var(--student-primary)' : 'var(--student-border)'"
-        style="padding: 6px 14px; border-radius: 8px; border: 1px solid; font-weight: 700; font-size: 12.5px; cursor: pointer; transition: all 0.15s ease;"
-        (click)="selectedBranch = 'Civil'">
-        🏗️ Civil
-      </button>
-      <button type="button" 
-        class="filter-pill-btn" 
-        [style.background]="selectedBranch === 'ALL' ? 'var(--student-primary)' : 'transparent'"
-        [style.color]="selectedBranch === 'ALL' ? '#fff' : 'var(--student-text)'"
-        [style.borderColor]="selectedBranch === 'ALL' ? 'var(--student-primary)' : 'var(--student-border)'"
-        style="padding: 6px 14px; border-radius: 8px; border: 1px solid; font-weight: 700; font-size: 12.5px; cursor: pointer; transition: all 0.15s ease;"
-        (click)="selectedBranch = 'ALL'">
-        🌐 All Branches
-      </button>
-    </div>
-
-    <!-- Mappings grouped by Subject -->
-    <div *ngFor="let group of filteredGroupedMappings" class="table-card" style="background: var(--student-card-bg); border: 1px solid var(--student-border); padding: 20px; border-radius: 12px; display: flex; flex-direction: column; gap: 14px; box-shadow: 0 1px 12px rgba(0,0,0,.06); margin-bottom: 16px;">
-      <h2 style="margin: 0; color: var(--student-primary); border-bottom: 2px solid var(--student-border); padding-bottom: 8px; font-size: 1.15rem; display: flex; justify-content: space-between; align-items: center; cursor: pointer;" (click)="toggleGroup(group.courseName)">
-          <span style="display: flex; align-items: center; gap: 8px;">📖 {{ getFullCourseName(group.courseName) }} CO-PO Mappings</span>
-          <span style="font-size: 0.82rem; color: var(--student-text-secondary); font-weight: 600;">
-              {{ collapsedGroups[group.courseName] ? '▼ Show' : '▲ Hide' }} ({{ group.mappings.length }} Mappings)
-          </span>
-      </h2>
-
-      <div *ngIf="!collapsedGroups[group.courseName]" style="margin-top: 10px; overflow-x: auto;">
-          <table style="width: 100%; border-collapse: collapse;">
-              <thead>
-                  <tr>
-                      <th style="color: var(--student-primary); border-bottom: 2px solid var(--student-border); padding: 12px 10px; text-align: left;">CO</th>
-                      <th style="color: var(--student-primary); border-bottom: 2px solid var(--student-border); padding: 12px 10px; text-align: left;">CO Description</th>
-                      <th style="color: var(--student-primary); border-bottom: 2px solid var(--student-border); padding: 12px 10px; text-align: left;">Mapped PO</th>
-                      <th style="color: var(--student-primary); border-bottom: 2px solid var(--student-border); padding: 12px 10px; text-align: left;">PO Description</th>
-                      <th style="color: var(--student-primary); border-bottom: 2px solid var(--student-border); padding: 12px 10px; text-align: left;">Contribution</th>
-                      <th style="color: var(--student-primary); border-bottom: 2px solid var(--student-border); padding: 12px 10px; text-align: left;">Mapping Level</th>
-                      <th style="color: var(--student-primary); border-bottom: 2px solid var(--student-border); padding: 12px 10px; text-align: left;">Status</th>
-                  </tr>
-              </thead>
-              <tbody>
-                  <tr *ngFor="let mapping of group.mappings" style="border-bottom: 1px solid var(--student-border);">
-                      <td style="padding: 12px 10px;"><span class="obe-badge obe-badge-co" style="background: rgba(var(--student-primary-rgb), 0.08); color: var(--student-primary); padding: 3px 8px; border-radius: 4px; font-weight: 600;">{{ mapping.co }}</span></td>
-                      <td style="padding: 12px 10px; color: var(--student-text);">{{ getCourseOutcomeDescription(mapping.course, mapping.co) || '—' }}</td>
-                      <td style="padding: 12px 10px;"><span class="obe-badge obe-badge-po" style="background: #e0f2fe; color: #0369a1; padding: 3px 8px; border-radius: 4px; font-weight: 600;">{{ mapping.po }}</span></td>
-                      <td style="padding: 12px 10px; color: var(--student-text);">{{ getProgramOutcomeDescription(mapping.po) || '—' }}</td>
-                      <td style="padding: 12px 10px; color: var(--student-text);">{{ mapping.contribution }}%</td>
-                      <td style="padding: 12px 10px; color: var(--student-text);">{{ getMappingLevelLabel(mapping.mappingLevel) }}</td>
-                      <td style="padding: 12px 10px;"><span class="obe-badge" style="padding: 3px 8px; border-radius: 4px; font-weight: 600;" [class.obe-badge-co]="mapping.status === 'Approved'">{{ mapping.status }}</span></td>
-                  </tr>
-              </tbody>
-          </table>
-      </div>
-    </div>
-
-    <!-- Mapping Matrix Card -->
-    <div class="table-card" style="background: var(--student-card-bg); border: 1px solid var(--student-border); padding: 20px; border-radius: 12px; display: flex; flex-direction: column; gap: 14px; box-shadow: 0 1px 12px rgba(0,0,0,.06);">
-        <div style="display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap;">
-            <div>
-                <h2 style="margin: 0; font-size: 1.3rem; color: var(--student-text); font-weight: 800;">
-                  View {{ currentActiveBranch }} Mapping Matrix ({{ filteredCourseOutcomes.length }} COs)
-                </h2>
-                <small style="color: var(--student-text-secondary); display:block; margin-top:2px;">OBE Correlation Scale: 1 = Low (<30%), 2 = Medium (30-60%), 3 = High (>60%)</small>
-            </div>
-            <div style="display:flex; gap:8px; flex-wrap:wrap;">
-                <button type="button" (click)="exportMatrixCsv()" style="background: var(--student-primary); color: #fff; padding: 8px 14px; border-radius: 6px; border: none; font-weight: 600; cursor: pointer;">Export CSV</button>
-                <button type="button" (click)="printMatrix()" style="background: transparent; border: 1px solid var(--student-border); color: var(--student-text); padding: 8px 14px; border-radius: 6px; font-weight: 600; cursor: pointer;">Print</button>
-            </div>
-        </div>
-        <div style="margin-top: 10px;">
-            <ng-container *ngIf="programOutcomes.length && filteredCourseOutcomes.length; else noMatrixContent">
-                <table class="matrix-table" style="width: 100%; border-collapse: collapse;">
-                    <thead>
-                        <tr style="border-bottom: 2px solid var(--student-border);">
-                            <th style="padding: 12px 10px; text-align: left; color: var(--student-primary);">CO \ PO</th>
-                            <th *ngFor="let po of programOutcomes" style="padding: 12px 10px; text-align: center; color: var(--student-primary);" [title]="po.description || po.poNumber">
-                                <span class="obe-badge obe-badge-po" style="background: #e0f2fe; color: #0369a1; padding: 3px 8px; border-radius: 4px; font-weight: 600;">{{ po.poNumber }}</span>
-                            </th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr *ngFor="let outcome of filteredCourseOutcomes" style="border-bottom: 1px solid var(--student-border);">
-                            <td style="padding: 12px 10px; color: var(--student-text);">
-                                <span class="obe-badge obe-badge-co" style="background: rgba(var(--student-primary-rgb), 0.08); color: var(--student-primary); padding: 3px 8px; border-radius: 4px; font-weight: 600;">{{ outcome.co }}</span>
-                                <small style="display:block; color:var(--student-text-secondary); margin-top:2px;">{{ getCourseFullName(outcome.course) }}</small>
-                            </td>
-                            <td *ngFor="let po of programOutcomes" style="padding: 12px 10px; text-align: center;">
-                                <span *ngIf="getMatrixLevel(outcome.course, outcome.co, po.poNumber) as level" class="obe-badge" style="padding: 3px 8px; border-radius: 4px; font-weight: 600;" [ngClass]="level === 3 ? 'obe-badge-co' : 'obe-badge-po'">
-                                    {{ level }}
-                                </span>
-                                <span *ngIf="!getMatrixLevel(outcome.course, outcome.co, po.poNumber)" style="color: #94a3b8;">—</span>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-            </ng-container>
-            <ng-template #noMatrixContent>
-                <p style="color: var(--student-text-secondary);">Add course outcomes and program outcomes to view the mapping matrix.</p>
-            </ng-template>
-        </div>
-    </div>
-
-    <app-footer></app-footer>
-  </div>
-</div>
-
-<ng-template #fullApp>
 <div class="container">
-
     <app-sidebar></app-sidebar>
 
     <div class="content">
-
         <div class="page-header">
-            <h1>🔗 CO-PO Mapping</h1>
-            <p>{{ role === 'student' ? 'View the current mappings between Course Outcomes (CO) and Program Outcomes (PO).' : 'View POs, map COs to POs, and set contribution percentages for faculty planning.' }}</p>
+            <div class="header-title">
+                <h1>🔗 CO-PO Mapping Matrix (NBA Criteria-3)</h1>
+                <p>Official course outcome correlations & graduate attribute articulation matrix.</p>
+            </div>
+            <div class="header-actions">
+                <button (click)="exportMatrixCsv()" class="btn btn-secondary">
+                    📥 Export CSV
+                </button>
+                <button (click)="downloadNBAPdfReport()" class="btn btn-primary">
+                    📄 Download NBA PDF Dossier
+                </button>
+            </div>
         </div>
 
         <div class="summary-grid">
@@ -250,52 +32,55 @@
             </div>
             <div class="section-card">
                 <h3>Approved Mappings</h3>
-                <strong>{{ mappings.filter(m => m.status === 'Approved').length }}</strong>
+                <strong>{{ mappings.filter(isApproved).length }}</strong>
                 <p>Mappings approved by admin.</p>
             </div>
         </div>
 
-        <div class="table-card">
-            <h2>View PO List</h2>
-            <table>
-                <thead>
-                    <tr>
-                        <th>PO Number</th>
-                        <th>Description</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr *ngIf="programOutcomes.length === 0">
-                        <td colspan="2">No program outcomes available. Add PO records to begin mapping.</td>
-                    </tr>
-                    <tr *ngFor="let po of programOutcomes">
-                        <td><strong>{{ po.poNumber }}</strong></td>
-                        <td>{{ po.description }}</td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
-
-        <!-- Add PO (Admin / Faculty Only) -->
-        <div class="form-card" *ngIf="role === 'admin' || role === 'faculty'">
-            <h2>Add Program Outcome</h2>
-            <form (ngSubmit)="addProgramOutcome()" class="small-form">
-                <div class="grid-row">
-                    <label>
-                        PO Number
-                        <input type="text" name="poNumber" [(ngModel)]="newPoNumber" placeholder="PO1" />
-                    </label>
-                </div>
-                <div class="grid-row">
-                    <label>
-                        Description
-                        <textarea name="poDescription" [(ngModel)]="newPoDescription" rows="3" placeholder="Enter PO description"></textarea>
-                    </label>
-                </div>
-                <div class="form-actions">
-                    <button type="submit">Add PO</button>
-                </div>
-            </form>
+        <!-- Branch Filter Navigation Bar -->
+        <div class="branch-filter-toolbar">
+            <button type="button" 
+                class="filter-pill-btn" 
+                [class.active]="selectedBranch === 'MY_BRANCH'"
+                (click)="selectedBranch = 'MY_BRANCH'">
+                🌟 My Branch ({{ currentActiveBranch }})
+            </button>
+            <button type="button" 
+                class="filter-pill-btn" 
+                [class.active]="selectedBranch === 'CSE'"
+                (click)="selectedBranch = 'CSE'">
+                💻 CSE
+            </button>
+            <button type="button" 
+                class="filter-pill-btn" 
+                [class.active]="selectedBranch === 'IT'"
+                (click)="selectedBranch = 'IT'">
+                🌐 IT
+            </button>
+            <button type="button" 
+                class="filter-pill-btn" 
+                [class.active]="selectedBranch === 'ECE'"
+                (click)="selectedBranch = 'ECE'">
+                ⚡ ECE
+            </button>
+            <button type="button" 
+                class="filter-pill-btn" 
+                [class.active]="selectedBranch === 'Mechanical'"
+                (click)="selectedBranch = 'Mechanical'">
+                ⚙️ Mechanical
+            </button>
+            <button type="button" 
+                class="filter-pill-btn" 
+                [class.active]="selectedBranch === 'Civil'"
+                (click)="selectedBranch = 'Civil'">
+                🏗️ Civil
+            </button>
+            <button type="button" 
+                class="filter-pill-btn" 
+                [class.active]="selectedBranch === 'ALL'"
+                (click)="selectedBranch = 'ALL'">
+                🌐 All Branches
+            </button>
         </div>
 
         <!-- Add CO (Admin / Faculty Only) -->
@@ -327,7 +112,7 @@
                     </label>
                 </div>
                 <div class="form-actions">
-                    <button type="submit">Add CO</button>
+                    <button type="submit" class="btn btn-primary">Add CO</button>
                 </div>
             </form>
         </div>
@@ -372,22 +157,22 @@
                     </label>
                 </div>
                 <div class="form-actions">
-                    <button type="submit">{{ editIndex >= 0 ? 'Update Mapping' : 'Save Mapping' }}</button>
-                    <button type="button" class="secondary" (click)="resetMapping()">Clear</button>
+                    <button type="submit" class="btn btn-primary">{{ editIndex >= 0 ? 'Update Mapping' : 'Save Mapping' }}</button>
+                    <button type="button" class="btn btn-secondary" (click)="resetMapping()">Clear</button>
                 </div>
             </form>
         </div>
 
-        <div *ngFor="let group of groupedMappings" class="table-card" style="margin-bottom: 24px; padding: 18px; border: 1px solid #1f2f54; border-radius: 14px; background: #101b38; box-shadow: 0 8px 24px rgba(0,0,0,0.35);">
-            <h2 style="margin: 0; color: #ffffff; border-bottom: 2px solid #d4af37; padding-bottom: 10px; font-size: 1.15rem; display: flex; justify-content: space-between; align-items: center; cursor: pointer;" (click)="toggleGroup(group.courseName)">
-                <span style="display: flex; align-items: center; gap: 8px;">📖 {{ group.courseName }} CO-PO Mappings</span>
-                <span style="font-size: 0.85rem; color: #94a3b8; font-weight: 600;">
+        <div *ngFor="let group of groupedMappings" class="table-card">
+            <h2 class="group-header" (click)="toggleGroup(group.courseName)">
+                <span class="group-title-text">📖 {{ group.courseName }} CO-PO Mappings</span>
+                <span class="group-meta-tag">
                     {{ collapsedGroups[group.courseName] ? '▼ Show' : '▲ Hide' }} ({{ group.mappings.length }} Mappings)
                 </span>
             </h2>
 
-            <div *ngIf="!collapsedGroups[group.courseName]" style="margin-top: 16px; overflow-x: auto;">
-                <table style="width: 100%; border-collapse: collapse;">
+            <div *ngIf="!collapsedGroups[group.courseName]" class="table-responsive">
+                <table>
                     <thead>
                         <tr>
                             <th>CO</th>
@@ -424,22 +209,22 @@
 
         <div *ngIf="groupedMappings.length === 0" class="table-card">
             <h2>Mapped COs to POs</h2>
-            <p style="color: var(--text-secondary); text-align: center; padding: 20px;">No CO-PO mappings created yet.</p>
+            <p class="empty-state-text">No CO-PO mappings created yet.</p>
         </div>
 
         <div class="table-card">
-            <div style="display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap; margin-bottom:14px;">
+            <div class="matrix-header-row">
                 <div>
                     <h2>View Mapping Matrix</h2>
-                    <small style="color: var(--text-secondary); display:block; margin-top:2px;">OBE Correlation Scale: 1 = Low (<30%), 2 = Medium (30-60%), 3 = High (>60%)</small>
+                    <small class="matrix-legend-note">OBE Correlation Scale: 1 = Low (&lt;30%), 2 = Medium (30-60%), 3 = High (&gt;60%)</small>
                 </div>
-                <div style="display:flex; gap:8px; flex-wrap:wrap;">
-                    <button type="button" (click)="exportMatrixCsv()" title="Export CO-PO matrix as CSV spreadsheet">📥 Export CSV</button>
-                    <button type="button" (click)="printMatrix()" title="Print matrix document">🖨️ Print</button>
-                    <button type="button" (click)="toggleMappingView()">{{ showMatrix ? 'Hide Matrix' : 'View Mapping Matrix' }}</button>
+                <div class="matrix-btn-group">
+                    <button type="button" class="btn btn-secondary" (click)="exportMatrixCsv()" title="Export CO-PO matrix as CSV spreadsheet">📥 Export CSV</button>
+                    <button type="button" class="btn btn-secondary" (click)="printMatrix()" title="Print matrix document">🖨️ Print</button>
+                    <button type="button" class="btn btn-primary" (click)="toggleMappingView()">{{ showMatrix ? 'Hide Matrix' : 'View Mapping Matrix' }}</button>
                 </div>
             </div>
-            <div *ngIf="showMatrix" style="margin-top: 16px;">
+            <div *ngIf="showMatrix" class="matrix-table-wrap">
                 <ng-container *ngIf="programOutcomes.length && courseOutcomes.length; else noMatrixContent">
                     <table class="matrix-table">
                         <thead>
@@ -454,26 +239,24 @@
                             <tr *ngFor="let outcome of courseOutcomes">
                                 <td>
                                     <span class="obe-badge obe-badge-co">{{ outcome.co }}</span>
-                                    <small style="display:block; color:var(--text-secondary); margin-top:2px;">{{ getCourseFullName(outcome.course) }}</small>
+                                    <small class="co-course-name">{{ getCourseFullName(outcome.course) }}</small>
                                 </td>
                                 <td *ngFor="let po of programOutcomes">
                                     <span *ngIf="getMatrixLevel(outcome.course, outcome.co, po.poNumber) as level" class="obe-badge" [ngClass]="level === 3 ? 'obe-badge-co' : 'obe-badge-po'">
                                         {{ level }}
                                     </span>
-                                    <span *ngIf="!getMatrixLevel(outcome.course, outcome.co, po.poNumber)" style="color: #94a3b8;">—</span>
+                                    <span *ngIf="!getMatrixLevel(outcome.course, outcome.co, po.poNumber)" class="matrix-dash">—</span>
                                 </td>
                             </tr>
                         </tbody>
                     </table>
                 </ng-container>
                 <ng-template #noMatrixContent>
-                    <p style="color: var(--text-secondary);">Add course outcomes and program outcomes to view the mapping matrix.</p>
+                    <p class="empty-state-text">Add course outcomes and program outcomes to view the mapping matrix.</p>
                 </ng-template>
             </div>
         </div>
 
         <app-footer></app-footer>
     </div>
-
 </div>
-</ng-template>
