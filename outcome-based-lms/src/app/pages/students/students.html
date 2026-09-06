@@ -1,43 +1,9 @@
 <app-navbar></app-navbar>
 
-<div *ngIf="role === 'student'; else fullApp" class="student-shell" [ngStyle]="themeStyles">
+<div class="container">
+  <app-sidebar></app-sidebar>
 
-  <!-- Categorized Sidebar Navigation -->
-  <div class="student-sidebar">
-    <div class="sidebar-header-badge">
-      <span class="portal-category-label">STUDENT PORTAL</span>
-    </div>
-
-    <div class="nav-groups-container">
-      <div *ngFor="let group of studentNavGroups" class="nav-group-block">
-        <span class="group-title">{{ group.title }}</span>
-        <div class="group-items">
-          <button class="student-nav-btn" *ngFor="let item of group.items" (click)="navigate(item.path)" [class.active]="item.path === '/students'">
-            <span class="material-icons nav-icon">{{ item.icon }}</span>
-            <span class="nav-label">{{ item.label }}</span>
-          </button>
-        </div>
-      </div>
-    </div>
-
-    <!-- Mini Profile Card at Bottom of Sidebar -->
-    <div class="sidebar-user-card" (click)="navigate('/profile')" title="View profile details">
-      <div class="user-avatar-mini">
-        <img *ngIf="studentPhoto" [src]="studentPhoto" alt="Profile" />
-        <span *ngIf="!studentPhoto" class="avatar-initial">{{ studentName.charAt(0).toUpperCase() }}</span>
-      </div>
-      <div class="user-meta-mini">
-        <strong class="user-name-mini">{{ studentName }}</strong>
-        <span class="user-roll-mini">{{ studentRoll }}</span>
-      </div>
-      <button class="logout-icon-btn" (click)="$event.stopPropagation(); logout()" title="Logout">
-        <span class="material-icons">logout</span>
-      </button>
-    </div>
-  </div>
-
-  <!-- Main Scrollable Content Area -->
-  <div class="student-content">
+  <div class="content">
     
     <!-- Professional Academic Hero Banner -->
     <div class="student-hero-banner">
@@ -762,24 +728,6 @@
         </div>
 
       </div>
-    </div>
-
     <app-footer></app-footer>
   </div>
-
-<ng-template #fullApp>
-  <div class="container">
-      <app-sidebar></app-sidebar>
-      <div class="content">
-          <div class="page-header">
-              <h1>👨‍🎓 Student Management</h1>
-              <p>Search, filter, and view student lists and details.</p>
-          </div>
-          <div class="empty-state">
-              <h3>Admin View</h3>
-              <p>Navigate to Admin > Student Management to manage students.</p>
-          </div>
-          <app-footer></app-footer>
-      </div>
-  </div>
-</ng-template>
+</div>

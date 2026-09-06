@@ -30,335 +30,298 @@ interface CoAttainmentStatus {
   imports: [CommonModule, FormsModule, Navbar, Sidebar, Footer],
   template: `<app-navbar></app-navbar>
 
-<div *ngIf="role === 'student'; else fullApp" class="student-shell" [ngStyle]="themeStyles">
-  <!-- Categorized Sidebar Navigation -->
-  <div class="student-sidebar">
-    <div class="logo">
-      <h2>OBLMS</h2>
-      <p>Outcome Based LMS</p>
-    </div>
+<div class="container">
+  <app-sidebar></app-sidebar>
 
-    <div class="nav-groups-container">
-      <div *ngFor="let group of studentNavGroups" class="nav-group-block">
-        <span class="group-title">{{ group.title }}</span>
-        <div class="group-items">
-          <button mat-button *ngFor="let item of group.items" (click)="navigate(item.path)" [class.active]="item.path === '/performance'">
-            <span class="material-icons" style="font-size: 18px; margin-right: 8px;">{{ item.icon }}</span>
-            <span class="nav-label">{{ item.label }}</span>
-          </button>
-        </div>
-      </div>
-    </div>
-
-    <!-- Mini Profile Card at Bottom of Sidebar -->
-    <div class="sidebar-user-card" (click)="navigate('/profile')" title="View profile details" style="margin-top: auto; padding: 10px 12px; background: var(--student-card-bg); border: 1px solid var(--student-border); border-radius: 12px; display: flex; align-items: center; gap: 10px; cursor: pointer; transition: all 0.2s ease;">
-      <div class="user-avatar-mini" style="width: 36px; height: 36px; border-radius: 50%; overflow: hidden; background: rgba(var(--student-primary-rgb), 0.1); display: flex; align-items: center; justify-content: center; flex-shrink: 0; border: 1.5px solid var(--student-primary);">
-        <img *ngIf="studentPhoto" [src]="studentPhoto" alt="Profile" style="width: 100%; height: 100%; object-fit: cover;" />
-        <span *ngIf="!studentPhoto" class="material-icons" style="font-size: 20px; color: var(--student-primary);">person</span>
-      </div>
-      <div class="user-meta-mini" style="flex: 1; display: flex; flex-direction: column; overflow: hidden;">
-        <strong class="user-name-mini" style="font-size: 12.5px; color: var(--student-text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: 700;">{{ studentName }}</strong>
-        <span class="user-roll-mini" style="font-size: 11px; color: var(--student-text-secondary);">{{ studentRoll }}</span>
-      </div>
-      <button class="logout-icon-btn" (click)="$event.stopPropagation(); logout()" title="Logout" style="background: transparent; border: none; cursor: pointer; padding: 4px; opacity: 0.7;">
-        <span class="material-icons" style="font-size: 18px; color: var(--student-text-secondary);">logout</span>
-      </button>
-    </div>
-  </div>
-
-  <!-- Student Scrollable Content Area -->
-  <div class="student-content" style="flex: 1; height: 100%; box-sizing: border-box; padding: 24px 28px 40px; overflow-y: auto; display: flex; flex-direction: column; gap: 20px;">
+  <div class="content">
     
-    <div class="page-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-      <div class="header-title">
-        <h1 style="margin: 0; font-size: 1.8rem; color: var(--student-text); font-weight: 800;">📈 My Academic Performance</h1>
-        <p style="margin: 4px 0 0 0; color: var(--student-text-secondary); font-size: 0.95rem;">Personal marks summary, course outcome (CO) attainment progress, and trends.</p>
+    <!-- STUDENT VIEW -->
+    <ng-container *ngIf="role === 'student'">
+      <div class="page-header">
+        <div class="header-title">
+          <h1>📈 My Academic Performance</h1>
+          <p>Personal marks summary, course outcome (CO) attainment progress, and trends.</p>
+        </div>
       </div>
-    </div>
 
-    <!-- Student Summary Cards -->
-    <div class="summary-grid" style="display: grid; gap: 16px; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));">
-        <div class="section-card" style="background: var(--student-card-bg); border: 1px solid var(--student-border); color: var(--student-text); padding: 20px; border-radius: 12px; box-shadow: 0 1px 12px rgba(0,0,0,.06);">
-            <h3 style="color: var(--student-primary); font-size: 0.95rem; margin-top: 0; margin-bottom: 10px;">My Internal Exams</h3>
-            <strong style="font-size: 1.8rem; font-weight: 800; color: var(--student-text); display: block; margin-bottom: 8px;">{{ myInternalAvg }}%</strong>
-            <p style="font-size: 0.85rem; color: var(--student-text-secondary); margin: 0;">Your average performance in mid-semester exams.</p>
+      <!-- Student Summary Cards -->
+      <div class="summary-grid">
+        <div class="section-card">
+          <h3>My Internal Exams</h3>
+          <strong>{{ myInternalAvg }}%</strong>
+          <p>Your average performance in mid-semester exams.</p>
         </div>
-        <div class="section-card" style="background: var(--student-card-bg); border: 1px solid var(--student-border); color: var(--student-text); padding: 20px; border-radius: 12px; box-shadow: 0 1px 12px rgba(0,0,0,.06);">
-            <h3 style="color: var(--student-primary); font-size: 0.95rem; margin-top: 0; margin-bottom: 10px;">My Assignments</h3>
-            <strong style="font-size: 1.8rem; font-weight: 800; color: var(--student-text); display: block; margin-bottom: 8px;">{{ myAssignmentAvg }}%</strong>
-            <p style="font-size: 0.85rem; color: var(--student-text-secondary); margin: 0;">Your average assignment completion grade.</p>
+        <div class="section-card">
+          <h3>My Assignments</h3>
+          <strong>{{ myAssignmentAvg }}%</strong>
+          <p>Your average assignment completion grade.</p>
         </div>
-        <div class="section-card" style="background: var(--student-card-bg); border: 1px solid var(--student-border); color: var(--student-text); padding: 20px; border-radius: 12px; box-shadow: 0 1px 12px rgba(0,0,0,.06);">
-            <h3 style="color: var(--student-primary); font-size: 0.95rem; margin-top: 0; margin-bottom: 10px;">My Quizzes</h3>
-            <strong style="font-size: 1.8rem; font-weight: 800; color: var(--student-text); display: block; margin-bottom: 8px;">{{ myQuizAvg }}%</strong>
-            <p style="font-size: 0.85rem; color: var(--student-text-secondary); margin: 0;">Your average score in online quizzes.</p>
+        <div class="section-card">
+          <h3>My Quizzes</h3>
+          <strong>{{ myQuizAvg }}%</strong>
+          <p>Your average score in online quizzes.</p>
         </div>
-        <div class="section-card" style="background: var(--student-card-bg); border: 1px solid var(--student-border); color: var(--student-text); padding: 20px; border-radius: 12px; box-shadow: 0 1px 12px rgba(0,0,0,.06);">
-            <h3 style="color: var(--student-primary); font-size: 0.95rem; margin-top: 0; margin-bottom: 10px;">My Overall Average</h3>
-            <strong style="font-size: 1.8rem; font-weight: 800; color: var(--student-text); display: block; margin-bottom: 8px;">{{ myOverallAvg }}%</strong>
-            <p style="font-size: 0.85rem; color: var(--student-text-secondary); margin: 0;">Calculated average across all grades.</p>
+        <div class="section-card">
+          <h3>My Overall Average</h3>
+          <strong>{{ myOverallAvg }}%</strong>
+          <p>Calculated average across all grades.</p>
         </div>
-    </div>
+      </div>
 
-    <!-- Course Outcome Attainment grouped by Subject -->
-    <div class="chart-card" style="background: var(--student-card-bg); border: 1px solid var(--student-border); padding: 20px; border-radius: 12px; display: flex; flex-direction: column; gap: 14px; box-shadow: 0 1px 12px rgba(0,0,0,.06);">
-        <h2 style="margin: 0; font-size: 1.3rem; color: var(--student-text); font-weight: 800;">🎯 My Course Outcome (CO) Attainment</h2>
-        <p class="subtitle" style="margin: 0; color: var(--student-text-secondary); font-size: 0.88rem;">Your performance mapped against target attainment levels grouped by subject.</p>
+      <!-- Course Outcome Attainment grouped by Subject -->
+      <div class="chart-card">
+        <h2>🎯 My Course Outcome (CO) Attainment</h2>
+        <p class="subtitle">Your performance mapped against target attainment levels grouped by subject.</p>
         
-        <div style="margin-top: 10px; display: flex; flex-direction: column; gap: 16px;">
-            <div *ngFor="let subject of groupedSubjectPerformances" class="subject-co-block" style="border: 1px solid var(--student-border); border-radius: 12px; padding: 16px; background: var(--student-card-bg);">
-                <h3 style="margin: 0; color: var(--student-primary); padding-bottom: 8px; font-size: 1.05rem; display: flex; justify-content: space-between; align-items: center; cursor: pointer; border-bottom: 1px solid var(--student-border);" (click)="toggleSubjectGroup(subject.courseName)">
-                    <span style="display: flex; align-items: center; gap: 8px;">📖 {{ subject.courseName }}</span>
-                    <span style="font-size: 0.82rem; color: var(--student-text-secondary); font-weight: 600;">
-                        {{ collapsedSubjectGroups[subject.courseName] ? '▼ Show' : '▲ Hide' }} ({{ subject.coCount }} COs) - Avg: {{ subject.attainmentAvg }}%
-                    </span>
-                </h3>
-                
-                <div class="chart-list" *ngIf="!collapsedSubjectGroups[subject.courseName]" style="margin-top: 14px; display: flex; flex-direction: column; gap: 14px;">
-                    <div class="chart-row" *ngFor="let co of subject.cos" style="display: flex; flex-direction: column; gap: 6px;">
-                        <div class="co-info-row" style="display: flex; justify-content: space-between; font-size: 0.9rem; font-weight: 600; color: var(--student-text);">
-                            <strong>{{ co.code }} : {{ co.description }}</strong>
-                            <span>Attained: <strong [style.color]="co.attained >= co.target ? '#10b981' : '#ef4444'">{{ co.attained }}%</strong> (Target: {{ co.target }}%)</span>
-                        </div>
-                        <div class="chart-bar-background" style="height: 8px; width: 100%; background: rgba(var(--student-primary-rgb), 0.1); border-radius: 4px; overflow: hidden;">
-                            <div class="chart-bar" 
-                                 [style.width]="co.attained + '%'"
-                                 [style.background]="co.attained >= co.target ? 'linear-gradient(90deg, #10b981, #34d399)' : 'linear-gradient(90deg, #ef4444, #f87171)'"
-                                 style="height: 100%; border-radius: 4px; transition: width 0.3s ease;">
-                            </div>
-                        </div>
-                    </div>
+        <div style="margin-top: 16px; display: flex; flex-direction: column; gap: 16px;">
+          <div *ngFor="let subject of groupedSubjectPerformances" class="subject-co-block" style="border: 1px solid #1f2f54; border-radius: 12px; padding: 18px; background: #091024;">
+            <h3 style="margin: 0; color: #d4af37; padding-bottom: 10px; font-size: 1.05rem; display: flex; justify-content: space-between; align-items: center; cursor: pointer; border-bottom: 1px solid #1f2f54;" (click)="toggleSubjectGroup(subject.courseName)">
+              <span style="display: flex; align-items: center; gap: 8px;">📖 {{ subject.courseName }}</span>
+              <span style="font-size: 0.82rem; color: #94a3b8; font-weight: 600;">
+                {{ collapsedSubjectGroups[subject.courseName] ? '▼ Show' : '▲ Hide' }} ({{ subject.coCount }} COs) - Avg: {{ subject.attainmentAvg }}%
+              </span>
+            </h3>
+            
+            <div class="chart-list" *ngIf="!collapsedSubjectGroups[subject.courseName]" style="margin-top: 14px; display: flex; flex-direction: column; gap: 14px;">
+              <div class="chart-row" *ngFor="let co of subject.cos" style="display: flex; flex-direction: column; gap: 6px;">
+                <div class="co-info-row" style="display: flex; justify-content: space-between; font-size: 0.9rem; font-weight: 600; color: #ffffff;">
+                  <strong>{{ co.code }} : {{ co.description }}</strong>
+                  <span>Attained: <strong [style.color]="co.attained >= co.target ? '#10b981' : '#ef4444'">{{ co.attained }}%</strong> (Target: {{ co.target }}%)</span>
                 </div>
+                <div class="chart-bar-background" style="height: 10px; width: 100%; background: #091024; border: 1px solid #1f2f54; border-radius: 999px; overflow: hidden;">
+                  <div class="chart-bar" 
+                       [style.width]="co.attained + '%'"
+                       [style.background]="co.attained >= co.target ? 'linear-gradient(90deg, #10b981, #34d399)' : 'linear-gradient(90deg, #ef4444, #f87171)'"
+                       style="height: 100%; border-radius: 999px; transition: width 0.3s ease;">
+                  </div>
+                </div>
+              </div>
             </div>
+          </div>
         </div>
-    </div>
+      </div>
 
-    <!-- Grade Trend Card -->
-    <div class="chart-card" *ngIf="myMarkEntries.length > 0" style="background: var(--student-card-bg); border: 1px solid var(--student-border); padding: 20px; border-radius: 12px; display: flex; flex-direction: column; gap: 14px; box-shadow: 0 1px 12px rgba(0,0,0,.06);">
-        <h2 style="margin: 0; font-size: 1.3rem; color: var(--student-text); font-weight: 800;">📈 Grade Progression Trend</h2>
-        <p class="subtitle" style="margin: 0; color: var(--student-text-secondary); font-size: 0.88rem;">Visual representation of your scores across recent assessments.</p>
-        <div style="text-align: center; margin-top: 10px; max-width: 600px; margin-left: auto; margin-right: auto; width: 100%;">
-            <svg width="100%" height="180" viewBox="0 0 500 180" style="background: rgba(255,255,255,0.05); border-radius: 8px; border: 1px solid var(--student-border); padding: 10px;">
-                <!-- Grid lines -->
-                <line x1="40" y1="20" x2="480" y2="20" stroke="rgba(255,255,255,0.1)" stroke-width="1"></line>
-                <line x1="40" y1="52.5" x2="480" y2="52.5" stroke="rgba(255,255,255,0.1)" stroke-width="1"></line>
-                <line x1="40" y1="85" x2="480" y2="85" stroke="rgba(255,255,255,0.1)" stroke-width="1"></line>
-                <line x1="40" y1="117.5" x2="480" y2="117.5" stroke="rgba(255,255,255,0.1)" stroke-width="1"></line>
-                <line x1="40" y1="150" x2="480" y2="150" stroke="rgba(255,255,255,0.2)" stroke-width="1"></line>
-                
-                <!-- Axis Labels -->
-                <text x="20" y="24" fill="var(--student-text-secondary)" font-size="9" text-anchor="middle">100%</text>
-                <text x="20" y="89" fill="var(--student-text-secondary)" font-size="9" text-anchor="middle">50%</text>
-                <text x="20" y="154" fill="var(--student-text-secondary)" font-size="9" text-anchor="middle">0%</text>
-                
-                <!-- Trend Line -->
-                <polyline
-                    fill="none"
-                    [attr.stroke]="'var(--student-primary)'"
-                    stroke-width="3"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    [attr.points]="svgPoints">
-                </polyline>
-                
-                <!-- Points circles -->
-                <circle *ngFor="let pt of getSvgCircles()" 
-                        [attr.cx]="pt.x" 
-                        [attr.cy]="pt.y" 
-                        r="5" 
-                        fill="#fff" 
-                        [attr.stroke]="'var(--student-primary)'" 
-                        stroke-width="3">
-                </circle>
+      <!-- Grade Trend Card -->
+      <div class="chart-card" *ngIf="myMarkEntries.length > 0">
+        <h2>📈 Grade Progression Trend</h2>
+        <p class="subtitle">Visual representation of your scores across recent assessments.</p>
+        <div style="text-align: center; margin-top: 14px; max-width: 600px; margin-left: auto; margin-right: auto; width: 100%;">
+          <svg width="100%" height="180" viewBox="0 0 500 180" style="background: #091024; border-radius: 10px; border: 1px solid #1f2f54; padding: 10px;">
+            <!-- Grid lines -->
+            <line x1="40" y1="20" x2="480" y2="20" stroke="rgba(255,255,255,0.08)" stroke-width="1"></line>
+            <line x1="40" y1="52.5" x2="480" y2="52.5" stroke="rgba(255,255,255,0.08)" stroke-width="1"></line>
+            <line x1="40" y1="85" x2="480" y2="85" stroke="rgba(255,255,255,0.08)" stroke-width="1"></line>
+            <line x1="40" y1="117.5" x2="480" y2="117.5" stroke="rgba(255,255,255,0.08)" stroke-width="1"></line>
+            <line x1="40" y1="150" x2="480" y2="150" stroke="rgba(255,255,255,0.15)" stroke-width="1"></line>
+            
+            <!-- Axis Labels -->
+            <text x="20" y="24" fill="#94a3b8" font-size="9" text-anchor="middle">100%</text>
+            <text x="20" y="89" fill="#94a3b8" font-size="9" text-anchor="middle">50%</text>
+            <text x="20" y="154" fill="#94a3b8" font-size="9" text-anchor="middle">0%</text>
+            
+            <!-- Trend Line -->
+            <polyline
+              fill="none"
+              stroke="#d4af37"
+              stroke-width="3"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              [attr.points]="svgPoints">
+            </polyline>
+            
+            <!-- Points circles -->
+            <circle *ngFor="let pt of getSvgCircles()" 
+                    [attr.cx]="pt.x" 
+                    [attr.cy]="pt.y" 
+                    r="5" 
+                    fill="#0a1128" 
+                    stroke="#d4af37" 
+                    stroke-width="3">
+            </circle>
 
-                <!-- Tooltip-style labels above points -->
-                <text *ngFor="let pt of getSvgCircles()"
-                      [attr.x]="pt.x"
-                      [attr.y]="pt.y - 10"
-                      fill="var(--student-text)"
-                      font-size="9"
-                      font-weight="bold"
-                      text-anchor="middle">
-                    {{ pt.score }}%
-                </text>
-            </svg>
+            <!-- Tooltip-style labels above points -->
+            <text *ngFor="let pt of getSvgCircles()"
+                  [attr.x]="pt.x"
+                  [attr.y]="pt.y - 10"
+                  fill="#ffffff"
+                  font-size="9"
+                  font-weight="bold"
+                  text-anchor="middle">
+              {{ pt.score }}%
+            </text>
+          </svg>
         </div>
-    </div>
+      </div>
 
-    <!-- Detailed Assessments Table -->
-    <div class="table-card" style="background: var(--student-card-bg); border: 1px solid var(--student-border); padding: 20px; border-radius: 12px; display: flex; flex-direction: column; gap: 14px; box-shadow: 0 1px 12px rgba(0,0,0,.06);">
-        <h2 style="margin: 0; font-size: 1.3rem; color: var(--student-text); font-weight: 800;">📋 Grade Book</h2>
-        <table *ngIf="myMarkEntries.length > 0" style="width: 100%; border-collapse: collapse;">
-            <thead>
-                <tr>
-                    <th style="color: var(--student-primary); border-bottom: 2px solid var(--student-border); padding: 12px 10px; text-align: left;">Assessment</th>
-                    <th style="color: var(--student-primary); border-bottom: 2px solid var(--student-border); padding: 12px 10px; text-align: left;">Obtained Marks</th>
-                    <th style="color: var(--student-primary); border-bottom: 2px solid var(--student-border); padding: 12px 10px; text-align: left;">Maximum Marks</th>
-                    <th style="color: var(--student-primary); border-bottom: 2px solid var(--student-border); padding: 12px 10px; text-align: left;">Percentage</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr *ngFor="let mark of myMarkEntries" style="border-bottom: 1px solid var(--student-border);">
-                    <td style="padding: 12px 10px; color: var(--student-text);"><strong>{{ mark.assessment }}</strong></td>
-                    <td style="padding: 12px 10px; color: var(--student-text);">{{ mark.obtained }}</td>
-                    <td style="padding: 12px 10px; color: var(--student-text);">{{ mark.maxMarks }}</td>
-                    <td style="padding: 12px 10px; color: var(--student-text);"><strong>{{ Math.round((mark.obtained / mark.maxMarks) * 100) }}%</strong></td>
-                </tr>
-            </tbody>
+      <!-- Detailed Assessments Table -->
+      <div class="table-card">
+        <h2>📋 Grade Book</h2>
+        <table *ngIf="myMarkEntries.length > 0">
+          <thead>
+            <tr>
+              <th>Assessment</th>
+              <th>Obtained Marks</th>
+              <th>Maximum Marks</th>
+              <th>Percentage</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let mark of myMarkEntries">
+              <td><strong>{{ mark.assessment }}</strong></td>
+              <td>{{ mark.obtained }}</td>
+              <td>{{ mark.maxMarks }}</td>
+              <td><strong>{{ Math.round((mark.obtained / mark.maxMarks) * 100) }}%</strong></td>
+            </tr>
+          </tbody>
         </table>
         <div *ngIf="myMarkEntries.length === 0" class="empty-state">
-            <p>No graded assessments available in your gradebook yet.</p>
+          <p>No graded assessments available in your gradebook yet.</p>
         </div>
-    </div>
+      </div>
+    </ng-container>
+
+    <!-- FACULTY VIEW -->
+    <ng-container *ngIf="role !== 'student'">
+      <div class="page-header">
+        <div class="header-title">
+          <h1>👥 Student Performance Analysis</h1>
+          <p>Faculty view for internal, assignment, quiz marks and student performance trends.</p>
+        </div>
+      </div>
+
+      <div class="summary-grid">
+        <div class="section-card">
+          <h3>Internal Marks Avg</h3>
+          <strong>{{ internalAvg }}</strong>
+          <p>Average internal exam score across this batch.</p>
+        </div>
+        <div class="section-card">
+          <h3>Assignment Marks Avg</h3>
+          <strong>{{ assignmentAvg }}</strong>
+          <p>Average assignment score across students.</p>
+        </div>
+        <div class="section-card">
+          <h3>Quiz Marks Avg</h3>
+          <strong>{{ quizAvg }}</strong>
+          <p>Average quiz performance across the course.</p>
+        </div>
+        <div class="section-card">
+          <h3>Overall Average</h3>
+          <strong>{{ overallAvg }}</strong>
+          <p>Average of all marks for monitored students.</p>
+        </div>
+      </div>
+
+      <div class="filter-card">
+        <label>Filter by Student:
+          <input type="text" [(ngModel)]="searchTerm" placeholder="Search student name or RegNo" (input)="onSearch()">
+        </label>
+      </div>
+
+      <div class="table-card" *ngIf="filteredStudents.length > 0">
+        <h2>📊 All Student Performance</h2>
+        <table>
+          <thead>
+            <tr>
+              <th>Student Name</th>
+              <th>RegNo</th>
+              <th>Internal</th>
+              <th>Assignment</th>
+              <th>Quiz</th>
+              <th>Avg</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let student of filteredStudents">
+              <td>{{ student.name }}</td>
+              <td>{{ student.regNo || '-' }}</td>
+              <td>{{ student.internal }}%</td>
+              <td>{{ student.assignment }}%</td>
+              <td>{{ student.quiz }}%</td>
+              <td><strong>{{ student.average }}%</strong></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="table-card" *ngIf="topPerformers.length > 0">
+        <h2>🏆 Top Performers</h2>
+        <table>
+          <thead>
+            <tr>
+              <th>Rank</th>
+              <th>Student</th>
+              <th>Internal</th>
+              <th>Assignment</th>
+              <th>Quiz</th>
+              <th>Avg</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let student of topPerformers; index as i">
+              <td>{{ i + 1 }}</td>
+              <td>{{ student.name }}</td>
+              <td>{{ student.internal }}%</td>
+              <td>{{ student.assignment }}%</td>
+              <td>{{ student.quiz }}%</td>
+              <td><strong>{{ student.average }}%</strong></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="table-card" *ngIf="lowPerformers.length > 0">
+        <h2>⚠️ Low Performers</h2>
+        <table>
+          <thead>
+            <tr>
+              <th>Rank</th>
+              <th>Student</th>
+              <th>Internal</th>
+              <th>Assignment</th>
+              <th>Quiz</th>
+              <th>Avg</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let student of lowPerformers; index as i">
+              <td>{{ i + 1 }}</td>
+              <td>{{ student.name }}</td>
+              <td>{{ student.internal }}%</td>
+              <td>{{ student.assignment }}%</td>
+              <td>{{ student.quiz }}%</td>
+              <td><strong>{{ student.average }}%</strong></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="chart-card" *ngIf="studentPerformances.length > 0">
+        <h2>📈 Performance Graphs</h2>
+        <div class="chart-list">
+          <div class="chart-row" *ngFor="let student of filteredStudents.slice(0, 10)">
+            <div class="chart-label">{{ student.name }} ({{ student.average }}%)</div>
+            <div class="chart-bar-background">
+              <div class="chart-bar" [style.width]="student.average + '%'"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div *ngIf="studentPerformances.length === 0" class="empty-state">
+        <p>No student marks data available. Admin needs to add marks first.</p>
+      </div>
+    </ng-container>
 
     <app-footer></app-footer>
   </div>
-</div>
-
-<ng-template #fullApp>
-<div class="container">
-    <app-sidebar></app-sidebar>
-
-    <div class="content">
-        <!-- FACULTY VIEW -->
-        <ng-container *ngIf="role !== 'student'">
-            <div class="page-header">
-                <h1>👥 Student Performance Analysis</h1>
-                <p>Faculty view for internal, assignment, quiz marks and student performance trends.</p>
-            </div>
-
-            <div class="summary-grid">
-                <div class="section-card">
-                    <h3>Internal Marks Avg</h3>
-                    <strong>{{ internalAvg }}</strong>
-                    <p>Average internal exam score across this batch.</p>
-                </div>
-                <div class="section-card">
-                    <h3>Assignment Marks Avg</h3>
-                    <strong>{{ assignmentAvg }}</strong>
-                    <p>Average assignment score across students.</p>
-                </div>
-                <div class="section-card">
-                    <h3>Quiz Marks Avg</h3>
-                    <strong>{{ quizAvg }}</strong>
-                    <p>Average quiz performance across the course.</p>
-                </div>
-                <div class="section-card">
-                    <h3>Overall Average</h3>
-                    <strong>{{ overallAvg }}</strong>
-                    <p>Average of all marks for monitored students.</p>
-                </div>
-            </div>
-
-            <div class="filter-card">
-                <label>Filter by Student:
-                    <input type="text" [(ngModel)]="searchTerm" placeholder="Search student name or RegNo" (input)="onSearch()">
-                </label>
-            </div>
-
-            <div class="table-card" *ngIf="filteredStudents.length > 0">
-                <h2>📊 All Student Performance</h2>
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Student Name</th>
-                            <th>RegNo</th>
-                            <th>Internal</th>
-                            <th>Assignment</th>
-                            <th>Quiz</th>
-                            <th>Avg</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr *ngFor="let student of filteredStudents">
-                            <td>{{ student.name }}</td>
-                            <td>{{ student.regNo || '-' }}</td>
-                            <td>{{ student.internal }}%</td>
-                            <td>{{ student.assignment }}%</td>
-                            <td>{{ student.quiz }}%</td>
-                            <td><strong>{{ student.average }}%</strong></td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-
-            <div class="table-card" *ngIf="topPerformers.length > 0">
-                <h2>🏆 Top Performers</h2>
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Rank</th>
-                            <th>Student</th>
-                            <th>Internal</th>
-                            <th>Assignment</th>
-                            <th>Quiz</th>
-                            <th>Avg</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr *ngFor="let student of topPerformers; index as i">
-                            <td>{{ i + 1 }}</td>
-                            <td>{{ student.name }}</td>
-                            <td>{{ student.internal }}%</td>
-                            <td>{{ student.assignment }}%</td>
-                            <td>{{ student.quiz }}%</td>
-                            <td><strong>{{ student.average }}%</strong></td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-
-            <div class="table-card" *ngIf="lowPerformers.length > 0">
-                <h2>⚠️ Low Performers</h2>
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Rank</th>
-                            <th>Student</th>
-                            <th>Internal</th>
-                            <th>Assignment</th>
-                            <th>Quiz</th>
-                            <th>Avg</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr *ngFor="let student of lowPerformers; index as i">
-                            <td>{{ i + 1 }}</td>
-                            <td>{{ student.name }}</td>
-                            <td>{{ student.internal }}%</td>
-                            <td>{{ student.assignment }}%</td>
-                            <td>{{ student.quiz }}%</td>
-                            <td><strong>{{ student.average }}%</strong></td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-
-            <div class="chart-card" *ngIf="studentPerformances.length > 0">
-                <h2>📈 Performance Graphs</h2>
-                <div class="chart-list">
-                    <div class="chart-row" *ngFor="let student of filteredStudents.slice(0, 10)">
-                        <div class="chart-label">{{ student.name }} ({{ student.average }}%)</div>
-                        <div class="chart-bar-background">
-                            <div class="chart-bar" [style.width]="student.average + '%'"></div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div *ngIf="studentPerformances.length === 0" class="empty-state">
-                <p>No student marks data available. Admin needs to add marks first.</p>
-            </div>
-        </ng-container>
-        <app-footer></app-footer>
-    </div>
-</div>
-</ng-template>`,
+</div>`,
   styles: [
     `.summary-grid { display: grid; gap: 16px; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); margin-bottom: 24px; }
     .section-card, .table-card, .chart-card, .filter-card { padding: 22px; background: #101b38; border: 1px solid #1f2f54; border-radius: 14px; box-shadow: 0 8px 24px rgba(0,0,0,.3); margin-bottom: 24px; }
-    .section-card h3, .table-card h3, .chart-card h3 { margin: 0 0 10px; font-size: 1.1rem; color: #ffffff; font-weight: 700; }
+    .section-card h3, .table-card h2, .chart-card h2, .table-card h3, .chart-card h3 { margin: 0 0 10px; font-size: 1.15rem; color: #ffffff; font-weight: 700; }
     .section-card strong { display: block; font-size: 2.2rem; margin-bottom: 8px; color: #ffffff; font-weight: 800; }
+    .section-card p { margin: 0; color: #94a3b8; font-size: 0.88rem; }
     .filter-card label { display: flex; align-items: center; gap: 10px; font-weight: 600; color: #cbd5e1; }
     .filter-card input { padding: 8px 12px; border: 1px solid #1f2f54; border-radius: 8px; font-size: 14px; flex: 1; background: #091024; color: #ffffff; }
     table { width: 100%; border-collapse: collapse; margin-top: 16px; }
@@ -368,133 +331,12 @@ interface CoAttainmentStatus {
     tbody tr:hover { background: #18284e; }
     .chart-list { display: grid; gap: 18px; margin-top: 16px; }
     .chart-row { display: grid; gap: 8px; }
+    .chart-label { color: #cbd5e1; font-weight: 600; font-size: 0.9rem; }
     .chart-bar-background { height: 16px; width: 100%; background: #091024; border-radius: 999px; overflow: hidden; border: 1px solid #1f2f54; }
     .chart-bar { height: 100%; background: linear-gradient(90deg, #d4af37, #f59e0b); border-radius: 999px; }
-    .page-header h1 { color: #ffffff; font-weight: 800; }
-    .page-header p { margin: 8px 0 0; color: #94a3b8; }
     .subtitle { color: #94a3b8; font-size: 0.9rem; margin-top: 4px; }
     .co-info-row { display: flex; justify-content: space-between; font-size: 0.9rem; color: #cbd5e1; }
     .empty-state { padding: 40px; text-align: center; color: #94a3b8; background: #091024; border: 1px solid #1f2f54; border-radius: 12px; }
-
-    /* Student Shell & Sidebar Styles */
-    .student-shell {
-      display: flex;
-      position: absolute;
-      top: 72px;
-      bottom: 0;
-      left: 0;
-      right: 0;
-      width: 100%;
-      min-height: 0;
-      align-items: stretch;
-      background: var(--student-bg, #0a1128);
-      color: var(--student-text, #f8fafc);
-      overflow: hidden;
-      box-sizing: border-box;
-
-      --student-primary: #d4af37;
-      --student-primary-rgb: 212, 175, 55;
-      --student-hero-bg: linear-gradient(135deg, #0a1128 0%, #101b38 50%, #18284e 100%);
-      --student-bg: #0a1128;
-      --student-card-bg: #101b38;
-      --student-text: #ffffff;
-      --student-text-secondary: #94a3b8;
-      --student-border: #1f2f54;
-      --student-sidebar-bg: #091024;
-    }
-    .student-sidebar {
-      width: 270px;
-      height: 100%;
-      box-sizing: border-box;
-      padding: 20px 16px;
-      background: var(--student-sidebar-bg);
-      border-right: 1px solid var(--student-border);
-      box-shadow: 2px 0 30px rgba(74, 140, 234, 0.08);
-      display: flex;
-      flex-direction: column;
-      overflow-y: auto;
-      flex-shrink: 0;
-    }
-    .student-sidebar .logo {
-      margin-bottom: 20px;
-      padding: 0 8px;
-    }
-    .student-sidebar .logo h2 {
-      color: var(--student-primary);
-      margin: 0;
-      font-size: 1.4rem;
-      font-weight: 800;
-      letter-spacing: -0.02em;
-    }
-    .student-sidebar .logo p {
-      font-size: 0.78rem;
-      margin: 2px 0 0;
-      color: var(--student-text-secondary);
-      font-weight: 500;
-    }
-    .nav-groups-container {
-      display: flex;
-      flex-direction: column;
-      gap: 16px;
-      flex: 1;
-    }
-    .nav-group-block {
-      display: flex;
-      flex-direction: column;
-      gap: 4px;
-    }
-    .group-title {
-      font-size: 10.5px;
-      font-weight: 800;
-      color: var(--student-text-secondary);
-      letter-spacing: 0.08em;
-      padding: 0 12px;
-      margin-bottom: 4px;
-      text-transform: uppercase;
-    }
-    .group-items {
-      display: flex;
-      flex-direction: column;
-      gap: 3px;
-    }
-    .group-items button {
-      width: 100%;
-      justify-content: flex-start;
-      gap: 10px;
-      padding: 8px 12px;
-      font-size: 13.5px;
-      font-weight: 500;
-      border-radius: 8px;
-      color: var(--student-text);
-      background: transparent;
-      border: none;
-      text-align: left;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      transition: all 0.18s ease;
-    }
-    .group-items button .icon {
-      font-size: 15px;
-      flex-shrink: 0;
-    }
-    .group-items button .nav-label {
-      flex: 1;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-    .group-items button:hover {
-      background: rgba(var(--student-primary-rgb), 0.08);
-      color: var(--student-primary);
-      transform: translateX(2px);
-    }
-    .group-items button.active {
-      background: var(--student-primary);
-      color: #ffffff;
-      font-weight: 600;
-      box-shadow: 0 4px 12px rgba(var(--student-primary-rgb), 0.28);
-    }
     `
   ]
 })
