@@ -101,20 +101,20 @@
           <div class="form-group">
             <label style="display: flex; justify-content: space-between; align-items: center;">
               <span>Assign Subjects / Courses</span>
-              <small style="color: #2563eb; font-weight: 600;">Selected: {{ formData.selectedCourses.length }} subjects</small>
+              <small style="color: #fde68a; font-weight: 600;">Selected: {{ formData.selectedCourses.length }} subjects</small>
             </label>
-            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 8px; max-height: 180px; overflow-y: auto; padding: 12px; border: 1px solid #cbd5e1; border-radius: 8px; background: #f8fafc;">
-              <label *ngFor="let course of allAvailableCourses" style="display: flex; align-items: center; gap: 8px; font-size: 0.88rem; font-weight: normal; cursor: pointer; background: #ffffff; padding: 6px 10px; border-radius: 6px; border: 1px solid #e2e8f0;">
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 8px; max-height: 180px; overflow-y: auto; padding: 12px; border: 1px solid #1f2f54; border-radius: 8px; background: #091024;">
+              <label *ngFor="let course of allAvailableCourses" style="display: flex; align-items: center; gap: 8px; font-size: 0.88rem; font-weight: normal; cursor: pointer; background: #101b38; color: #ffffff; padding: 6px 10px; border-radius: 6px; border: 1px solid #1f2f54;">
                 <input 
                   type="checkbox" 
                   [checked]="isCourseSelected(course)" 
                   (change)="toggleCourseSelection(course)"
-                  style="width: 16px; height: 16px; accent-color: #2563eb;"
+                  style="width: 16px; height: 16px; accent-color: #d4af37;"
                 />
-                <span><strong>{{ course.code ? course.code + ' : ' : '' }}</strong>{{ course.title }}</span>
+                <span><strong style="color: #fde68a;">{{ course.code ? course.code + ' : ' : '' }}</strong>{{ course.title }}</span>
               </label>
             </div>
-            <small style="color: #64748b; margin-top: 4px; display: block;">Check or uncheck the subjects this faculty member teaches across all semesters.</small>
+            <small style="color: #94a3b8; margin-top: 4px; display: block;">Check or uncheck the subjects this faculty member teaches across all semesters.</small>
           </div>
 
           <div class="form-actions">
@@ -158,16 +158,16 @@
               <td class="faculty-email">{{ faculty.email }}</td>
               <td class="courses-cell">
                 <div *ngIf="faculty.courses && faculty.courses.length > 0" style="display: flex; flex-wrap: wrap; gap: 4px; max-width: 280px;">
-                  <span *ngFor="let c of faculty.courses" class="courses-badge" style="background: #eff6ff; color: #1e40af; border: 1px solid #bfdbfe; font-size: 0.76rem; font-weight: 600; padding: 2px 7px; border-radius: 4px;">{{ c }}</span>
+                  <span *ngFor="let c of faculty.courses" class="courses-badge">{{ c }}</span>
                 </div>
-                <button *ngIf="!faculty.courses || faculty.courses.length === 0" (click)="openAllotModal(faculty)" class="btn-action-pill edit" style="padding: 2px 8px; font-size: 0.75rem; color: #3b82f6; border-color: #3b82f6;">
+                <button *ngIf="!faculty.courses || faculty.courses.length === 0" (click)="openAllotModal(faculty)" class="btn-action-pill edit" style="padding: 2px 8px; font-size: 0.75rem;">
                   + Allot Subjects
                 </button>
               </td>
               <td class="actions-cell">
-                <div class="actions-btn-wrap" style="display: flex; gap: 6px; justify-content: center; flex-wrap: wrap;">
-                  <button type="button" class="btn-action-pill edit" (click)="openAllotModal(faculty)" title="Allot Subjects to this faculty" style="background: #2563eb; color: #ffffff; border-color: #2563eb; font-weight: 500;">
-                    📚 Allot Subjects
+                <div class="actions-btn-wrap">
+                  <button type="button" class="btn-action-pill edit" (click)="openAllotModal(faculty)" title="Allot Subjects to this faculty">
+                    📚 Allot
                   </button>
                   <button type="button" class="btn-action-pill edit" (click)="openEditForm(faculty)" title="Edit Faculty Profile Details">
                     ✎ Edit
@@ -184,20 +184,20 @@
     </div>
 
     <!-- Dedicated Focused Allot Subjects Modal -->
-    <div class="modal" *ngIf="showAllotModal" style="display: flex; align-items: center; justify-content: center; position: fixed; inset: 0; background: rgba(15, 23, 42, 0.6); z-index: 9999; padding: 20px;">
-      <div class="modal-content" style="background: #ffffff; width: 100%; max-width: 650px; border-radius: 12px; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25); overflow: hidden; display: flex; flex-direction: column; max-height: 90vh;">
+    <div class="modal" *ngIf="showAllotModal">
+      <div class="modal-content" style="max-width: 650px;">
         
-        <div class="modal-header" style="padding: 18px 24px; background: #f8fafc; border-bottom: 1px solid #e2e8f0; display: flex; align-items: center; justify-content: space-between;">
+        <div class="modal-header">
           <div>
-            <h2 style="margin: 0; font-size: 1.25rem; color: #0f172a; display: flex; align-items: center; gap: 8px;">
+            <h2 style="margin: 0; font-size: 1.25rem; color: #ffffff; display: flex; align-items: center; gap: 8px;">
               <span>📚 Allot Subjects to</span> 
-              <span style="color: #2563eb;">{{ allottingFaculty?.name }}</span>
+              <span style="color: #fde68a;">{{ allottingFaculty?.name }}</span>
             </h2>
-            <p style="margin: 4px 0 0 0; font-size: 0.85rem; color: #64748b;">
-              Department: <strong>{{ allottingFaculty?.department }}</strong> • {{ allottingFaculty?.designation }}
+            <p style="margin: 4px 0 0 0; font-size: 0.85rem; color: #94a3b8;">
+              Department: <strong style="color: #cbd5e1;">{{ allottingFaculty?.department }}</strong> • {{ allottingFaculty?.designation }}
             </p>
           </div>
-          <button class="close-btn" (click)="closeAllotModal()" style="border: none; background: none; font-size: 1.4rem; color: #64748b; cursor: pointer;">✕</button>
+          <button class="close-btn" (click)="closeAllotModal()">✕</button>
         </div>
 
         <div style="padding: 20px 24px; overflow-y: auto; flex: 1;">
@@ -207,11 +207,11 @@
               type="text" 
               placeholder="🔍 Search course by code or title..." 
               [(ngModel)]="allotSearchQuery"
-              style="flex: 1; min-width: 200px; padding: 9px 12px; border-radius: 6px; border: 1px solid #cbd5e1; outline: none; font-size: 0.9rem;"
+              style="flex: 1; min-width: 200px; padding: 10px 14px; border-radius: 8px; border: 1px solid #1f2f54; outline: none; font-size: 0.9rem; background: #091024; color: #ffffff;"
             />
             <select 
               [(ngModel)]="allotSemesterFilter"
-              style="padding: 9px 12px; border-radius: 6px; border: 1px solid #cbd5e1; outline: none; font-size: 0.9rem; background: #ffffff; color: #1e293b;"
+              style="padding: 10px 14px; border-radius: 8px; border: 1px solid #1f2f54; outline: none; font-size: 0.9rem; background: #091024; color: #fde68a;"
             >
               <option value="">🗓️ All Semesters</option>
               <option value="Semester 1">Semester 1</option>
@@ -226,11 +226,11 @@
           </div>
 
           <!-- Selection Counter -->
-          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; padding: 8px 12px; background: #eff6ff; border-radius: 6px; border: 1px solid #bfdbfe;">
-            <span style="font-size: 0.88rem; color: #1e40af; font-weight: 600;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; padding: 10px 14px; background: #091024; border-radius: 8px; border: 1px solid #1f2f54;">
+            <span style="font-size: 0.88rem; color: #fde68a; font-weight: 700;">
               ✨ Selected Subjects: {{ selectedAllotCourses.length }}
             </span>
-            <small style="color: #64748b;">Click checkboxes to assign/remove</small>
+            <small style="color: #94a3b8;">Click checkboxes to assign/remove</small>
           </div>
 
           <!-- Available Subjects Grid -->
@@ -238,25 +238,25 @@
             <div 
               *ngFor="let course of filteredAllotCourses" 
               (click)="toggleAllotCourse(course)"
-              [style.background]="isAllotCourseSelected(course) ? '#eff6ff' : '#ffffff'"
-              [style.border-color]="isAllotCourseSelected(course) ? '#3b82f6' : '#e2e8f0'"
-              style="display: flex; align-items: center; gap: 12px; padding: 10px 14px; border: 1.5px solid #e2e8f0; border-radius: 8px; cursor: pointer; transition: all 0.15s ease;"
+              [style.background]="isAllotCourseSelected(course) ? 'rgba(212, 175, 55, 0.15)' : '#091024'"
+              [style.border-color]="isAllotCourseSelected(course) ? '#d4af37' : '#1f2f54'"
+              style="display: flex; align-items: center; gap: 12px; padding: 10px 14px; border: 1.5px solid #1f2f54; border-radius: 8px; cursor: pointer; transition: all 0.15s ease;"
             >
               <input 
                 type="checkbox" 
                 [checked]="isAllotCourseSelected(course)" 
                 (click)="$event.stopPropagation()"
                 (change)="toggleAllotCourse(course)"
-                style="width: 18px; height: 18px; accent-color: #2563eb; cursor: pointer;"
+                style="width: 18px; height: 18px; accent-color: #d4af37; cursor: pointer;"
               />
               <div style="flex: 1; overflow: hidden;">
                 <div style="display: flex; align-items: center; gap: 6px; margin-bottom: 2px;">
-                  <span style="background: #dbeafe; color: #1e40af; font-size: 0.75rem; font-weight: 700; padding: 1px 6px; border-radius: 4px;">
+                  <span style="background: rgba(212, 175, 55, 0.15); color: #fde68a; font-size: 0.75rem; font-weight: 700; padding: 1px 6px; border-radius: 4px; font-family: monospace;">
                     {{ course.code }}
                   </span>
-                  <span style="font-size: 0.75rem; color: #64748b;">{{ course.semester }}</span>
+                  <span style="font-size: 0.75rem; color: #94a3b8;">{{ course.semester }}</span>
                 </div>
-                <strong style="font-size: 0.88rem; color: #1e293b; display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" [title]="course.title">
+                <strong style="font-size: 0.88rem; color: #ffffff; display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" [title]="course.title">
                   {{ course.title }}
                 </strong>
               </div>
@@ -264,9 +264,9 @@
           </div>
         </div>
 
-        <div class="modal-footer" style="padding: 16px 24px; background: #f8fafc; border-top: 1px solid #e2e8f0; display: flex; justify-content: flex-end; gap: 10px;">
+        <div class="modal-footer" style="padding: 16px 24px; background: #0d1730; border-top: 1px solid #1f2f54; display: flex; justify-content: flex-end; gap: 10px;">
           <button type="button" class="btn btn-secondary" (click)="closeAllotModal()">Cancel</button>
-          <button type="button" class="btn btn-primary" (click)="saveSubjectAllotment()" style="background: #2563eb; color: #ffffff; padding: 8px 20px; font-weight: 600; border-radius: 6px; border: none; cursor: pointer;">
+          <button type="button" class="btn btn-primary" (click)="saveSubjectAllotment()">
             💾 Save Allocated Subjects
           </button>
         </div>
