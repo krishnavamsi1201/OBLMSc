@@ -59,52 +59,19 @@ interface DayLectureEntry {
   imports: [CommonModule, FormsModule, Navbar, Sidebar, Footer],
   template: `<app-navbar></app-navbar>
 
-<div *ngIf="role === 'student'; else fullApp" class="student-shell" [ngStyle]="themeStyles">
-  <!-- Categorized Sidebar Navigation -->
-  <div class="student-sidebar">
-    <div class="logo">
-      <h2>OBLMS</h2>
-      <p>Outcome Based LMS</p>
-    </div>
+<div class="container">
+  <app-sidebar></app-sidebar>
 
-    <div class="nav-groups-container">
-      <div *ngFor="let group of studentNavGroups" class="nav-group-block">
-        <span class="group-title">{{ group.title }}</span>
-        <div class="group-items">
-          <button mat-button *ngFor="let item of group.items" (click)="navigate(item.path)" [class.active]="item.path === '/attendance'">
-            <span class="material-icons" style="font-size: 18px; margin-right: 8px;">{{ item.icon }}</span>
-            <span class="nav-label">{{ item.label }}</span>
-          </button>
+  <div class="content">
+
+    <!-- STUDENT VIEW -->
+    <ng-container *ngIf="role === 'student'">
+      <div class="page-header">
+        <div class="header-title">
+          <h1>📋 My Attendance</h1>
+          <p>Track your overall academic attendance, day-wise lecture check-ins, and subject-wise 75% examination eligibility.</p>
         </div>
       </div>
-    </div>
-
-    <!-- Mini Profile Card at Bottom of Sidebar -->
-    <div class="sidebar-user-card" (click)="navigate('/profile')" title="View profile details" style="margin-top: auto; padding: 10px 12px; background: var(--student-card-bg); border: 1px solid var(--student-border); border-radius: 12px; display: flex; align-items: center; gap: 10px; cursor: pointer; transition: all 0.2s ease;">
-      <div class="user-avatar-mini" style="width: 36px; height: 36px; border-radius: 50%; overflow: hidden; background: rgba(var(--student-primary-rgb), 0.1); display: flex; align-items: center; justify-content: center; flex-shrink: 0; border: 1.5px solid var(--student-primary);">
-        <img *ngIf="studentPhoto" [src]="studentPhoto" alt="Profile" style="width: 100%; height: 100%; object-fit: cover;" />
-        <span *ngIf="!studentPhoto" class="material-icons" style="font-size: 20px; color: var(--student-primary);">person</span>
-      </div>
-      <div class="user-meta-mini" style="flex: 1; display: flex; flex-direction: column; overflow: hidden;">
-        <strong class="user-name-mini" style="font-size: 12.5px; color: var(--student-text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: 700;">{{ studentName }}</strong>
-        <span class="user-roll-mini" style="font-size: 11px; color: var(--student-text-secondary);">{{ studentRoll }}</span>
-      </div>
-      <button class="logout-icon-btn" (click)="$event.stopPropagation(); logout()" title="Logout" style="background: transparent; border: none; cursor: pointer; padding: 4px; opacity: 0.7;">
-        <span class="material-icons" style="font-size: 18px; color: var(--student-text-secondary);">logout</span>
-      </button>
-    </div>
-  </div>
-
-  <!-- Student Scrollable Content Area -->
-  <div class="student-content" style="flex: 1; height: 100%; box-sizing: border-box; padding: 24px 28px 40px; overflow-y: auto; display: flex; flex-direction: column; gap: 20px;">
-    
-        <!-- Page Header -->
-        <div class="page-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-          <div class="header-title">
-            <h1 style="margin: 0; font-size: 1.8rem; color: var(--student-text); font-weight: 800;">My Attendance</h1>
-            <p style="margin: 4px 0 0 0; color: var(--student-text-secondary); font-size: 0.95rem;">Track your overall academic attendance, day-wise lecture check-ins, and subject-wise 75% examination eligibility.</p>
-          </div>
-        </div>
 
         <!-- 3 ATTENDANCE NAVIGATION TABS -->
         <div class="student-tabs-bar">
@@ -401,16 +368,10 @@ interface DayLectureEntry {
             </div>
 
         </div>
+    </ng-container>
 
-    <app-footer></app-footer>
-  </div>
-</div>
-
-<ng-template #fullApp>
-<div class="container">
-    <app-sidebar></app-sidebar>
-    <div class="content">
-
+    <!-- FACULTY / ADMIN VIEW -->
+    <ng-container *ngIf="role !== 'student'">
         <!-- Page Header -->
         <div class="page-header">
             <div class="header-main-row">
@@ -547,9 +508,10 @@ interface DayLectureEntry {
                 </button>
             </div>
         </div>
+    </ng-container>
 
-        <app-footer></app-footer>
-    </div>
+    <app-footer></app-footer>
+  </div>
 </div>`,
   styles: [
     `

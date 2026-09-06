@@ -21,49 +21,14 @@ interface ProfileData {
   imports: [CommonModule, FormsModule, RouterModule, Navbar, Sidebar, Footer],
   template: `<app-navbar></app-navbar>
 
-<div *ngIf="isStudent; else fullApp" class="student-shell" [ngStyle]="themeStyles">
-  <!-- Categorized Sidebar Navigation -->
-  <div class="student-sidebar">
-    <div class="logo">
-      <h2>OBLMS</h2>
-      <p>Outcome Based LMS</p>
-    </div>
+<div class="container">
+  <app-sidebar></app-sidebar>
 
-    <div class="nav-groups-container">
-      <div *ngFor="let group of studentNavGroups" class="nav-group-block">
-        <span class="group-title">{{ group.title }}</span>
-        <div class="group-items">
-          <button mat-button *ngFor="let item of group.items" (click)="navigate(item.path)" [class.active]="item.path === '/profile'">
-            <span class="material-icons" style="font-size: 18px; margin-right: 8px;">{{ item.icon }}</span>
-            <span class="nav-label">{{ item.label }}</span>
-          </button>
-        </div>
-      </div>
-    </div>
-
-    <!-- Mini Profile Card at Bottom of Sidebar -->
-    <div class="sidebar-user-card" (click)="navigate('/profile')" title="View profile details" style="margin-top: auto; padding: 10px 12px; background: var(--student-card-bg); border: 1px solid var(--student-border); border-radius: 12px; display: flex; align-items: center; gap: 10px; cursor: pointer; transition: all 0.2s ease;">
-      <div class="user-avatar-mini" style="width: 36px; height: 36px; border-radius: 50%; overflow: hidden; background: rgba(var(--student-primary-rgb), 0.1); display: flex; align-items: center; justify-content: center; flex-shrink: 0; border: 1.5px solid var(--student-primary);">
-        <img *ngIf="studentPhoto" [src]="studentPhoto" alt="Profile" style="width: 100%; height: 100%; object-fit: cover;" />
-        <span *ngIf="!studentPhoto" class="material-icons" style="font-size: 20px; color: var(--student-primary);">person</span>
-      </div>
-      <div class="user-meta-mini" style="flex: 1; display: flex; flex-direction: column; overflow: hidden;">
-        <strong class="user-name-mini" style="font-size: 12.5px; color: var(--student-text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: 700;">{{ studentName }}</strong>
-        <span class="user-roll-mini" style="font-size: 11px; color: var(--student-text-secondary);">{{ studentRoll }}</span>
-      </div>
-      <button class="logout-icon-btn" (click)="$event.stopPropagation(); logout()" title="Logout" style="background: transparent; border: none; cursor: pointer; padding: 4px; opacity: 0.7;">
-        <span class="material-icons" style="font-size: 18px; color: var(--student-text-secondary);">logout</span>
-      </button>
-    </div>
-  </div>
-
-  <!-- Student Scrollable Content Area -->
-  <div class="student-content" style="flex: 1; height: 100%; box-sizing: border-box; padding: 24px 28px 40px; overflow-y: auto; display: flex; flex-direction: column; gap: 20px;">
-    
-    <div class="page-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+  <div class="content">
+    <div class="page-header">
       <div class="header-title">
-        <h1 style="margin: 0; font-size: 1.8rem; color: var(--student-text); font-weight: 800;">My Profile</h1>
-        <p style="margin: 4px 0 0 0; color: var(--student-text-secondary); font-size: 0.95rem;">Review and update your user credentials, profile photo, and contact details.</p>
+        <h1>👤 My Profile</h1>
+        <p>Review and update your user credentials, profile photo, and contact details.</p>
       </div>
     </div>
 
@@ -86,37 +51,40 @@ interface ProfileData {
             📷
           </div>
           <div class="pic-hover-overlay">
-            <span>📷 Change</span>
+            <span>📷</span>
+            <p>Change Photo</p>
           </div>
         </div>
-        <div class="picture-controls">
-          <p class="picture-label">Profile Photo</p>
-          <small class="picture-hint">Click the avatar or upload button (PNG, JPG, WebP supported)</small>
-          
+        <div class="picture-details">
+          <h3>{{ profile.name || 'User Profile' }}</h3>
+          <p class="picture-meta">{{ profile.role || 'Student' }} • {{ profile.department || 'Department' }}</p>
+          <div class="picture-actions">
+            <button type="button" class="btn-pic-change" (click)="fileInput.click()">
+              <span class="material-icons" style="font-size: 15px;">upload</span> Choose Image
+            </button>
+            <button type="button" *ngIf="profilePicturePreview" class="btn-pic-remove" (click)="removeProfilePicture()">
+              <span class="material-icons" style="font-size: 15px;">delete</span> Remove
+            </button>
+          </div>
           <input 
-            #fileInput
+            #fileInput 
             type="file" 
+            (change)="onProfilePictureSelected($event)" 
             accept="image/*" 
-            (change)="onProfilePictureSelected($event)"
-            class="file-input"
-            style="display:none;" />
-            
-          <div class="pic-action-buttons">
-            <button 
-              type="button" 
-              class="btn-upload"
-              (click)="fileInput.click()">
-              📤 Upload Photo
-            </button>
-            <button 
-              *ngIf="profilePicturePreview"
-              type="button" 
-              class="btn-remove-pic"
-              (click)="removeProfilePicture()">
-              🗑️ Remove
-            </button>
-          </div>
+            class="file-input" />
         </div>
+      </div>
+
+      <!-- Roll / Reg Number Field -->
+      <div class="form-group" *ngIf="studentRoll">
+        <label for="regNo">Registration / Roll No</label>
+        <input 
+          id="regNo" 
+          name="regNo" 
+          type="text" 
+          [value]="studentRoll" 
+          readonly 
+          class="form-input" />
       </div>
 
       <!-- Name Field -->
@@ -373,8 +341,7 @@ interface ProfileData {
     </form>
     <app-footer></app-footer>
   </div>
-</div>
-</ng-template>`,
+</div>`,
   styles: [
     `.profile-form {
       max-width: 700px;
