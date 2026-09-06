@@ -6,21 +6,34 @@
 
 	<div class="content">
 
-		<!-- Page Header with Live Action Buttons -->
-		<div class="page-header-container">
-			<div class="page-header">
-				<h1>👩‍🏫 Faculty OBE Command Center</h1>
-				<p>Real-time outcome analytics, live attendance, quick grading, syllabus delivery, and NBA accreditation tools for <strong>{{ facultyName }}</strong>.</p>
+		<!-- Faculty Hero Banner -->
+		<div class="faculty-hero-banner">
+			<div class="hero-left">
+				<div class="faculty-avatar">
+					<span class="material-icons" style="font-size: 32px; color: #ffffff;">school</span>
+				</div>
+				<div class="faculty-hero-info">
+					<div class="hero-title-row">
+						<h2>{{ facultyName }}</h2>
+						<span class="role-chip faculty-chip">Faculty In-Charge & Course Coordinator</span>
+					</div>
+					<div class="hero-meta-row">
+						<span class="meta-tag"><span class="material-icons" style="font-size: 14px; vertical-align: middle;">menu_book</span> <strong>Assigned Courses:</strong> {{ totalCourses }}</span>
+						<span class="meta-tag"><span class="material-icons" style="font-size: 14px; vertical-align: middle;">groups</span> <strong>Total Students:</strong> {{ totalStudents }}</span>
+						<span class="meta-tag"><span class="material-icons" style="font-size: 14px; vertical-align: middle;">track_changes</span> <strong>Attainment:</strong> {{ overallAttainment }}%</span>
+						<span class="meta-tag verified-tag"><span class="status-indicator-dot"></span> <strong>Status:</strong> Active Term</span>
+					</div>
+				</div>
 			</div>
 			<div class="header-actions">
 				<button class="action-btn primary" (click)="openMarkEntryModal()">
-					📝 Quick Marks Entry
+					<span class="material-icons">edit_note</span> Quick Marks Entry
 				</button>
 				<button class="action-btn accent" (click)="openCourseFileModal()">
-					📁 NBA Course File
+					<span class="material-icons">folder_special</span> NBA Course File
 				</button>
 				<button class="action-btn secondary" (click)="openQuestionPaperModal()">
-					⚙️ Question Paper
+					<span class="material-icons">auto_stories</span> Question Paper
 				</button>
 			</div>
 		</div>
@@ -28,7 +41,7 @@
 		<!-- Subject/Course & Semester Filter Selector Row -->
 		<div class="filter-row-container" style="background: #f8fafc; border: 1px solid #e2e8f0; padding: 14px 18px; border-radius: 10px; margin-bottom: 24px; display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap;">
 			<div style="display: flex; align-items: center; gap: 10px;">
-				<span style="font-size: 1.2rem;">📚</span>
+				<span class="material-icons text-primary" style="font-size: 1.5rem; color: #2563eb;">filter_alt</span>
 				<div>
 					<strong style="color: #1e293b; font-size: 0.95rem; display: block;">Active Workload & Semester Context</strong>
 					<span style="font-size: 0.8rem; color: #64748b;">Filter command center actions and KPIs by semester and course</span>
@@ -38,14 +51,14 @@
 				<div style="display: flex; align-items: center; gap: 6px;">
 					<label for="semSelect" style="font-weight: 600; color: #475569; font-size: 0.88rem;">Semester:</label>
 					<select id="semSelect" [(ngModel)]="selectedSemesterFilter" (ngModelChange)="applySubjectFilter()" style="padding: 8px 12px; border-radius: 6px; border: 1px solid #cbd5e1; outline: none; font-weight: 500; color: #1e293b; background-color: #ffffff;">
-						<option value="">🗓️ All Semesters</option>
+						<option value="">All Semesters</option>
 						<option *ngFor="let sem of availableSemesters" [value]="sem">{{ sem }}</option>
 					</select>
 				</div>
 				<div style="display: flex; align-items: center; gap: 6px;">
 					<label for="subjectSelect" style="font-weight: 600; color: #475569; font-size: 0.88rem;">Subject:</label>
 					<select id="subjectSelect" [(ngModel)]="selectedSubjectFilter" (ngModelChange)="applySubjectFilter()" style="padding: 8px 14px; border-radius: 6px; border: 1px solid #cbd5e1; outline: none; min-width: 220px; font-weight: 500; color: #1e293b; background-color: #ffffff;">
-						<option value="">✨ All Mapped Subjects</option>
+						<option value="">All Mapped Subjects</option>
 						<option *ngFor="let c of availableFilteredCourses" [value]="c.name">{{ c.name }} ({{ c.code }}) [{{ c.semester || 'Sem 1' }}]</option>
 					</select>
 				</div>
@@ -70,7 +83,7 @@
 			<!-- 1. Real-Time KPI Stats Bar -->
 			<div class="quick-stats">
 				<div class="stat-card stat-classes" (click)="goToCourses()">
-					<div class="stat-icon">📚</div>
+					<div class="stat-icon"><span class="material-icons">menu_book</span></div>
 					<div class="stat-content">
 						<span class="stat-label">Assigned Classes</span>
 						<h3 class="stat-value">{{ totalCourses }}</h3>
@@ -78,7 +91,7 @@
 					</div>
 				</div>
 				<div class="stat-card stat-students" (click)="goToStudentProgress()">
-					<div class="stat-icon">👥</div>
+					<div class="stat-icon"><span class="material-icons">groups</span></div>
 					<div class="stat-content">
 						<span class="stat-label">Enrolled Students</span>
 						<h3 class="stat-value">{{ totalStudents }}</h3>
@@ -86,7 +99,7 @@
 					</div>
 				</div>
 				<div class="stat-card stat-attainment" (click)="goToCOAttainment()">
-					<div class="stat-icon">🎯</div>
+					<div class="stat-icon"><span class="material-icons">track_changes</span></div>
 					<div class="stat-content">
 						<span class="stat-label">Avg CO Attainment</span>
 						<h3 class="stat-value">{{ overallAttainment }}%</h3>
@@ -94,7 +107,7 @@
 					</div>
 				</div>
 				<div class="stat-card stat-attendance">
-					<div class="stat-icon">📈</div>
+					<div class="stat-icon"><span class="material-icons">fact_check</span></div>
 					<div class="stat-content">
 						<span class="stat-label">Avg Attendance</span>
 						<h3 class="stat-value">{{ averageAttendance }}%</h3>
@@ -102,7 +115,7 @@
 					</div>
 				</div>
 				<div class="stat-card stat-atrisk" [class.has-risk]="atRiskCount > 0">
-					<div class="stat-icon">⚠️</div>
+					<div class="stat-icon"><span class="material-icons">warning_amber</span></div>
 					<div class="stat-content">
 						<span class="stat-label">At-Risk Students</span>
 						<h3 class="stat-value">{{ atRiskCount }}</h3>
@@ -115,7 +128,7 @@
 			<section *ngIf="atRiskStudents.length > 0" class="dashboard-section at-risk-section">
 				<div class="section-header">
 					<div class="header-title-group">
-						<h2>⚠️ Academic Early Warning System ({{ atRiskStudents.length }} Students)</h2>
+						<h2>Academic Early Warning System ({{ atRiskStudents.length }} Students)</h2>
 						<p class="section-subtitle">Real-time alerts for students falling below minimum OBE attainment (60%) or attendance (75%) thresholds.</p>
 					</div>
 					<button class="view-all-btn" (click)="goToStudentProgress()">Full Matrix →</button>
@@ -142,7 +155,10 @@
 							</div>
 						</div>
 						<ul class="risk-reasons">
-							<li *ngFor="let reason of student.riskReasons">⚠️ {{ reason }}</li>
+							<li *ngFor="let reason of student.riskReasons">
+								<span class="material-icons" style="font-size: 14px; vertical-align: middle; color: #ef4444; margin-right: 4px;">warning</span>
+								{{ reason }}
+							</li>
 						</ul>
 						<button class="remedial-btn" (click)="$event.stopPropagation(); openAtRiskModal(student)">View Diagnostic & Remedial Plan →</button>
 					</div>
@@ -153,7 +169,7 @@
 			<section class="dashboard-section">
 				<div class="section-header">
 					<div class="header-title-group">
-						<h2>🎯 Course Outcome (CO) Attainment Monitor</h2>
+						<h2>Course Outcome (CO) Attainment Monitor</h2>
 						<p class="section-subtitle">Live attainment calculated from actual evaluation marks vs target benchmark (75%).</p>
 					</div>
 					<div class="header-btn-group">
@@ -163,9 +179,12 @@
 				</div>
 				<div *ngFor="let group of groupedCOAttainments" class="co-group-block" style="margin-bottom: 24px; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 8px; padding: 16px; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
 					<h3 style="margin: 0; color: #1e3a8a; border-bottom: 2px solid #3b82f6; padding-bottom: 8px; font-size: 1.1rem; display: flex; justify-content: space-between; align-items: center; cursor: pointer;" (click)="toggleCoGroup(group.courseName)">
-						<span style="display: flex; align-items: center; gap: 8px;">📖 {{ group.courseName }} Outcomes</span>
+						<span style="display: flex; align-items: center; gap: 8px;">
+							<span class="material-icons" style="font-size: 1.2rem; color: #2563eb;">menu_book</span>
+							{{ group.courseName }} Outcomes
+						</span>
 						<span style="font-size: 0.85rem; color: #64748b; font-weight: 600; display: flex; align-items: center; gap: 4px;">
-							{{ collapsedCoGroups[group.courseName] ? '▼ Show' : '▲ Hide' }} ({{ group.cos.length }} COs)
+							{{ collapsedCoGroups[group.courseName] ? 'Show' : 'Hide' }} ({{ group.cos.length }} COs)
 						</span>
 					</h3>
 					
@@ -208,7 +227,7 @@
 			<section class="dashboard-section">
 				<div class="section-header">
 					<div class="header-title-group">
-						<h2>📊 Live Performance & Grade Distribution</h2>
+						<h2>Live Performance & Grade Distribution</h2>
 						<p class="section-subtitle">Real-time distribution of evaluated students across score brackets.</p>
 					</div>
 				</div>
@@ -234,7 +253,7 @@
 						</div>
 						<div class="legend-item">
 							<span class="legend-dot fail"></span>
-							<span>Remedial (<40%): <strong>{{ gradeDistribution.fail }}</strong></span>
+							<span>Remedial (&lt;40%): <strong>{{ gradeDistribution.fail }}</strong></span>
 						</div>
 					</div>
 				</div>
@@ -244,7 +263,7 @@
 			<section class="dashboard-section">
 				<div class="section-header">
 					<div class="header-title-group">
-						<h2>📅 Syllabus Coverage & Lesson Plan Tracker</h2>
+						<h2>Syllabus Coverage & Lesson Plan Tracker</h2>
 						<p class="section-subtitle">Monitor unit-by-unit curriculum delivery mapped to Course Outcomes.</p>
 					</div>
 					<button class="action-btn secondary small" (click)="openAddLectureModal()">
@@ -283,7 +302,7 @@
 			<section class="dashboard-section">
 				<div class="section-header">
 					<div class="header-title-group">
-						<h2>📚 Assigned Courses ({{ courses.length }})</h2>
+						<h2>Assigned Courses ({{ courses.length }})</h2>
 						<p class="section-subtitle">Real-time enrollment, attainment, and attendance per course.</p>
 					</div>
 					<button class="view-all-btn" (click)="goToCourses()">Course Manager →</button>
@@ -303,7 +322,7 @@
 							</div>
 						</div>
 						<button class="class-action-btn" (click)="$event.stopPropagation(); openQuickAttendanceModal(course.name)">
-							📅 Take Attendance →
+							<span class="material-icons" style="font-size: 15px; vertical-align: middle;">calendar_today</span> Take Attendance →
 						</button>
 					</div>
 				</div>
@@ -314,7 +333,7 @@
 			<section class="dashboard-section">
 				<div class="section-header">
 					<div class="header-title-group">
-						<h2>📝 Active Assessments & Grading ({{ activeAssessments.length }})</h2>
+						<h2>Active Assessments & Grading ({{ activeAssessments.length }})</h2>
 						<p class="section-subtitle">Manage ongoing submissions and enter evaluation scores directly.</p>
 					</div>
 					<div class="header-btn-group">
@@ -349,7 +368,7 @@
 						</div>
 						<div class="assessment-card-actions">
 							<button class="assessment-action-btn" (click)="openMarkEntryModal(assessment)">
-								📝 Enter / Edit Marks →
+								<span class="material-icons" style="font-size: 15px; vertical-align: middle;">edit</span> Enter / Edit Marks →
 							</button>
 						</div>
 					</div>
@@ -361,7 +380,7 @@
 			<section class="dashboard-section">
 				<div class="section-header">
 					<div class="header-title-group">
-						<h2>📊 Real-Time Student Progress Matrix ({{ filteredProgressList.length }})</h2>
+						<h2>Real-Time Student Progress Matrix ({{ filteredProgressList.length }})</h2>
 						<p class="section-subtitle">Live breakdown of student attainment and attendance calculated across evaluation records.</p>
 					</div>
 					<div class="filter-group">
@@ -370,7 +389,7 @@
 							<option *ngFor="let c of courses" [value]="c.name">{{ c.name }}</option>
 						</select>
 						<button class="action-btn secondary small" (click)="exportGradebookCsv()">
-							📥 Export CSV
+							<span class="material-icons" style="font-size: 15px; vertical-align: middle;">download</span> Export CSV
 						</button>
 					</div>
 				</div>
@@ -424,7 +443,7 @@
 			<section *ngIf="cqiActionsList.length > 0" class="dashboard-section">
 				<div class="section-header">
 					<div class="header-title-group">
-						<h2>🎯 Continuous Quality Improvement (CQI) Action Log ({{ cqiActionsList.length }})</h2>
+						<h2>Continuous Quality Improvement (CQI) Action Log ({{ cqiActionsList.length }})</h2>
 						<p class="section-subtitle">Documented remedial actions and outcome improvement milestones for NBA accreditation.</p>
 					</div>
 					<button class="action-btn primary small" (click)="openCqiModal()">+ Log New Action</button>
@@ -455,22 +474,19 @@
 				</div>
 			</section>
 
-			<!-- 10. Faculty Workbench Widgets -->
-
-
 			<!-- 11. Dynamic Notifications Section -->
 			<section class="dashboard-section">
 				<div class="section-header">
-					<h2>🔔 Real-Time Action Alerts ({{ notifications.length }})</h2>
+					<h2>Real-Time Action Alerts ({{ notifications.length }})</h2>
 					<button class="view-all-btn" (click)="goToNotifications()">All Alerts →</button>
 				</div>
 				<div class="notifications-list">
 					<div *ngFor="let notification of notifications" class="notification-card" 
 						[class.unread]="!notification.read">
 						<div class="notification-icon">
-							<span *ngIf="notification.type === 'alert'">⚠️</span>
-							<span *ngIf="notification.type === 'announcement'">📢</span>
-							<span *ngIf="notification.type === 'update'">ℹ️</span>
+							<span *ngIf="notification.type === 'alert'" class="material-icons text-danger">warning</span>
+							<span *ngIf="notification.type === 'announcement'" class="material-icons text-primary">campaign</span>
+							<span *ngIf="notification.type === 'update'" class="material-icons text-info">info</span>
 						</div>
 						<div class="notification-content">
 							<h3>{{ notification.title }}</h3>
@@ -490,8 +506,8 @@
 		<div *ngIf="showMarkEntryModal" class="modal-backdrop" (click)="closeMarkEntryModal()">
 			<div class="modal-card modal-large" (click)="$event.stopPropagation()">
 				<div class="modal-header">
-					<h2>📝 Quick Assessment Mark Entry Sheet</h2>
-					<button class="close-btn" (click)="closeMarkEntryModal()">✖</button>
+					<h2>Quick Assessment Mark Entry Sheet</h2>
+					<button class="close-btn" (click)="closeMarkEntryModal()">✕</button>
 				</div>
 				<div class="modal-body">
 					<div class="modal-form-grid">
@@ -514,10 +530,10 @@
 					<!-- CSV Batch Tools -->
 					<div class="csv-tools-bar mt-3">
 						<button class="action-btn secondary small" (click)="downloadCsvTemplate()">
-							📥 Download CSV Template
+							<span class="material-icons" style="font-size: 15px; vertical-align: middle;">download</span> Download CSV Template
 						</button>
 						<label class="action-btn accent small" style="cursor: pointer; margin: 0;">
-							📤 Import from CSV
+							<span class="material-icons" style="font-size: 15px; vertical-align: middle;">upload_file</span> Import from CSV
 							<input type="file" accept=".csv" (change)="onCsvFileSelected($event)" style="display: none;" />
 						</label>
 					</div>
@@ -545,7 +561,7 @@
 										<input type="number" [(ngModel)]="row.obtained" min="0" [max]="markEntryMaxMarks" />
 									</td>
 									<td>
-										<button class="delete-row-btn" (click)="removeMarkRow(i)">🗑️</button>
+										<button class="delete-row-btn" (click)="removeMarkRow(i)"><span class="material-icons" style="font-size: 16px;">delete</span></button>
 									</td>
 								</tr>
 							</tbody>
@@ -565,8 +581,8 @@
 		<div *ngIf="showQuickAttendanceModal" class="modal-backdrop" (click)="closeQuickAttendanceModal()">
 			<div class="modal-card modal-large" (click)="$event.stopPropagation()">
 				<div class="modal-header">
-					<h2>📅 Quick Attendance Marker</h2>
-					<button class="close-btn" (click)="closeQuickAttendanceModal()">✖</button>
+					<h2>Quick Attendance Marker</h2>
+					<button class="close-btn" (click)="closeQuickAttendanceModal()">✕</button>
 				</div>
 				<div class="modal-body">
 					<div class="modal-form-grid">
@@ -584,15 +600,15 @@
 
 					<div class="attendance-toolbar mt-3" style="display: flex; justify-content: space-between; align-items: center;">
 						<div style="display: flex; gap: 10px;">
-							<button type="button" class="btn secondary small" (click)="markAllAttendance('Present')">✅ Mark All Present</button>
-							<button type="button" class="btn secondary small" (click)="markAllAttendance('Absent')">❌ Mark All Absent</button>
+							<button type="button" class="btn secondary small" (click)="markAllAttendance('Present')">Mark All Present</button>
+							<button type="button" class="btn secondary small" (click)="markAllAttendance('Absent')">Mark All Absent</button>
 						</div>
 						<span style="font-size: 13px; color: #64748b; font-weight: 600;">
 							Total Students: <strong>{{ attendanceStudentList.length }}</strong>
 						</span>
 					</div>
 
-					<!-- VERTICAL ATTENDANCE TABLE (AS EARLIER) -->
+					<!-- VERTICAL ATTENDANCE TABLE -->
 					<div class="vertical-attendance-container mt-3">
 						<table class="vertical-attendance-table">
 							<thead>
@@ -619,7 +635,7 @@
 									</td>
 									<td style="text-align: center;">
 										<span class="status-tag" [class.tag-present]="student.status === 'Present'" [class.tag-absent]="student.status === 'Absent'">
-											{{ student.status === 'Present' ? '✅ Present' : '❌ Absent' }}
+											{{ student.status === 'Present' ? 'Present' : 'Absent' }}
 										</span>
 									</td>
 									<td style="text-align: center;">
@@ -628,13 +644,13 @@
 													class="btn-attend-opt opt-present" 
 													[class.active]="student.status === 'Present'"
 													(click)="setStudentStatus(i, 'Present')">
-												✅ Present
+												Present
 											</button>
 											<button type="button" 
 													class="btn-attend-opt opt-absent" 
 													[class.active]="student.status === 'Absent'"
 													(click)="setStudentStatus(i, 'Absent')">
-												❌ Absent
+												Absent
 											</button>
 										</div>
 									</td>
@@ -661,8 +677,8 @@
 		<div *ngIf="showAddLectureModal" class="modal-backdrop" (click)="closeAddLectureModal()">
 			<div class="modal-card" (click)="$event.stopPropagation()">
 				<div class="modal-header">
-					<h2>📅 Log Completed Lecture Topic</h2>
-					<button class="close-btn" (click)="closeAddLectureModal()">✖</button>
+					<h2>Log Completed Lecture Topic</h2>
+					<button class="close-btn" (click)="closeAddLectureModal()">✕</button>
 				</div>
 				<div class="modal-body">
 					<div class="modal-form-grid">
@@ -715,8 +731,8 @@
 		<div *ngIf="showQuestionPaperModal" class="modal-backdrop" (click)="closeQuestionPaperModal()">
 			<div class="modal-card modal-large" (click)="$event.stopPropagation()">
 				<div class="modal-header">
-					<h2>⚙️ Automated OBE Question Paper Generator</h2>
-					<button class="close-btn" (click)="closeQuestionPaperModal()">✖</button>
+					<h2>Automated OBE Question Paper Generator</h2>
+					<button class="close-btn" (click)="closeQuestionPaperModal()">✕</button>
 				</div>
 				<div class="modal-body">
 					<div *ngIf="!isPaperGenerated" class="qp-config">
@@ -750,7 +766,7 @@
 
 						<div class="generator-action mt-4">
 							<button class="btn primary" (click)="generateQuestionPaper()">
-								⚙️ Generate Paper from Question Bank
+								<span class="material-icons" style="font-size: 16px; vertical-align: middle;">auto_fix_high</span> Generate Paper from Question Bank
 							</button>
 						</div>
 					</div>
@@ -781,7 +797,7 @@
 						</div>
 						<div class="preview-actions">
 							<button class="btn secondary" (click)="isPaperGenerated = false">← Reconfigure</button>
-							<button class="btn primary" (click)="printQuestionPaper()">🖨️ Print / Save PDF</button>
+							<button class="btn primary" (click)="printQuestionPaper()"><span class="material-icons" style="font-size: 16px; vertical-align: middle;">print</span> Print / Save PDF</button>
 						</div>
 					</div>
 				</div>
@@ -797,8 +813,8 @@
 		<div *ngIf="showCourseFileModal" class="modal-backdrop" (click)="closeCourseFileModal()">
 			<div class="modal-card modal-large" (click)="$event.stopPropagation()">
 				<div class="modal-header">
-					<h2>📁 NBA / NAAC Course File Dossier</h2>
-					<button class="close-btn" (click)="closeCourseFileModal()">✖</button>
+					<h2>NBA / NAAC Course File Dossier</h2>
+					<button class="close-btn" (click)="closeCourseFileModal()">✕</button>
 				</div>
 				<div class="modal-body">
 					<div class="printable-paper">
@@ -865,7 +881,7 @@
 				</div>
 				<div class="modal-footer">
 					<button class="btn secondary" (click)="closeCourseFileModal()">Close</button>
-					<button class="btn primary" (click)="printCourseFile()">🖨️ Print / Save Dossier PDF</button>
+					<button class="btn primary" (click)="printCourseFile()"><span class="material-icons" style="font-size: 16px; vertical-align: middle;">print</span> Print / Save Dossier PDF</button>
 				</div>
 			</div>
 		</div>
@@ -876,8 +892,8 @@
 		<div *ngIf="showCqiModal" class="modal-backdrop" (click)="closeCqiModal()">
 			<div class="modal-card" (click)="$event.stopPropagation()">
 				<div class="modal-header">
-					<h2>🎯 Continuous Quality Improvement (CQI) Action Plan</h2>
-					<button class="close-btn" (click)="closeCqiModal()">✖</button>
+					<h2>Continuous Quality Improvement (CQI) Action Plan</h2>
+					<button class="close-btn" (click)="closeCqiModal()">✕</button>
 				</div>
 				<div class="modal-body">
 					<div class="modal-form-grid">
@@ -924,8 +940,8 @@
 		<div *ngIf="showAtRiskModal && selectedAtRiskStudent" class="modal-backdrop" (click)="closeAtRiskModal()">
 			<div class="modal-card" (click)="$event.stopPropagation()">
 				<div class="modal-header">
-					<h2>⚠️ Student Academic Diagnostic Profile</h2>
-					<button class="close-btn" (click)="closeAtRiskModal()">✖</button>
+					<h2>Student Academic Diagnostic Profile</h2>
+					<button class="close-btn" (click)="closeAtRiskModal()">✕</button>
 				</div>
 				<div class="modal-body">
 					<div class="student-profile-head">

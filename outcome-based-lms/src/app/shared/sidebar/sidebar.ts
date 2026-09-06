@@ -1,14 +1,18 @@
-import { AfterViewInit, Component, ElementRef, ViewChild } from '@angular/core';
-
+import { AfterViewInit, Component, ElementRef, ViewChild, inject } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
-import { RouterModule } from '@angular/router';
+import { RouterModule, Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 
-interface NavItem {
+export interface NavItem {
   icon: string;
   label: string;
   path: string;
   exact?: boolean;
+}
+
+export interface NavGroup {
+  title: string;
+  items: NavItem[];
 }
 
 @Component({
@@ -21,75 +25,158 @@ interface NavItem {
 export class Sidebar implements AfterViewInit {
   @ViewChild('sidebarRef') sidebarRef!: ElementRef<HTMLDivElement>;
 
+  private router = inject(Router);
+
   collapsed = localStorage.getItem('sidebarCollapsed') === 'true';
-  navItems: NavItem[] = [];
+  navGroups: NavGroup[] = [];
 
-  studentNav: NavItem[] = [
-    { icon: '🏠', label: 'Student Dashboard', path: '/students', exact: true },
-    { icon: '📚', label: 'My Courses', path: '/courses', exact: true },
-    { icon: '📖', label: 'Subjects', path: '/subjects', exact: true },
-    { icon: '🎯', label: 'Course Outcomes (CO)', path: '/course-outcomes', exact: true },
-    { icon: '🎯', label: 'Program Outcomes (PO)', path: '/program-outcomes', exact: true },
-    { icon: '📈', label: 'Performance', path: '/performance', exact: true },
-    { icon: '🔗', label: 'CO-PO Mapping', path: '/copo-mapping', exact: true },
-    { icon: '📊', label: 'CO Attainment', path: '/co-attainment', exact: true },
-    { icon: '📈', label: 'PO Attainment', path: '/po-attainment', exact: true },
-    { icon: '🧠', label: 'Question Bank', path: '/question-bank', exact: true },
-    { icon: '📝', label: 'Assessments', path: '/assessments', exact: true },
-    { icon: '📅', label: 'Attendance', path: '/attendance', exact: true },
-    { icon: '📆', label: 'Timetable', path: '/timetable', exact: true },
-    { icon: '📄', label: 'Results', path: '/results', exact: true },
-    { icon: '💬', label: 'Feedback', path: '/feedback', exact: true },
-    { icon: '🔔', label: 'Notifications', path: '/notifications', exact: true },
-    { icon: '👤', label: 'My Profile', path: '/profile', exact: true },
-    { icon: '⚙️', label: 'Settings', path: '/settings', exact: true }
-  ];
-
-  facultyNav: NavItem[] = [
-    { icon: '🏠', label: 'Faculty Dashboard', path: '/faculty', exact: true },
-    { icon: '📚', label: 'Courses', path: '/courses', exact: true },
-    { icon: '🎯', label: 'Outcomes', path: '/outcomes', exact: true },
-    { icon: '🎯', label: 'Program Outcomes (PO)', path: '/program-outcomes', exact: true },
-    { icon: '📊', label: 'Performance', path: '/performance', exact: true },
-    { icon: '🔗', label: 'CO-PO Mapping', path: '/copo-mapping', exact: true },
-    { icon: '📈', label: 'Attainment', path: '/attainment', exact: true },
-    { icon: '📝', label: 'Examinations', path: '/examination', exact: true },
-    { icon: '📩', label: 'Grievance', path: '/grievance', exact: true },
-    { icon: '🧠', label: 'Question Bank', path: '/question-bank', exact: true },
-    { icon: '📝', label: 'Assessments', path: '/assessments', exact: true },
-    { icon: '📅', label: 'Attendance', path: '/attendance', exact: true },
-    { icon: '📆', label: 'Timetable', path: '/timetable', exact: true },
-    { icon: '📋', label: 'Results', path: '/results', exact: true },
-    { icon: '💬', label: 'Feedback', path: '/feedback', exact: true },
-    { icon: '👤', label: 'My Profile', path: '/profile', exact: true },
-    { icon: '⚙️', label: 'Settings', path: '/settings', exact: true }
-  ];
-
-  adminNav: NavItem[] = [
-    { icon: '🏠', label: 'Dashboard', path: '/admin', exact: true },
-    { icon: '👥', label: 'User Directory & Logins', path: '/admin/student-management', exact: true },
-    { icon: '👨‍🏫', label: 'Faculty Management', path: '/admin/faculty-management', exact: true },
-    { icon: '🎓', label: 'Student Management', path: '/admin/student-management', exact: true },
-    { icon: '📚', label: 'Courses', path: '/courses', exact: true },
-    { icon: '📖', label: 'Subjects', path: '/subjects', exact: true },
-    { icon: '🎯', label: 'Outcomes', path: '/outcomes', exact: true },
-    { icon: '🔗', label: 'CO-PO Mapping', path: '/copo-mapping', exact: true },
-    { icon: '✔️', label: 'Approvals', path: '/admin/approval-management', exact: true },
-    { icon: '🧠', label: 'Question Bank', path: '/question-bank', exact: true },
-    { icon: '📝', label: 'Assessments', path: '/assessments', exact: true },
-    { icon: '📊', label: 'Reports', path: '/reports', exact: true },
-    { icon: '🔔', label: 'Notifications', path: '/notifications', exact: true },
-    { icon: '⚙️', label: 'Settings', path: '/settings', exact: true },
-    { icon: '👤', label: 'My Profile', path: '/profile', exact: true }
-  ];
-
-  get role(): string | null {
-    return localStorage.getItem('userRole')?.toLowerCase() || null;
+  get role(): string {
+    return (localStorage.getItem('userRole') || 'faculty').toLowerCase();
   }
+
+  get userName(): string {
+    return localStorage.getItem('userName') || (this.role === 'admin' ? 'Administrator' : this.role === 'faculty' ? 'Faculty Member' : 'Student');
+  }
+
+  get userEmail(): string {
+    return localStorage.getItem('userEmail') || '';
+  }
+
+  get portalTitle(): string {
+    if (this.role === 'admin') return 'ADMIN CONSOLE';
+    if (this.role === 'faculty') return 'FACULTY CONSOLE';
+    return 'STUDENT PORTAL';
+  }
+
+  get userInitial(): string {
+    return this.userName.trim().charAt(0).toUpperCase() || 'U';
+  }
+
+  studentNavGroups: NavGroup[] = [
+    {
+      title: 'ACADEMICS',
+      items: [
+        { icon: 'dashboard', label: 'Student Dashboard', path: '/students', exact: true },
+        { icon: 'menu_book', label: 'Enrolled Courses', path: '/courses', exact: true },
+        { icon: 'subject', label: 'Subject List', path: '/subjects', exact: true },
+        { icon: 'calendar_month', label: 'Weekly Timetable', path: '/timetable', exact: true }
+      ]
+    },
+    {
+      title: 'OBE & OUTCOMES',
+      items: [
+        { icon: 'track_changes', label: 'Course Outcomes (CO)', path: '/course-outcomes', exact: true },
+        { icon: 'military_tech', label: 'Program Outcomes (PO)', path: '/program-outcomes', exact: true },
+        { icon: 'hub', label: 'CO-PO Mapping Matrix', path: '/copo-mapping', exact: true },
+        { icon: 'stacked_bar_chart', label: 'CO Attainment', path: '/co-attainment', exact: true },
+        { icon: 'trending_up', label: 'PO Attainment', path: '/po-attainment', exact: true }
+      ]
+    },
+    {
+      title: 'EXAMINATIONS & MARKS',
+      items: [
+        { icon: 'quiz', label: 'Upcoming Exams', path: '/assessments', exact: true },
+        { icon: 'fact_check', label: 'Attendance %', path: '/attendance', exact: true },
+        { icon: 'assessment', label: 'Marks Summary', path: '/performance', exact: true },
+        { icon: 'rate_review', label: 'Semester Results', path: '/results', exact: true }
+      ]
+    },
+    {
+      title: 'STUDENT SERVICES',
+      items: [
+        { icon: 'rate_review', label: 'Feedback & Survey', path: '/feedback', exact: true },
+        { icon: 'assignment', label: 'File Grievance', path: '/grievance', exact: true },
+        { icon: 'notifications', label: 'Notifications', path: '/notifications', exact: true },
+        { icon: 'manage_accounts', label: 'My Profile', path: '/profile', exact: true }
+      ]
+    }
+  ];
+
+  facultyNavGroups: NavGroup[] = [
+    {
+      title: 'ACADEMICS & CURRICULUM',
+      items: [
+        { icon: 'dashboard', label: 'Command Center', path: '/faculty', exact: true },
+        { icon: 'menu_book', label: 'Assigned Courses', path: '/courses', exact: true },
+        { icon: 'subject', label: 'Curriculum Subjects', path: '/subjects', exact: true },
+        { icon: 'calendar_month', label: 'Weekly Timetable', path: '/timetable', exact: true }
+      ]
+    },
+    {
+      title: 'OBE & ACCREDITATION',
+      items: [
+        { icon: 'track_changes', label: 'Course Outcomes (COs)', path: '/course-outcomes', exact: true },
+        { icon: 'military_tech', label: 'Program Outcomes (POs)', path: '/program-outcomes', exact: true },
+        { icon: 'hub', label: 'CO-PO Mapping Matrix', path: '/copo-mapping', exact: true },
+        { icon: 'stacked_bar_chart', label: 'CO Attainment Monitor', path: '/co-attainment', exact: true },
+        { icon: 'trending_up', label: 'PO Attainment Analytics', path: '/po-attainment', exact: true }
+      ]
+    },
+    {
+      title: 'EVALUATION WORKBENCH',
+      items: [
+        { icon: 'quiz', label: 'Question Bank & AI', path: '/question-bank', exact: true },
+        { icon: 'assignment', label: 'Assessments & Grading', path: '/assessments', exact: true },
+        { icon: 'fact_check', label: 'Live Attendance', path: '/attendance', exact: true },
+        { icon: 'assessment', label: 'Performance Analysis', path: '/performance', exact: true },
+        { icon: 'edit_calendar', label: 'Examination Schedule', path: '/examination', exact: true },
+        { icon: 'support_agent', label: 'Student Grievances', path: '/grievance', exact: true }
+      ]
+    },
+    {
+      title: 'SERVICES & ACCOUNT',
+      items: [
+        { icon: 'rate_review', label: 'Feedback & Surveys', path: '/feedback', exact: true },
+        { icon: 'notifications', label: 'Alerts & Notices', path: '/notifications', exact: true },
+        { icon: 'manage_accounts', label: 'Faculty Profile', path: '/profile', exact: true }
+      ]
+    }
+  ];
+
+  adminNavGroups: NavGroup[] = [
+    {
+      title: 'INSTITUTIONAL GOVERNANCE',
+      items: [
+        { icon: 'dashboard', label: 'Admin Command Center', path: '/admin', exact: true },
+        { icon: 'school', label: 'Student Management', path: '/admin/student-management', exact: true },
+        { icon: 'badge', label: 'Faculty Management', path: '/admin/faculty-management', exact: true },
+        { icon: 'gavel', label: 'Unified Approvals', path: '/admin/approval-management', exact: true }
+      ]
+    },
+    {
+      title: 'CURRICULUM & OBE REGISTRY',
+      items: [
+        { icon: 'auto_stories', label: 'Course-Subject Allocation', path: '/admin/course-subject-assignment', exact: true },
+        { icon: 'supervisor_account', label: 'Faculty Course Mapping', path: '/admin/faculty-course-allocation', exact: true },
+        { icon: 'hub', label: 'Assessment-CO Mapping', path: '/admin/assessment-co-mapping', exact: true },
+        { icon: 'hub', label: 'Institutional CO-PO Matrix', path: '/copo-mapping', exact: true },
+        { icon: 'menu_book', label: 'Courses Catalog', path: '/courses', exact: true },
+        { icon: 'subject', label: 'Master Subjects', path: '/subjects', exact: true }
+      ]
+    },
+    {
+      title: 'ACCREDITATION & AUDIT',
+      items: [
+        { icon: 'trending_up', label: 'PO Institutional Attainment', path: '/po-attainment', exact: true },
+        { icon: 'quiz', label: 'Question Bank Governance', path: '/question-bank', exact: true },
+        { icon: 'assignment', label: 'Assessments Registry', path: '/assessments', exact: true },
+        { icon: 'bar_chart', label: 'Accreditation Reports', path: '/reports', exact: true },
+        { icon: 'support_agent', label: 'Student Grievance Desk', path: '/grievance', exact: true }
+      ]
+    },
+    {
+      title: 'SYSTEM & SETTINGS',
+      items: [
+        { icon: 'notifications', label: 'System Notifications', path: '/notifications', exact: true },
+        { icon: 'settings', label: 'System Settings', path: '/settings', exact: true },
+        { icon: 'manage_accounts', label: 'Dean Profile', path: '/profile', exact: true }
+      ]
+    }
+  ];
 
   constructor() {
     this.applySidebarState();
-    this.setNavItems();
+    this.setNavGroups();
   }
 
   toggleCollapse(): void {
@@ -98,21 +185,29 @@ export class Sidebar implements AfterViewInit {
     this.applySidebarState();
   }
 
-  private setNavItems(): void {
+  logout(): void {
+    localStorage.removeItem('userRole');
+    localStorage.removeItem('userName');
+    localStorage.removeItem('userEmail');
+    localStorage.removeItem('token');
+    this.router.navigate(['/login']);
+  }
+
+  private setNavGroups(): void {
     const currentRole = this.role;
     if (currentRole === 'student') {
-      this.navItems = this.studentNav;
+      this.navGroups = this.studentNavGroups;
       return;
     }
     if (currentRole === 'faculty') {
-      this.navItems = this.facultyNav;
+      this.navGroups = this.facultyNavGroups;
       return;
     }
     if (currentRole === 'admin') {
-      this.navItems = this.adminNav;
+      this.navGroups = this.adminNavGroups;
       return;
     }
-    this.navItems = this.facultyNav;
+    this.navGroups = this.facultyNavGroups;
   }
 
   private applySidebarState(): void {

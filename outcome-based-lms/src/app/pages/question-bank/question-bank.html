@@ -4,7 +4,7 @@
   <!-- Categorized Sidebar Navigation -->
   <div class="student-sidebar">
     <div class="logo">
-      <h2>🎓 OBLMS</h2>
+      <h2>OBLMS</h2>
       <p>Outcome Based LMS</p>
     </div>
 
@@ -13,7 +13,7 @@
         <span class="group-title">{{ group.title }}</span>
         <div class="group-items">
           <button mat-button *ngFor="let item of group.items" (click)="navigate(item.path)" [class.active]="item.path === '/question-bank'">
-            <span class="icon">{{ item.icon }}</span>
+            <span class="material-icons" style="font-size: 18px; margin-right: 8px;">{{ item.icon }}</span>
             <span class="nav-label">{{ item.label }}</span>
           </button>
         </div>
@@ -24,13 +24,15 @@
     <div class="sidebar-user-card" (click)="navigate('/profile')" title="View profile details" style="margin-top: auto; padding: 10px 12px; background: var(--student-card-bg); border: 1px solid var(--student-border); border-radius: 12px; display: flex; align-items: center; gap: 10px; cursor: pointer; transition: all 0.2s ease;">
       <div class="user-avatar-mini" style="width: 36px; height: 36px; border-radius: 50%; overflow: hidden; background: rgba(var(--student-primary-rgb), 0.1); display: flex; align-items: center; justify-content: center; flex-shrink: 0; border: 1.5px solid var(--student-primary);">
         <img *ngIf="studentPhoto" [src]="studentPhoto" alt="Profile" style="width: 100%; height: 100%; object-fit: cover;" />
-        <span *ngIf="!studentPhoto">👨‍🎓</span>
+        <span *ngIf="!studentPhoto" class="material-icons" style="font-size: 20px; color: var(--student-primary);">person</span>
       </div>
       <div class="user-meta-mini" style="flex: 1; display: flex; flex-direction: column; overflow: hidden;">
         <strong class="user-name-mini" style="font-size: 12.5px; color: var(--student-text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: 700;">{{ studentName }}</strong>
         <span class="user-roll-mini" style="font-size: 11px; color: var(--student-text-secondary);">{{ studentRoll }}</span>
       </div>
-      <button class="logout-icon-btn" (click)="$event.stopPropagation(); logout()" title="Logout" style="background: transparent; border: none; font-size: 15px; cursor: pointer; padding: 4px; opacity: 0.7;">🚪</button>
+      <button class="logout-icon-btn" (click)="$event.stopPropagation(); logout()" title="Logout" style="background: transparent; border: none; cursor: pointer; padding: 4px; opacity: 0.7;">
+        <span class="material-icons" style="font-size: 18px; color: var(--student-text-secondary);">logout</span>
+      </button>
     </div>
   </div>
 
@@ -39,7 +41,7 @@
     
     <div class="page-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
       <div class="header-title">
-        <h1 style="margin: 0; font-size: 1.8rem; color: var(--student-text); font-weight: 800;">🧠 Question Bank</h1>
+        <h1 style="margin: 0; font-size: 1.8rem; color: var(--student-text); font-weight: 800;">Question Bank</h1>
         <p style="margin: 4px 0 0 0; color: var(--student-text-secondary); font-size: 0.95rem;">Access outcome-aligned questions grouped by curriculum subjects.</p>
       </div>
     </div>
@@ -49,7 +51,7 @@
       <div class="filters-container" style="display: flex; flex-wrap: wrap; gap: 16px; align-items: center;">
         <label class="filter-input" style="display: flex; flex-direction: column; gap: 6px; font-weight: 700; font-size: 0.88rem; color: var(--student-text); flex: 1; min-width: 200px;">
           Search:
-          <input type="text" [(ngModel)]="searchTerm" (input)="applyFilters()" placeholder="🔍 Search keywords..." style="padding: 8px 12px; border: 1px solid var(--student-border); border-radius: 8px; font-size: 0.9rem; background: transparent; color: var(--student-text);" />
+          <input type="text" [(ngModel)]="searchTerm" (input)="applyFilters()" placeholder="Search keywords..." style="padding: 8px 12px; border: 1px solid var(--student-border); border-radius: 8px; font-size: 0.9rem; background: transparent; color: var(--student-text);" />
         </label>
         <label class="filter-select" style="display: flex; flex-direction: column; gap: 6px; font-weight: 700; font-size: 0.88rem; color: var(--student-text); min-width: 150px;">
           Subject:
@@ -77,9 +79,11 @@
     <div class="qb-container" style="display: flex; flex-direction: column; gap: 16px;">
       <div *ngFor="let group of groupedSubjectQuestions" class="subject-qb-block" style="border: 1px solid var(--student-border); border-radius: 12px; padding: 16px; background: var(--student-card-bg);">
         <h3 style="margin: 0; color: var(--student-primary); border-bottom: 2px solid var(--student-border); padding-bottom: 8px; font-size: 1.1rem; display: flex; justify-content: space-between; align-items: center; cursor: pointer;" (click)="toggleSubjectGroup(group.subject)">
-          <span style="display: flex; align-items: center; gap: 8px;">📚 {{ group.subject }} Question Bank</span>
+          <span style="display: flex; align-items: center; gap: 8px;">
+            <span class="material-icons" style="font-size: 18px;">menu_book</span> {{ group.subject }} Question Bank
+          </span>
           <span style="font-size: 0.85rem; color: var(--student-text-secondary); font-weight: 600;">
-            {{ collapsedSubjectGroups[group.subject] ? '▼ Show' : '▲ Hide' }} ({{ group.questions.length }} Questions)
+            {{ collapsedSubjectGroups[group.subject] ? 'Show' : 'Hide' }} ({{ group.questions.length }} Questions)
           </span>
         </h3>
         
@@ -99,8 +103,8 @@
             <div class="card-body" style="flex: 1; display: flex; flex-direction: column; gap: 10px;">
               <p class="question-text" style="margin: 0; font-size: 0.95rem; color: var(--student-text); font-weight: 600; line-height: 1.4;">{{ q.questionText }}</p>
               <div class="metadata-footer" style="display: flex; gap: 12px; font-size: 0.8rem; color: var(--student-text-secondary); margin-top: auto;">
-                <span class="subject-tag">📚 {{ q.subject }}</span>
-                <span class="co-badge" style="background: rgba(var(--student-primary-rgb), 0.08); color: var(--student-primary); padding: 1px 5px; border-radius: 3px; font-weight: 700;">🎯 {{ q.coMapped }}</span>
+                <span class="subject-tag">{{ q.subject }}</span>
+                <span class="co-badge" style="background: rgba(var(--student-primary-rgb), 0.08); color: var(--student-primary); padding: 1px 5px; border-radius: 3px; font-weight: 700;">{{ q.coMapped }}</span>
               </div>
             </div>
           </div>
@@ -123,12 +127,16 @@
 	<div class="content">
 		<div class="page-header">
 			<div class="header-left">
-				<h1>🧠 Question Bank & AI Bloom's Classifier</h1>
-				<p>Manage outcomes-aligned questions with automatic Bloom's Taxonomy cognitive classification & 1-Click AI Exam Paper Generator.</p>
+				<h1>Question Bank & Cognitive Classifier</h1>
+				<p>Manage outcomes-aligned questions with Bloom's Taxonomy cognitive classification & Examination Paper Generator.</p>
 			</div>
 			<div class="header-right" *ngIf="role === 'admin' || role === 'faculty'">
-				<button class="btn btn-ai-exam" (click)="openExamGenerator()">⚡ 1-Click AI Exam Generator</button>
-				<button class="btn btn-primary" (click)="openQuestionForm()">➕ Add Question</button>
+				<button class="btn btn-ai-exam" (click)="openExamGenerator()">
+					<span class="material-icons" style="font-size: 16px; vertical-align: middle;">auto_stories</span> Exam Paper Generator
+				</button>
+				<button class="btn btn-primary" (click)="openQuestionForm()">
+					<span class="material-icons" style="font-size: 16px; vertical-align: middle;">add</span> Add Question
+				</button>
 			</div>
 		</div>
 
@@ -140,7 +148,7 @@
 			<!-- Add/Edit Question Form -->
 			<div class="form-card" *ngIf="showQuestionForm">
 				<div class="form-header">
-					<h2>{{ editIndex >= 0 ? 'Edit Question Details' : 'Add New Question (with AI Bloom\'s Detection)' }}</h2>
+					<h2>{{ editIndex >= 0 ? 'Edit Question Details' : 'Add New Question (Bloom\'s Detection)' }}</h2>
 					<button class="btn-close-form" (click)="closeQuestionForm()">✕</button>
 				</div>
 				<form (ngSubmit)="saveQuestion()">
@@ -216,14 +224,14 @@
 						</label>
 					</div>
 
-					<!-- AI Suggestion Chip -->
+					<!-- Suggestion Chip -->
 					<div class="ai-suggestion-pill" *ngIf="aiSuggestedBlooms">
-						<span class="ai-sparkle">✨ AI Auto-Detected:</span>
+						<span class="ai-sparkle">Suggested:</span>
 						<strong>{{ aiSuggestedBlooms }}</strong> | Target Outcome: <strong>{{ aiSuggestedCO }}</strong>
 					</div>
 
 					<div class="form-actions">
-						<button type="submit" class="btn btn-success">{{ editIndex >= 0 ? 'Save Edits' : '➕ Add to Bank' }}</button>
+						<button type="submit" class="btn btn-success">{{ editIndex >= 0 ? 'Save Edits' : 'Add to Bank' }}</button>
 						<button type="button" class="btn btn-secondary" (click)="closeQuestionForm()">Cancel</button>
 					</div>
 				</form>
@@ -234,7 +242,7 @@
 				<div class="filters-container">
 					<label class="filter-input">
 						Search:
-						<input type="text" [(ngModel)]="searchTerm" (input)="applyFilters()" placeholder="🔍 Search question keywords..." />
+						<input type="text" [(ngModel)]="searchTerm" (input)="applyFilters()" placeholder="Search question keywords..." />
 					</label>
 					<label class="filter-select">
 						Subject:
@@ -267,14 +275,16 @@
 				</div>
 			</div>
 
-			<!-- Grouped Questions by Subject for Faculty/Admin too -->
+			<!-- Grouped Questions by Subject for Faculty/Admin -->
 			<div class="qb-container">
 				<div style="display: flex; flex-direction: column; gap: 20px;">
 					<div *ngFor="let group of groupedSubjectQuestions" class="subject-qb-block" style="border: 1px solid #e2e8f0; border-radius: 12px; padding: 16px; background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
 						<h3 style="margin: 0; color: #1e3a8a; border-bottom: 2px solid #3b82f6; padding-bottom: 8px; font-size: 1.1rem; display: flex; justify-content: space-between; align-items: center; cursor: pointer;" (click)="toggleSubjectGroup(group.subject)">
-							<span style="display: flex; align-items: center; gap: 8px;">📚 {{ group.subject }} Question Bank</span>
+							<span style="display: flex; align-items: center; gap: 8px;">
+								<span class="material-icons" style="font-size: 18px;">menu_book</span> {{ group.subject }} Question Bank
+							</span>
 							<span style="font-size: 0.85rem; color: #64748b; font-weight: 600;">
-								{{ collapsedSubjectGroups[group.subject] ? '▼ Show' : '▲ Hide' }} ({{ group.questions.length }} Questions)
+								{{ collapsedSubjectGroups[group.subject] ? 'Show' : 'Hide' }} ({{ group.questions.length }} Questions)
 							</span>
 						</h3>
 						
@@ -294,14 +304,18 @@
 								<div class="card-body">
 									<p class="question-text">{{ q.questionText }}</p>
 									<div class="metadata-footer">
-										<span class="subject-tag">📚 {{ q.subject }}</span>
-										<span class="co-badge">🎯 {{ q.coMapped }}</span>
+										<span class="subject-tag">{{ q.subject }}</span>
+										<span class="co-badge">{{ q.coMapped }}</span>
 									</div>
 								</div>
 								
 								<div class="card-footer" *ngIf="role === 'admin' || role === 'faculty'">
-									<button class="btn btn-edit" (click)="editQuestion(q)">✎ Edit</button>
-									<button class="btn btn-delete" (click)="deleteQuestion(q)">🗑️ Delete</button>
+									<button class="btn btn-edit" (click)="editQuestion(q)">
+										<span class="material-icons" style="font-size: 14px; vertical-align: middle;">edit</span> Edit
+									</button>
+									<button class="btn btn-delete" (click)="deleteQuestion(q)">
+										<span class="material-icons" style="font-size: 14px; vertical-align: middle;">delete</span> Delete
+									</button>
 								</div>
 							</div>
 						</div>
@@ -316,12 +330,12 @@
 		</div>
 
 		<!-- ======================================== -->
-		<!-- AI Exam Paper Generator Modal -->
+		<!-- Exam Paper Generator Modal -->
 		<!-- ======================================== -->
 		<div class="modal-overlay" *ngIf="showExamGeneratorModal">
 			<div class="modal-card">
 				<div class="modal-header">
-					<h2>⚡ AI-Powered Balanced Exam Paper Generator</h2>
+					<h2>Balanced Exam Paper Generator</h2>
 					<button class="btn-close-modal" (click)="closeExamGenerator()">✕</button>
 				</div>
 
@@ -366,7 +380,7 @@
 					</div>
 
 					<div class="modal-actions">
-						<button class="btn btn-primary btn-generate" (click)="generateBalancedExamPaper()">✨ Generate Balanced Question Paper</button>
+						<button class="btn btn-primary btn-generate" (click)="generateBalancedExamPaper()">Generate Balanced Question Paper</button>
 						<button class="btn btn-secondary" (click)="closeExamGenerator()">Cancel</button>
 					</div>
 				</div>
@@ -375,7 +389,9 @@
 				<div class="modal-body paper-preview-body" *ngIf="showGeneratedPaperView">
 					<div class="paper-toolbar">
 						<button class="btn btn-secondary" (click)="showGeneratedPaperView = false">← Reconfigure</button>
-						<button class="btn btn-primary" (click)="printExamPaper()">🖨️ Print / Save as PDF</button>
+						<button class="btn btn-primary" (click)="printExamPaper()">
+							<span class="material-icons" style="font-size: 16px; vertical-align: middle;">print</span> Print / Save as PDF
+						</button>
 					</div>
 
 					<div class="official-exam-sheet">

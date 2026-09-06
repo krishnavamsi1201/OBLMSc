@@ -1,46 +1,168 @@
-.mat-toolbar{
-    position: relative;
-}
-
-.mat-toolbar {
+.enterprise-navbar {
+    height: 64px;
+    background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
     display: flex;
     align-items: center;
-    position: relative;
-    background: linear-gradient(90deg, #2f63c3 0%, #3f7be5 100%);
+    justify-content: space-between;
+    padding: 0 24px;
     color: #ffffff;
-    box-shadow: 0 4px 18px rgba(47, 101, 195, 0.22);
+    box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.15);
+    z-index: 100;
 }
 
-.title{
-    flex: 1;
-    text-align: center;
-    font-size: 28px;
+.navbar-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.brand-logo-badge {
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.35);
+}
+
+.brand-icon {
+    font-size: 24px;
+    color: #ffffff;
+}
+
+.brand-info {
+    display: flex;
+    flex-direction: column;
+}
+
+.brand-title {
+    font-size: 1.15rem;
     font-weight: 800;
-    letter-spacing: 0.05em;
-    text-transform: uppercase;
+    letter-spacing: 0.04em;
     color: #ffffff;
+    line-height: 1.2;
 }
 
-.spacer{
-    flex:1;
+.brand-subtitle {
+    font-size: 0.72rem;
+    color: #94a3b8;
+    font-weight: 500;
+    letter-spacing: 0.01em;
 }
 
-.student-toolbar{
-    height: 72px;
+.navbar-center {
+    display: flex;
+    align-items: center;
 }
 
-.student-title{
-    font-weight:700;
-    font-size:18px;
+.portal-status-pill {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    padding: 6px 14px;
+    border-radius: 9999px;
+    backdrop-filter: blur(8px);
 }
 
-.student-actions{
-    display:flex;
-    align-items:center;
-    gap:12px;
+.status-dot {
+    width: 8px;
+    height: 8px;
+    background-color: #22c55e;
+    border-radius: 50%;
+    box-shadow: 0 0 8px #22c55e;
+    animation: pulseGlow 2s infinite;
 }
 
-.student-name{
-    font-size:14px;
-    color:#fff;
+@keyframes pulseGlow {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.6; transform: scale(1.15); }
+}
+
+.portal-name {
+    font-size: 0.76rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    color: #e2e8f0;
+}
+
+.navbar-right {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.user-profile-badge {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    padding: 4px 12px 4px 4px;
+    border-radius: 9999px;
+}
+
+.user-avatar-circle {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #6366f1 0%, #4338ca 100%);
+    color: #ffffff;
+    font-weight: 700;
+    font-size: 0.88rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 6px rgba(99, 102, 241, 0.3);
+}
+
+.user-text-info {
+    display: flex;
+    flex-direction: column;
+}
+
+.user-display-name {
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: #f1f5f9;
+    max-width: 140px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.user-role-label {
+    font-size: 0.68rem;
+    color: #94a3b8;
+    font-weight: 500;
+}
+
+.nav-logout-btn {
+    background: rgba(239, 68, 68, 0.12);
+    border: 1px solid rgba(239, 68, 68, 0.25);
+    color: #fca5a5;
+    font-size: 0.82rem;
+    font-weight: 600;
+    padding: 7px 14px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.nav-logout-btn:hover {
+    background: rgba(239, 68, 68, 0.22);
+    border-color: rgba(239, 68, 68, 0.4);
+    color: #ffffff;
+    transform: translateY(-1px);
+}
+
+.logout-icon {
+    font-size: 16px;
 }

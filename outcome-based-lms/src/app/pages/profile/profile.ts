@@ -25,7 +25,7 @@ interface ProfileData {
   <!-- Categorized Sidebar Navigation -->
   <div class="student-sidebar">
     <div class="logo">
-      <h2>🎓 OBLMS</h2>
+      <h2>OBLMS</h2>
       <p>Outcome Based LMS</p>
     </div>
 
@@ -34,7 +34,7 @@ interface ProfileData {
         <span class="group-title">{{ group.title }}</span>
         <div class="group-items">
           <button mat-button *ngFor="let item of group.items" (click)="navigate(item.path)" [class.active]="item.path === '/profile'">
-            <span class="icon">{{ item.icon }}</span>
+            <span class="material-icons" style="font-size: 18px; margin-right: 8px;">{{ item.icon }}</span>
             <span class="nav-label">{{ item.label }}</span>
           </button>
         </div>
@@ -45,13 +45,15 @@ interface ProfileData {
     <div class="sidebar-user-card" (click)="navigate('/profile')" title="View profile details" style="margin-top: auto; padding: 10px 12px; background: var(--student-card-bg); border: 1px solid var(--student-border); border-radius: 12px; display: flex; align-items: center; gap: 10px; cursor: pointer; transition: all 0.2s ease;">
       <div class="user-avatar-mini" style="width: 36px; height: 36px; border-radius: 50%; overflow: hidden; background: rgba(var(--student-primary-rgb), 0.1); display: flex; align-items: center; justify-content: center; flex-shrink: 0; border: 1.5px solid var(--student-primary);">
         <img *ngIf="studentPhoto" [src]="studentPhoto" alt="Profile" style="width: 100%; height: 100%; object-fit: cover;" />
-        <span *ngIf="!studentPhoto">👨‍🎓</span>
+        <span *ngIf="!studentPhoto" class="material-icons" style="font-size: 20px; color: var(--student-primary);">person</span>
       </div>
       <div class="user-meta-mini" style="flex: 1; display: flex; flex-direction: column; overflow: hidden;">
         <strong class="user-name-mini" style="font-size: 12.5px; color: var(--student-text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: 700;">{{ studentName }}</strong>
         <span class="user-roll-mini" style="font-size: 11px; color: var(--student-text-secondary);">{{ studentRoll }}</span>
       </div>
-      <button class="logout-icon-btn" (click)="$event.stopPropagation(); logout()" title="Logout" style="background: transparent; border: none; font-size: 15px; cursor: pointer; padding: 4px; opacity: 0.7;">🚪</button>
+      <button class="logout-icon-btn" (click)="$event.stopPropagation(); logout()" title="Logout" style="background: transparent; border: none; cursor: pointer; padding: 4px; opacity: 0.7;">
+        <span class="material-icons" style="font-size: 18px; color: var(--student-text-secondary);">logout</span>
+      </button>
     </div>
   </div>
 
@@ -60,7 +62,7 @@ interface ProfileData {
     
     <div class="page-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
       <div class="header-title">
-        <h1 style="margin: 0; font-size: 1.8rem; color: var(--student-text); font-weight: 800;">👤 My Profile</h1>
+        <h1 style="margin: 0; font-size: 1.8rem; color: var(--student-text); font-weight: 800;">My Profile</h1>
         <p style="margin: 4px 0 0 0; color: var(--student-text-secondary); font-size: 0.95rem;">Review and update your user credentials, profile photo, and contact details.</p>
       </div>
     </div>
@@ -804,38 +806,38 @@ export class Profile {
     {
       title: 'ACADEMICS',
       items: [
-        { label: 'Student Dashboard', path: '/students', icon: '🏠' },
-        { label: 'Enrolled Courses', path: '/courses', icon: '📚' },
-        { label: 'Subject List', path: '/subjects', icon: '📖' },
-        { label: 'Weekly Timetable', path: '/timetable', icon: '📆' }
+        { label: 'Student Dashboard', path: '/students', icon: 'dashboard' },
+        { label: 'Enrolled Courses', path: '/courses', icon: 'menu_book' },
+        { label: 'Subject List', path: '/subjects', icon: 'subject' },
+        { label: 'Weekly Timetable', path: '/timetable', icon: 'calendar_month' }
       ]
     },
     {
       title: 'OBE & OUTCOMES',
       items: [
-        { label: 'Course Outcomes (CO)', path: '/course-outcomes', icon: '🎯' },
-        { label: 'Program Outcomes (PO)', path: '/program-outcomes', icon: '🎯' },
-        { label: 'CO-PO Mapping', path: '/copo-mapping', icon: '🔗' },
-        { label: 'CO Attainment', path: '/co-attainment', icon: '📊' },
-        { label: 'PO Attainment', path: '/po-attainment', icon: '📈' }
+        { label: 'Course Outcomes (CO)', path: '/course-outcomes', icon: 'track_changes' },
+        { label: 'Program Outcomes (PO)', path: '/program-outcomes', icon: 'military_tech' },
+        { label: 'CO-PO Mapping', path: '/copo-mapping', icon: 'hub' },
+        { label: 'CO Attainment', path: '/co-attainment', icon: 'stacked_bar_chart' },
+        { label: 'PO Attainment', path: '/po-attainment', icon: 'trending_up' }
       ]
     },
     {
       title: 'EXAMINATIONS & MARKS',
       items: [
-        { label: 'Upcoming Exams', path: '/assessments', icon: '📝' },
-        { label: 'Attendance %', path: '/attendance', icon: '📅' },
-        { label: 'Marks Summary', path: '/performance', icon: '📈' },
-        { label: 'Semester Results', path: '/results', icon: '📄' }
+        { label: 'Upcoming Exams', path: '/assessments', icon: 'quiz' },
+        { label: 'Attendance %', path: '/attendance', icon: 'fact_check' },
+        { label: 'Marks Summary', path: '/performance', icon: 'assessment' },
+        { label: 'Semester Results', path: '/results', icon: 'rate_review' }
       ]
     },
     {
       title: 'STUDENT SERVICES',
       items: [
-        { label: 'Feedback Form', path: '/feedback', icon: '💬' },
-        { label: 'File Grievance', path: '/grievance', icon: '📩' },
-        { label: 'Notifications', path: '/notifications', icon: '🔔' },
-        { label: 'Student Details', path: '/profile', icon: '👤' }
+        { label: 'Feedback Form', path: '/feedback', icon: 'rate_review' },
+        { label: 'File Grievance', path: '/grievance', icon: 'assignment' },
+        { label: 'Notifications', path: '/notifications', icon: 'notifications' },
+        { label: 'Student Details', path: '/profile', icon: 'manage_accounts' }
       ]
     }
   ];

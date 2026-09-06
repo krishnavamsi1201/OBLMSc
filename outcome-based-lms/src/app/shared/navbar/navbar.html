@@ -1,26 +1,35 @@
-<ng-container *ngIf="role !== 'student'; else studentBar">
-    <mat-toolbar color="primary">
-
-            <span class="title">Outcome-Based Learning Management System</span>
-
-            <span class="spacer"></span>
-
-            <button mat-button>
-                    {{ role || 'User' }}
-            </button>
-
-            <button mat-raised-button color="accent" (click)="logout()">Logout</button>
-
-    </mat-toolbar>
-</ng-container>
-
-<ng-template #studentBar>
-    <mat-toolbar color="primary" class="student-toolbar">
-        <span class="title">Outcome-Based Learning Management System</span>
-        <span class="spacer"></span>
-        <div class="student-actions">
-            <span class="student-name">{{ userName ? (userName | uppercase) : role || 'Student' }}</span>
-            <button mat-button (click)="logout()">Logout</button>
+<header class="enterprise-navbar">
+    <div class="navbar-left">
+        <div class="brand-logo-badge">
+            <span class="material-icons brand-icon">school</span>
         </div>
-    </mat-toolbar>
-</ng-template>
+        <div class="brand-info">
+            <span class="brand-title">OBLMS</span>
+            <span class="brand-subtitle">Outcome-Based Learning Management System</span>
+        </div>
+    </div>
+
+    <div class="navbar-center">
+        <div class="portal-status-pill">
+            <span class="status-dot"></span>
+            <span class="portal-name">{{ (role | uppercase) || 'PORTAL' }} CONSOLE</span>
+        </div>
+    </div>
+
+    <div class="navbar-right">
+        <div class="user-profile-badge" *ngIf="userName">
+            <div class="user-avatar-circle">
+                {{ userName.charAt(0).toUpperCase() }}
+            </div>
+            <div class="user-text-info">
+                <span class="user-display-name">{{ userName }}</span>
+                <span class="user-role-label">{{ role | titlecase }}</span>
+            </div>
+        </div>
+
+        <button class="nav-logout-btn" (click)="logout()" title="Logout from System">
+            <span class="material-icons logout-icon">logout</span>
+            <span>Sign Out</span>
+        </button>
+    </div>
+</header>

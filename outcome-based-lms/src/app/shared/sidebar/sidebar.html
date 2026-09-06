@@ -1,20 +1,38 @@
 <div class="sidebar" [class.collapsed]="collapsed" #sidebarRef (scroll)="saveScrollPosition()">
 
-    <div class="sidebar-top">
-        <div class="logo">
-            <h2>🎓</h2>
-            <p *ngIf="!collapsed">OBLMS</p>
-        </div>
-        <button type="button" class="collapse-toggle" (click)="toggleCollapse()" aria-label="Toggle navigation">
-            <span>{{ collapsed ? '»' : '«' }}</span>
+    <!-- Sidebar Header Category Badge -->
+    <div class="sidebar-header-badge">
+        <span class="portal-category-label" *ngIf="!collapsed">{{ portalTitle }}</span>
+        <button type="button" class="collapse-toggle" (click)="toggleCollapse()" [title]="collapsed ? 'Expand Sidebar' : 'Collapse Sidebar'">
+            <span class="material-icons collapse-icon">{{ collapsed ? 'chevron_right' : 'chevron_left' }}</span>
         </button>
     </div>
 
-    <div class="nav-group">
-        <span class="group-title" *ngIf="!collapsed">Navigation</span>
-        <button mat-button *ngFor="let item of navItems" [routerLink]="item.path" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: item.exact === true }">
-            <span class="icon">{{ item.icon }}</span>
-            <span class="label" *ngIf="!collapsed">{{ item.label }}</span>
+    <!-- Categorized Navigation Groups -->
+    <div class="nav-groups-container">
+        <div *ngFor="let group of navGroups" class="nav-group-block">
+            <span class="group-title" *ngIf="!collapsed">{{ group.title }}</span>
+            <div class="group-items">
+                <button class="nav-link-btn" *ngFor="let item of group.items" [routerLink]="item.path" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: item.exact === true }" [title]="collapsed ? item.label : ''">
+                    <span class="material-icons nav-icon">{{ item.icon }}</span>
+                    <span class="nav-label" *ngIf="!collapsed">{{ item.label }}</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Mini Profile Card at Bottom of Sidebar -->
+    <div class="sidebar-user-card" [routerLink]="'/profile'" [title]="'View ' + userName + ' profile'" *ngIf="!collapsed">
+        <div class="user-avatar-mini">
+            <span class="avatar-initial">{{ userInitial }}</span>
+        </div>
+        <div class="user-meta-mini">
+            <strong class="user-name-mini">{{ userName }}</strong>
+            <span class="user-role-mini">{{ role | uppercase }}</span>
+        </div>
+        <button type="button" class="logout-icon-btn" (click)="$event.stopPropagation(); logout()" title="Sign Out">
+            <span class="material-icons">logout</span>
         </button>
     </div>
+
 </div>

@@ -1,43 +1,64 @@
 <div class="login-scene">
   <div class="bg-glow glow-one"></div>
   <div class="bg-glow glow-two"></div>
-  
-  <!-- Education Illustrations -->
-  <div class="login-scene-illustration illus-1">🎓</div>
-  <div class="login-scene-illustration illus-2">📚</div>
-  <div class="login-scene-illustration illus-3">👥</div>
-  <div class="login-scene-illustration illus-4">📊</div>
-  <div class="login-scene-illustration illus-5">✨</div>
 
   <main class="login-shell">
     <section class="login-panel glass-panel" aria-label="Login form">
+      <!-- Logo Branding Header -->
       <div class="logo-branding">
-        <div class="logo-icon">🎓</div>
+        <div class="logo-icon-pill">
+          <span class="material-icons brand-icon">school</span>
+        </div>
         <h2 class="logo-text">OBLMS</h2>
         <p class="logo-tagline">Outcome-Based Learning Management System</p>
-      </div>
-
-      <div class="panel-header-icon">
-        <span class="grad-cap"></span>
       </div>
 
       <h1>Welcome Back!</h1>
       <p class="subtitle">Sign in to continue to your account</p>
 
+      <!-- Clean Role Switcher Tabs -->
+      <div class="role-selector-tabs">
+        <button type="button" 
+                class="role-tab-btn" 
+                [class.active]="role === 'admin'" 
+                (click)="selectRole('admin')">
+          <span class="material-icons">admin_panel_settings</span>
+          <span>Admin</span>
+        </button>
+        <button type="button" 
+                class="role-tab-btn" 
+                [class.active]="role === 'faculty'" 
+                (click)="selectRole('faculty')">
+          <span class="material-icons">supervisor_account</span>
+          <span>Faculty</span>
+        </button>
+        <button type="button" 
+                class="role-tab-btn" 
+                [class.active]="role === 'student'" 
+                (click)="selectRole('student')">
+          <span class="material-icons">school</span>
+          <span>Student</span>
+        </button>
+      </div>
+
+      <!-- Login Form -->
       <form (ngSubmit)="login()" #loginForm="ngForm" novalidate>
-        <label class="field">
-          <span class="field-icon email-icon"></span>
+        
+        <!-- Email / User ID Input -->
+        <div class="field">
+          <span class="material-icons field-icon">alternate_email</span>
           <input 
             type="text" 
             name="identifier" 
-            placeholder="Enter Email Address or User ID (e.g. STU004, admin@oblms.edu)" 
+            placeholder="Email Address or User ID (e.g. STU004)" 
             required 
             [(ngModel)]="identifier" 
           />
-        </label>
+        </div>
 
-        <label class="field password-field">
-          <span class="field-icon password-icon"></span>
+        <!-- Password Input -->
+        <div class="field password-field">
+          <span class="material-icons field-icon">lock_outline</span>
           <input 
             [type]="showPassword ? 'text' : 'password'" 
             name="password" 
@@ -49,73 +70,75 @@
             type="button" 
             class="password-toggle" 
             (click)="togglePasswordVisibility()"
-            [attr.aria-label]="showPassword ? 'Hide password' : 'Show password'"
+            [title]="showPassword ? 'Hide password' : 'Show password'"
           >
-            {{ showPassword ? '👁️' : '👁️‍🗨️' }}
+            <span class="material-icons" style="font-size: 18px;">{{ showPassword ? 'visibility_off' : 'visibility' }}</span>
           </button>
-        </label>
-
-        <label class="field select-field">
-          <span class="field-icon user-icon"></span>
-          <select name="role" required [(ngModel)]="role">
-            <option value="" disabled selected>Select Role</option>
-            <option value="admin">Admin</option>
-            <option value="faculty">Faculty</option>
-            <option value="student">Student</option>
-          </select>
-        </label>
+        </div>
 
         <div class="meta-row">
           <label class="check-wrap">
             <input type="checkbox" checked />
             <span>Remember me</span>
           </label>
-          <a href="#">Forgot Password?</a>
+          <a href="javascript:void(0)" (click)="toast.info('Please contact the Dean administrator at admin@oblms.edu to reset your institutional credentials.')">Forgot Password?</a>
         </div>
 
-        <button type="submit" class="primary-button" [disabled]="!loginForm.form.valid">
-          <span>Sign In</span>
-          <span class="arrow">→</span>
+        <!-- Submit Button -->
+        <button type="submit" class="primary-button" [disabled]="!identifier || !password || isLoading">
+          <span *ngIf="!isLoading">Sign In</span>
+          <span *ngIf="isLoading">Authenticating...</span>
+          <span class="arrow" *ngIf="!isLoading">→</span>
         </button>
+
+        <!-- Quick One-Click Demo Logins -->
+        <div class="quick-demo-box">
+          <span class="demo-label">Quick One-Click Logins:</span>
+          <div class="demo-btn-group">
+            <button type="button" class="demo-btn" (click)="setDemoAccount('admin')">Admin</button>
+            <button type="button" class="demo-btn" (click)="setDemoAccount('faculty')">Faculty</button>
+            <button type="button" class="demo-btn" (click)="setDemoAccount('student')">Student</button>
+          </div>
+        </div>
+
       </form>
     </section>
 
-    <!-- Statistics Section -->
+    <!-- Clean Bottom Stats Counter -->
     <section class="stats-panel glass-panel">
       <div class="stat-item">
-        <span class="stat-icon">✓</span>
+        <span class="material-icons stat-icon">menu_book</span>
         <div class="stat-content">
           <span class="stat-label">Courses</span>
-          <span class="stat-value">{{ stats.courses }}</span>
+          <span class="stat-value">{{ stats.courses || 12 }}</span>
         </div>
       </div>
       <div class="stat-item">
-        <span class="stat-icon">✓</span>
+        <span class="material-icons stat-icon">groups</span>
         <div class="stat-content">
           <span class="stat-label">Faculty</span>
-          <span class="stat-value">{{ stats.faculty }}</span>
+          <span class="stat-value">{{ stats.faculty || 15 }}</span>
         </div>
       </div>
       <div class="stat-item">
-        <span class="stat-icon">✓</span>
+        <span class="material-icons stat-icon">school</span>
         <div class="stat-content">
           <span class="stat-label">Students</span>
-          <span class="stat-value">{{ stats.students }}</span>
+          <span class="stat-value">{{ stats.students || 30 }}</span>
         </div>
       </div>
       <div class="stat-item">
-        <span class="stat-icon">✓</span>
+        <span class="material-icons stat-icon">track_changes</span>
         <div class="stat-content">
           <span class="stat-label">Outcomes</span>
-          <span class="stat-value">{{ stats.outcomes }}</span>
+          <span class="stat-value">{{ stats.outcomes || 40 }}</span>
         </div>
       </div>
     </section>
   </main>
 
-  <!-- Footer -->
+  <!-- Clean Footer -->
   <footer class="login-footer">
-    <p>© 2026 Outcome-Based Learning Management System</p>
-    <p>Department of CSE</p>
+    <p>© 2026 Outcome-Based Learning Management System • Department of Computer Science & Engineering</p>
   </footer>
 </div>

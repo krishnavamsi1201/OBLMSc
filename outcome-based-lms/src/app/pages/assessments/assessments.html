@@ -7,7 +7,7 @@
     <div class="content">
 
         <div class="page-header">
-            <h1>📝 {{ role === 'student' ? 'Upcoming & Active Assessments' : 'Assessments Management' }}</h1>
+            <h1>{{ role === 'student' ? 'Upcoming & Active Assessments' : 'Assessments Management' }}</h1>
             <p>{{ role === 'student' ? 'View scheduled examinations, assignment due dates, and your evaluation scorecards.' : 'Faculty tools for assignment, quiz, midterm, and lab exam creation, plus mark entry and tracking.' }}</p>
         </div>
 
@@ -121,7 +121,7 @@
                     <input 
                         type="text" 
                         [(ngModel)]="searchAssessment" 
-                        placeholder="🔍 Search course, type, status..."
+                        placeholder="Search course, type, status..." 
                         class="table-search-input"
                     />
                     <select [(ngModel)]="typeFilter" class="table-filter-select">
@@ -169,7 +169,7 @@
                     <input 
                         type="text" 
                         [(ngModel)]="searchMarks" 
-                        placeholder="🔍 Search assessment or student..."
+                        placeholder="Search assessment or student..." 
                         class="table-search-input"
                     />
                 </div>

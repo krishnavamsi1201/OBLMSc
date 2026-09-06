@@ -4,17 +4,16 @@
 
   <!-- Categorized Sidebar Navigation -->
   <div class="student-sidebar">
-    <div class="logo">
-      <h2>🎓 OBLMS</h2>
-      <p>Outcome Based LMS</p>
+    <div class="sidebar-header-badge">
+      <span class="portal-category-label">STUDENT PORTAL</span>
     </div>
 
     <div class="nav-groups-container">
       <div *ngFor="let group of studentNavGroups" class="nav-group-block">
         <span class="group-title">{{ group.title }}</span>
         <div class="group-items">
-          <button mat-button *ngFor="let item of group.items" (click)="navigate(item.path)" [class.active]="item.path === '/students'">
-            <span class="icon">{{ item.icon }}</span>
+          <button class="student-nav-btn" *ngFor="let item of group.items" (click)="navigate(item.path)" [class.active]="item.path === '/students'">
+            <span class="material-icons nav-icon">{{ item.icon }}</span>
             <span class="nav-label">{{ item.label }}</span>
           </button>
         </div>
@@ -25,13 +24,15 @@
     <div class="sidebar-user-card" (click)="navigate('/profile')" title="View profile details">
       <div class="user-avatar-mini">
         <img *ngIf="studentPhoto" [src]="studentPhoto" alt="Profile" />
-        <span *ngIf="!studentPhoto">👨‍🎓</span>
+        <span *ngIf="!studentPhoto" class="avatar-initial">{{ studentName.charAt(0).toUpperCase() }}</span>
       </div>
       <div class="user-meta-mini">
         <strong class="user-name-mini">{{ studentName }}</strong>
         <span class="user-roll-mini">{{ studentRoll }}</span>
       </div>
-      <button class="logout-icon-btn" (click)="$event.stopPropagation(); logout()" title="Logout">🚪</button>
+      <button class="logout-icon-btn" (click)="$event.stopPropagation(); logout()" title="Logout">
+        <span class="material-icons">logout</span>
+      </button>
     </div>
   </div>
 
@@ -43,38 +44,45 @@
       <div class="hero-main-info">
         <div class="hero-avatar-wrap" (click)="navigate('/profile')" title="Click to view / update profile photo">
           <img *ngIf="studentPhoto" [src]="studentPhoto" alt="Profile" class="hero-avatar-img" />
-          <span *ngIf="!studentPhoto" class="hero-avatar-placeholder">👨‍🎓</span>
+          <span *ngIf="!studentPhoto" class="hero-avatar-placeholder">{{ studentName.charAt(0).toUpperCase() }}</span>
           <span class="hero-avatar-badge" title="Profile active">✓</span>
         </div>
         <div class="hero-text">
           <div class="hero-badge-row">
-            <span class="hero-badge program-badge">🎓 {{ studentSemester }}</span>
-            <span class="hero-badge status-badge">🌟 Good Academic Standing</span>
+            <span class="hero-badge program-badge">{{ studentSemester }}</span>
+            <span class="hero-badge status-badge">Active Academic Standing</span>
           </div>
-          <h1 class="hero-greeting">Welcome back, {{ studentName }}!</h1>
+          <h1 class="hero-greeting">Welcome back, {{ studentName }}</h1>
           <p class="hero-subtext">
-            <span>📧 {{ studentEmail }}</span> • <span>🆔 {{ studentRoll }}</span> • <span>🏫 {{ studentDept }}</span>
+            <span class="subtext-item"><span class="material-icons meta-icon">mail</span> {{ studentEmail }}</span>
+            <span class="subtext-divider">•</span>
+            <span class="subtext-item"><span class="material-icons meta-icon">badge</span> {{ studentRoll }}</span>
+            <span class="subtext-divider">•</span>
+            <span class="subtext-item"><span class="material-icons meta-icon">school</span> {{ studentDept }}</span>
           </p>
         </div>
       </div>
       <div class="hero-actions">
         <button class="hero-btn primary-btn" (click)="downloadGradeReportCsv()" title="Download full academic transcript and grades">
-          📥 Grade Report
+          <span class="material-icons">download</span> Grade Report
         </button>
         <button class="hero-btn secondary-btn" (click)="downloadCoReportCsv()" title="Download personal CO attainment progress">
-          🎯 CO Mastery Report
+          <span class="material-icons">analytics</span> CO Mastery Report
         </button>
       </div>
     </div>
     
     <!-- Attendance Warning Alert (Only if enrolled and attendance actually recorded below 75) -->
     <div *ngIf="stats.enrolledCourses > 0 && stats.attendancePercentage > 0 && stats.attendancePercentage < 75" class="attendance-warning-alert">
-      ⚠️ <strong>Attendance Warning:</strong> Your current attendance is <strong>{{ stats.attendancePercentage }}%</strong>, which is below the required 75% threshold. You may be barred from appearing in semester examinations if this is not improved.
+      <span class="material-icons alert-icon-symbol">warning</span>
+      <div class="alert-content">
+        <strong>Attendance Notice:</strong> Your current attendance is <strong>{{ stats.attendancePercentage }}%</strong>, which is below the mandatory 75% threshold. Please meet your course faculty to resolve shortages.
+      </div>
     </div>
 
     <!-- Low Attendance Alert Notice (if applicable) -->
     <div *ngIf="showAttendanceWarning" class="attendance-alert-banner">
-      <div class="alert-icon">⚠️</div>
+      <span class="material-icons alert-icon-symbol">info</span>
       <div class="alert-text">
         <strong>OBE Attendance Notice:</strong> {{ attendanceWarningMsg }}
       </div>
@@ -84,11 +92,11 @@
     <!-- Global Instant Live Search Bar -->
     <div class="student-search-container">
       <div class="search-input-wrapper">
-        <span class="search-icon">🔍</span>
+        <span class="material-icons search-icon">search</span>
         <input 
           type="text" 
           [(ngModel)]="searchQuery" 
-          placeholder="Search subjects, today's schedule, CO outcomes, marks, exams, or quick pages..."
+          placeholder="Search subjects, today's schedule, CO outcomes, marks, or exams..."
           class="student-search-input"
         />
         <button *ngIf="searchQuery" (click)="clearSearch()" class="search-clear-btn" title="Clear search">✕</button>
@@ -96,9 +104,9 @@
       
       <!-- Direct Shortcuts on search -->
       <div *ngIf="quickPageMatches.length > 0" class="search-quick-matches">
-        <span class="match-label">⚡ Direct Shortcuts:</span>
+        <span class="match-label">Quick Links:</span>
         <button *ngFor="let match of quickPageMatches" class="match-chip" (click)="navigate(match.path)">
-          {{ match.icon }} {{ match.label }} →
+          {{ match.label }} →
         </button>
       </div>
     </div>
@@ -108,7 +116,9 @@
       
       <!-- Card 1: Courses -->
       <div class="stat-card" (click)="navigate('/courses')">
-        <div class="stat-icon-wrap icon-blue">📚</div>
+        <div class="stat-icon-wrap icon-blue">
+          <span class="material-icons stat-card-icon">menu_book</span>
+        </div>
         <div class="stat-info">
           <span class="stat-label">Enrolled Courses</span>
           <div class="stat-val-row">
@@ -121,7 +131,9 @@
 
       <!-- Card 2: Attendance -->
       <div class="stat-card" (click)="navigate('/attendance')">
-        <div class="stat-icon-wrap" [ngClass]="stats.attendancePercentage >= 75 ? 'icon-green' : 'icon-red'">📅</div>
+        <div class="stat-icon-wrap" [ngClass]="stats.attendancePercentage >= 75 ? 'icon-green' : 'icon-red'">
+          <span class="material-icons stat-card-icon">fact_check</span>
+        </div>
         <div class="stat-info">
           <span class="stat-label">Overall Attendance</span>
           <div class="stat-val-row">
@@ -136,7 +148,9 @@
 
       <!-- Card 3: CGPA -->
       <div class="stat-card" (click)="navigate('/performance')">
-        <div class="stat-icon-wrap icon-purple">📈</div>
+        <div class="stat-icon-wrap icon-purple">
+          <span class="material-icons stat-card-icon">insights</span>
+        </div>
         <div class="stat-info">
           <span class="stat-label">Cumulative CGPA</span>
           <div class="stat-val-row">
@@ -149,7 +163,9 @@
 
       <!-- Card 4: Pending Evaluations -->
       <div class="stat-card" (click)="navigate('/assessments')">
-        <div class="stat-icon-wrap icon-amber">📝</div>
+        <div class="stat-icon-wrap icon-amber">
+          <span class="material-icons stat-card-icon">event_note</span>
+        </div>
         <div class="stat-info">
           <span class="stat-label">Upcoming Evaluations</span>
           <div class="stat-val-row">
@@ -166,7 +182,7 @@
     <div class="courses-preview-section">
       <div class="section-title-row">
         <div>
-          <h2>📚 My Enrolled Courses ({{ filteredCourses.length }})</h2>
+          <h2>My Enrolled Courses ({{ filteredCourses.length }})</h2>
           <p class="section-subtext">Click any course card to review syllabus, outcomes, and progress</p>
         </div>
         <button class="link-btn" (click)="navigate('/courses')">View All Courses →</button>
@@ -178,11 +194,14 @@
             <span class="course-credits-badge">{{ course.credits }} Credits</span>
           </div>
           <h4 class="course-title">{{ course.title }}</h4>
-          <p class="course-faculty">👨‍🏫 {{ course.faculty }}</p>
+          <p class="course-faculty">
+            <span class="material-icons faculty-mini-icon">person</span>
+            {{ course.faculty }}
+          </p>
           
           <div class="course-progress-block">
             <div class="progress-labels">
-              <span>Internal Avg</span>
+              <span>Internal Average</span>
               <strong>{{ course.currentAvg }}%</strong>
             </div>
             <div class="course-progress-bar">
@@ -192,7 +211,7 @@
 
           <div class="course-card-footer">
             <span class="attendance-tag" [class.low-att]="course.attendancePct < 75">
-              Att: {{ course.attendancePct }}%
+              Attendance: {{ course.attendancePct }}%
             </span>
             <span class="course-explore-link">Explore →</span>
           </div>

@@ -7,7 +7,7 @@
     <div class="content">
 
         <div class="page-header">
-            <h1>📚 Courses</h1>
+            <h1>Courses & Curriculum</h1>
             <p *ngIf="role === 'admin'">Admin curriculum dashboard to create, edit, delete courses, and allocate faculty workload.</p>
             <p *ngIf="role === 'faculty'">Institutional course catalog. View your assigned curriculum subjects and syllabus Course Outcomes (COs).</p>
             <p *ngIf="role === 'student'">View your active course catalog and track Course Outcomes (CO) syllabus progress.</p>
@@ -47,13 +47,11 @@
             </form>
         </div>
 
-
-
         <div class="courses-table-card">
             <!-- Search & Filter Toolbar -->
             <div class="table-filter-toolbar">
                 <div class="search-input-wrap">
-                    <span class="search-icon-badge">🔍</span>
+                    <span class="material-icons search-icon-badge" style="font-size: 18px; color: #94a3b8;">search</span>
                     <input type="text" [(ngModel)]="searchQuery" placeholder="Search by code, title, faculty..." />
                 </div>
                 <div class="filter-controls" *ngIf="semesters.length > 0">
@@ -88,9 +86,15 @@
                         <td class="actions-cell">
                             <!-- Admin Actions -->
                             <ng-container *ngIf="role === 'admin'">
-                                <button type="button" class="btn btn-secondary" (click)="editCourse(course, i)">✏️ Edit</button>
-                                <button type="button" class="btn btn-danger" (click)="deleteCourse(course)">🗑️ Delete</button>
-                                <button type="button" class="btn btn-primary" (click)="assignFaculty(course)">👤 Assign Faculty</button>
+                                <button type="button" class="btn btn-secondary" (click)="editCourse(course, i)">
+                                    <span class="material-icons" style="font-size: 14px; vertical-align: middle;">edit</span> Edit
+                                </button>
+                                <button type="button" class="btn btn-danger" (click)="deleteCourse(course)">
+                                    <span class="material-icons" style="font-size: 14px; vertical-align: middle;">delete</span> Delete
+                                </button>
+                                <button type="button" class="btn btn-primary" (click)="assignFaculty(course)">
+                                    <span class="material-icons" style="font-size: 14px; vertical-align: middle;">person_add</span> Assign Faculty
+                                </button>
                             </ng-container>
 
                             <!-- Faculty Actions -->
@@ -100,11 +104,11 @@
 
                             <!-- Student Actions -->
                             <ng-container *ngIf="role === 'student'">
-                                <span *ngIf="isEnrolled(course.code)" style="display: inline-block; padding: 4px 8px; background: #e6f4ea; color: #137333; font-weight: bold; border-radius: 4px; margin-right: 8px; font-size: 0.85rem;">✓ Enrolled</span>
+                                <span *ngIf="isEnrolled(course.code)" class="badge-pill-success">Enrolled</span>
                                 <button *ngIf="isEnrolled(course.code)" type="button" class="btn btn-primary" (click)="trackSyllabus(course)">Track Syllabus</button>
                                 
-                                <span *ngIf="isRequestPending(course.code)" style="display: inline-block; padding: 4px 8px; background: #f1f3f4; color: #5f6368; font-weight: bold; border-radius: 4px; font-size: 0.85rem;">⏳ Pending Approval</span>
-                                <span *ngIf="isRequestRejected(course.code)" style="display: inline-block; padding: 4px 8px; background: #fce8e6; color: #c5221f; font-weight: bold; border-radius: 4px; font-size: 0.85rem;">✕ Rejected</span>
+                                <span *ngIf="isRequestPending(course.code)" class="badge-pill-warning">Pending Approval</span>
+                                <span *ngIf="isRequestRejected(course.code)" class="badge-pill-danger">Rejected</span>
                                 
                                 <button *ngIf="!isEnrolled(course.code) && !isRequestPending(course.code)" type="button" class="btn btn-primary" (click)="requestEnrollment(course)">
                                     Request Enrollment
@@ -171,12 +175,12 @@
             <div class="modal-card syllabus-modal-card" (click)="$event.stopPropagation()">
                 <div class="modal-header-row">
                     <div>
-                        <span class="modal-pill-tag">📋 SYLLABUS OUTCOMES TRACKER</span>
+                        <span class="modal-pill-tag">SYLLABUS OUTCOMES TRACKER</span>
                         <h2>{{ selectedSyllabusCourse.title }}</h2>
                         <div class="course-meta-tags">
-                            <span class="meta-tag code-tag">🏷️ {{ selectedSyllabusCourse.code }}</span>
-                            <span class="meta-tag fac-tag">👤 {{ selectedSyllabusCourse.faculty || 'Faculty Board' }}</span>
-                            <span class="meta-tag sem-tag">📅 {{ selectedSyllabusCourse.semester }}</span>
+                            <span class="meta-tag code-tag">{{ selectedSyllabusCourse.code }}</span>
+                            <span class="meta-tag fac-tag">{{ selectedSyllabusCourse.faculty || 'Faculty Board' }}</span>
+                            <span class="meta-tag sem-tag">{{ selectedSyllabusCourse.semester }}</span>
                         </div>
                     </div>
                     <button type="button" class="close-icon-btn" (click)="selectedSyllabusCourse = null">✕</button>
@@ -209,7 +213,7 @@
                                 <span class="co-badge">{{ co.code }}</span>
                                 <strong>{{ co.title }}</strong>
                                 <span class="blooms-level-badge" [ngClass]="'level-' + co.level.toLowerCase()">
-                                    🎯 {{ co.level }}
+                                    {{ co.level }}
                                 </span>
                             </div>
                             <p class="co-description">{{ co.desc }}</p>
@@ -220,8 +224,8 @@
                 <!-- Modal Actions -->
                 <div class="modal-actions-bar">
                     <div class="bulk-actions">
-                        <button type="button" class="action-link-btn" (click)="markAllCOsComplete()">✓ Mark All Completed</button>
-                        <button type="button" class="action-link-btn danger-link" (click)="resetCOsProgress()">↺ Reset Progress</button>
+                        <button type="button" class="action-link-btn" (click)="markAllCOsComplete()">Mark All Completed</button>
+                        <button type="button" class="action-link-btn danger-link" (click)="resetCOsProgress()">Reset Progress</button>
                     </div>
                     <button type="button" class="btn btn-primary" (click)="selectedSyllabusCourse = null">Done</button>
                 </div>

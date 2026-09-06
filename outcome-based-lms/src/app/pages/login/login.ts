@@ -1,4 +1,5 @@
 import { Component, OnInit, inject } from '@angular/core';
+import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
@@ -7,18 +8,18 @@ import { ToastService } from '../../shared/services/toast.service';
 @Component({
   selector: 'app-login',
   standalone: true,
-  imports: [FormsModule],
+  imports: [CommonModule, FormsModule],
   templateUrl: './login.html',
   styleUrls: ['./login.css']
 })
 export class Login implements OnInit {
   private router = inject(Router);
-  private toast = inject(ToastService);
+  public toast = inject(ToastService);
   private http = inject(HttpClient);
 
   identifier = '';
   password = '';
-  role: 'admin' | 'faculty' | 'student' | '' = '';
+  role: 'admin' | 'faculty' | 'student' = 'student';
   showPassword = false;
   isLoading = false;
 
@@ -169,15 +170,45 @@ export class Login implements OnInit {
     }
   }
 
+  selectRole(role: 'admin' | 'faculty' | 'student'): void {
+    this.role = role;
+  }
+
+  setDemoAccount(role: 'admin' | 'faculty' | 'student'): void {
+    this.role = role;
+    if (role === 'admin') {
+      this.identifier = 'admin@oblms.edu';
+      this.password = 'root';
+    } else if (role === 'faculty') {
+      this.identifier = 'ramesh.babu@oblms.edu';
+      this.password = 'password';
+    } else if (role === 'student') {
+      this.identifier = 'krishnavamsi1201@gmail.com';
+      this.password = 'password';
+    }
+  }
+
   togglePasswordVisibility(): void {
     this.showPassword = !this.showPassword;
   }
 
   login(): void {
     const cleanId = this.identifier ? this.identifier.trim() : '';
-    if (!cleanId || !this.password || !this.role) {
-      this.toast.warning('Please enter your Email/User ID, Password, and select a Role.');
+    if (!cleanId || !this.password) {
+      this.toast.warning('Please enter your Email or User ID and Password.');
       return;
+    }
+
+    // Smart auto-role detection if needed
+    const lowerId = cleanId.toLowerCase();
+    if (lowerId.includes('admin') || lowerId.startsWith('adm')) {
+      this.role = 'admin';
+    } else if (lowerId.startsWith('fac') || lowerId.includes('ramesh.babu') || lowerId.includes('sunita.sharma') || lowerId.includes('amit.patel') || lowerId.includes('priya.nair') || lowerId.includes('rajesh.verma')) {
+      this.role = 'faculty';
+    } else if (lowerId.startsWith('stu') || lowerId.includes('krishna') || lowerId.includes('raj.kumar') || lowerId.includes('aarav') || lowerId.includes('aditya') || lowerId.includes('ananya')) {
+      this.role = 'student';
+    } else if (!this.role) {
+      this.role = 'student';
     }
 
     this.isLoading = true;

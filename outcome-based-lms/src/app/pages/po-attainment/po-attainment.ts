@@ -91,38 +91,38 @@ export class PoAttainment implements OnInit {
     {
       title: 'ACADEMICS',
       items: [
-        { label: 'Student Dashboard', path: '/students', icon: '🏠' },
-        { label: 'Enrolled Courses', path: '/courses', icon: '📚' },
-        { label: 'Subject List', path: '/subjects', icon: '📖' },
-        { label: 'Weekly Timetable', path: '/timetable', icon: '📆' }
+        { label: 'Student Dashboard', path: '/students', icon: 'dashboard' },
+        { label: 'Enrolled Courses', path: '/courses', icon: 'menu_book' },
+        { label: 'Subject List', path: '/subjects', icon: 'subject' },
+        { label: 'Weekly Timetable', path: '/timetable', icon: 'calendar_month' }
       ]
     },
     {
       title: 'OBE & OUTCOMES',
       items: [
-        { label: 'Course Outcomes (CO)', path: '/course-outcomes', icon: '🎯' },
-        { label: 'Program Outcomes (PO)', path: '/program-outcomes', icon: '🎯' },
-        { label: 'CO-PO Mapping', path: '/copo-mapping', icon: '🔗' },
-        { label: 'CO Attainment', path: '/co-attainment', icon: '📊' },
-        { label: 'PO Attainment', path: '/po-attainment', icon: '📈' }
+        { label: 'Course Outcomes (CO)', path: '/course-outcomes', icon: 'track_changes' },
+        { label: 'Program Outcomes (PO)', path: '/program-outcomes', icon: 'military_tech' },
+        { label: 'CO-PO Mapping', path: '/copo-mapping', icon: 'hub' },
+        { label: 'CO Attainment', path: '/co-attainment', icon: 'stacked_bar_chart' },
+        { label: 'PO Attainment', path: '/po-attainment', icon: 'trending_up' }
       ]
     },
     {
       title: 'EXAMINATIONS & MARKS',
       items: [
-        { label: 'Upcoming Exams', path: '/assessments', icon: '📝' },
-        { label: 'Attendance %', path: '/attendance', icon: '📅' },
-        { label: 'Marks Summary', path: '/performance', icon: '📈' },
-        { label: 'Semester Results', path: '/results', icon: '📄' }
+        { label: 'Upcoming Exams', path: '/assessments', icon: 'quiz' },
+        { label: 'Attendance %', path: '/attendance', icon: 'fact_check' },
+        { label: 'Marks Summary', path: '/performance', icon: 'assessment' },
+        { label: 'Semester Results', path: '/results', icon: 'rate_review' }
       ]
     },
     {
       title: 'STUDENT SERVICES',
       items: [
-        { label: 'Feedback Form', path: '/feedback', icon: '💬' },
-        { label: 'File Grievance', path: '/grievance', icon: '📩' },
-        { label: 'Notifications', path: '/notifications', icon: '🔔' },
-        { label: 'Student Details', path: '/profile', icon: '👤' }
+        { label: 'Feedback Form', path: '/feedback', icon: 'rate_review' },
+        { label: 'File Grievance', path: '/grievance', icon: 'assignment' },
+        { label: 'Notifications', path: '/notifications', icon: 'notifications' },
+        { label: 'Student Details', path: '/profile', icon: 'manage_accounts' }
       ]
     }
   ];

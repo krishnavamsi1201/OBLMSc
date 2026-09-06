@@ -7,39 +7,41 @@
 		<!-- Executive Page Header -->
 		<div class="page-header">
 			<div class="header-main">
-				<h1>🏛️ Institutional Administration & OBE Governance</h1>
+				<h1>Institutional Administration & OBE Governance</h1>
 				<p>
 					Executive control center for institutional governance, NBA/NAAC outcome tracking, role management, and academic approvals.
 				</p>
 			</div>
 			<div class="quick-header-actions">
 				<button class="btn-action btn-export" (click)="exportInstitutionAuditCsv()" title="Export complete institutional OBE audit report">
-					📥 Export OBE Audit CSV
+					<span class="material-icons" style="font-size: 16px;">download</span> Export OBE Audit CSV
 				</button>
 				<a routerLink="/admin/student-management" class="btn-action">+ Student</a>
 				<a routerLink="/admin/faculty-management" class="btn-action">+ Faculty</a>
 				<a routerLink="/courses" class="btn-action">+ Course</a>
 				<a routerLink="/admin/approval-management" class="btn-action btn-approval">
-					⚖️ Approvals
+					<span class="material-icons" style="font-size: 16px;">gavel</span> Approvals
 					<span *ngIf="counts.pendingApprovals > 0" class="badge-count">{{ counts.pendingApprovals }}</span>
 				</a>
 			</div>
 		</div>
 
-		<!-- 👑 Dean & Chief Administrator Executive Profile Card -->
+		<!-- Dean & Chief Administrator Executive Profile Card -->
 		<div class="admin-profile-banner">
 			<div class="banner-left">
-				<div class="admin-avatar">👑</div>
+				<div class="admin-avatar">
+					<span class="material-icons" style="font-size: 32px; color: #ffffff;">account_balance</span>
+				</div>
 				<div class="admin-info">
 					<div class="admin-title-row">
 						<h2>{{ adminUser.name }}</h2>
 						<span class="role-chip admin-chip">Chief Academic Administrator & Dean</span>
 					</div>
 					<div class="admin-meta-row">
-						<span class="meta-tag">🆔 <strong>Admin ID:</strong> {{ adminUser.id }}</span>
-						<span class="meta-tag">📧 <strong>Official Email:</strong> {{ adminUser.email }}</span>
-						<span class="meta-tag">🏛️ <strong>Authority:</strong> Full Institutional OBE Oversight</span>
-						<span class="meta-tag verified-tag">🟢 <strong>MySQL Database Status:</strong> Verified & Active</span>
+						<span class="meta-tag"><span class="material-icons" style="font-size: 14px; vertical-align: middle;">badge</span> <strong>Admin ID:</strong> {{ adminUser.id }}</span>
+						<span class="meta-tag"><span class="material-icons" style="font-size: 14px; vertical-align: middle;">email</span> <strong>Official Email:</strong> {{ adminUser.email }}</span>
+						<span class="meta-tag"><span class="material-icons" style="font-size: 14px; vertical-align: middle;">verified_user</span> <strong>Authority:</strong> Full Institutional OBE Oversight</span>
+						<span class="meta-tag verified-tag"><span class="status-indicator-dot"></span> <strong>Database Status:</strong> Verified & Active</span>
 					</div>
 				</div>
 			</div>
@@ -55,7 +57,7 @@
 		<div class="kpi-grid">
 			<div class="kpi-card">
 				<div class="kpi-top">
-					<span class="kpi-icon">🎓</span>
+					<span class="kpi-icon"><span class="material-icons">school</span></span>
 					<a routerLink="/admin/student-management" class="kpi-link">Manage →</a>
 				</div>
 				<div class="kpi-num">{{ counts.students }}</div>
@@ -64,7 +66,7 @@
 
 			<div class="kpi-card">
 				<div class="kpi-top">
-					<span class="kpi-icon">👨‍🏫</span>
+					<span class="kpi-icon"><span class="material-icons">person_pin</span></span>
 					<a routerLink="/admin/faculty-management" class="kpi-link">Manage →</a>
 				</div>
 				<div class="kpi-num">{{ counts.faculty }}</div>
@@ -73,7 +75,7 @@
 
 			<div class="kpi-card">
 				<div class="kpi-top">
-					<span class="kpi-icon">📘</span>
+					<span class="kpi-icon"><span class="material-icons">menu_book</span></span>
 					<a routerLink="/courses" class="kpi-link">Manage →</a>
 				</div>
 				<div class="kpi-num">{{ counts.courses }}</div>
@@ -82,7 +84,7 @@
 
 			<div class="kpi-card">
 				<div class="kpi-top">
-					<span class="kpi-icon">📚</span>
+					<span class="kpi-icon"><span class="material-icons">auto_stories</span></span>
 					<a routerLink="/subjects" class="kpi-link">Manage →</a>
 				</div>
 				<div class="kpi-num">{{ counts.subjects }}</div>
@@ -91,7 +93,7 @@
 
 			<div class="kpi-card">
 				<div class="kpi-top">
-					<span class="kpi-icon">🔗</span>
+					<span class="kpi-icon"><span class="material-icons">hub</span></span>
 					<a routerLink="/copo-mapping" class="kpi-link">Matrix →</a>
 				</div>
 				<div class="kpi-num">{{ counts.copoMappings }}</div>
@@ -100,7 +102,7 @@
 
 			<div class="kpi-card" [class.kpi-alert]="counts.pendingApprovals > 0">
 				<div class="kpi-top">
-					<span class="kpi-icon">⚖️</span>
+					<span class="kpi-icon"><span class="material-icons">gavel</span></span>
 					<a routerLink="/admin/approval-management" class="kpi-link">Review →</a>
 				</div>
 				<div class="kpi-num">{{ counts.pendingApprovals }}</div>
@@ -108,22 +110,22 @@
 			</div>
 		</div>
 
-		<!-- 🏛️ Master Institutional User Accounts Directory & Role Vault -->
+		<!-- Master Institutional User Accounts Directory & Role Vault -->
 		<div class="master-directory-card">
 			<div class="directory-header">
 				<div>
-					<h2>👥 Institutional User Directory & Role-Lock Vault</h2>
+					<h2>Institutional User Directory & Role-Lock Vault</h2>
 					<p>Standardized master directory of 1 Admin, 15 Faculty, and 30 Students with strict role-locked authentication.</p>
 				</div>
 				<div class="directory-tab-controls">
 					<button class="dir-tab-btn" [class.active]="activeDirectoryTab === 'faculty'" (click)="setDirectoryTab('faculty')">
-						👨‍🏫 Faculty Directory ({{ facultyList.length }})
+						Faculty Directory ({{ facultyList.length }})
 					</button>
 					<button class="dir-tab-btn" [class.active]="activeDirectoryTab === 'students'" (click)="setDirectoryTab('students')">
-						🎓 Student Roster ({{ studentList.length }})
+						Student Roster ({{ studentList.length }})
 					</button>
 					<button class="dir-tab-btn" [class.active]="activeDirectoryTab === 'security'" (click)="setDirectoryTab('security')">
-						🔒 Role-Lock Security Matrix
+						Role Security Matrix
 					</button>
 				</div>
 			</div>
@@ -131,19 +133,20 @@
 			<!-- Search & Filter Bar for Directory -->
 			<div class="directory-toolbar" *ngIf="activeDirectoryTab !== 'security'">
 				<div class="dir-search-wrap">
+					<span class="material-icons search-inner-icon">search</span>
 					<input 
 						type="text" 
 						[(ngModel)]="directorySearchQuery" 
-						placeholder="🔍 Search by name, ID (e.g. FAC001, STU004), email, or department..." 
+						placeholder="Search by name, ID (e.g. FAC001, STU004), email, or department..." 
 						class="dir-search-input"
 					/>
 				</div>
 				<div class="dir-actions">
 					<a *ngIf="activeDirectoryTab === 'faculty'" routerLink="/admin/faculty-management" class="btn-manage-link">
-						⚙️ Manage & Add Faculty →
+						<span class="material-icons" style="font-size: 16px;">settings</span> Manage & Add Faculty →
 					</a>
 					<a *ngIf="activeDirectoryTab === 'students'" routerLink="/admin/student-management" class="btn-manage-link">
-						⚙️ Manage & Add Students →
+						<span class="material-icons" style="font-size: 16px;">settings</span> Manage & Add Students →
 					</a>
 				</div>
 			</div>
@@ -157,7 +160,7 @@
 							<th>Faculty Name</th>
 							<th>Department</th>
 							<th>Email Address</th>
-							<th>🔑 Password</th>
+							<th>Default Password</th>
 							<th>Access Role</th>
 							<th>Actions</th>
 						</tr>
@@ -169,10 +172,10 @@
 							<td>{{ f.department || 'Computer Science & Engineering' }}</td>
 							<td><span class="email-text">{{ f.email }}</span></td>
 							<td><code style="background:#f1f5f9;padding:3px 8px;border-radius:6px;font-weight:700;color:#0f172a;">{{ f.password || 'password' }}</code></td>
-							<td><span class="role-pill fac-pill">👨‍🏫 Faculty</span></td>
+							<td><span class="role-pill fac-pill">Faculty</span></td>
 							<td>
 								<button class="btn-copy-cred" (click)="copyCredentials(f)" title="Copy login credentials to clipboard">
-									📋 Copy Login
+									<span class="material-icons" style="font-size: 14px; vertical-align: middle;">content_copy</span> Copy Login
 								</button>
 							</td>
 						</tr>
@@ -189,7 +192,7 @@
 							<th>Student Name</th>
 							<th>Department</th>
 							<th>Email Address</th>
-							<th>🔑 Password</th>
+							<th>Default Password</th>
 							<th>Access Role</th>
 							<th>Actions</th>
 						</tr>
@@ -201,10 +204,10 @@
 							<td>{{ s.department || 'Computer Science & Engineering' }}</td>
 							<td><span class="email-text">{{ s.email }}</span></td>
 							<td><code style="background:#f1f5f9;padding:3px 8px;border-radius:6px;font-weight:700;color:#0f172a;">{{ s.password || 'password' }}</code></td>
-							<td><span class="role-pill stu-pill">🎓 Student</span></td>
+							<td><span class="role-pill stu-pill">Student</span></td>
 							<td>
 								<button class="btn-copy-cred" (click)="copyCredentials(s)" title="Copy login credentials to clipboard">
-									📋 Copy Login
+									<span class="material-icons" style="font-size: 14px; vertical-align: middle;">content_copy</span> Copy Login
 								</button>
 							</td>
 						</tr>
@@ -217,7 +220,7 @@
 				<div class="security-grid">
 					<div class="sec-card admin-sec">
 						<div class="sec-header">
-							<span class="sec-icon">👑</span>
+							<span class="sec-icon"><span class="material-icons">admin_panel_settings</span></span>
 							<h3>Admin Role Specification</h3>
 						</div>
 						<ul>
@@ -229,7 +232,7 @@
 
 					<div class="sec-card fac-sec">
 						<div class="sec-header">
-							<span class="sec-icon">👨‍🏫</span>
+							<span class="sec-icon"><span class="material-icons">supervisor_account</span></span>
 							<h3>Faculty Role Specification</h3>
 						</div>
 						<ul>
@@ -241,7 +244,7 @@
 
 					<div class="sec-card stu-sec">
 						<div class="sec-header">
-							<span class="sec-icon">🎓</span>
+							<span class="sec-icon"><span class="material-icons">school</span></span>
 							<h3>Student Role Specification</h3>
 						</div>
 						<ul>
@@ -254,12 +257,12 @@
 			</div>
 		</div>
 
-		<!-- 🎯 Institutional OBE Accreditation Readiness Indicator Card -->
+		<!-- Institutional OBE Accreditation Readiness Indicator Card -->
 		<div class="obe-readiness-card">
 			<div class="readiness-header">
 				<div>
 					<div class="readiness-title-row">
-						<h2>🎯 Institutional Accreditation Readiness (NBA / NAAC)</h2>
+						<h2>Institutional Accreditation Readiness (NBA / NAAC)</h2>
 						<span class="compliance-status-pill" [class.compliant]="obeHealth.accreditationReadinessPct >= 75">
 							{{ obeHealth.complianceStatus }}
 						</span>
@@ -307,7 +310,7 @@
 			<!-- Department Breakdown -->
 			<div class="exec-card">
 				<div class="exec-card-header">
-					<h3>📊 Department Enrolment & Faculty Distribution</h3>
+					<h3>Department Enrolment & Faculty Distribution</h3>
 					<small>Institutional breakdown across active academic departments</small>
 				</div>
 				<div *ngIf="departmentStats.length > 0" class="dept-list">
@@ -322,7 +325,7 @@
 					</div>
 				</div>
 				<div *ngIf="departmentStats.length === 0" class="empty-state-box">
-					<div class="empty-state-icon">🏛️</div>
+					<div class="empty-state-icon"><span class="material-icons" style="font-size: 36px; color: #94a3b8;">domain</span></div>
 					<div class="empty-state-text">No departmental records found</div>
 					<small>Add students or faculty members to view automatic departmental metrics.</small>
 				</div>
@@ -331,12 +334,14 @@
 			<!-- Live Activity Feed -->
 			<div class="exec-card">
 				<div class="exec-card-header">
-					<h3>⚡ System Activity & Audit Trail</h3>
+					<h3>System Activity & Audit Trail</h3>
 					<small>Real-time log of administrative updates and submissions</small>
 				</div>
 				<div *ngIf="recentActivities.length > 0" class="activity-list">
 					<div *ngFor="let act of recentActivities" class="activity-item">
-						<div class="activity-icon">{{ act.icon }}</div>
+						<div class="activity-icon">
+							<span class="material-icons" style="font-size: 18px; color: #2563eb;">history</span>
+						</div>
 						<div class="activity-details">
 							<h4>{{ act.title }}</h4>
 							<p>{{ act.description }}</p>
@@ -345,7 +350,7 @@
 					</div>
 				</div>
 				<div *ngIf="recentActivities.length === 0" class="empty-state-box">
-					<div class="empty-state-icon">📝</div>
+					<div class="empty-state-icon"><span class="material-icons" style="font-size: 36px; color: #94a3b8;">notifications_none</span></div>
 					<div class="empty-state-text">No recent administrative activity</div>
 					<small>Audit trail logs and event notifications will appear here in real-time.</small>
 				</div>
@@ -353,32 +358,32 @@
 		</div>
 
 		<!-- Academic Management & Accreditation Tools Grid -->
-		<h2 class="section-title">🏛️ Academic Management & Accreditation Tools</h2>
+		<h2 class="section-title">Academic Management & Accreditation Tools</h2>
 		<div class="dashboard-grid">
 			<div class="dashboard-card feature-card">
 				<div class="card-badge">CURRICULUM</div>
-				<h3>📚 Course-Subject Assignment</h3>
+				<h3>Course-Subject Assignment</h3>
 				<p>Structure syllabus modules by mapping subjects to degree programs and semesters.</p>
 				<a routerLink="/admin/course-subject-assignment" class="metric-action">Assign Subjects →</a>
 			</div>
 
 			<div class="dashboard-card feature-card">
 				<div class="card-badge">FACULTY</div>
-				<h3>👨‍🏫 Faculty Course Allocation</h3>
+				<h3>Faculty Course Allocation</h3>
 				<p>Assign qualified faculty members to course subjects and academic terms.</p>
 				<a routerLink="/admin/faculty-course-allocation" class="metric-action">Allocate Faculty →</a>
 			</div>
 
 			<div class="dashboard-card feature-card feature-critical">
 				<div class="card-badge">OBE ESSENTIAL</div>
-				<h3>🎯 Assessment-CO Mapping</h3>
+				<h3>Assessment-CO Mapping</h3>
 				<p>Map midterms, assignments, and practicals to specific Course Learning Outcomes.</p>
 				<a routerLink="/admin/assessment-co-mapping" class="metric-action">Create Mappings →</a>
 			</div>
 
 			<div class="dashboard-card feature-card">
 				<div class="card-badge">ACCREDITATION</div>
-				<h3>⚖️ Unified Approval Management</h3>
+				<h3>Unified Approval Management</h3>
 				<p>Review, approve, or request changes on pending CO-PO matrices and rubrics.</p>
 				<a routerLink="/admin/approval-management" class="metric-action">
 					Manage Approvals {{ counts.pendingApprovals > 0 ? '(' + counts.pendingApprovals + ' pending)' : '' }} →
@@ -387,14 +392,14 @@
 
 			<div class="dashboard-card metric-card">
 				<div class="card-badge">ANALYTICS</div>
-				<h3>📈 Institutional Attainment</h3>
+				<h3>Institutional Attainment</h3>
 				<p>Audit overall program outcome attainment against NBA / NAAC compliance targets.</p>
 				<a routerLink="/po-attainment" class="metric-action">View PO Attainment →</a>
 			</div>
 
 			<div class="dashboard-card metric-card">
 				<div class="card-badge">SUPPORT</div>
-				<h3>📬 Student Grievances</h3>
+				<h3>Student Grievances</h3>
 				<p>Track academic, attendance, and technical support tickets filed by students.</p>
 				<a routerLink="/grievance" class="metric-action">
 					View Tickets {{ counts.openGrievances > 0 ? '(' + counts.openGrievances + ' active)' : '' }} →
