@@ -168,13 +168,40 @@ public class OBEService {
                 (v1, v2) -> (v1 + v2) / 2
             ));
 
+        // Deduplicate Program Outcomes by PO number (e.g., PO1, PO2, ... PO12, PSO1, PSO2)
+        Map<String, ProgramOutcome> uniquePOs = new LinkedHashMap<>();
+        for (ProgramOutcome po : pos) {
+            String poNum = po.getPoNumber() != null ? po.getPoNumber().trim().toUpperCase() : (po.getPo() != null ? po.getPo().trim().toUpperCase() : "");
+            if (!poNum.isEmpty() && !uniquePOs.containsKey(poNum)) {
+                uniquePOs.put(poNum, po);
+            }
+        }
+
+        // Sort naturally (PO1, PO2, ... PO12, PSO1, PSO2)
+        List<ProgramOutcome> sortedPOs = new ArrayList<>(uniquePOs.values());
+        sortedPOs.sort((a, b) -> {
+            String codeA = a.getPoNumber() != null ? a.getPoNumber() : a.getPo();
+            String codeB = b.getPoNumber() != null ? b.getPoNumber() : b.getPo();
+            try {
+                int numA = Integer.parseInt(codeA.replaceAll("\\D+", ""));
+                int numB = Integer.parseInt(codeB.replaceAll("\\D+", ""));
+                boolean isPsoA = codeA.toUpperCase().startsWith("PSO");
+                boolean isPsoB = codeB.toUpperCase().startsWith("PSO");
+                if (isPsoA && !isPsoB) return 1;
+                if (!isPsoA && isPsoB) return -1;
+                return Integer.compare(numA, numB);
+            } catch (Exception e) {
+                return codeA.compareToIgnoreCase(codeB);
+            }
+        });
+
         List<Map<String, Object>> result = new ArrayList<>();
 
-        for (ProgramOutcome po : pos) {
-            String poNum = po.getPoNumber() != null ? po.getPoNumber() : po.getPo();
+        for (ProgramOutcome po : sortedPOs) {
+            String poNum = po.getPoNumber() != null ? po.getPoNumber().trim().toUpperCase() : (po.getPo() != null ? po.getPo().trim().toUpperCase() : "");
             // Filter mappings for this PO number (e.g. "PO1")
             List<CoPoMapping> poMappings = mappings.stream()
-                .filter(m -> m.getPo().equalsIgnoreCase(poNum))
+                .filter(m -> m.getPo() != null && m.getPo().equalsIgnoreCase(poNum))
                 .collect(Collectors.toList());
 
             double totalWeightedScore = 0;
