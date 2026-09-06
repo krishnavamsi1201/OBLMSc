@@ -1,26 +1,26 @@
 /* You can add global styles to this file, and also import other style files */
 :root {
-    --bg-start: rgba(95, 168, 255, 0.18);
-    --bg-mid: rgba(17, 50, 84, 0.96);
-    --bg-end: rgba(12, 22, 42, 1);
-    --accent: #5fa8ff;
-    --surface-soft: rgba(95, 168, 255, 0.18);
-    --surface-strong: rgba(41, 111, 198, 0.88);
-    --surface-ghost: rgba(255, 255, 255, 0.08);
-    --card-bg: rgba(255,255,255,0.14);
-    --card-border: rgba(255,255,255,0.16);
-    --card-shadow: rgba(12, 40, 82, 0.18);
-    --card-highlight: rgba(95, 168, 255, 0.22);
-    --content-glow: rgba(95, 168, 255, 0.16);
-    --text-light: #eef4ff;
-    --text-secondary: #c8d6f2;
-    --sidebar-bg: rgba(10, 30, 59, 0.92);
-    --sidebar-btn: rgba(255,255,255,0.08);
-    --sidebar-btn-hover: rgba(255,255,255,0.14);
-    --sidebar-active: rgba(95, 168, 255, 0.18);
-    --footer-bg: rgba(12, 30, 55, 0.92);
-    --login-bg-start: rgba(12, 34, 59, 0.96);
-    --login-bg-end: rgba(19, 46, 78, 0.96);
+    --bg-start: #f8fafc;
+    --bg-mid: #f1f5f9;
+    --bg-end: #ffffff;
+    --accent: #2563eb;
+    --surface-soft: rgba(37, 99, 235, 0.08);
+    --surface-strong: rgba(37, 99, 235, 0.9);
+    --surface-ghost: rgba(15, 23, 42, 0.04);
+    --card-bg: #ffffff;
+    --card-border: #e2e8f0;
+    --card-shadow: rgba(15, 23, 42, 0.06);
+    --card-highlight: rgba(37, 99, 235, 0.12);
+    --content-glow: rgba(224, 231, 255, 0.4);
+    --text-light: #0f172a;
+    --text-secondary: #64748b;
+    --sidebar-bg: #ffffff;
+    --sidebar-btn: #f8fafc;
+    --sidebar-btn-hover: #f1f5f9;
+    --sidebar-active: #eff6ff;
+    --footer-bg: #ffffff;
+    --login-bg-start: #f8fafc;
+    --login-bg-end: #ffffff;
 }
 
 .theme-charcoal {
