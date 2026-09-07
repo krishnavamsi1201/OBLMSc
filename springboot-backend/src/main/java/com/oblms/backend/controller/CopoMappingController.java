@@ -75,62 +75,50 @@ public class CopoMappingController {
 
     @PostConstruct
     public void seedOutcomes() {
-        seedProgramOutcomes();
-        seedCourseOutcomes();
-        seedBranchSpecificMappings();
+        try {
+            seedProgramOutcomes();
+        } catch (Exception e) {
+            System.err.println("[WARN] PO seeding: " + e.getMessage());
+        }
+        try {
+            seedCourseOutcomes();
+        } catch (Exception e) {
+            System.err.println("[WARN] CO seeding: " + e.getMessage());
+        }
+        try {
+            seedBranchSpecificMappings();
+        } catch (Exception e) {
+            System.err.println("[WARN] Mapping seeding: " + e.getMessage());
+        }
     }
 
     private void seedProgramOutcomes() {
-        if (programOutcomeRepository.count() < 30) {
-            programOutcomeRepository.deleteAll();
+        if (programOutcomeRepository.count() < 12) {
             List<ProgramOutcome> pos = new ArrayList<>();
-            
-            // Standard Departments
-            Map<String, List<String>> deptPsos = Map.of(
-                "Computer Science & Engineering", List.of(
-                    "PSO1: Design and implement reliable, scalable enterprise backend microservices and database pipelines.",
-                    "PSO2: Apply intelligent learning algorithms, machine learning models, and modern full-stack web architectures."
-                ),
-                "Information Technology", List.of(
-                    "PSO1: Architect, secure, and manage hybrid cloud infrastructure, containerized deployments, and CI/CD pipelines.",
-                    "PSO2: Design enterprise web platforms and full-stack software applications with robust security protocols."
-                ),
-                "Electronics & Communication Engineering", List.of(
-                    "PSO1: Develop real-time embedded firmware, ARM microcontroller architectures, and IoT sensor interfaces.",
-                    "PSO2: Design digital VLSI systems, signal processing pipelines, and high-frequency communication protocols."
-                ),
-                "Mechanical Engineering", List.of(
-                    "PSO1: Analyze thermal systems, IC engines, fluid power dynamics, and HVAC thermodynamic cycles.",
-                    "PSO2: Design precision machine elements, CAD/CAM kinematics, and robotic automation mechanisms."
-                ),
-                "Civil Engineering", List.of(
-                    "PSO1: Perform advanced structural analysis, RCC concrete designs, and geotechnical soil mechanics.",
-                    "PSO2: Apply fluid mechanics, hydraulic networks, GIS surveying, and sustainable environmental engineering."
-                )
-            );
+            String[] standardPOs = {
+                "Engineering Knowledge: Apply mathematics, science, and core engineering fundamentals.",
+                "Problem Analysis: Identify, formulate, review research literature, and analyze complex problems.",
+                "Design & Development of Solutions: Design system components and processes meeting specified technical needs.",
+                "Conduct Investigations of Complex Problems: Use research-based methods and experimental analysis.",
+                "Modern Tool Usage: Select and apply appropriate techniques, modern tools, and simulation software.",
+                "The Engineer and Society: Apply reasoning informed by contextual knowledge to assess societal responsibilities.",
+                "Environment and Sustainability: Understand the impact of engineering solutions in environmental contexts.",
+                "Ethics & Integrity: Apply ethical principles and commit to professional ethics and responsibilities.",
+                "Individual and Team Work: Function effectively as an individual, and as a member or leader in diverse teams.",
+                "Communication: Communicate effectively on complex engineering activities with technical audiences.",
+                "Project Management and Finance: Apply engineering management principles to manage multidisciplinary projects.",
+                "Life-long Learning: Engage in independent and life-long learning in the broadest context of technological change."
+            };
 
-            for (Map.Entry<String, List<String>> entry : deptPsos.entrySet()) {
-                String dept = entry.getKey();
-                List<String> psos = entry.getValue();
-
-                pos.add(new ProgramOutcome(null, "PO1", dept, "Engineering Knowledge: Apply mathematics, science, and core engineering fundamentals."));
-                pos.add(new ProgramOutcome(null, "PO2", dept, "Problem Analysis: Identify, formulate, review research literature, and analyze complex problems."));
-                pos.add(new ProgramOutcome(null, "PO3", dept, "Design & Development of Solutions: Design system components and processes meeting specified technical needs."));
-                pos.add(new ProgramOutcome(null, "PO4", dept, "Conduct Investigations of Complex Problems: Use research-based methods and experimental analysis."));
-                pos.add(new ProgramOutcome(null, "PO5", dept, "Modern Tool Usage: Select and apply appropriate techniques, modern tools, and simulation software."));
-                pos.add(new ProgramOutcome(null, "PO6", dept, "The Engineer and Society: Apply reasoning informed by contextual knowledge to assess societal responsibilities."));
-                pos.add(new ProgramOutcome(null, "PO7", dept, "Environment and Sustainability: Understand the impact of engineering solutions in environmental contexts."));
-                pos.add(new ProgramOutcome(null, "PO8", dept, "Ethics & Integrity: Apply ethical principles and commit to professional ethics and responsibilities."));
-                pos.add(new ProgramOutcome(null, "PO9", dept, "Individual and Team Work: Function effectively as an individual, and as a member or leader in diverse teams."));
-                pos.add(new ProgramOutcome(null, "PO10", dept, "Communication: Communicate effectively on complex engineering activities with technical audiences."));
-                pos.add(new ProgramOutcome(null, "PO11", dept, "Project Management and Finance: Apply engineering management principles to manage multidisciplinary projects."));
-                pos.add(new ProgramOutcome(null, "PO12", dept, "Life-long Learning: Engage in independent and life-long learning in the broadest context of technological change."));
-                
-                pos.add(new ProgramOutcome(null, "PSO1", dept, psos.get(0)));
-                pos.add(new ProgramOutcome(null, "PSO2", dept, psos.get(1)));
+            for (int i = 1; i <= 12; i++) {
+                pos.add(new ProgramOutcome(null, "PO" + i, "Engineering", standardPOs[i - 1]));
             }
 
-            programOutcomeRepository.saveAll(pos);
+            for (ProgramOutcome po : pos) {
+                try {
+                    programOutcomeRepository.save(po);
+                } catch (Exception ignored) {}
+            }
         }
     }
 

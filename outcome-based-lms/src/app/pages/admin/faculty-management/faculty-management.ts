@@ -167,12 +167,9 @@ export class FacultyManagement implements OnInit {
   }
 
   private loadFaculty(): void {
-    this.facultyList = this.getSafeJson('obslmsFaculty') || [];
-    this.filterFaculty();
-
     this.http.get<any[]>('http://localhost:8080/api/users').subscribe({
       next: (users) => {
-        if (Array.isArray(users) && users.length > 0) {
+        if (Array.isArray(users)) {
           const backendFaculty = users
             .filter(u => u.role?.toUpperCase() === 'FACULTY')
             .map(u => {
@@ -193,17 +190,18 @@ export class FacultyManagement implements OnInit {
               };
             });
           
-          if (backendFaculty.length > 0) {
-            this.facultyList = backendFaculty;
-            try {
-              localStorage.setItem('obslmsFaculty', JSON.stringify(this.facultyList));
-            } catch {}
-            this.filterFaculty();
-            this.cdr.detectChanges();
-          }
+          this.facultyList = backendFaculty;
+          try {
+            localStorage.setItem('obslmsFaculty', JSON.stringify(this.facultyList));
+          } catch {}
+          this.filterFaculty();
+          this.cdr.detectChanges();
         }
       },
-      error: () => {}
+      error: () => {
+        this.facultyList = this.getSafeJson('obslmsFaculty') || [];
+        this.filterFaculty();
+      }
     });
   }
 

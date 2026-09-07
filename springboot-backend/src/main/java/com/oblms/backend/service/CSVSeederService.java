@@ -10,6 +10,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 public class CSVSeederService {
@@ -58,28 +59,23 @@ public class CSVSeederService {
 
     @PostConstruct
     public void seedFromCSV() {
-        seedUsersFromDatasetCSV();
-        seedCoursesFromDatasetCSV();
-        seedCourseOutcomesForActiveCourses();
-        seedStudentMarksAndAttendance();
-        seedExamsAndTimetable();
-
-        boolean needsSeeding = streamRepository.count() == 0 
-                || programRepository.count() == 0
-                || subjectRepository.count() == 0
-                || coRepository.count() == 0 
-                || copoMappingRepository.count() == 0
-                || subjectRepository.count() > 100; // Force re-seed if old large dataset is present
-
-        if (!needsSeeding) {
-            System.out.println("[INFO] OBLMS Dataset already fully seeded in MySQL. (Streams: " 
-                + streamRepository.count() + ", Programs: " + programRepository.count() 
-                + ", Subjects: " + subjectRepository.count() + ", COs: " + coRepository.count() 
-                + ", CO-PO Mappings: " + copoMappingRepository.count() + ").");
-            return;
+        try {
+            seedUsersFromDatasetCSV();
+        } catch (Exception e) {
+            System.err.println("[WARN] Admin check: " + e.getMessage());
         }
-
-        importAllDataset();
+        try {
+            seedCoursesFromDatasetCSV();
+        } catch (Exception e) {}
+        try {
+            seedCourseOutcomesForActiveCourses();
+        } catch (Exception e) {}
+        try {
+            seedStudentMarksAndAttendance();
+        } catch (Exception e) {}
+        try {
+            seedExamsAndTimetable();
+        } catch (Exception e) {}
     }
 
     public void seedUsersFromDatasetCSV() {
@@ -425,10 +421,21 @@ public class CSVSeederService {
                 }
                 br.close();
 
-                if (poRepository.count() == 0) {
-                    poRepository.saveAll(uniquePOByNum.values());
+                List<ProgramOutcome> existingPOs = poRepository.findAll();
+                Set<String> existingNumbers = existingPOs.stream()
+                        .map(p -> p.getPoNumber() != null ? p.getPoNumber().toUpperCase() : "")
+                        .collect(Collectors.toSet());
+
+                List<ProgramOutcome> toSavePOs = new ArrayList<>();
+                for (ProgramOutcome po : uniquePOByNum.values()) {
+                    if (po.getPoNumber() != null && !existingNumbers.contains(po.getPoNumber().toUpperCase())) {
+                        toSavePOs.add(po);
+                    }
                 }
-                poCount = uniquePOByNum.size();
+                if (!toSavePOs.isEmpty()) {
+                    poRepository.saveAll(toSavePOs);
+                }
+                poCount = poRepository.count() > 0 ? (int) poRepository.count() : uniquePOByNum.size();
                 System.out.println("[INFO] Seeded standard NBA Program Outcomes (PO1 to PO12).");
             }
 
