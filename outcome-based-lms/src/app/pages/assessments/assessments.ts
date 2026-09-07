@@ -296,8 +296,8 @@ export class Assessments implements OnInit {
       return;
     }
 
-    if (this.role !== 'faculty') {
-      this.toast.error('Only course faculty members can create or schedule assessments.');
+    if (this.role !== 'faculty' && this.role !== 'admin') {
+      this.toast.error('Only course faculty members and administrators can create or schedule assessments.');
       return;
     }
 
@@ -329,8 +329,8 @@ export class Assessments implements OnInit {
   }
 
   deleteAssessment(index: number) {
-    if (this.role !== 'faculty') {
-      this.toast.error('Only course faculty members can delete assessments.');
+    if (this.role !== 'faculty' && this.role !== 'admin') {
+      this.toast.error('Only course faculty members and administrators can delete assessments.');
       return;
     }
     const target = this.assessments[index];
@@ -352,8 +352,8 @@ export class Assessments implements OnInit {
   }
 
   saveMarks() {
-    if (this.role !== 'faculty') {
-      this.toast.error('Only course faculty members can enter or evaluate student marks.');
+    if (this.role !== 'faculty' && this.role !== 'admin') {
+      this.toast.error('Only course faculty members and administrators can enter or evaluate student marks.');
       return;
     }
 
