@@ -91,6 +91,7 @@ export class Assessments implements OnInit {
       list = list.filter(m => 
         m.student.toLowerCase() === uname ||
         m.student.toLowerCase().includes('krishna') ||
+        m.student.toLowerCase().includes('vamsi') ||
         m.student.toLowerCase() === 'student' ||
         m.student.toLowerCase() === 'raj kumar'
       );
