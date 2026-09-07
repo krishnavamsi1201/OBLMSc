@@ -38,6 +38,16 @@ public class UserController {
         String role = (String) payload.get("role");
         String department = (String) payload.get("department");
 
+        if (role == null || role.trim().isEmpty()) {
+            role = "STUDENT";
+        }
+
+        if (id == null || id.trim().isEmpty()) {
+            String prefix = "STUDENT".equalsIgnoreCase(role) ? "STU" : "FAC";
+            long count = userRepository.count() + 1;
+            id = String.format("%s%03d", prefix, count);
+        }
+
         // Handle assigned/enrolled courses from string, array, or list
         String enrolled = "";
         if (payload.get("enrolledCourses") instanceof String s) {
@@ -52,7 +62,7 @@ public class UserController {
             password = "password";
         }
 
-        User user = new User(id, name, email, password, role != null ? role.toUpperCase() : "FACULTY", department);
+        User user = new User(id, name, email, password, role.toUpperCase(), department);
         user.setEnrolledCourses(enrolled);
         User saved = userRepository.save(user);
 
@@ -79,6 +89,29 @@ public class UserController {
     public ResponseEntity<?> deleteUser(@PathVariable String id) {
         userRepository.deleteById(id);
         return ResponseEntity.ok().build();
+    }
+
+    @PostMapping("/reset-clean-users")
+    @Transactional
+    public ResponseEntity<?> resetCleanUsers() {
+        // Remove all non-admin users to clean fake data
+        List<User> nonAdmins = userRepository.findAll().stream()
+                .filter(u -> !"ADMIN".equalsIgnoreCase(u.getRole()))
+                .toList();
+        userRepository.deleteAll(nonAdmins);
+
+        // Ensure Admin exists
+        Optional<User> adminOpt = userRepository.findAll().stream()
+                .filter(u -> "ADMIN".equalsIgnoreCase(u.getRole()))
+                .findFirst();
+
+        if (adminOpt.isEmpty()) {
+            User admin = new User("ADM001", "System Administrator", "admin@gmail.com", "admin123", "ADMIN", "Computer Science & Engineering");
+            admin.setEnrolledCourses("CS101,CS102,CS103,CS301,CS302");
+            userRepository.save(admin);
+        }
+
+        return ResponseEntity.ok(Map.of("message", "Cleaned all fake students and faculty from MySQL. Admin preserved."));
     }
 
     @PostMapping("/enroll-course")

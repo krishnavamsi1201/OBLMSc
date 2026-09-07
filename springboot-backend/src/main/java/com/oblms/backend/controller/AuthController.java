@@ -25,140 +25,17 @@ public class AuthController {
 
     @PostConstruct
     public void seedUsers() {
-        List<User> standardUsers = new ArrayList<>();
+        // Only ensure the master Administrator account exists in MySQL
+        Optional<User> adminOpt = userRepository.findAll().stream()
+                .filter(u -> "ADMIN".equalsIgnoreCase(u.getRole()))
+                .findFirst();
 
-        // 1. Dedicated Admin Account
-        standardUsers.add(new User("ADM001", "Dr. K. S. Rao (Chief Academic Administrator & Dean)", "admin@oblms.edu", "root", "Admin", "System Administration & Dean Office"));
-
-        // 2. 15 Dedicated Faculty Accounts (FAC001 to FAC015)
-        User fac1 = new User("FAC001", "Dr. Ramesh Babu", "ramesh.babu@oblms.edu", "password", "Faculty", "Computer Science & Engineering");
-        fac1.setEnrolledCourses("CS101,IT305,DSLD,FMHM,KM");
-        standardUsers.add(fac1);
-
-        User fac2 = new User("FAC002", "Prof. Sunita Sharma", "sunita.sharma@oblms.edu", "password", "Faculty", "Computer Science & Engineering");
-        fac2.setEnrolledCourses("CS102,Linux,CS203,SMSE,ME210");
-        standardUsers.add(fac2);
-
-        User fac3 = new User("FAC003", "Dr. Amit Patel", "amit.patel@oblms.edu", "password", "Faculty", "Electronics & Communication Engineering");
-        fac3.setEnrolledCourses("MES,CS103,HPC,AU203,INMCA202");
-        standardUsers.add(fac3);
-
-        User fac4 = new User("FAC004", "Dr. Priya Nair", "priya.nair@oblms.edu", "password", "Faculty", "Civil Engineering");
-        fac4.setEnrolledCourses("FMHM,CS301,EC206,IC,HS300");
-        standardUsers.add(fac4);
-
-        User fac5 = new User("FAC005", "Prof. Rajesh Verma", "rajesh.verma@oblms.edu", "password", "Faculty", "Mechanical Engineering");
-        fac5.setEnrolledCourses("CS302,WT,CS207,INMCA102,RLMCA108");
-        standardUsers.add(fac5);
-
-        User fac6 = new User("FAC006", "Dr. S. K. Gupta", "sk.gupta@oblms.edu", "password", "Faculty", "Civil Engineering");
-        fac6.setEnrolledCourses("SMSE,CC,EE407,EMII,ECS");
-        standardUsers.add(fac6);
-
-        User fac7 = new User("FAC007", "Prof. Anjali Deshmukh", "anjali.deshmukh@oblms.edu", "password", "Faculty", "Computer Science & Engineering");
-        fac7.setEnrolledCourses("CS302,IT305,MES,04ME6512,EM IV");
-        standardUsers.add(fac7);
-
-        User fac8 = new User("FAC008", "Dr. K. V. Prasad", "kv.prasad@oblms.edu", "password", "Faculty", "Electrical & Electronics Engineering");
-        fac8.setEnrolledCourses("EE407,CS301,KM,FMHM,INMCA202");
-        standardUsers.add(fac8);
-
-        User fac9 = new User("FAC009", "Prof. Meera Rao", "meera.rao@oblms.edu", "password", "Faculty", "Computer Science & Engineering");
-        fac9.setEnrolledCourses("OOMD,Linux,CS203,SMSE,HS300");
-        standardUsers.add(fac9);
-
-        User fac10 = new User("FAC010", "Dr. V. C. Reddy", "vc.reddy@oblms.edu", "password", "Faculty", "Information Technology");
-        fac10.setEnrolledCourses("CS303,CS101,CS207,AU203,EMII");
-        standardUsers.add(fac10);
-
-        User fac11 = new User("FAC011", "Prof. Sandeep Kumar", "sandeep.kumar@oblms.edu", "password", "Faculty", "Electronics & Communication Engineering");
-        fac11.setEnrolledCourses("CS203,OOP,HPC,ME210,RLMCA108");
-        standardUsers.add(fac11);
-
-        User fac12 = new User("FAC012", "Dr. Neha Agarwal", "neha.agarwal@oblms.edu", "password", "Faculty", "Mathematics & Computing");
-        fac12.setEnrolledCourses("INMCA202,CS301,EC206,IC,ECS");
-        standardUsers.add(fac12);
-
-        User fac13 = new User("FAC013", "Prof. Deepak Joshi", "deepak.joshi@oblms.edu", "password", "Faculty", "Computer Science & Engineering");
-        fac13.setEnrolledCourses("CS301,CC,MES,04ME6512,EM IV");
-        standardUsers.add(fac13);
-
-        User fac14 = new User("FAC014", "Dr. Kavita Menon", "kavita.menon@oblms.edu", "password", "Faculty", "Artificial Intelligence & Data Science");
-        fac14.setEnrolledCourses("CS361,WT,DSLD,KM,INMCA102");
-        standardUsers.add(fac14);
-
-        User fac15 = new User("FAC015", "Prof. Arun Roy", "arun.roy@oblms.edu", "password", "Faculty", "Mechanical Engineering");
-        fac15.setEnrolledCourses("ME210,CS101,IT305,EE407,FMHM");
-        standardUsers.add(fac15);
-
-
-
-        // 3. 30 Dedicated Student Accounts (STU001 to STU030) across 5 Engineering Departments
-        String[] studentNames = {
-            "Raj Kumar", "Aarav Mehta", "Aditya Sen", "Krishnavamsi", "Ananya Iyer",
-            "Rahul Dravid", "Sneha Reddy", "Vikram Malhotra", "Divya Joshi", "Siddharth Roy",
-            "Pooja Hegde", "Nikhil Sharma", "Kavita Nair", "Manish Pandey", "Rohan Joshi",
-            "Megha Sundaram", "Harish Chandra", "Swati Deshpande", "Varun Dhawan", "Shruti Hassan",
-            "Karthik Aryan", "Bhavna Patel", "Tanmay Bhatt", "Ishita Dutta", "Gaurav Taneja",
-            "Ritika Sen", "Abhishek Verma", "Prerna Sharma", "Sameer Khan", "Priya Prakash"
-        };
-
-        String[] departments = {
-            "Computer Science & Engineering",
-            "Information Technology",
-            "Electronics & Communication Engineering",
-            "Mechanical Engineering",
-            "Civil Engineering"
-        };
-
-        String[] deptCourses = {
-            "CS101,CS102,CS103,CS301,CS302",    // CSE (Database, DSA, OOP, Networks, Software Engg)
-            "IT305,CS303,Linux,WT,CS361",        // IT (OS, Cloud, Linux, Web Tech, Soft Computing)
-            "MES,DSLD,EC206,EE407,CS203",        // ECE (Microprocessors, Logic Design, Comp Org, DSP, Switching Theory)
-            "ME210,KM,SMSE,04ME6512,IC",         // Mechanical (Metallurgy, Kinematics, Strength of Materials, CAD/CAM, IC Engines)
-            "FMHM,SMSE,HS300,CE234,EMII"         // Civil (Fluid Mechanics, Structural Engg, Management, Variance, Engg Maths)
-        };
-
-        for (int i = 1; i <= 30; i++) {
-            String stuId = String.format("STU%03d", i);
-            String name = studentNames[i - 1];
-            
-            // Assign department and department-specific courses
-            int deptIndex = (i - 1) % departments.length;
-            // Explicitly ensure Krishnavamsi (STU004) is in Computer Science & Engineering
-            if (i == 4) {
-                deptIndex = 0; // Computer Science & Engineering
-            }
-
-            String dept = departments[deptIndex];
-            String courses = deptCourses[deptIndex];
-            String email = (i == 4) ? "krishnavamsi@gmail.com" : (name.toLowerCase().replace(" ", ".") + "@oblms.edu");
-
-            User stu = new User(stuId, name, email, "password", "Student", dept);
-            stu.setEnrolledCourses(courses);
-            standardUsers.add(stu);
+        if (adminOpt.isEmpty()) {
+            User admin = new User("ADM001", "Chief Academic Administrator & Dean", "admin@gmail.com", "root", "Admin", "System Administration & Dean Office");
+            admin.setEnrolledCourses("CS101,CS102,CS103,CS301,CS302");
+            userRepository.save(admin);
+            System.out.println("[INFO] Seeded default Administrator account (admin@gmail.com / root).");
         }
-
-        // Clean up temporary FAC016 profile if it exists
-        if (userRepository.existsById("FAC016")) {
-            userRepository.deleteById("FAC016");
-        }
-
-        // Upsert all standard users safely and overwrite assigned courses to keep databases synced
-        for (User u : standardUsers) {
-            Optional<User> existing = userRepository.findById(u.getId());
-            if (existing.isPresent()) {
-                User dbUser = existing.get();
-                dbUser.setEnrolledCourses(u.getEnrolledCourses());
-                dbUser.setDepartment(u.getDepartment());
-                dbUser.setName(u.getName());
-                dbUser.setEmail(u.getEmail());
-                userRepository.save(dbUser);
-            } else {
-                userRepository.save(u);
-            }
-        }
-        System.out.println("[INFO] Verified and seeded 1 Admin, 15 Faculty, and 30 Student accounts across 5 branches in MySQL database (Total users: " + userRepository.count() + ").");
     }
 
     @PostMapping("/login")

@@ -83,48 +83,18 @@ public class CSVSeederService {
     }
 
     public void seedUsersFromDatasetCSV() {
-        File userCsv = new File(DATASET_DIR + "User_Credentials_Master.csv");
-        if (userCsv.exists()) {
-            try (BufferedReader reader = new BufferedReader(new FileReader(userCsv))) {
-                String line;
-                boolean isHeader = true;
-                while ((line = reader.readLine()) != null) {
-                    if (isHeader) { isHeader = false; continue; }
-                    String[] tokens = line.split(",(?=(?:[^\"]*\"[^\"]*\")*[^\"]*$)", -1);
-                    if (tokens.length >= 6) {
-                        String id = tokens[0].trim();
-                        String name = tokens[1].trim();
-                        String email = tokens[2].trim();
-                        String password = tokens[3].trim();
-                        String role = tokens[4].trim();
-                        String dept = tokens[5].trim();
-                        String enrolled = tokens.length >= 7 ? tokens[6].trim().replace("\"", "") : "";
+        // Ensure default Admin user exists so Admin can always log in
+        Optional<User> adminOpt = userRepository.findAll().stream()
+                .filter(u -> "ADMIN".equalsIgnoreCase(u.getRole()))
+                .findFirst();
 
-                        Optional<User> existing = userRepository.findById(id);
-                        if (existing.isEmpty()) {
-                            existing = userRepository.findByEmail(email);
-                        }
-                        if (existing.isPresent()) {
-                            User u = existing.get();
-                            u.setId(id);
-                            u.setName(name);
-                            u.setEmail(email);
-                            u.setPassword(password);
-                            u.setRole(role);
-                            u.setDepartment(dept);
-                            u.setEnrolledCourses(enrolled);
-                            userRepository.save(u);
-                        } else {
-                            User u = new User(id, name, email, password, role, dept);
-                            u.setEnrolledCourses(enrolled);
-                            userRepository.save(u);
-                        }
-                    }
-                }
-                System.out.println("[INFO] Synced all 47 user accounts directly from User_Credentials_Master.csv into MySQL database.");
-            } catch (Exception e) {
-                System.err.println("[ERROR] Failed to seed users from User_Credentials_Master.csv: " + e.getMessage());
-            }
+        if (adminOpt.isEmpty()) {
+            User admin = new User("ADM001", "System Administrator", "admin@gmail.com", "admin123", "ADMIN", "Computer Science & Engineering");
+            admin.setEnrolledCourses("CS101,CS102,CS103,CS301,CS302");
+            userRepository.save(admin);
+            System.out.println("[INFO] Seeded default Administrator account (admin@gmail.com / admin123).");
+        } else {
+            System.out.println("[INFO] Admin account already present in MySQL database.");
         }
     }
 
