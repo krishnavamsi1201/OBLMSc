@@ -55,6 +55,21 @@ interface ProgramOutcome {
             </div>
         </div>
 
+        <!-- Faculty Context Banner -->
+        <div class="branch-banner faculty-banner" *ngIf="userRole === 'faculty'">
+            <div class="banner-icon">👨‍🏫</div>
+            <div class="banner-details">
+                <div class="banner-title-row">
+                    <strong>{{ facultyDept }}</strong>
+                    <span class="banner-tag faculty-tag">Faculty Assigned Outcomes</span>
+                </div>
+                <p class="banner-sub">
+                    Showing Program Outcomes (PO1–PO12) and PSOs strictly mapped to your department and assigned subjects: 
+                    <span class="assigned-chips">{{ facultyAssignedCoursesDisplay }}</span>.
+                </p>
+            </div>
+        </div>
+
         <!-- Search & Filter Toolbar -->
         <div class="po-toolbar">
             <div class="search-input-wrap">
@@ -69,12 +84,19 @@ interface ProgramOutcome {
             <!-- Student View: Dedicated Department Badge -->
             <div class="branch-filter-group" *ngIf="userRole === 'student'">
                 <div class="filter-pill-btn active" style="background: #1e40af; color: #fff; cursor: default; border-color: #1e40af;">
-                    💻 {{ userDept }} ({{ shortDept }})
+                    💻 {{ studentDept }} ({{ shortDept }})
                 </div>
             </div>
 
-            <!-- Admin / Faculty: Full Branch Switcher -->
-            <div class="branch-filter-group" *ngIf="userRole !== 'student'">
+            <!-- Faculty View: Dedicated Department Badge -->
+            <div class="branch-filter-group" *ngIf="userRole === 'faculty'">
+                <div class="filter-pill-btn active" style="background: linear-gradient(135deg, #d4af37 0%, #b38f28 100%); color: #0a1128; cursor: default; border-color: #d4af37; font-weight: 800;">
+                    👨‍🏫 {{ facultyDept }} ({{ shortDept }})
+                </div>
+            </div>
+
+            <!-- Admin: Full Branch Switcher -->
+            <div class="branch-filter-group" *ngIf="userRole === 'admin'">
                 <button 
                     type="button" 
                     class="filter-pill-btn" 
@@ -162,7 +184,7 @@ interface ProgramOutcome {
                 </div>
                 <p class="po-desc">{{ po.description }}</p>
                 <div class="po-card-footer">
-                    <span class="program-tag">🏛️ {{ po.program || 'Engineering' }}</span>
+                    <span class="program-tag">🏛️ {{ po.program || targetDepartmentName }}</span>
                     <div class="action-buttons" *ngIf="userRole === 'admin' || userRole === 'faculty'">
                         <button type="button" class="edit-sm-btn" (click)="editPo(i)">Edit</button>
                         <button type="button" class="del-sm-btn" (click)="deletePo(i)">Delete</button>
@@ -182,7 +204,7 @@ interface ProgramOutcome {
                         <th style="width: 110px;">PO Code</th>
                         <th style="width: 220px;">Graduate Attribute</th>
                         <th>Outcome Description</th>
-                        <th style="width: 140px;">Program</th>
+                        <th style="width: 160px;">Program</th>
                         <th style="width: 100px; text-align: center;">Threshold</th>
                         <th *ngIf="userRole === 'admin' || userRole === 'faculty'" style="width: 120px;">Actions</th>
                     </tr>
@@ -202,7 +224,7 @@ interface ProgramOutcome {
                         </td>
                         <td class="desc-text-cell">{{ po.description }}</td>
                         <td>
-                            <span class="program-pill">{{ po.program || 'Engineering' }}</span>
+                            <span class="program-pill">{{ po.program || targetDepartmentName }}</span>
                         </td>
                         <td style="text-align: center;">
                             <span class="target-badge">75%</span>
@@ -239,12 +261,18 @@ interface ProgramOutcome {
       border: 1px solid #1f2f54;
       box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
     }
+    .faculty-banner {
+      border-left: 4px solid #d4af37;
+      background: linear-gradient(135deg, #101b38 0%, #1a2a50 100%);
+    }
     .banner-icon { font-size: 2.2rem; }
     .banner-details { flex: 1; }
     .banner-title-row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
     .banner-title-row strong { font-size: 1.2rem; font-weight: 800; color: #ffffff; }
     .banner-tag { background: rgba(34, 197, 94, 0.15); color: #4ade80; border: 1px solid rgba(74, 222, 128, 0.3); padding: 2px 10px; border-radius: 6px; font-size: 11.5px; font-weight: 800; }
-    .banner-sub { margin: 4px 0 0 0; font-size: 0.88rem; color: #94a3b8; }
+    .faculty-tag { background: rgba(212, 175, 55, 0.15); color: #d4af37; border-color: rgba(212, 175, 55, 0.4); }
+    .banner-sub { margin: 4px 0 0 0; font-size: 0.88rem; color: #94a3b8; line-height: 1.4; }
+    .assigned-chips { color: #facc15; font-weight: 700; }
 
     .po-toolbar { background: #101b38; padding: 14px 18px; border-radius: 12px; border: 1px solid #1f2f54; margin-bottom: 20px; display: flex; flex-wrap: wrap; gap: 14px; align-items: center; justify-content: space-between; box-shadow: 0 4px 16px rgba(0,0,0,0.3); }
     .search-input-wrap { display: flex; align-items: center; background: #091024; border: 1px solid #1f2f54; border-radius: 8px; padding: 6px 12px; flex: 1; min-width: 260px; }
@@ -314,10 +342,25 @@ export class ProgramOutcomes implements OnInit {
   userName: string = '';
   facultyName: string = '';
   studentDept: string = 'Computer Science & Engineering';
+  facultyDept: string = 'Computer Science & Engineering';
   userDept: string = 'Computer Science & Engineering';
+  assignedCourses: string[] = [];
+
+  get targetDepartmentName(): string {
+    if (this.userRole === 'faculty') return this.facultyDept;
+    if (this.userRole === 'student') return this.studentDept;
+    return this.userDept || 'Computer Science & Engineering';
+  }
+
+  get facultyAssignedCoursesDisplay(): string {
+    if (this.assignedCourses && this.assignedCourses.length > 0) {
+      return this.assignedCourses.join(', ');
+    }
+    return 'All Department Subjects';
+  }
 
   get shortDept(): string {
-    const d = (this.userDept || this.studentDept || '').toLowerCase();
+    const d = (this.targetDepartmentName || '').toLowerCase();
     if (d.includes('computer') || d.includes('cse')) return 'CSE';
     if (d.includes('information') || d.includes('it')) return 'IT';
     if (d.includes('electronic') || d.includes('ece')) return 'ECE';
@@ -334,23 +377,98 @@ export class ProgramOutcomes implements OnInit {
   currentPo: ProgramOutcome = { poNumber: '', program: 'Computer Science & Engineering', description: '' };
   editIndex = -1;
 
-  // Complete NBA PO Definitions
-  standardNBAOutcomes: ProgramOutcome[] = [
-    { poNumber: 'PO1', attributeName: 'Engineering Knowledge', program: 'Computer Science & Engineering', description: 'Apply knowledge of mathematics, science, engineering fundamentals, and software engineering to solve complex computational problems.' },
-    { poNumber: 'PO2', attributeName: 'Problem Analysis', program: 'Computer Science & Engineering', description: 'Identify, formulate, review research literature, and analyze complex engineering and computing problems reaching substantiated conclusions.' },
-    { poNumber: 'PO3', attributeName: 'Design & Development of Solutions', program: 'Computer Science & Engineering', description: 'Design modular software components, database schemas, and algorithms that meet specified needs with public health, safety, and cultural considerations.' },
-    { poNumber: 'PO4', attributeName: 'Conduct Investigations of Complex Problems', program: 'Computer Science & Engineering', description: 'Use research-based knowledge and research methods including design of experiments, analysis, and interpretation of data.' },
-    { poNumber: 'PO5', attributeName: 'Modern Tool Usage', program: 'Computer Science & Engineering', description: 'Create, select, and apply appropriate techniques, resources, and modern engineering and IT tools including modeling and simulation.' },
-    { poNumber: 'PO6', attributeName: 'The Engineer and Society', program: 'Computer Science & Engineering', description: 'Apply reasoning informed by contextual knowledge to assess societal, health, safety, legal, and cultural responsibilities.' },
-    { poNumber: 'PO7', attributeName: 'Environment and Sustainability', program: 'Computer Science & Engineering', description: 'Understand the impact of professional engineering solutions in societal and environmental contexts, and demonstrate knowledge of sustainable development.' },
-    { poNumber: 'PO8', attributeName: 'Ethics & Integrity', program: 'Computer Science & Engineering', description: 'Apply ethical principles and commit to professional ethics and responsibilities and norms of the engineering and computing practice.' },
-    { poNumber: 'PO9', attributeName: 'Individual and Team Work', program: 'Computer Science & Engineering', description: 'Function effectively as an individual, and as a member or leader in diverse teams, and in multidisciplinary settings.' },
-    { poNumber: 'PO10', attributeName: 'Communication', program: 'Computer Science & Engineering', description: 'Communicate effectively on complex engineering activities with the engineering community and with society at large.' },
-    { poNumber: 'PO11', attributeName: 'Project Management & Finance', program: 'Computer Science & Engineering', description: 'Demonstrate knowledge and understanding of engineering and management principles and apply these to manage projects.' },
-    { poNumber: 'PO12', attributeName: 'Life-long Learning', program: 'Computer Science & Engineering', description: 'Recognize the need for, and have the preparation and ability to engage in independent and life-long learning in the broadest context of technological change.' },
-    { poNumber: 'PSO1', attributeName: 'Enterprise Backend Systems', program: 'Computer Science & Engineering', description: 'Design and deploy resilient, high-throughput Spring Boot REST microservices with relational MySQL caching.' },
-    { poNumber: 'PSO2', attributeName: 'Data Engineering & AI Pipelines', program: 'Computer Science & Engineering', description: 'Build end-to-end data processing pipelines and apply intelligent learning algorithms to automate operational workflows.' }
-  ];
+  // Complete NBA PO & PSO Definitions per Department (Fallbacks & Local Offline Mode)
+  deptStandardOutcomesMap: { [key: string]: ProgramOutcome[] } = {
+    'CSE': [
+      { poNumber: 'PO1', attributeName: 'Engineering Knowledge', program: 'Computer Science & Engineering', description: 'Apply knowledge of mathematics, science, engineering fundamentals, and software engineering to solve complex computational problems.' },
+      { poNumber: 'PO2', attributeName: 'Problem Analysis', program: 'Computer Science & Engineering', description: 'Identify, formulate, review research literature, and analyze complex engineering and computing problems reaching substantiated conclusions.' },
+      { poNumber: 'PO3', attributeName: 'Design & Development of Solutions', program: 'Computer Science & Engineering', description: 'Design modular software components, database schemas, and algorithms that meet specified needs with public health, safety, and cultural considerations.' },
+      { poNumber: 'PO4', attributeName: 'Conduct Investigations of Complex Problems', program: 'Computer Science & Engineering', description: 'Use research-based knowledge and research methods including design of experiments, analysis, and interpretation of data.' },
+      { poNumber: 'PO5', attributeName: 'Modern Tool Usage', program: 'Computer Science & Engineering', description: 'Create, select, and apply appropriate techniques, resources, and modern engineering and IT tools including modeling and simulation.' },
+      { poNumber: 'PO6', attributeName: 'The Engineer and Society', program: 'Computer Science & Engineering', description: 'Apply reasoning informed by contextual knowledge to assess societal, health, safety, legal, and cultural responsibilities.' },
+      { poNumber: 'PO7', attributeName: 'Environment and Sustainability', program: 'Computer Science & Engineering', description: 'Understand the impact of professional engineering solutions in societal and environmental contexts, and demonstrate knowledge of sustainable development.' },
+      { poNumber: 'PO8', attributeName: 'Ethics & Integrity', program: 'Computer Science & Engineering', description: 'Apply ethical principles and commit to professional ethics and responsibilities and norms of the engineering and computing practice.' },
+      { poNumber: 'PO9', attributeName: 'Individual and Team Work', program: 'Computer Science & Engineering', description: 'Function effectively as an individual, and as a member or leader in diverse teams, and in multidisciplinary settings.' },
+      { poNumber: 'PO10', attributeName: 'Communication', program: 'Computer Science & Engineering', description: 'Communicate effectively on complex engineering activities with the engineering community and with society at large.' },
+      { poNumber: 'PO11', attributeName: 'Project Management & Finance', program: 'Computer Science & Engineering', description: 'Demonstrate knowledge and understanding of engineering and management principles and apply these to manage projects.' },
+      { poNumber: 'PO12', attributeName: 'Life-long Learning', program: 'Computer Science & Engineering', description: 'Recognize the need for, and have the preparation and ability to engage in independent and life-long learning in the broadest context of technological change.' },
+      { poNumber: 'PSO1', attributeName: 'Enterprise Backend Systems', program: 'Computer Science & Engineering', description: 'Design and deploy resilient, high-throughput Spring Boot REST microservices with relational MySQL caching.' },
+      { poNumber: 'PSO2', attributeName: 'Data Engineering & AI Pipelines', program: 'Computer Science & Engineering', description: 'Build end-to-end data processing pipelines and apply intelligent learning algorithms to automate operational workflows.' }
+    ],
+    'IT': [
+      { poNumber: 'PO1', attributeName: 'Engineering Knowledge', program: 'Information Technology', description: 'Apply mathematics, computing principles, and information technology fundamentals to design robust enterprise systems.' },
+      { poNumber: 'PO2', attributeName: 'Problem Analysis', program: 'Information Technology', description: 'Analyze complex IT infrastructure problems and identify requirements for networking and cloud systems.' },
+      { poNumber: 'PO3', attributeName: 'Design & Development of Solutions', program: 'Information Technology', description: 'Design full-stack web architectures, secure databases, and distributed network solutions.' },
+      { poNumber: 'PO4', attributeName: 'Conduct Investigations', program: 'Information Technology', description: 'Conduct investigations using data analytics, performance benchmarking, and network testing tools.' },
+      { poNumber: 'PO5', attributeName: 'Modern Tool Usage', program: 'Information Technology', description: 'Use modern web frameworks, containerization tools (Docker, K8s), and cloud platforms.' },
+      { poNumber: 'PO6', attributeName: 'The Engineer and Society', program: 'Information Technology', description: 'Evaluate social, legal, and ethical impacts of IT solutions and data privacy regulations.' },
+      { poNumber: 'PO7', attributeName: 'Environment & Sustainability', program: 'Information Technology', description: 'Design energy-efficient computing systems and sustainable green IT architectures.' },
+      { poNumber: 'PO8', attributeName: 'Ethics & Integrity', program: 'Information Technology', description: 'Adhere to professional cybersecurity ethics, user data privacy laws, and IP standards.' },
+      { poNumber: 'PO9', attributeName: 'Individual and Team Work', program: 'Information Technology', description: 'Collaborate effectively in multidisciplinary DevOps and agile scrum product teams.' },
+      { poNumber: 'PO10', attributeName: 'Communication', program: 'Information Technology', description: 'Document and articulate technical architecture designs and system configurations.' },
+      { poNumber: 'PO11', attributeName: 'Project Management', program: 'Information Technology', description: 'Apply agile sprint planning, continuous delivery, and IT project budgeting.' },
+      { poNumber: 'PO12', attributeName: 'Life-long Learning', program: 'Information Technology', description: 'Continuously adapt to emerging tech stacks, AI capabilities, and cyber technologies.' },
+      { poNumber: 'PSO1', attributeName: 'Cloud & Infrastructure Engineering', program: 'Information Technology', description: 'Architect, secure, and manage hybrid cloud infrastructure, containerized deployments, and CI/CD pipelines.' },
+      { poNumber: 'PSO2', attributeName: 'Enterprise Web Platforms', program: 'Information Technology', description: 'Design enterprise web platforms and full-stack software applications with robust security protocols.' }
+    ],
+    'ECE': [
+      { poNumber: 'PO1', attributeName: 'Engineering Knowledge', program: 'Electronics & Communication Engineering', description: 'Apply mathematics, signal analysis, semiconductor physics, and circuit theory to electronics systems.' },
+      { poNumber: 'PO2', attributeName: 'Problem Analysis', program: 'Electronics & Communication Engineering', description: 'Identify and analyze signal distortion, RF propagation, and VLSI circuit timing constraints.' },
+      { poNumber: 'PO3', attributeName: 'Design & Development of Solutions', program: 'Electronics & Communication Engineering', description: 'Design analog/digital circuits, embedded hardware modules, and antenna transmission systems.' },
+      { poNumber: 'PO4', attributeName: 'Conduct Investigations', program: 'Electronics & Communication Engineering', description: 'Perform laboratory testing with oscilloscopes, spectrum analyzers, and circuit simulators.' },
+      { poNumber: 'PO5', attributeName: 'Modern Tool Usage', program: 'Electronics & Communication Engineering', description: 'Utilize EDA tools, MATLAB/Simulink, Cadence, and FPGA design suites.' },
+      { poNumber: 'PO6', attributeName: 'The Engineer and Society', program: 'Electronics & Communication Engineering', description: 'Assess electromagnetic radiation standards and societal impacts of telecommunication infrastructure.' },
+      { poNumber: 'PO7', attributeName: 'Environment & Sustainability', program: 'Electronics & Communication Engineering', description: 'Develop low-power electronic designs and e-waste mitigation practices.' },
+      { poNumber: 'PO8', attributeName: 'Ethics & Integrity', program: 'Electronics & Communication Engineering', description: 'Follow IEEE engineering standards, spectrum licensing regulations, and safety codes.' },
+      { poNumber: 'PO9', attributeName: 'Individual and Team Work', program: 'Electronics & Communication Engineering', description: 'Work collaboratively in hardware-software co-design teams.' },
+      { poNumber: 'PO10', attributeName: 'Communication', program: 'Electronics & Communication Engineering', description: 'Present electronic schematics, PCB layout documentation, and technical test reports.' },
+      { poNumber: 'PO11', attributeName: 'Project Management', program: 'Electronics & Communication Engineering', description: 'Manage hardware prototyping cycles, component sourcing, and BOM costing.' },
+      { poNumber: 'PO12', attributeName: 'Life-long Learning', program: 'Electronics & Communication Engineering', description: 'Keep pace with 5G/6G communication evolutions and nanoscale semiconductor devices.' },
+      { poNumber: 'PSO1', attributeName: 'Embedded Firmware & IoT', program: 'Electronics & Communication Engineering', description: 'Develop real-time embedded firmware, ARM microcontroller architectures, and IoT sensor interfaces.' },
+      { poNumber: 'PSO2', attributeName: 'VLSI & Digital Signal Systems', program: 'Electronics & Communication Engineering', description: 'Design digital VLSI systems, signal processing pipelines, and high-frequency communication protocols.' }
+    ],
+    'ME': [
+      { poNumber: 'PO1', attributeName: 'Engineering Knowledge', program: 'Mechanical Engineering', description: 'Apply principles of mechanics, thermodynamics, fluid dynamics, and materials science to mechanical systems.' },
+      { poNumber: 'PO2', attributeName: 'Problem Analysis', program: 'Mechanical Engineering', description: 'Formulate stress-strain equations, thermal transfer rates, and kinematic forces in mechanical structures.' },
+      { poNumber: 'PO3', attributeName: 'Design & Development of Solutions', program: 'Mechanical Engineering', description: 'Design machine elements, HVAC thermal systems, and robotic automation mechanisms.' },
+      { poNumber: 'PO4', attributeName: 'Conduct Investigations', program: 'Mechanical Engineering', description: 'Conduct CFD simulations, FEA structural stress testing, and vibration testing.' },
+      { poNumber: 'PO5', attributeName: 'Modern Tool Usage', program: 'Mechanical Engineering', description: 'Utilize CAD/CAM software (AutoCAD, SolidWorks, ANSYS) and CNC fabrication tools.' },
+      { poNumber: 'PO6', attributeName: 'The Engineer and Society', program: 'Mechanical Engineering', description: 'Comply with industrial machinery safety directives and automotive passenger safety laws.' },
+      { poNumber: 'PO7', attributeName: 'Environment & Sustainability', program: 'Mechanical Engineering', description: 'Improve thermal efficiency, reduce carbon emissions, and implement renewable energy systems.' },
+      { poNumber: 'PO8', attributeName: 'Ethics & Integrity', program: 'Mechanical Engineering', description: 'Uphold ASME safety codes, quality control ethics, and structural integrity guidelines.' },
+      { poNumber: 'PO9', attributeName: 'Individual and Team Work', program: 'Mechanical Engineering', description: 'Function effectively in multidisciplinary manufacturing and plant operation teams.' },
+      { poNumber: 'PO10', attributeName: 'Communication', program: 'Mechanical Engineering', description: 'Produce engineering fabrication blueprints, GD&T tolerancing sheets, and inspection reports.' },
+      { poNumber: 'PO11', attributeName: 'Project Management', program: 'Mechanical Engineering', description: 'Manage manufacturing lead times, lean inventory, and assembly line operations.' },
+      { poNumber: 'PO12', attributeName: 'Life-long Learning', program: 'Mechanical Engineering', description: 'Stay abreast of additive manufacturing, Industry 4.0 robotics, and advanced composites.' },
+      { poNumber: 'PSO1', attributeName: 'Thermal & Fluid Power Systems', program: 'Mechanical Engineering', description: 'Analyze thermal systems, IC engines, fluid power dynamics, and HVAC thermodynamic cycles.' },
+      { poNumber: 'PSO2', attributeName: 'Precision Machine Design & Robotics', program: 'Mechanical Engineering', description: 'Design precision machine elements, CAD/CAM kinematics, and robotic automation mechanisms.' }
+    ],
+    'Civil': [
+      { poNumber: 'PO1', attributeName: 'Engineering Knowledge', program: 'Civil Engineering', description: 'Apply mathematics, structural engineering fundamentals, and geotechnical mechanics to infrastructure.' },
+      { poNumber: 'PO2', attributeName: 'Problem Analysis', program: 'Civil Engineering', description: 'Analyze structural loads, seismic resistances, and hydraulic watershed flows.' },
+      { poNumber: 'PO3', attributeName: 'Design & Development of Solutions', program: 'Civil Engineering', description: 'Design reinforced concrete structures, steel frames, water distribution grids, and transport systems.' },
+      { poNumber: 'PO4', attributeName: 'Conduct Investigations', program: 'Civil Engineering', description: 'Perform soil compaction tests, concrete compressive testing, and water quality assays.' },
+      { poNumber: 'PO5', attributeName: 'Modern Tool Usage', program: 'Civil Engineering', description: 'Employ STAAD.Pro, ETABS, Revit BIM, Total Station GIS, and hydrological modeling tools.' },
+      { poNumber: 'PO6', attributeName: 'The Engineer and Society', program: 'Civil Engineering', description: 'Ensure public safety in civil infrastructure, bridge spans, and seismic zone shelters.' },
+      { poNumber: 'PO7', attributeName: 'Environment & Sustainability', program: 'Civil Engineering', description: 'Integrate green building concepts, rainwater harvesting, and environmental impact assessments.' },
+      { poNumber: 'PO8', attributeName: 'Ethics & Integrity', program: 'Civil Engineering', description: 'Adhere to national building codes (NBC), BIS guidelines, and construction safety laws.' },
+      { poNumber: 'PO9', attributeName: 'Individual and Team Work', program: 'Civil Engineering', description: 'Collaborate with architects, contractors, urban planners, and site project managers.' },
+      { poNumber: 'PO10', attributeName: 'Communication', program: 'Civil Engineering', description: 'Prepare structural drawings, tender estimates, and structural audit certificates.' },
+      { poNumber: 'PO11', attributeName: 'Project Management', program: 'Civil Engineering', description: 'Manage site timelines, CPM/PERT scheduling, and construction billing audits.' },
+      { poNumber: 'PO12', attributeName: 'Life-long Learning', program: 'Civil Engineering', description: 'Adopt smart infrastructure sensing, prefabricated modular buildings, and self-healing concrete.' },
+      { poNumber: 'PSO1', attributeName: 'Structural & Geotechnical Engineering', program: 'Civil Engineering', description: 'Perform advanced structural analysis, RCC concrete designs, and geotechnical soil mechanics.' },
+      { poNumber: 'PSO2', attributeName: 'Hydraulics & Sustainable Infrastructure', program: 'Civil Engineering', description: 'Apply fluid mechanics, hydraulic networks, GIS surveying, and sustainable environmental engineering.' }
+    ]
+  };
+
+  get standardNBAOutcomes(): ProgramOutcome[] {
+    return this.getFallbackOutcomes();
+  }
+
+  getFallbackOutcomes(): ProgramOutcome[] {
+    const s = this.shortDept;
+    return this.deptStandardOutcomesMap[s] || this.deptStandardOutcomesMap['CSE'];
+  }
 
   constructor() {
     try {
@@ -358,13 +476,20 @@ export class ProgramOutcomes implements OnInit {
       this.userName = localStorage.getItem('userName') || '';
       this.facultyName = this.userName;
       this.studentDept = localStorage.getItem('userDept') || localStorage.getItem('userDepartment') || 'Computer Science & Engineering';
+      this.facultyDept = localStorage.getItem('userDepartment') || localStorage.getItem('userDept') || 'Computer Science & Engineering';
+      this.userDept = this.userRole === 'faculty' ? this.facultyDept : this.studentDept;
+
+      const storedCourses = localStorage.getItem('userAssignedCourses');
+      if (storedCourses) {
+        this.assignedCourses = JSON.parse(storedCourses);
+      }
     } catch {
       this.userRole = 'student';
     }
   }
 
   ngOnInit(): void {
-    this.programOutcomes = [...this.standardNBAOutcomes];
+    this.programOutcomes = [...this.getFallbackOutcomes()];
     this.loadProgramOutcomes();
   }
 
@@ -378,7 +503,7 @@ export class ProgramOutcomes implements OnInit {
   getAttributeTitle(po: ProgramOutcome, index: number): string {
     if (po.attributeName && po.attributeName.trim()) return po.attributeName.trim();
     const code = this.getPoCode(po, index);
-    const standard = this.standardNBAOutcomes.find(s => s.poNumber === code);
+    const standard = this.getFallbackOutcomes().find(s => s.poNumber === code);
     if (standard && standard.attributeName) return standard.attributeName;
 
     const titles: { [key: string]: string } = {
@@ -394,15 +519,23 @@ export class ProgramOutcomes implements OnInit {
       'PO10': 'Communication Skills',
       'PO11': 'Project Management & Finance',
       'PO12': 'Life-long Learning',
-      'PSO1': 'Enterprise Software Systems',
-      'PSO2': 'Intelligent Computing & Data Science'
+      'PSO1': 'Specialized Core Systems',
+      'PSO2': 'Advanced Applied Engineering'
     };
     return titles[code] || 'Graduate Attribute';
   }
 
   private loadProgramOutcomes(): void {
-    const facultyParam = (this.userRole === 'faculty' && this.facultyName) ? encodeURIComponent(this.facultyName) : '';
-    const url = facultyParam ? `http://localhost:8080/api/copo/po?faculty=${facultyParam}` : 'http://localhost:8080/api/copo/po';
+    let url = 'http://localhost:8080/api/copo/po';
+    if (this.userRole === 'faculty') {
+      if (this.facultyName) {
+        url = `http://localhost:8080/api/copo/po?faculty=${encodeURIComponent(this.facultyName)}`;
+      } else if (this.facultyDept) {
+        url = `http://localhost:8080/api/copo/po?department=${encodeURIComponent(this.facultyDept)}`;
+      }
+    } else if (this.userRole === 'student' && this.studentDept) {
+      url = `http://localhost:8080/api/copo/po?department=${encodeURIComponent(this.studentDept)}`;
+    }
 
     this.http.get<ProgramOutcome[]>(url).subscribe({
       next: (data) => {
@@ -410,17 +543,17 @@ export class ProgramOutcomes implements OnInit {
           this.programOutcomes = data.map((item, idx) => ({
             id: item.id || (idx + 1),
             poNumber: item.poNumber || item.po || this.getPoCode(item, idx),
-            program: item.program || 'Computer Science & Engineering',
+            program: item.program || this.targetDepartmentName,
             description: item.description,
             attributeName: this.getAttributeTitle(item, idx)
           }));
         } else {
-          this.programOutcomes = [...this.standardNBAOutcomes];
+          this.programOutcomes = [...this.getFallbackOutcomes()];
         }
         this.cdr.detectChanges();
       },
       error: () => {
-        this.programOutcomes = [...this.standardNBAOutcomes];
+        this.programOutcomes = [...this.getFallbackOutcomes()];
         this.cdr.detectChanges();
       }
     });
@@ -438,9 +571,18 @@ export class ProgramOutcomes implements OnInit {
       const matchesSearch = !q || code.includes(q) || title.includes(q) || desc.includes(q);
 
       let matchesDept = true;
-      if (this.userRole === 'student') {
-        const uDept = (this.userDept || '').toLowerCase();
-        matchesDept = prog.includes(this.shortDept.toLowerCase()) || uDept.includes(prog.split(' ')[0]) || this.shortDept === 'CSE';
+      if (this.userRole === 'faculty') {
+        const targetShort = this.shortDept.toLowerCase();
+        matchesDept = prog.includes(targetShort) || 
+                      prog.includes((this.facultyDept || '').toLowerCase().split(' ')[0]) || 
+                      (this.facultyDept || '').toLowerCase().includes(prog) ||
+                      targetShort === 'cse';
+      } else if (this.userRole === 'student') {
+        const targetShort = this.shortDept.toLowerCase();
+        matchesDept = prog.includes(targetShort) || 
+                      prog.includes((this.studentDept || '').toLowerCase().split(' ')[0]) || 
+                      (this.studentDept || '').toLowerCase().includes(prog) ||
+                      targetShort === 'cse';
       } else if (this.selectedDeptFilter) {
         const filt = this.selectedDeptFilter.toLowerCase();
         matchesDept = prog.includes(filt) || filt === 'cse';
@@ -464,7 +606,7 @@ export class ProgramOutcomes implements OnInit {
     const payload = {
       id: this.currentPo.id,
       poNumber: this.currentPo.poNumber.trim().toUpperCase(),
-      program: this.currentPo.program ? this.currentPo.program.trim() : 'Computer Science & Engineering',
+      program: this.currentPo.program ? this.currentPo.program.trim() : this.targetDepartmentName,
       description: this.currentPo.description.trim()
     };
 
@@ -503,7 +645,7 @@ export class ProgramOutcomes implements OnInit {
     this.currentPo = {
       id: po.id,
       poNumber: this.getPoCode(po, index),
-      program: po.program || 'Computer Science & Engineering',
+      program: po.program || this.targetDepartmentName,
       description: po.description
     };
     this.editIndex = index;
@@ -540,6 +682,6 @@ export class ProgramOutcomes implements OnInit {
 
   resetForm(): void {
     this.editIndex = -1;
-    this.currentPo = { poNumber: '', program: 'Computer Science & Engineering', description: '' };
+    this.currentPo = { poNumber: '', program: this.targetDepartmentName, description: '' };
   }
 }
