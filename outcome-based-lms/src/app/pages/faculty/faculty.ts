@@ -2,6 +2,7 @@ import { Component, OnInit, OnDestroy, ChangeDetectorRef, inject } from '@angula
 import { RouterModule, Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { HttpClient } from '@angular/common/http';
 import { Navbar } from '../../shared/navbar/navbar';
 import { Sidebar } from '../../shared/sidebar/sidebar';
 import { Footer } from '../../shared/footer/footer';
@@ -190,6 +191,7 @@ export class Faculty implements OnInit {
   dossierCOs: CourseCOAttainmentSummary[] = [];
   dossierAssessments: Assessment[] = [];
   dossierStudents: StudentProgress[] = [];
+  private http = inject(HttpClient);
   private syncService = inject(SyncService);
   private toast = inject(ToastService);
   private cdr = inject(ChangeDetectorRef);
@@ -397,7 +399,7 @@ export class Faculty implements OnInit {
   }
 
   /**
-   * Load workbench widgets from localStorage
+   * Load workbench widgets from localStorage and backend
    */
   private loadWorkbenchData(): void {
     try {
@@ -413,18 +415,81 @@ export class Faculty implements OnInit {
 
       this.grievanceItems = this.getSafeJson('obslmsGrievances');
 
-      const allQB = this.getSafeJson('obslmsQuestionBank') as QuestionBankItem[];
-      this.questionBankItems = allQB.filter(q => {
-        return this.courses.some(c =>
-          (q.subject || '').toLowerCase().includes(c.code.toLowerCase()) ||
-          (q.subject || '').toLowerCase().includes(c.name.toLowerCase()) ||
-          c.code.toLowerCase().includes((q.subject || '').toLowerCase()) ||
-          c.name.toLowerCase().includes((q.subject || '').toLowerCase())
-        );
+      let allQB = this.getSafeJson('obslmsQuestionBank') as QuestionBankItem[];
+      if (allQB.length === 0) {
+        allQB = this.getDefaultQuestionBank();
+        localStorage.setItem('obslmsQuestionBank', JSON.stringify(allQB));
+      }
+      this.filterQuestionBankItems(allQB);
+      this.updateAllSubjectsList(allQB);
+
+      // Fetch latest question bank from Spring Boot backend
+      this.http.get<QuestionBankItem[]>('http://localhost:8080/api/questions').subscribe({
+        next: (data) => {
+          if (data && data.length > 0) {
+            localStorage.setItem('obslmsQuestionBank', JSON.stringify(data));
+            this.filterQuestionBankItems(data);
+            this.updateAllSubjectsList(data);
+          }
+        },
+        error: () => {}
       });
     } catch (e) {
       console.error('Error loading workbench data:', e);
     }
+  }
+
+  private filterQuestionBankItems(questions: QuestionBankItem[]): void {
+    this.questionBankItems = questions.filter(q => {
+      return this.courses.some(c =>
+        (q.subject || '').toLowerCase().includes(c.code.toLowerCase()) ||
+        (q.subject || '').toLowerCase().includes(c.name.toLowerCase()) ||
+        c.code.toLowerCase().includes((q.subject || '').toLowerCase()) ||
+        c.name.toLowerCase().includes((q.subject || '').toLowerCase())
+      );
+    });
+    if (this.questionBankItems.length === 0) {
+      this.questionBankItems = [...questions];
+    }
+  }
+
+  private updateAllSubjectsList(questions: QuestionBankItem[]): void {
+    const subs = questions.map(q => q.subject).filter(Boolean);
+    const courseNames = this.courses.map(c => c.name);
+    this.allSubjectsList = Array.from(new Set([...subs, ...courseNames]));
+  }
+
+  private getDefaultQuestionBank(): QuestionBankItem[] {
+    return [
+      { id: 1, questionText: 'Define primary key, foreign key, and unique key constraints with relational schema examples.', type: 'Short Answer', difficulty: 'Easy', marks: 5, subject: 'Database Management Systems', coMapped: 'CO1' },
+      { id: 2, questionText: 'Explain the ACID properties of transactions and illustrate how write-ahead logging ensures durability.', type: 'Short Answer', difficulty: 'Medium', marks: 5, subject: 'Database Management Systems', coMapped: 'CO1' },
+      { id: 3, questionText: 'Write SQL queries using GROUP BY, HAVING, and INNER JOIN to find employees earning more than the department average.', type: 'Short Answer', difficulty: 'Medium', marks: 8, subject: 'Database Management Systems', coMapped: 'CO2' },
+      { id: 4, questionText: 'Given an unnormalized relation R(A,B,C,D,E) with functional dependencies, analyze dependencies and decompose into BCNF.', type: 'Essay', difficulty: 'Hard', marks: 12, subject: 'Database Management Systems', coMapped: 'CO3' },
+      { id: 5, questionText: 'Design and draw a complete Entity-Relationship (ER) diagram for a Hospital Management System with cardinalities.', type: 'Essay', difficulty: 'Hard', marks: 15, subject: 'Database Management Systems', coMapped: 'CO5' },
+
+      { id: 6, questionText: 'What is the time complexity of QuickSort in the worst-case scenario and how does Randomized QuickSort mitigate it?', type: 'Short Answer', difficulty: 'Easy', marks: 5, subject: 'Data Structures & Algorithms', coMapped: 'CO1' },
+      { id: 7, questionText: 'Implement an algorithm in Java/C++ to detect a cycle in a directed graph using Depth First Search (DFS).', type: 'Short Answer', difficulty: 'Medium', marks: 10, subject: 'Data Structures & Algorithms', coMapped: 'CO2' },
+      { id: 8, questionText: 'Compare and contrast Dijkstra algorithm and Bellman-Ford algorithm for single-source shortest paths in weighted graphs.', type: 'Essay', difficulty: 'Hard', marks: 12, subject: 'Data Structures & Algorithms', coMapped: 'CO3' },
+      { id: 9, questionText: 'Evaluate the performance trade-offs between AVL Trees and Red-Black Trees in terms of lookup and memory overhead.', type: 'Essay', difficulty: 'Hard', marks: 10, subject: 'Data Structures & Algorithms', coMapped: 'CO4' },
+      { id: 10, questionText: 'Design a LRU (Least Recently Used) Cache data structure supporting get and put operations in O(1) time complexity.', type: 'Essay', difficulty: 'Hard', marks: 15, subject: 'Data Structures & Algorithms', coMapped: 'CO5' },
+
+      { id: 11, questionText: 'Explain the difference between process and thread with state transition diagrams and PCB contents.', type: 'Short Answer', difficulty: 'Easy', marks: 5, subject: 'Operating Systems', coMapped: 'CO1' },
+      { id: 12, questionText: 'Calculate average waiting time and turnaround time for processes using Round Robin and Shortest Job First (SJF).', type: 'Short Answer', difficulty: 'Medium', marks: 10, subject: 'Operating Systems', coMapped: 'CO2' },
+      { id: 13, questionText: 'Analyze the four necessary conditions for Deadlock and apply Banker algorithm to determine if the system is in safe state.', type: 'Essay', difficulty: 'Hard', marks: 12, subject: 'Operating Systems', coMapped: 'CO3' },
+      { id: 14, questionText: 'Explain virtual memory paging, page faults, and calculate Effective Access Time with TLB hit ratios.', type: 'Essay', difficulty: 'Medium', marks: 8, subject: 'Operating Systems', coMapped: 'CO4' },
+      { id: 15, questionText: 'Design a multi-threaded reader-writer synchronization solution using mutex semaphores to prevent writer starvation.', type: 'Essay', difficulty: 'Hard', marks: 15, subject: 'Operating Systems', coMapped: 'CO5' },
+
+      { id: 16, questionText: 'Describe the 7 layers of the OSI model and their corresponding protocols in TCP/IP suite.', type: 'Short Answer', difficulty: 'Easy', marks: 5, subject: 'Computer Networks', coMapped: 'CO1' },
+      { id: 17, questionText: 'Apply subnet masking on IP address 192.168.10.0/24 to create 4 subnets with valid host ranges.', type: 'Short Answer', difficulty: 'Medium', marks: 8, subject: 'Computer Networks', coMapped: 'CO2' },
+      { id: 18, questionText: 'Compare Distance Vector routing with Link State routing protocol regarding convergence time and routing loops.', type: 'Essay', difficulty: 'Hard', marks: 12, subject: 'Computer Networks', coMapped: 'CO3' },
+      { id: 19, questionText: 'Explain TCP 3-way handshake and TCP congestion control mechanisms (Slow Start, Congestion Avoidance).', type: 'Essay', difficulty: 'Medium', marks: 10, subject: 'Computer Networks', coMapped: 'CO4' },
+      { id: 20, questionText: 'Design and configure a secure network architecture with DMZ, firewalls, and NAT for an enterprise.', type: 'Essay', difficulty: 'Hard', marks: 15, subject: 'Computer Networks', coMapped: 'CO5' },
+
+      { id: 21, questionText: 'Explain the principles of Object-Oriented Programming (Encapsulation, Inheritance, Polymorphism, Abstraction) in Java.', type: 'Short Answer', difficulty: 'Easy', marks: 5, subject: 'Java Programming', coMapped: 'CO1' },
+      { id: 22, questionText: 'Demonstrate custom exception handling and try-with-resources with code examples.', type: 'Short Answer', difficulty: 'Medium', marks: 8, subject: 'Java Programming', coMapped: 'CO2' },
+      { id: 23, questionText: 'Implement Java Multithreading with ExecutorService and Callable/Future for concurrent task execution.', type: 'Essay', difficulty: 'Medium', marks: 12, subject: 'Java Programming', coMapped: 'CO3' },
+      { id: 24, questionText: 'Develop a JDBC database connectivity layer with PreparedStatement to perform CRUD operations safely.', type: 'Essay', difficulty: 'Hard', marks: 15, subject: 'Java Programming', coMapped: 'CO4' }
+    ];
   }
 
   /**
@@ -840,8 +905,17 @@ export class Faculty implements OnInit {
   // 4. QUESTION PAPER GENERATOR ACTIONS
   // ==========================================
   openQuestionPaperModal(): void {
+    let storedQB = this.getSafeJson('obslmsQuestionBank') as QuestionBankItem[];
+    if (storedQB.length === 0) {
+      storedQB = this.getDefaultQuestionBank();
+      localStorage.setItem('obslmsQuestionBank', JSON.stringify(storedQB));
+    }
+    this.updateAllSubjectsList(storedQB);
+
     if (this.courses.length > 0) {
       this.qpSubject = this.courses[0].name;
+    } else if (this.allSubjectsList.length > 0) {
+      this.qpSubject = this.allSubjectsList[0];
     }
     this.isPaperGenerated = false;
     this.generatedPaperQuestions = [];
@@ -854,10 +928,10 @@ export class Faculty implements OnInit {
   }
 
   generateQuestionPaper(): void {
-    const storedQB = this.getSafeJson('obslmsQuestionBank') as QuestionBankItem[];
+    let storedQB = this.getSafeJson('obslmsQuestionBank') as QuestionBankItem[];
     if (storedQB.length === 0) {
-      alert('Question Bank is currently empty. Please add questions in Question Bank first.');
-      return;
+      storedQB = this.getDefaultQuestionBank();
+      localStorage.setItem('obslmsQuestionBank', JSON.stringify(storedQB));
     }
 
     const selectedCOs = Object.keys(this.qpCOs).filter(k => this.qpCOs[k]);
@@ -866,29 +940,44 @@ export class Faculty implements OnInit {
       return;
     }
 
+    const targetSub = (this.qpSubject || '').trim().toLowerCase();
+
+    // 1. Match by subject and selected COs
     let pool = storedQB.filter(q => {
-      const matchSubject = !this.qpSubject || q.subject.toLowerCase().includes(this.qpSubject.toLowerCase()) || this.qpSubject.toLowerCase().includes(q.subject.toLowerCase());
+      const qSub = (q.subject || '').toLowerCase();
+      const matchSubject = !targetSub || qSub.includes(targetSub) || targetSub.includes(qSub);
       const matchCO = selectedCOs.includes(q.coMapped);
       return matchSubject && matchCO;
     });
 
+    // 2. If no questions for exact subject + CO, match by subject alone
+    if (pool.length === 0) {
+      pool = storedQB.filter(q => {
+        const qSub = (q.subject || '').toLowerCase();
+        return !targetSub || qSub.includes(targetSub) || targetSub.includes(qSub);
+      });
+    }
+
+    // 3. If still empty, match by selected COs across any subject
     if (pool.length === 0) {
       pool = storedQB.filter(q => selectedCOs.includes(q.coMapped));
     }
 
+    // 4. Fallback to all available questions
     if (pool.length === 0) {
       pool = storedQB;
     }
 
     let accumulatedMarks = 0;
     const selected: QuestionBankItem[] = [];
+    const targetMarks = Number(this.qpTotalMarks) || 50;
     const shuffled = [...pool].sort(() => 0.5 - Math.random());
 
     for (const q of shuffled) {
-      if (accumulatedMarks + q.marks <= this.qpTotalMarks + 5) {
+      if (accumulatedMarks + q.marks <= targetMarks + 5) {
         selected.push(q);
         accumulatedMarks += q.marks;
-        if (accumulatedMarks >= this.qpTotalMarks) break;
+        if (accumulatedMarks >= targetMarks) break;
       }
     }
 
