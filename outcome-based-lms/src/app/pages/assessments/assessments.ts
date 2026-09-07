@@ -1,10 +1,12 @@
-import { Component, inject, ChangeDetectorRef } from '@angular/core';
+import { Component, inject, ChangeDetectorRef, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Navbar } from '../../shared/navbar/navbar';
 import { Sidebar } from '../../shared/sidebar/sidebar';
 import { Footer } from '../../shared/footer/footer';
 import { HttpClient } from '@angular/common/http';
+import { ToastService } from '../../shared/services/toast.service';
+import { CourseService } from '../../shared/services/course.service';
 
 interface Assessment {
   id: number;
@@ -31,23 +33,25 @@ interface MarkEntry {
   templateUrl: './assessments.html',
   styleUrls: ['./assessments.css'],
 })
-export class Assessments {
+export class Assessments implements OnInit {
   Math = Math;
-  assessmentTypes = ['Assignment', 'Quiz', 'Mid Exam', 'Final Exam'];
+  assessmentTypes = ['Assignment', 'Quiz', 'Mid Exam', 'Final Exam', 'Lab Exam'];
 
   role: string | null = null;
   userName = 'Student';
 
   assessments: Assessment[] = [];
   markEntries: MarkEntry[] = [];
+  coursesList: any[] = [];
+  studentsList: any[] = [];
 
   // Search & Filters
   searchAssessment = '';
   typeFilter = '';
   searchMarks = '';
 
-  currentAssessment: Assessment = { id: 0, course: '', type: 'Assignment', questions: 0, maxMarks: 0, dueDate: '', status: 'Planned' };
-  currentMark: MarkEntry = { id: 0, student: '', assessment: 'Assignment', obtained: 0, maxMarks: 0 };
+  currentAssessment: Assessment = { id: 0, course: '', type: 'Assignment', questions: 5, maxMarks: 50, dueDate: '2026-10-15', status: 'Planned' };
+  currentMark: MarkEntry = { id: 0, student: '', assessment: 'Assignment', obtained: 42, maxMarks: 50 };
   editAssessmentIndex = -1;
 
   get filteredAssessments(): Assessment[] {
@@ -85,6 +89,8 @@ export class Assessments {
   }
 
   private http = inject(HttpClient);
+  private toast = inject(ToastService);
+  private courseService = inject(CourseService);
   private cdr = inject(ChangeDetectorRef);
 
   constructor() {
@@ -94,8 +100,59 @@ export class Assessments {
     } catch {
       this.role = null;
     }
+  }
+
+  ngOnInit(): void {
+    this.loadCourses();
+    this.loadStudents();
     this.loadAssessments();
     this.loadMarks();
+  }
+
+  loadCourses(): void {
+    // 1. First get sync from local cache
+    this.coursesList = this.courseService.getCoursesSync();
+    if (!this.currentAssessment.course && this.coursesList.length > 0) {
+      this.currentAssessment.course = this.coursesList[0].title;
+    }
+    this.cdr.detectChanges();
+
+    // 2. Fetch from backend
+    this.http.get<any[]>('http://localhost:8080/api/courses').subscribe({
+      next: (courses) => {
+        if (Array.isArray(courses) && courses.length > 0) {
+          this.coursesList = courses;
+          if (!this.currentAssessment.course) {
+            this.currentAssessment.course = courses[0].title;
+          }
+          this.cdr.detectChanges();
+        }
+      },
+      error: () => {}
+    });
+  }
+
+  loadStudents(): void {
+    this.http.get<any[]>('http://localhost:8080/api/users').subscribe({
+      next: (users) => {
+        if (Array.isArray(users) && users.length > 0) {
+          this.studentsList = users.filter(u => u.role?.toUpperCase() === 'STUDENT');
+          if (!this.currentMark.student && this.studentsList.length > 0) {
+            this.currentMark.student = this.studentsList[0].name;
+          }
+          this.cdr.detectChanges();
+        }
+      },
+      error: () => {
+        try {
+          const stored = localStorage.getItem('obslmsStudents');
+          this.studentsList = stored ? JSON.parse(stored) : [];
+          if (!this.currentMark.student && this.studentsList.length > 0) {
+            this.currentMark.student = this.studentsList[0].name;
+          }
+        } catch {}
+      }
+    });
   }
 
   loadAssessments(): void {

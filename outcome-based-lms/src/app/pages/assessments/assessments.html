@@ -40,11 +40,14 @@
             <form (ngSubmit)="saveAssessment()">
                 <div class="grid-row">
                     <label>
-                        Course
-                        <input type="text" name="course" [(ngModel)]="currentAssessment.course" required />
+                        Course *
+                        <select name="course" [(ngModel)]="currentAssessment.course" required>
+                            <option value="" disabled>-- Select Course --</option>
+                            <option *ngFor="let c of coursesList" [value]="c.title">{{ c.title }} ({{ c.code }})</option>
+                        </select>
                     </label>
                     <label>
-                        Assessment Type
+                        Assessment Type *
                         <select name="type" [(ngModel)]="currentAssessment.type" required>
                             <option *ngFor="let type of assessmentTypes" [value]="type">{{ type }}</option>
                         </select>
@@ -87,11 +90,14 @@
             <form (ngSubmit)="saveMarks()">
                 <div class="grid-row">
                     <label>
-                        Student Name
-                        <input type="text" name="student" [(ngModel)]="currentMark.student" required />
+                        Student Name *
+                        <select name="student" [(ngModel)]="currentMark.student" required>
+                            <option value="" disabled>-- Select Student --</option>
+                            <option *ngFor="let s of studentsList" [value]="s.name">{{ s.name }} ({{ s.id }})</option>
+                        </select>
                     </label>
                     <label>
-                        Assessment
+                        Assessment *
                         <select name="assessment" [(ngModel)]="currentMark.assessment" required>
                             <option *ngFor="let type of assessmentTypes" [value]="type">{{ type }}</option>
                         </select>
