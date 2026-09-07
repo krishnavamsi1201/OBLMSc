@@ -715,37 +715,41 @@ export class Subjects implements OnInit {
   }
 
   loadSubjectsFromBackend(): void {
-    const stored = localStorage.getItem('obslmsSubjects');
-    if (stored) {
-      try {
-        const parsed = JSON.parse(stored);
-        if (Array.isArray(parsed) && parsed.length > 0) {
-          this.subjects = parsed;
-          this.cdr.detectChanges();
-          return;
-        }
-      } catch {}
-    }
-
-    this.http.get<any[]>('http://localhost:8080/api/dataset/subjects').subscribe({
-      next: (data) => {
-        if (Array.isArray(data) && data.length > 0) {
-          this.subjects = data.map(item => {
-            const code = item.subCode || '';
-            const name = item.subjectName || '';
-            const type = item.subjectType || 'Theory';
+    this.http.get<any[]>('http://localhost:8080/api/courses').subscribe({
+      next: (courses) => {
+        if (Array.isArray(courses) && courses.length > 0) {
+          const backendSubs: SubjectRecord[] = courses.map((item, idx) => {
+            const code = (item.code || '').trim();
+            const name = (item.title || item.name || '').trim();
+            const type = (name.toLowerCase().includes('lab') || code.toLowerCase().includes('lab')) ? 'Lab' : (name.toLowerCase().includes('elective') ? 'Elective' : 'Theory');
+            const dept = item.department || this.getDepartmentName(code, name);
+            const credits = type === 'Lab' ? 2 : (type === 'Elective' ? 3 : 4);
             const isReg = this.isCourseEnrolled(code, name);
             return {
-              id: item.subId || 0,
+              id: item.id || (idx + 1),
               code: code,
               name: name,
               type: type,
-              credits: type.toLowerCase().includes('lab') ? 2 : (type.toLowerCase().includes('elective') ? 3 : 4),
-              semester: 'Semester 6',
-              department: this.getDepartmentName(code, name),
+              credits: credits,
+              semester: item.semester || 'Semester 6',
+              department: dept,
               isRegistered: isReg
             };
           });
+
+          // Retrieve custom subjects added by admin if any
+          const stored = localStorage.getItem('obslmsCustomSubjects');
+          let customSubs: SubjectRecord[] = [];
+          if (stored) {
+            try {
+              customSubs = JSON.parse(stored);
+            } catch {}
+          }
+
+          const existingCodes = new Set(backendSubs.map(s => s.code.toUpperCase()));
+          const extraCustom = customSubs.filter(c => !existingCodes.has(c.code.toUpperCase()));
+
+          this.subjects = [...extraCustom, ...backendSubs];
           try {
             localStorage.setItem('obslmsSubjects', JSON.stringify(this.subjects));
           } catch {}
@@ -762,20 +766,45 @@ export class Subjects implements OnInit {
 
   private loadFallbackSubjects(): void {
     const fallbackList: SubjectRecord[] = [
-      { id: 1, code: 'CS101', name: 'Database Management Systems', type: 'Theory', credits: 4, semester: 'Semester 6', department: 'Computer Science & Engineering', isRegistered: true },
-      { id: 2, code: 'CS102', name: 'Java & OOPs Programming', type: 'Theory', credits: 4, semester: 'Semester 6', department: 'Computer Science & Engineering', isRegistered: true },
-      { id: 3, code: 'CS103', name: 'Data Structures & Algorithms', type: 'Theory', credits: 4, semester: 'Semester 6', department: 'Computer Science & Engineering', isRegistered: true },
-      { id: 4, code: 'CS301', name: 'Operating Systems', type: 'Theory', credits: 4, semester: 'Semester 6', department: 'Computer Science & Engineering', isRegistered: true },
-      { id: 5, code: 'CS302', name: 'Computer Networks', type: 'Theory', credits: 4, semester: 'Semester 6', department: 'Computer Science & Engineering', isRegistered: true },
-      { id: 6, code: 'CS102L', name: 'Database & SQL Laboratory', type: 'Lab', credits: 2, semester: 'Semester 6', department: 'Computer Science & Engineering', isRegistered: true },
-      { id: 7, code: 'IT305', name: 'Web Technology & Frameworks', type: 'Theory', credits: 4, semester: 'Semester 6', department: 'Information Technology', isRegistered: false },
-      { id: 8, code: 'CS303', name: 'Cloud Computing & DevOps', type: 'Theory', credits: 4, semester: 'Semester 6', department: 'Information Technology', isRegistered: false },
-      { id: 9, code: 'MES', name: 'Microprocessors & Embedded Systems', type: 'Theory', credits: 4, semester: 'Semester 6', department: 'Electronics & Communication Engineering', isRegistered: false },
-      { id: 10, code: 'DSLD', name: 'Digital Signal & Logic Design', type: 'Theory', credits: 4, semester: 'Semester 6', department: 'Electronics & Communication Engineering', isRegistered: false },
-      { id: 11, code: 'ME210', name: 'Kinematics & Machine Dynamics', type: 'Theory', credits: 4, semester: 'Semester 6', department: 'Mechanical Engineering', isRegistered: false },
-      { id: 12, code: 'FMHM', name: 'Fluid Mechanics & Hydraulic Machines', type: 'Theory', credits: 4, semester: 'Semester 6', department: 'Civil Engineering', isRegistered: false }
+      // Computer Science & Engineering
+      { id: 1, code: 'CS101', name: 'Database Management Systems', type: 'Theory', credits: 4, semester: 'Semester 3', department: 'Computer Science & Engineering', isRegistered: true },
+      { id: 2, code: 'CS102', name: 'Data Structures & Algorithms', type: 'Theory', credits: 4, semester: 'Semester 3', department: 'Computer Science & Engineering', isRegistered: true },
+      { id: 3, code: 'CS103', name: 'Object-Oriented Programming with Java', type: 'Theory', credits: 4, semester: 'Semester 3', department: 'Computer Science & Engineering', isRegistered: true },
+      { id: 4, code: 'CS201', name: 'Operating Systems', type: 'Theory', credits: 4, semester: 'Semester 4', department: 'Computer Science & Engineering', isRegistered: true },
+      { id: 5, code: 'CS202', name: 'Machine Learning & Data Science', type: 'Theory', credits: 4, semester: 'Semester 5', department: 'Computer Science & Engineering', isRegistered: false },
+      { id: 6, code: 'CS301', name: 'Computer Networks', type: 'Theory', credits: 4, semester: 'Semester 5', department: 'Computer Science & Engineering', isRegistered: true },
+      { id: 7, code: 'CS302', name: 'Software Engineering & Agile Methodologies', type: 'Theory', credits: 4, semester: 'Semester 6', department: 'Computer Science & Engineering', isRegistered: true },
+      { id: 8, code: 'CS401', name: 'Artificial Intelligence & Neural Networks', type: 'Theory', credits: 4, semester: 'Semester 7', department: 'Computer Science & Engineering', isRegistered: false },
+      { id: 9, code: 'CS402', name: 'Cyber Security & Cryptography', type: 'Theory', credits: 4, semester: 'Semester 7', department: 'Computer Science & Engineering', isRegistered: false },
+      { id: 10, code: 'CS101L', name: 'DBMS & SQL Practical Laboratory', type: 'Lab', credits: 2, semester: 'Semester 3', department: 'Computer Science & Engineering', isRegistered: true },
+      { id: 11, code: 'CS102L', name: 'Data Structures Practical Lab', type: 'Lab', credits: 2, semester: 'Semester 3', department: 'Computer Science & Engineering', isRegistered: true },
+
+      // Information Technology
+      { id: 12, code: 'IT305', name: 'Web Technology & Modern Frameworks', type: 'Theory', credits: 4, semester: 'Semester 6', department: 'Information Technology', isRegistered: false },
+      { id: 13, code: 'CS303', name: 'Cloud Computing & DevOps Architecture', type: 'Theory', credits: 4, semester: 'Semester 6', department: 'Information Technology', isRegistered: false },
+      { id: 14, code: 'LINUX', name: 'Linux System Administration & Shell Scripting', type: 'Theory', credits: 4, semester: 'Semester 5', department: 'Information Technology', isRegistered: false },
+      { id: 15, code: 'OPEN LAB', name: 'Open Source Software Laboratory', type: 'Lab', credits: 2, semester: 'Semester 5', department: 'Information Technology', isRegistered: false },
+
+      // Electronics & Communication Engineering
+      { id: 16, code: 'MES', name: 'Microprocessors & Embedded Systems', type: 'Theory', credits: 4, semester: 'Semester 5', department: 'Electronics & Communication Engineering', isRegistered: false },
+      { id: 17, code: 'DSLD', name: 'Digital Signal & Logic Design', type: 'Theory', credits: 4, semester: 'Semester 4', department: 'Electronics & Communication Engineering', isRegistered: false },
+      { id: 18, code: 'EC206', name: 'VLSI Design & Embedded Systems', type: 'Theory', credits: 4, semester: 'Semester 6', department: 'Electronics & Communication Engineering', isRegistered: false },
+      { id: 19, code: 'HARDWARE LAB', name: 'Microprocessor & Hardware Lab', type: 'Lab', credits: 2, semester: 'Semester 5', department: 'Electronics & Communication Engineering', isRegistered: false },
+
+      // Mechanical Engineering
+      { id: 20, code: 'ME210', name: 'Kinematics & Dynamics of Machines', type: 'Theory', credits: 4, semester: 'Semester 4', department: 'Mechanical Engineering', isRegistered: false },
+      { id: 21, code: '04ME6512', name: 'Computer Aided Design and Manufacturing (CAD/CAM)', type: 'Theory', credits: 4, semester: 'Semester 6', department: 'Mechanical Engineering', isRegistered: false },
+      { id: 22, code: 'AU203', name: 'Automobile Chassis & Powertrain Engineering', type: 'Theory', credits: 4, semester: 'Semester 5', department: 'Mechanical Engineering', isRegistered: false },
+
+      // Civil Engineering
+      { id: 23, code: 'FMHM', name: 'Fluid Mechanics and Hydraulic Machinery', type: 'Theory', credits: 4, semester: 'Semester 4', department: 'Civil Engineering', isRegistered: false },
+      { id: 24, code: 'SMSE', name: 'Strength of Materials and Structural Engineering', type: 'Theory', credits: 4, semester: 'Semester 5', department: 'Civil Engineering', isRegistered: false },
+      { id: 25, code: 'CE234', name: 'Fluid Mechanics & Hydraulics Practical Lab', type: 'Lab', credits: 2, semester: 'Semester 4', department: 'Civil Engineering', isRegistered: false }
     ];
     this.subjects = fallbackList;
+    try {
+      localStorage.setItem('obslmsSubjects', JSON.stringify(this.subjects));
+    } catch {}
     this.cdr.detectChanges();
   }
 
