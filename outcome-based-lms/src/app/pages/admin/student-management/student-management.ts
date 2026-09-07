@@ -97,11 +97,20 @@ export class StudentManagement implements OnInit {
             semester: 'Semester 3'
           }));
 
+        try {
+          localStorage.setItem('obslmsStudents', JSON.stringify(this.studentList));
+        } catch {}
+
         this.filterUsers();
         this.cdr.detectChanges();
       },
       error: () => {
-        this.studentList = [];
+        try {
+          const stored = localStorage.getItem('obslmsStudents');
+          this.studentList = stored ? JSON.parse(stored) : [];
+        } catch {
+          this.studentList = [];
+        }
         this.filterUsers();
       }
     });
@@ -186,8 +195,9 @@ export class StudentManagement implements OnInit {
       return;
     }
 
+    const studentId = (this.isEditMode && this.currentId) ? this.currentId : this.formData.regNo.trim();
     const payload = {
-      id: this.formData.regNo.trim(),
+      id: studentId,
       name: this.formData.name.trim(),
       email: this.formData.email.trim(),
       password: this.formData.password.trim() || 'password',

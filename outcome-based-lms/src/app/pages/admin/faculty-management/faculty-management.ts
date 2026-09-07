@@ -422,6 +422,8 @@ export class FacultyManagement implements OnInit {
     this.http.post('http://localhost:8080/api/users', payload).subscribe({
       next: () => {
         this.loadFaculty();
+        this.syncService.emit('FACULTY_CHANGED', payload);
+        this.syncService.emit('COURSES_CHANGED');
       },
       error: () => {}
     });
@@ -460,7 +462,10 @@ export class FacultyManagement implements OnInit {
     this.cdr.detectChanges();
 
     this.http.delete('http://localhost:8080/api/users/' + id).subscribe({
-      next: () => {},
+      next: () => {
+        this.syncService.emit('FACULTY_CHANGED', { id });
+        this.syncService.emit('COURSES_CHANGED');
+      },
       error: () => {}
     });
   }
