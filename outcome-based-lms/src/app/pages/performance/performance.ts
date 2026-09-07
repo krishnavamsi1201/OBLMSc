@@ -244,72 +244,8 @@ interface CoAttainmentStatus {
         </table>
       </div>
 
-      <div class="table-card" *ngIf="topPerformers.length > 0">
-        <h2>🏆 Top Performers</h2>
-        <table>
-          <thead>
-            <tr>
-              <th>Rank</th>
-              <th>Student</th>
-              <th>Internal</th>
-              <th>Assignment</th>
-              <th>Quiz</th>
-              <th>Avg</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr *ngFor="let student of topPerformers; index as i">
-              <td>{{ i + 1 }}</td>
-              <td>{{ student.name }}</td>
-              <td>{{ student.internal }}%</td>
-              <td>{{ student.assignment }}%</td>
-              <td>{{ student.quiz }}%</td>
-              <td><strong>{{ student.average }}%</strong></td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-
-      <div class="table-card" *ngIf="lowPerformers.length > 0">
-        <h2>⚠️ Low Performers</h2>
-        <table>
-          <thead>
-            <tr>
-              <th>Rank</th>
-              <th>Student</th>
-              <th>Internal</th>
-              <th>Assignment</th>
-              <th>Quiz</th>
-              <th>Avg</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr *ngFor="let student of lowPerformers; index as i">
-              <td>{{ i + 1 }}</td>
-              <td>{{ student.name }}</td>
-              <td>{{ student.internal }}%</td>
-              <td>{{ student.assignment }}%</td>
-              <td>{{ student.quiz }}%</td>
-              <td><strong>{{ student.average }}%</strong></td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-
-      <div class="chart-card" *ngIf="studentPerformances.length > 0">
-        <h2>📈 Performance Graphs</h2>
-        <div class="chart-list">
-          <div class="chart-row" *ngFor="let student of filteredStudents.slice(0, 10)">
-            <div class="chart-label">{{ student.name }} ({{ student.average }}%)</div>
-            <div class="chart-bar-background">
-              <div class="chart-bar" [style.width]="student.average + '%'"></div>
-            </div>
-          </div>
-        </div>
-      </div>
-
       <div *ngIf="studentPerformances.length === 0" class="empty-state">
-        <p>No student marks data available. Admin needs to add marks first.</p>
+        <p>No student marks data available.</p>
       </div>
     </ng-container>
 
