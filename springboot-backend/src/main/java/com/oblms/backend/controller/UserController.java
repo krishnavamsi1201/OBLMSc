@@ -31,21 +31,15 @@ public class UserController {
     @PostMapping
     @Transactional
     public User saveUser(@RequestBody Map<String, Object> payload) {
-        String id = (String) payload.get("id");
-        String name = (String) payload.get("name");
-        String email = (String) payload.get("email");
-        String password = (String) payload.get("password");
-        String role = (String) payload.get("role");
-        String department = (String) payload.get("department");
+        String id = payload.get("id") != null ? payload.get("id").toString().trim() : null;
+        String name = payload.get("name") != null ? payload.get("name").toString().trim() : "";
+        String email = payload.get("email") != null ? payload.get("email").toString().trim() : "";
+        String password = payload.get("password") != null ? payload.get("password").toString().trim() : "password";
+        String role = payload.get("role") != null ? payload.get("role").toString().trim() : "STUDENT";
+        String department = payload.get("department") != null ? payload.get("department").toString().trim() : "Computer Science & Engineering";
 
-        if (role == null || role.trim().isEmpty()) {
+        if (role.isEmpty()) {
             role = "STUDENT";
-        }
-
-        if (id == null || id.trim().isEmpty()) {
-            String prefix = "STUDENT".equalsIgnoreCase(role) ? "STU" : "FAC";
-            long count = userRepository.count() + 1;
-            id = String.format("%s%03d", prefix, count);
         }
 
         // Handle assigned/enrolled courses from string, array, or list
@@ -58,13 +52,52 @@ public class UserController {
             enrolled = list.stream().map(Object::toString).collect(Collectors.joining(","));
         }
 
-        if (password == null || password.trim().isEmpty()) {
+        if (password.isEmpty()) {
             password = "password";
         }
 
-        User user = new User(id, name, email, password, role.toUpperCase(), department);
-        user.setEnrolledCourses(enrolled);
-        User saved = userRepository.save(user);
+        Optional<User> existingById = (id != null && !id.isEmpty())
+                ? userRepository.findByIdIgnoreCase(id)
+                : Optional.empty();
+
+        Optional<User> existingByEmail = (!email.isEmpty())
+                ? userRepository.findByEmailIgnoreCase(email)
+                : Optional.empty();
+
+        User userToSave;
+        if (existingById.isPresent()) {
+            userToSave = existingById.get();
+            if (!name.isEmpty()) userToSave.setName(name);
+            if (!email.isEmpty()) userToSave.setEmail(email);
+            if (!password.isEmpty()) userToSave.setPassword(password);
+            userToSave.setRole(role.toUpperCase());
+            userToSave.setDepartment(department);
+            userToSave.setEnrolledCourses(enrolled);
+        } else if (existingByEmail.isPresent()) {
+            userToSave = existingByEmail.get();
+            if (id != null && !id.isEmpty() && !id.equals(userToSave.getId())) {
+                // If ID is changing, delete old entry and recreate with new ID
+                userRepository.delete(userToSave);
+                userRepository.flush();
+                userToSave = new User(id, name, email, password, role.toUpperCase(), department);
+            } else {
+                if (!name.isEmpty()) userToSave.setName(name);
+                if (!password.isEmpty()) userToSave.setPassword(password);
+                userToSave.setRole(role.toUpperCase());
+                userToSave.setDepartment(department);
+            }
+            userToSave.setEnrolledCourses(enrolled);
+        } else {
+            if (id == null || id.isEmpty()) {
+                String prefix = "STUDENT".equalsIgnoreCase(role) ? "STU" : "FAC";
+                long count = userRepository.count() + 1;
+                id = String.format("%s%03d", prefix, count);
+            }
+            userToSave = new User(id, name, email, password, role.toUpperCase(), department);
+            userToSave.setEnrolledCourses(enrolled);
+        }
+
+        User saved = userRepository.save(userToSave);
 
         // If faculty user, update course assignments in MySQL courses table
         if ("FACULTY".equalsIgnoreCase(role) && !enrolled.trim().isEmpty()) {
