@@ -251,7 +251,13 @@ export class Assessments implements OnInit {
   }
 
   saveMarks() {
+    if (this.role !== 'faculty') {
+      this.toast.error('Only course faculty members can enter or evaluate student marks.');
+      return;
+    }
+
     if (!this.currentMark.student || !this.currentMark.assessment || this.currentMark.obtained < 0 || this.currentMark.maxMarks <= 0) {
+      this.toast.warning('Please select student, assessment, and valid marks.');
       return;
     }
 
@@ -265,11 +271,12 @@ export class Assessments implements OnInit {
 
     this.http.post('http://localhost:8080/api/obe/marks', payload).subscribe({
       next: () => {
+        this.toast.success(`Marks recorded for ${this.currentMark.student}! 🎉`);
         this.loadMarks();
         this.resetMarksForm();
       },
       error: () => {
-        alert('Failed to save mark entry.');
+        this.toast.error('Failed to save mark entry.');
       }
     });
   }

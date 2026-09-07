@@ -84,9 +84,9 @@
             </form>
         </div>
 
-        <!-- Enter / Update Marks (Faculty / Admin Only) -->
-        <div class="form-card" *ngIf="role === 'admin' || role === 'faculty'">
-            <h2>Enter / Update Marks</h2>
+        <!-- Enter / Update Marks (Faculty Only) -->
+        <div class="form-card" *ngIf="role === 'faculty'">
+            <h2>Enter / Update Student Marks</h2>
             <form (ngSubmit)="saveMarks()">
                 <div class="grid-row">
                     <label>
