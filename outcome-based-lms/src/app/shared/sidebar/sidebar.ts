@@ -99,7 +99,8 @@ export class Sidebar implements AfterViewInit {
         { icon: 'dashboard', label: 'Command Center', path: '/faculty', exact: true },
         { icon: 'menu_book', label: 'Assigned Courses', path: '/courses', exact: true },
         { icon: 'subject', label: 'Curriculum Subjects', path: '/subjects', exact: true },
-        { icon: 'calendar_month', label: 'Weekly Timetable', path: '/timetable', exact: true }
+        { icon: 'calendar_month', label: 'Weekly Timetable', path: '/timetable', exact: true },
+        { icon: 'published_with_changes', label: 'Class Adjustments', path: '/class-adjustments', exact: true }
       ]
     },
     {
@@ -148,6 +149,7 @@ export class Sidebar implements AfterViewInit {
       items: [
         { icon: 'auto_stories', label: 'Course-Subject Allocation', path: '/admin/course-subject-assignment', exact: true },
         { icon: 'supervisor_account', label: 'Faculty Course Mapping', path: '/admin/faculty-course-allocation', exact: true },
+        { icon: 'published_with_changes', label: 'Class Adjustments Registry', path: '/class-adjustments', exact: true },
         { icon: 'hub', label: 'Assessment-CO Mapping', path: '/admin/assessment-co-mapping', exact: true },
         { icon: 'hub', label: 'Institutional CO-PO Matrix', path: '/copo-mapping', exact: true },
         { icon: 'menu_book', label: 'Courses Catalog', path: '/courses', exact: true }

@@ -95,6 +95,7 @@ export class Faculty implements OnInit {
   activeAssessmentsCount = 0;
   atRiskCount = 0;
   pendingNotificationsCount = 0;
+  pendingAdjustmentCount = 0;
 
   // Filter
   selectedCourseFilter = '';
@@ -434,6 +435,20 @@ export class Faculty implements OnInit {
         },
         error: () => {}
       });
+
+      try {
+        const storedAdj = localStorage.getItem('obslmsClassAdjustments');
+        const allAdj: any[] = storedAdj ? JSON.parse(storedAdj) : [];
+        const myName = (this.facultyName || '').toLowerCase().trim();
+        const myId = (localStorage.getItem('userId') || '').toLowerCase().trim();
+        this.pendingAdjustmentCount = allAdj.filter(a => 
+          a.status === 'PENDING' && 
+          ((a.substituteId && a.substituteId.toLowerCase() === myId) ||
+           (a.substituteName && (a.substituteName.toLowerCase().includes(myName) || myName.includes(a.substituteName.toLowerCase()))))
+        ).length;
+      } catch {
+        this.pendingAdjustmentCount = 0;
+      }
     } catch (e) {
       console.error('Error loading workbench data:', e);
     }

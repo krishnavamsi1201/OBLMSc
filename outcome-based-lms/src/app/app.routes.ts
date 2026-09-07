@@ -39,6 +39,7 @@ import { CourseSubjectAssignment } from './pages/admin/course-subject-assignment
 import { FacultyCourseAllocation } from './pages/admin/faculty-course-allocation/faculty-course-allocation';
 import { AssessmentCOMapping } from './pages/admin/assessment-co-mapping/assessment-co-mapping';
 import { ApprovalManagement } from './pages/admin/approval-management/approval-management';
+import { ClassAdjustments } from './pages/class-adjustments/class-adjustments';
 import { RoleGuard } from './shared/guards/role.guard';
 
 export const routes: Routes = [
@@ -46,6 +47,12 @@ export const routes: Routes = [
     path: '',
     redirectTo: 'login',
     pathMatch: 'full'
+  },
+  {
+    path: 'class-adjustments',
+    component: ClassAdjustments,
+    canActivate: [RoleGuard],
+    data: { roles: ['admin', 'faculty'] }
   },
   {
     path: 'login',

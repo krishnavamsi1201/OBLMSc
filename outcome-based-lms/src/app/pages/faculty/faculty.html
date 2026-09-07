@@ -35,7 +35,24 @@
 				<button class="action-btn secondary" (click)="openQuestionPaperModal()">
 					<span class="material-icons">auto_stories</span> Question Paper
 				</button>
+				<a routerLink="/class-adjustments" class="action-btn" style="background: linear-gradient(135deg, #d4af37 0%, #b38f28 100%); color: #0a1128; font-weight: 800; text-decoration: none; display: inline-flex; align-items: center; gap: 6px;">
+					<span class="material-icons">published_with_changes</span> Class Adjustments
+				</a>
 			</div>
+		</div>
+
+		<!-- Pending Class Adjustments Alert Banner -->
+		<div *ngIf="pendingAdjustmentCount > 0" class="adjustment-alert-banner" style="background: linear-gradient(135deg, #101b38 0%, #1a2a50 100%); border: 1px solid #d4af37; border-left: 5px solid #d4af37; border-radius: 14px; padding: 16px 20px; margin-bottom: 24px; display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; box-shadow: 0 8px 24px rgba(212, 175, 55, 0.15);">
+			<div style="display: flex; align-items: center; gap: 14px;">
+				<span style="font-size: 2rem;">🔄</span>
+				<div>
+					<strong style="color: #ffffff; font-size: 1.05rem; display: block;">You have {{ pendingAdjustmentCount }} Pending Class Substitute Request(s)!</strong>
+					<span style="color: #cbd5e1; font-size: 0.88rem;">Colleagues on leave have requested you to engage their scheduled lecture. Please review to accept or decline.</span>
+				</div>
+			</div>
+			<a routerLink="/class-adjustments" class="btn" style="background: linear-gradient(135deg, #d4af37 0%, #b38f28 100%); color: #0a1128; font-weight: 800; padding: 8px 16px; border-radius: 8px; text-decoration: none; font-size: 13px;">
+				Review Requests ({{ pendingAdjustmentCount }}) →
+			</a>
 		</div>
 
 		<!-- Subject/Course & Semester Filter Selector Row -->
