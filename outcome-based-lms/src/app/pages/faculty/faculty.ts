@@ -443,10 +443,73 @@ export class Faculty implements OnInit {
   // ==========================================
   // 1. QUICK MARKS ENTRY & CSV BATCH ACTIONS
   // ==========================================
+  get enrolledStudentsForSelectedCourse(): Array<{ id?: any; name: string; rollNo?: string }> {
+    const allStudents = this.getSafeJson('obslmsStudents');
+    const courseName = this.markEntryCourse;
+    const studentMap = new Map<string, { id?: any; name: string; rollNo?: string }>();
+
+    // 1. Check registered students in obslmsStudents
+    allStudents.forEach((s: any) => {
+      const sName = (s.name || s.studentName || '').trim();
+      if (sName) {
+        if (!courseName || this.isStudentEnrolledInCourse(s.enrolledCourses || '', courseName)) {
+          if (!studentMap.has(sName.toLowerCase())) {
+            studentMap.set(sName.toLowerCase(), {
+              id: s.id || s.rollNo || '',
+              name: sName,
+              rollNo: s.rollNo || s.id || ''
+            });
+          }
+        }
+      }
+    });
+
+    // 2. Check studentProgressSummary from dashboard data for this course
+    if (this.rawDashboardData?.studentProgressSummary) {
+      this.rawDashboardData.studentProgressSummary.forEach((sp: any) => {
+        const spName = (sp.studentName || '').trim();
+        if (spName && (!courseName || (sp.courseName || '').toLowerCase().includes(courseName.toLowerCase()) || courseName.toLowerCase().includes((sp.courseName || '').toLowerCase()))) {
+          if (!studentMap.has(spName.toLowerCase())) {
+            studentMap.set(spName.toLowerCase(), {
+              id: sp.studentId || sp.rollNo || '',
+              name: spName,
+              rollNo: sp.rollNo || sp.studentId || ''
+            });
+          }
+        }
+      });
+    }
+
+    // 3. Fallback to all registered students if specific course mapping is empty
+    if (studentMap.size === 0 && allStudents.length > 0) {
+      allStudents.forEach((s: any) => {
+        const sName = (s.name || s.studentName || '').trim();
+        if (sName && !studentMap.has(sName.toLowerCase())) {
+          studentMap.set(sName.toLowerCase(), {
+            id: s.id || s.rollNo || '',
+            name: sName,
+            rollNo: s.rollNo || s.id || ''
+          });
+        }
+      });
+    }
+
+    // 4. Default fallback list if no students are registered yet
+    if (studentMap.size === 0) {
+      return [
+        { name: 'Aditya Sharma', rollNo: 'STU101' },
+        { name: 'Pooja Reddy', rollNo: 'STU102' },
+        { name: 'Rahul Verma', rollNo: 'STU103' },
+        { name: 'Sneha Patel', rollNo: 'STU104' },
+        { name: 'Kiran Kumar', rollNo: 'STU105' }
+      ];
+    }
+
+    return Array.from(studentMap.values());
+  }
+
   openMarkEntryModal(assessment?: Assessment): void {
     this.storedAssessmentsList = this.getSafeJson('obslmsAssessments');
-    const allStudents = this.getSafeJson('obslmsStudents');
-    const existingMarks = this.getSafeJson('obslmsMarkEntries');
 
     if (assessment) {
       this.markEntryCourse = assessment.courseName;
@@ -462,6 +525,18 @@ export class Faculty implements OnInit {
       this.markEntryMaxMarks = 100;
     }
 
+    this.populateMarkEntryRows();
+    this.showMarkEntryModal = true;
+  }
+
+  onMarkEntryCourseChange(): void {
+    this.populateMarkEntryRows();
+  }
+
+  populateMarkEntryRows(): void {
+    const existingMarks = this.getSafeJson('obslmsMarkEntries');
+    const enrolledStudents = this.enrolledStudentsForSelectedCourse;
+
     const assessmentMarks = existingMarks.filter((m: any) =>
       m.assessment && m.assessment.toLowerCase() === this.markEntryAssessmentTitle.toLowerCase()
     );
@@ -471,14 +546,9 @@ export class Faculty implements OnInit {
         studentName: m.student,
         obtained: Number(m.obtained) || 0
       }));
-    } else if (allStudents.length > 0) {
-      this.markEntryRows = allStudents.map((s: any) => ({
-        studentName: s.name || s.studentName || 'Student',
-        obtained: 0
-      }));
-    } else if (this.studentProgressList.length > 0) {
-      this.markEntryRows = this.studentProgressList.map(s => ({
-        studentName: s.studentName,
+    } else if (enrolledStudents.length > 0) {
+      this.markEntryRows = enrolledStudents.map(s => ({
+        studentName: s.name,
         obtained: 0
       }));
     } else {
@@ -488,8 +558,6 @@ export class Faculty implements OnInit {
         { studentName: 'Rahul Verma', obtained: 62 }
       ];
     }
-
-    this.showMarkEntryModal = true;
   }
 
   closeMarkEntryModal(): void {
@@ -498,7 +566,11 @@ export class Faculty implements OnInit {
   }
 
   addMarkRow(): void {
-    this.markEntryRows.push({ studentName: '', obtained: 0 });
+    const enrolled = this.enrolledStudentsForSelectedCourse;
+    const existingNames = new Set(this.markEntryRows.map(r => r.studentName.toLowerCase()));
+    const available = enrolled.find(s => !existingNames.has(s.name.toLowerCase()));
+    const defaultName = available ? available.name : (enrolled[0]?.name || '');
+    this.markEntryRows.push({ studentName: defaultName, obtained: 0 });
   }
 
   removeMarkRow(index: number): void {

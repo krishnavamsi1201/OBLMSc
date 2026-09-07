@@ -513,7 +513,7 @@
 					<div class="modal-form-grid">
 						<div class="form-field">
 							<label>Course Name</label>
-							<select [(ngModel)]="markEntryCourse">
+							<select [(ngModel)]="markEntryCourse" (ngModelChange)="onMarkEntryCourseChange()">
 								<option *ngFor="let c of courses" [value]="c.name">{{ c.name }}</option>
 							</select>
 						</div>
@@ -547,7 +547,7 @@
 						<table class="marks-entry-table">
 							<thead>
 								<tr>
-									<th>Student Name</th>
+									<th>Enrolled Student Name</th>
 									<th>Marks Obtained (Max: {{ markEntryMaxMarks }})</th>
 									<th>Action</th>
 								</tr>
@@ -555,7 +555,12 @@
 							<tbody>
 								<tr *ngFor="let row of markEntryRows; let i = index">
 									<td>
-										<input type="text" [(ngModel)]="row.studentName" placeholder="Student Full Name" />
+										<select [(ngModel)]="row.studentName" class="student-select-field">
+											<option value="" disabled>-- Select Registered Student --</option>
+											<option *ngFor="let s of enrolledStudentsForSelectedCourse" [value]="s.name">
+												{{ s.name }} {{ s.rollNo ? '(' + s.rollNo + ')' : '' }}
+											</option>
+										</select>
 									</td>
 									<td>
 										<input type="number" [(ngModel)]="row.obtained" min="0" [max]="markEntryMaxMarks" />

@@ -1158,21 +1158,28 @@
 }
 
 .add-row-btn {
-    padding: 5px 12px;
-    background: #e0e7ff;
-    color: #3730a3;
-    border: 1px solid #c7d2fe;
+    padding: 6px 14px;
+    background: rgba(59, 130, 246, 0.15);
+    color: #60a5fa;
+    border: 1px solid rgba(59, 130, 246, 0.3);
     border-radius: 6px;
     font-size: 12px;
     font-weight: 600;
     cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.add-row-btn:hover {
+    background: #2563eb;
+    color: #ffffff;
 }
 
 .marks-sheet-container {
     max-height: 280px;
     overflow-y: auto;
-    border: 1px solid #e2e8f0;
+    border: 1px solid #1f2f54;
     border-radius: 8px;
+    background: #091024;
 }
 
 .marks-entry-table {
@@ -1182,24 +1189,39 @@
 }
 
 .marks-entry-table th {
-    background: #f1f5f9;
-    padding: 10px;
+    background: #091024;
+    padding: 10px 12px;
     text-align: left;
     font-size: 12px;
-    color: #475569;
+    color: #94a3b8;
+    border-bottom: 1px solid #1f2f54;
+    font-weight: 700;
 }
 
 .marks-entry-table td {
     padding: 8px 10px;
-    border-top: 1px solid #f1f5f9;
+    border-top: 1px solid #1f2f54;
 }
 
-.marks-entry-table input {
+.marks-entry-table input,
+.marks-entry-table select,
+.student-select-field {
     width: 100%;
-    padding: 6px 8px;
-    border: 1px solid #cbd5e1;
-    border-radius: 4px;
+    padding: 7px 10px;
+    border: 1px solid #1f2f54;
+    border-radius: 6px;
     font-size: 13px;
+    background: #0d1527;
+    color: #ffffff;
+    outline: none;
+    transition: border-color 0.2s ease;
+}
+
+.marks-entry-table input:focus,
+.marks-entry-table select:focus,
+.student-select-field:focus {
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
 }
 
 .delete-row-btn {
@@ -1208,6 +1230,16 @@
     cursor: pointer;
     font-size: 14px;
     color: #f87171;
+    padding: 4px 8px;
+    border-radius: 4px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.2s ease;
+}
+
+.delete-row-btn:hover {
+    background: rgba(239, 68, 68, 0.15);
 }
 
 /* Attendance Modal Toolbar & Chips */
