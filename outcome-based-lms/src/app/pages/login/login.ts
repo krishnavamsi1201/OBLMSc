@@ -183,7 +183,7 @@ export class Login implements OnInit {
       this.identifier = 'ramesh.babu@oblms.edu';
       this.password = 'password';
     } else if (role === 'student') {
-      this.identifier = 'krishnavamsi1201@gmail.com';
+      this.identifier = 'vamsi1201@gmail.com';
       this.password = 'password';
     }
   }
