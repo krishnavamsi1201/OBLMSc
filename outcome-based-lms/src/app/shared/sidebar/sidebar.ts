@@ -150,8 +150,7 @@ export class Sidebar implements AfterViewInit {
         { icon: 'supervisor_account', label: 'Faculty Course Mapping', path: '/admin/faculty-course-allocation', exact: true },
         { icon: 'hub', label: 'Assessment-CO Mapping', path: '/admin/assessment-co-mapping', exact: true },
         { icon: 'hub', label: 'Institutional CO-PO Matrix', path: '/copo-mapping', exact: true },
-        { icon: 'menu_book', label: 'Courses Catalog', path: '/courses', exact: true },
-        { icon: 'subject', label: 'Master Subjects', path: '/subjects', exact: true }
+        { icon: 'menu_book', label: 'Courses Catalog', path: '/courses', exact: true }
       ]
     },
     {
