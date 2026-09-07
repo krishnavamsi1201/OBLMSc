@@ -161,12 +161,12 @@ export class Assessments implements OnInit {
         // Map from backend AssessmentCOMapping to frontend Assessment model
         this.assessments = data.map(item => ({
           id: item.id,
-          course: item.courseName || item.courseId,
-          type: item.type,
-          questions: 5,
+          course: item.courseName || item.courseId || item.course || 'Curriculum Course',
+          type: item.assessmentType || item.type || 'Assignment',
+          questions: item.questions || 5,
           maxMarks: item.maxMarks || 100,
-          dueDate: '2026-12-01',
-          status: 'Active'
+          dueDate: item.dueDate || '2026-12-01',
+          status: item.status || 'Active'
         }));
         this.cdr.detectChanges();
       },
@@ -204,8 +204,8 @@ export class Assessments implements OnInit {
 
     const payload = {
       id: this.currentAssessment.id > 0 ? this.currentAssessment.id : null,
-      name: `${this.currentAssessment.type} - ${this.currentAssessment.course}`,
-      type: this.currentAssessment.type,
+      assessmentName: `${this.currentAssessment.type} - ${this.currentAssessment.course}`,
+      assessmentType: this.currentAssessment.type,
       courseId: this.currentAssessment.course,
       courseName: this.currentAssessment.course,
       courseOutcomes: 'CO1',

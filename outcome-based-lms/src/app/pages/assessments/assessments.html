@@ -154,7 +154,11 @@
                     </tr>
                     <tr *ngFor="let assessment of filteredAssessments; index as i">
                         <td><strong>{{ assessment.course }}</strong></td>
-                        <td>{{ assessment.type }}</td>
+                        <td>
+                            <span style="background: rgba(212, 175, 55, 0.15); color: #d4af37; border: 1px solid rgba(212, 175, 55, 0.3); padding: 3px 10px; border-radius: 6px; font-weight: 700; font-size: 12px; display: inline-block;">
+                                {{ assessment.type || 'Assignment' }}
+                            </span>
+                        </td>
                         <td>{{ assessment.questions }}</td>
                         <td>{{ assessment.maxMarks }}</td>
                         <td>{{ assessment.dueDate }}</td>
