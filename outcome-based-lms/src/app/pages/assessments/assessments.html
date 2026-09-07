@@ -34,8 +34,8 @@
             </div>
         </div>
 
-        <!-- Add/Edit Assessment (Faculty / Admin Only) -->
-        <div class="form-card" *ngIf="role === 'admin' || role === 'faculty'">
+        <!-- Add/Edit Assessment (Faculty Only) -->
+        <div class="form-card" *ngIf="role === 'faculty'">
             <h2>Add / Edit Assessment</h2>
             <form (ngSubmit)="saveAssessment()">
                 <div class="grid-row">
@@ -145,12 +145,12 @@
                         <th>Max Marks</th>
                         <th>Due Date</th>
                         <th>Status</th>
-                        <th *ngIf="role === 'admin' || role === 'faculty'">Actions</th>
+                        <th *ngIf="role === 'faculty'">Actions</th>
                     </tr>
                 </thead>
                 <tbody>
                     <tr *ngIf="filteredAssessments.length === 0">
-                        <td [attr.colspan]="(role === 'admin' || role === 'faculty') ? 7 : 6" style="text-align: center; color: #888; padding: 20px;">No assessments match your filter.</td>
+                        <td [attr.colspan]="role === 'faculty' ? 7 : 6" style="text-align: center; color: #888; padding: 20px;">No assessments match your filter.</td>
                     </tr>
                     <tr *ngFor="let assessment of filteredAssessments; index as i">
                         <td><strong>{{ assessment.course }}</strong></td>
@@ -159,7 +159,7 @@
                         <td>{{ assessment.maxMarks }}</td>
                         <td>{{ assessment.dueDate }}</td>
                         <td><span class="status-badge" [class.completed]="assessment.status === 'Completed'">{{ assessment.status }}</span></td>
-                        <td *ngIf="role === 'admin' || role === 'faculty'">
+                        <td *ngIf="role === 'faculty'">
                             <button type="button" (click)="editAssessment(i)">Edit</button>
                             <button type="button" class="danger" (click)="deleteAssessment(i)">Delete</button>
                         </td>

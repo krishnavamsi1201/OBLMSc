@@ -197,8 +197,8 @@ export class Assessments implements OnInit {
       return;
     }
 
-    if (this.role !== 'admin' && this.role !== 'faculty') {
-      alert('Only admins and faculty can create assessments.');
+    if (this.role !== 'faculty') {
+      this.toast.error('Only course faculty members can create or schedule assessments.');
       return;
     }
 
@@ -214,11 +214,12 @@ export class Assessments implements OnInit {
 
     this.http.post('http://localhost:8080/api/obe/assessments', payload).subscribe({
       next: () => {
+        this.toast.success(`Assessment for ${this.currentAssessment.course} scheduled successfully! 🎉`);
         this.loadAssessments();
         this.resetAssessmentForm();
       },
       error: () => {
-        alert('Failed to save assessment.');
+        this.toast.error('Failed to save assessment.');
       }
     });
   }
@@ -229,18 +230,19 @@ export class Assessments implements OnInit {
   }
 
   deleteAssessment(index: number) {
-    if (this.role !== 'admin' && this.role !== 'faculty') {
-      alert('Only admins and faculty can delete assessments.');
+    if (this.role !== 'faculty') {
+      this.toast.error('Only course faculty members can delete assessments.');
       return;
     }
     const target = this.assessments[index];
     this.http.delete('http://localhost:8080/api/obe/assessments/' + target.id).subscribe({
       next: () => {
+        this.toast.info(`Assessment for ${target.course} removed.`);
         this.loadAssessments();
         this.resetAssessmentForm();
       },
       error: () => {
-        alert('Failed to delete assessment.');
+        this.toast.error('Failed to delete assessment.');
       }
     });
   }
