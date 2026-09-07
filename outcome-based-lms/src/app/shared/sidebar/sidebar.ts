@@ -28,7 +28,6 @@ export class Sidebar implements AfterViewInit {
   private router = inject(Router);
 
   collapsed = localStorage.getItem('sidebarCollapsed') === 'true';
-  navGroups: NavGroup[] = [];
 
   get role(): string {
     return (localStorage.getItem('userRole') || 'faculty').toLowerCase();
@@ -73,12 +72,12 @@ export class Sidebar implements AfterViewInit {
       ]
     },
     {
-      title: 'EXAMINATIONS & MARKS',
+      title: 'EXAMINATIONS & RESULTS',
       items: [
+        { icon: 'grade', label: 'Semester Results', path: '/results', exact: true },
         { icon: 'quiz', label: 'Upcoming Exams', path: '/assessments', exact: true },
         { icon: 'fact_check', label: 'Attendance %', path: '/attendance', exact: true },
-        { icon: 'assessment', label: 'Marks Summary', path: '/performance', exact: true },
-        { icon: 'grade', label: 'Semester Results', path: '/results', exact: true }
+        { icon: 'assessment', label: 'Marks Summary', path: '/performance', exact: true }
       ]
     },
     {
@@ -114,11 +113,11 @@ export class Sidebar implements AfterViewInit {
       ]
     },
     {
-      title: 'EVALUATION WORKBENCH',
+      title: 'EVALUATION & RESULTS',
       items: [
-        { icon: 'quiz', label: 'Question Bank & AI', path: '/question-bank', exact: true },
-        { icon: 'assignment', label: 'Assessments & Grading', path: '/assessments', exact: true },
         { icon: 'grade', label: 'Semester Results & Marks', path: '/results', exact: true },
+        { icon: 'assignment', label: 'Assessments & Grading', path: '/assessments', exact: true },
+        { icon: 'quiz', label: 'Question Bank & AI', path: '/question-bank', exact: true },
         { icon: 'fact_check', label: 'Live Attendance', path: '/attendance', exact: true },
         { icon: 'assessment', label: 'Performance Analysis', path: '/performance', exact: true },
         { icon: 'edit_calendar', label: 'Examination Schedule', path: '/examination', exact: true },
@@ -157,12 +156,12 @@ export class Sidebar implements AfterViewInit {
       ]
     },
     {
-      title: 'ACCREDITATION & AUDIT',
+      title: 'ACCREDITATION & RESULTS',
       items: [
+        { icon: 'grade', label: 'Student Results & Transcripts', path: '/results', exact: true },
         { icon: 'trending_up', label: 'PO Institutional Attainment', path: '/po-attainment', exact: true },
         { icon: 'quiz', label: 'Question Bank Governance', path: '/question-bank', exact: true },
         { icon: 'assignment', label: 'Assessments Registry', path: '/assessments', exact: true },
-        { icon: 'grade', label: 'Student Results & Transcripts', path: '/results', exact: true },
         { icon: 'bar_chart', label: 'Accreditation Reports', path: '/reports', exact: true },
         { icon: 'support_agent', label: 'Student Grievance Desk', path: '/grievance', exact: true }
       ]
@@ -177,9 +176,19 @@ export class Sidebar implements AfterViewInit {
     }
   ];
 
+  get navGroups(): NavGroup[] {
+    const currentRole = this.role;
+    if (currentRole === 'student') {
+      return this.studentNavGroups;
+    }
+    if (currentRole === 'admin') {
+      return this.adminNavGroups;
+    }
+    return this.facultyNavGroups;
+  }
+
   constructor() {
     this.applySidebarState();
-    this.setNavGroups();
   }
 
   toggleCollapse(): void {
@@ -196,22 +205,6 @@ export class Sidebar implements AfterViewInit {
     this.router.navigate(['/login']);
   }
 
-  private setNavGroups(): void {
-    const currentRole = this.role;
-    if (currentRole === 'student') {
-      this.navGroups = this.studentNavGroups;
-      return;
-    }
-    if (currentRole === 'faculty') {
-      this.navGroups = this.facultyNavGroups;
-      return;
-    }
-    if (currentRole === 'admin') {
-      this.navGroups = this.adminNavGroups;
-      return;
-    }
-    this.navGroups = this.facultyNavGroups;
-  }
 
   private applySidebarState(): void {
     document.body.classList.toggle('sidebar-collapsed', this.collapsed);

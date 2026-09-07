@@ -112,18 +112,18 @@
         </div>
       </div>
 
-      <!-- Card 3: CGPA -->
-      <div class="stat-card" (click)="navigate('/performance')">
+      <!-- Card 3: CGPA & Results -->
+      <div class="stat-card" (click)="navigate('/results')">
         <div class="stat-icon-wrap icon-purple">
-          <span class="material-icons stat-card-icon">insights</span>
+          <span class="material-icons stat-card-icon">grade</span>
         </div>
         <div class="stat-info">
-          <span class="stat-label">Cumulative CGPA</span>
+          <span class="stat-label">Semester Results (CGPA)</span>
           <div class="stat-val-row">
             <span class="stat-val">{{ stats.cgpa | number: '1.2-2' }}</span>
             <span class="stat-pill pill-purple">SGPA: 8.40</span>
           </div>
-          <small class="stat-hint">Scale 10.0 • Distinction</small>
+          <small class="stat-hint">Click to view Marksheet & Results →</small>
         </div>
       </div>
 
