@@ -529,35 +529,119 @@ export class Timetable implements OnInit {
         { id: 22, day: 'Friday', period: '10:15 AM - 11:15 AM', subject: 'Strength of Materials & Mechanics (SMSE)', room: 'ME-LH-101' },
         { id: 23, day: 'Friday', period: '11:30 AM - 12:30 PM', subject: 'CAD/CAM Simulation & Modeling (04ME6512)', room: 'CAD Lab' },
         { id: 24, day: 'Friday', period: '02:00 PM - 03:00 PM', subject: 'Mechatronics & Robotics Workshop', room: 'ME-LH-204' },
-        { id: 25, day: 'Friday', period: '03:15 PM - 04:15 PM', subject: 'Outcome-Based Assessment / Remedial', room: 'ME-LH-101' }
+        { id: 25, day: 'Friday', period: '03:15 PM - 04:15 PM', subject: 'Outcome-Based Assessment / Remedial', room: 'ME-LH-101' },
+
+        { id: 26, day: 'Saturday', period: '09:00 AM - 10:00 AM', subject: 'Industrial Engineering & Operations Research', room: 'ME-LH-101' },
+        { id: 27, day: 'Saturday', period: '10:15 AM - 11:15 AM', subject: 'Mini-Project Review & Technical Viva', room: 'CAD Lab' },
+        { id: 28, day: 'Saturday', period: '11:30 AM - 12:30 PM', subject: 'Industry Expert Guest Lecture / Webinar', room: 'Seminar Hall' }
       ];
     } else if (d.includes('civil') || d.includes('ce')) {
       return [
         { id: 1, day: 'Monday', period: '09:00 AM - 10:00 AM', subject: 'Fluid Mechanics & Hydraulic Machinery (FMHM)', room: 'CE-LH-101' },
-        { id: 2, day: 'Monday', period: '10:15 AM - 11:15 AM', subject: 'Structural Mechanics & Materials (SMSE)', room: 'CE-LH-102' },
-        { id: 3, day: 'Monday', period: '11:30 AM - 12:30 PM', subject: 'Engineering Mathematics II (EMII)', room: 'CE-LH-101' },
+        { id: 2, day: 'Monday', period: '10:15 AM - 11:15 AM', subject: 'Fluid Mechanics & Hydraulic Machinery (FMHM)', room: 'CE-LH-101' },
+        { id: 3, day: 'Monday', period: '11:30 AM - 12:30 PM', subject: 'Structural Mechanics & Materials (SMSE)', room: 'CE-LH-102' },
         { id: 4, day: 'Monday', period: '02:00 PM - 03:00 PM', subject: 'Principles of Management (HS300)', room: 'CE-LH-204' },
-        { id: 5, day: 'Monday', period: '03:15 PM - 04:15 PM', subject: 'Fluid Mechanics Lab (CE234)', room: 'Fluid Lab' },
+        { id: 5, day: 'Monday', period: '03:15 PM - 04:15 PM', subject: 'Principles of Management (HS300)', room: 'CE-LH-204' },
+
         { id: 6, day: 'Tuesday', period: '09:00 AM - 10:00 AM', subject: 'Fluid Mechanics & Hydraulic Machinery (FMHM)', room: 'CE-LH-101' },
-        { id: 7, day: 'Tuesday', period: '10:15 AM - 11:15 AM', subject: 'Structural Mechanics & Materials (SMSE)', room: 'CE-LH-102' },
-        { id: 8, day: 'Tuesday', period: '11:30 AM - 12:30 PM', subject: 'Engineering Mathematics II (EMII)', room: 'CE-LH-101' },
-        { id: 9, day: 'Tuesday', period: '02:00 PM - 03:00 PM', subject: 'Surveying Field Practice Lab', room: 'Survey Field' }
+        { id: 7, day: 'Tuesday', period: '10:15 AM - 11:15 AM', subject: 'Fluid Mechanics & Hydraulic Machinery (FMHM)', room: 'CE-LH-101' },
+        { id: 8, day: 'Tuesday', period: '11:30 AM - 12:30 PM', subject: 'Structural Mechanics & Materials (SMSE)', room: 'CE-LH-102' },
+        { id: 9, day: 'Tuesday', period: '02:00 PM - 03:00 PM', subject: 'Surveying Field Practice Lab', room: 'Survey Field' },
+        { id: 10, day: 'Tuesday', period: '03:15 PM - 04:15 PM', subject: 'Surveying Field Practice Lab', room: 'Survey Field' },
+
+        { id: 11, day: 'Wednesday', period: '09:00 AM - 10:00 AM', subject: 'Structural Mechanics & Materials (SMSE)', room: 'CE-LH-102' },
+        { id: 12, day: 'Wednesday', period: '10:15 AM - 11:15 AM', subject: 'Engineering Mathematics II (EMII)', room: 'CE-LH-101' },
+        { id: 13, day: 'Wednesday', period: '11:30 AM - 12:30 PM', subject: 'Concrete Technology & Construction Practice', room: 'CE-LH-204' },
+        { id: 14, day: 'Wednesday', period: '02:00 PM - 03:00 PM', subject: 'Fluid Mechanics & Hydraulics Lab (CE234)', room: 'Fluid Lab' },
+        { id: 15, day: 'Wednesday', period: '03:15 PM - 04:15 PM', subject: 'Fluid Mechanics & Hydraulics Lab (CE234)', room: 'Fluid Lab' },
+
+        { id: 16, day: 'Thursday', period: '09:00 AM - 10:00 AM', subject: 'Environmental Engineering & Sustainability', room: 'CE-LH-101' },
+        { id: 17, day: 'Thursday', period: '10:15 AM - 11:15 AM', subject: 'Geotechnical & Soil Mechanics', room: 'CE-LH-102' },
+        { id: 18, day: 'Thursday', period: '11:30 AM - 12:30 PM', subject: 'Fluid Mechanics & Hydraulic Machinery (FMHM)', room: 'CE-LH-101' },
+        { id: 19, day: 'Thursday', period: '02:00 PM - 03:00 PM', subject: 'Building Planning & CAD Laboratory', room: 'CE-CAD Lab' },
+        { id: 20, day: 'Thursday', period: '03:15 PM - 04:15 PM', subject: 'Building Planning & CAD Laboratory', room: 'CE-CAD Lab' },
+
+        { id: 21, day: 'Friday', period: '09:00 AM - 10:00 AM', subject: 'Transportation & Highway Engineering', room: 'CE-LH-101' },
+        { id: 22, day: 'Friday', period: '10:15 AM - 11:15 AM', subject: 'Structural Analysis & Design (SMSE)', room: 'CE-LH-102' },
+        { id: 23, day: 'Friday', period: '11:30 AM - 12:30 PM', subject: 'Engineering Mathematics II (EMII)', room: 'CE-LH-101' },
+        { id: 24, day: 'Friday', period: '02:00 PM - 03:00 PM', subject: 'Geotechnical Material Testing Lab', room: 'Geo Lab' },
+        { id: 25, day: 'Friday', period: '03:15 PM - 04:15 PM', subject: 'Outcome-Based Review & Remedial', room: 'CE-LH-102' },
+
+        { id: 26, day: 'Saturday', period: '09:00 AM - 10:00 AM', subject: 'Hydrology & Water Resources Engineering', room: 'CE-LH-101' },
+        { id: 27, day: 'Saturday', period: '10:15 AM - 11:15 AM', subject: 'Technical Seminar & Capstone Mentoring', room: 'Seminar Hall' },
+        { id: 28, day: 'Saturday', period: '11:30 AM - 12:30 PM', subject: 'Industry Expert Guest Lecture / Site Review', room: 'Seminar Hall' }
       ];
     } else if (d.includes('elect') || d.includes('ece')) {
       return [
         { id: 1, day: 'Monday', period: '09:00 AM - 10:00 AM', subject: 'Microprocessors & Embedded Systems (MES)', room: 'EC-LH-101' },
         { id: 2, day: 'Monday', period: '10:15 AM - 11:15 AM', subject: 'Digital Systems & Logic Designs (DSLD)', room: 'EC-LH-102' },
-        { id: 3, day: 'Monday', period: '11:30 AM - 12:30 PM', subject: 'Computer Organization (EC206)', room: 'EC-LH-101' },
+        { id: 3, day: 'Monday', period: '11:30 AM - 12:30 PM', subject: 'Computer Organization & Architecture (EC206)', room: 'EC-LH-101' },
         { id: 4, day: 'Monday', period: '02:00 PM - 03:00 PM', subject: 'Digital Signal Processing (EE407)', room: 'EC-LH-204' },
-        { id: 5, day: 'Monday', period: '03:15 PM - 04:15 PM', subject: 'Microprocessors & Hardware Lab', room: 'Hardware Lab' }
+        { id: 5, day: 'Monday', period: '03:15 PM - 04:15 PM', subject: 'Signals & Systems Analysis', room: 'EC-LH-204' },
+
+        { id: 6, day: 'Tuesday', period: '09:00 AM - 10:00 AM', subject: 'Digital Systems & Logic Designs (DSLD)', room: 'EC-LH-102' },
+        { id: 7, day: 'Tuesday', period: '10:15 AM - 11:15 AM', subject: 'Microprocessors & Embedded Systems (MES)', room: 'EC-LH-101' },
+        { id: 8, day: 'Tuesday', period: '11:30 AM - 12:30 PM', subject: 'Analog & Digital Communication (EC203)', room: 'EC-LH-101' },
+        { id: 9, day: 'Tuesday', period: '02:00 PM - 03:00 PM', subject: 'Microprocessors & Hardware Lab', room: 'Hardware Lab' },
+        { id: 10, day: 'Tuesday', period: '03:15 PM - 04:15 PM', subject: 'Microprocessors & Hardware Lab', room: 'Hardware Lab' },
+
+        { id: 11, day: 'Wednesday', period: '09:00 AM - 10:00 AM', subject: 'Computer Organization & Architecture (EC206)', room: 'EC-LH-101' },
+        { id: 12, day: 'Wednesday', period: '10:15 AM - 11:15 AM', subject: 'VLSI Design & CMOS Circuits', room: 'EC-LH-204' },
+        { id: 13, day: 'Wednesday', period: '11:30 AM - 12:30 PM', subject: 'Digital Signal Processing (EE407)', room: 'EC-LH-204' },
+        { id: 14, day: 'Wednesday', period: '02:00 PM - 03:00 PM', subject: 'Digital Systems & Logic Design Lab', room: 'LD Lab' },
+        { id: 15, day: 'Wednesday', period: '03:15 PM - 04:15 PM', subject: 'Digital Systems & Logic Design Lab', room: 'LD Lab' },
+
+        { id: 16, day: 'Thursday', period: '09:00 AM - 10:00 AM', subject: 'Microprocessors & Embedded Systems (MES)', room: 'EC-LH-101' },
+        { id: 17, day: 'Thursday', period: '10:15 AM - 11:15 AM', subject: 'Analog & Digital Communication (EC203)', room: 'EC-LH-101' },
+        { id: 18, day: 'Thursday', period: '11:30 AM - 12:30 PM', subject: 'Electromagnetic Field Theory', room: 'EC-LH-102' },
+        { id: 19, day: 'Thursday', period: '02:00 PM - 03:00 PM', subject: 'Communication Engineering Lab', room: 'Comm Lab' },
+        { id: 20, day: 'Thursday', period: '03:15 PM - 04:15 PM', subject: 'Communication Engineering Lab', room: 'Comm Lab' },
+
+        { id: 21, day: 'Friday', period: '09:00 AM - 10:00 AM', subject: 'Digital Signal Processing (EE407)', room: 'EC-LH-204' },
+        { id: 22, day: 'Friday', period: '10:15 AM - 11:15 AM', subject: 'VLSI Design & CMOS Circuits', room: 'EC-LH-204' },
+        { id: 23, day: 'Friday', period: '11:30 AM - 12:30 PM', subject: 'Control Systems Engineering', room: 'EC-LH-101' },
+        { id: 24, day: 'Friday', period: '02:00 PM - 03:00 PM', subject: 'MATLAB Simulation / IoT Workshop', room: 'EC-LH-102' },
+        { id: 25, day: 'Friday', period: '03:15 PM - 04:15 PM', subject: 'Outcome-Based Review & Remedial', room: 'EC-LH-101' },
+
+        { id: 26, day: 'Saturday', period: '09:00 AM - 10:00 AM', subject: 'Embedded Systems & RTOS Design', room: 'EC-LH-101' },
+        { id: 27, day: 'Saturday', period: '10:15 AM - 11:15 AM', subject: 'Mini-Project Review & Technical Viva', room: 'Hardware Lab' },
+        { id: 28, day: 'Saturday', period: '11:30 AM - 12:30 PM', subject: 'Industry Expert Guest Lecture / Webinar', room: 'Seminar Hall' }
       ];
     } else if (d.includes('info') || d.includes('it')) {
       return [
-        { id: 1, day: 'Monday', period: '09:00 AM - 10:00 AM', subject: 'Operating Systems & Systems Programming (IT305)', room: 'IT-LH-101' },
+        { id: 1, day: 'Monday', period: '09:00 AM - 10:00 AM', subject: 'Web Technologies & Frameworks (IT305)', room: 'IT-LH-101' },
         { id: 2, day: 'Monday', period: '10:15 AM - 11:15 AM', subject: 'Linux & Shell Programming (Linux)', room: 'IT-LH-102' },
-        { id: 3, day: 'Monday', period: '11:30 AM - 12:30 PM', subject: 'Web Technologies & Frameworks (WT)', room: 'IT-LH-101' },
-        { id: 4, day: 'Monday', period: '02:00 PM - 03:00 PM', subject: 'Soft Computing (CS361)', room: 'IT-LH-204' },
-        { id: 5, day: 'Monday', period: '03:15 PM - 04:15 PM', subject: 'Linux & Open Source Lab', room: 'Linux Lab' }
+        { id: 3, day: 'Monday', period: '11:30 AM - 12:30 PM', subject: 'Database Management Systems (CS101)', room: 'IT-LH-101' },
+        { id: 4, day: 'Monday', period: '02:00 PM - 03:00 PM', subject: 'Cloud Computing & DevOps (CS303)', room: 'IT-LH-204' },
+        { id: 5, day: 'Monday', period: '03:15 PM - 04:15 PM', subject: 'Soft Computing (CS361)', room: 'IT-LH-204' },
+
+        { id: 6, day: 'Tuesday', period: '09:00 AM - 10:00 AM', subject: 'Linux & Shell Programming (Linux)', room: 'IT-LH-102' },
+        { id: 7, day: 'Tuesday', period: '10:15 AM - 11:15 AM', subject: 'Web Technologies & Frameworks (IT305)', room: 'IT-LH-101' },
+        { id: 8, day: 'Tuesday', period: '11:30 AM - 12:30 PM', subject: 'Cloud Computing & DevOps (CS303)', room: 'IT-LH-204' },
+        { id: 9, day: 'Tuesday', period: '02:00 PM - 03:00 PM', subject: 'Linux & Open Source Practical Lab', room: 'Linux Lab' },
+        { id: 10, day: 'Tuesday', period: '03:15 PM - 04:15 PM', subject: 'Linux & Open Source Practical Lab', room: 'Linux Lab' },
+
+        { id: 11, day: 'Wednesday', period: '09:00 AM - 10:00 AM', subject: 'Database Management Systems (CS101)', room: 'IT-LH-101' },
+        { id: 12, day: 'Wednesday', period: '10:15 AM - 11:15 AM', subject: 'Soft Computing (CS361)', room: 'IT-LH-204' },
+        { id: 13, day: 'Wednesday', period: '11:30 AM - 12:30 PM', subject: 'Information Security & Cryptography', room: 'IT-LH-102' },
+        { id: 14, day: 'Wednesday', period: '02:00 PM - 03:00 PM', subject: 'Full Stack Web Development Lab', room: 'Web Lab' },
+        { id: 15, day: 'Wednesday', period: '03:15 PM - 04:15 PM', subject: 'Full Stack Web Development Lab', room: 'Web Lab' },
+
+        { id: 16, day: 'Thursday', period: '09:00 AM - 10:00 AM', subject: 'Web Technologies & Frameworks (IT305)', room: 'IT-LH-101' },
+        { id: 17, day: 'Thursday', period: '10:15 AM - 11:15 AM', subject: 'Cloud Computing & DevOps (CS303)', room: 'IT-LH-204' },
+        { id: 18, day: 'Thursday', period: '11:30 AM - 12:30 PM', subject: 'Data Mining & Data Warehousing', room: 'IT-LH-102' },
+        { id: 19, day: 'Thursday', period: '02:00 PM - 03:00 PM', subject: 'Cloud Infrastructure & DevOps Lab', room: 'Cloud Lab' },
+        { id: 20, day: 'Thursday', period: '03:15 PM - 04:15 PM', subject: 'Cloud Infrastructure & DevOps Lab', room: 'Cloud Lab' },
+
+        { id: 21, day: 'Friday', period: '09:00 AM - 10:00 AM', subject: 'Soft Computing (CS361)', room: 'IT-LH-204' },
+        { id: 22, day: 'Friday', period: '10:15 AM - 11:15 AM', subject: 'Database Management Systems (CS101)', room: 'IT-LH-101' },
+        { id: 23, day: 'Friday', period: '11:30 AM - 12:30 PM', subject: 'Software Project Management', room: 'IT-LH-102' },
+        { id: 24, day: 'Friday', period: '02:00 PM - 03:00 PM', subject: 'Big Data Analytics Workshop', room: 'IT-LH-101' },
+        { id: 25, day: 'Friday', period: '03:15 PM - 04:15 PM', subject: 'Outcome-Based Review & Remedial', room: 'IT-LH-102' },
+
+        { id: 26, day: 'Saturday', period: '09:00 AM - 10:00 AM', subject: 'Advanced Mobile App Development', room: 'IT-LH-101' },
+        { id: 27, day: 'Saturday', period: '10:15 AM - 11:15 AM', subject: 'Mini-Project Review & Technical Viva', room: 'Web Lab' },
+        { id: 28, day: 'Saturday', period: '11:30 AM - 12:30 PM', subject: 'Industry Expert Guest Lecture / Webinar', room: 'Seminar Hall' }
       ];
     }
     return this.defaultSchedule;
@@ -592,17 +676,20 @@ export class Timetable implements OnInit {
   }
 
   private loadTimetable(): void {
+    const branchFallback = this.getBranchSchedule(this.userDept);
+
     this.http.get<ScheduleEntry[]>('http://localhost:8080/api/timetable').subscribe({
       next: (data) => {
-        if (Array.isArray(data) && data.length > 0) {
+        const isCSE = this.userDept.toLowerCase().includes('computer') || this.userDept.toLowerCase().includes('cse');
+        if (Array.isArray(data) && data.length >= 25 && isCSE) {
           this.weeklySchedule = data;
         } else {
-          this.weeklySchedule = this.getBranchSchedule(this.userDept);
+          this.weeklySchedule = branchFallback;
         }
         this.applyFilters();
       },
       error: () => {
-        this.weeklySchedule = this.getBranchSchedule(this.userDept);
+        this.weeklySchedule = branchFallback;
         this.applyFilters();
       }
     });
