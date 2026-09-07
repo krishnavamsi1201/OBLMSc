@@ -163,7 +163,7 @@
             </form>
         </div>
 
-        <div *ngFor="let group of groupedMappings" class="table-card">
+        <div *ngFor="let group of filteredGroupedMappings" class="table-card">
             <h2 class="group-header" (click)="toggleGroup(group.courseName)">
                 <span class="group-title-text">📖 {{ group.courseName }} CO-PO Mappings</span>
                 <span class="group-meta-tag">
@@ -207,9 +207,9 @@
             </div>
         </div>
 
-        <div *ngIf="groupedMappings.length === 0" class="table-card">
+        <div *ngIf="filteredGroupedMappings.length === 0" class="table-card">
             <h2>Mapped COs to POs</h2>
-            <p class="empty-state-text">No CO-PO mappings created yet.</p>
+            <p class="empty-state-text">No CO-PO mappings created yet for the selected courses.</p>
         </div>
 
         <div class="table-card">
@@ -224,24 +224,36 @@
                     <button type="button" class="btn btn-primary" (click)="toggleMappingView()">{{ showMatrix ? 'Hide Matrix' : 'View Mapping Matrix' }}</button>
                 </div>
             </div>
+
+            <!-- Course selector for Matrix -->
+            <div *ngIf="showMatrix && matrixCourseList.length > 0" class="matrix-filter-bar" style="margin-bottom: 16px; display: flex; align-items: center; gap: 12px; background: rgba(0,0,0,0.25); padding: 10px 16px; border-radius: 8px; border: 1px solid rgba(212,175,55,0.2);">
+                <label style="display: flex; flex-direction: row; align-items: center; gap: 10px; width: 100%; font-weight: 600; color: #cbd5e1; margin: 0;">
+                    <span style="white-space: nowrap; color: #d4af37;">🎯 Filter Matrix by Subject:</span>
+                    <select [(ngModel)]="matrixSelectedCourse" style="flex: 1; max-width: 450px; margin-top: 0; padding: 6px 12px; background: #091024; color: #ffffff; border: 1px solid #1f2f54; border-radius: 6px;">
+                        <option value="ALL">All Enrolled Courses (Full Matrix)</option>
+                        <option *ngFor="let c of matrixCourseList" [value]="c">{{ getCourseFullName(c) }}</option>
+                    </select>
+                </label>
+            </div>
+
             <div *ngIf="showMatrix" class="matrix-table-wrap">
-                <ng-container *ngIf="programOutcomes.length && courseOutcomes.length; else noMatrixContent">
+                <ng-container *ngIf="uniqueMatrixPos.length && matrixCourseOutcomes.length; else noMatrixContent">
                     <table class="matrix-table">
                         <thead>
                             <tr>
                                 <th>CO \ PO</th>
-                                <th *ngFor="let po of programOutcomes" [title]="po.description || po.poNumber">
+                                <th *ngFor="let po of uniqueMatrixPos" [title]="po.description || po.poNumber">
                                     <span class="obe-badge obe-badge-po">{{ po.poNumber }}</span>
                                 </th>
                             </tr>
                         </thead>
                         <tbody>
-                            <tr *ngFor="let outcome of courseOutcomes">
+                            <tr *ngFor="let outcome of matrixCourseOutcomes">
                                 <td>
                                     <span class="obe-badge obe-badge-co">{{ outcome.co }}</span>
                                     <small class="co-course-name">{{ getCourseFullName(outcome.course) }}</small>
                                 </td>
-                                <td *ngFor="let po of programOutcomes">
+                                <td *ngFor="let po of uniqueMatrixPos">
                                     <span *ngIf="getMatrixLevel(outcome.course, outcome.co, po.poNumber) as level" class="obe-badge" [ngClass]="level === 3 ? 'obe-badge-co' : 'obe-badge-po'">
                                         {{ level }}
                                     </span>
@@ -252,7 +264,7 @@
                     </table>
                 </ng-container>
                 <ng-template #noMatrixContent>
-                    <p class="empty-state-text">Add course outcomes and program outcomes to view the mapping matrix.</p>
+                    <p class="empty-state-text">No Course Outcomes or Program Outcomes available for the selected view.</p>
                 </ng-template>
             </div>
         </div>

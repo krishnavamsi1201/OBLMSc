@@ -158,8 +158,9 @@ export class CopoMapping implements OnInit {
   }
 
   get filteredGroupedMappings() {
-    if (this.role !== 'student' && this.selectedBranch === 'ALL') return this.groupedMappings;
+    if (this.role === 'admin' && this.selectedBranch === 'ALL') return this.groupedMappings;
     const allowed = this.studentAllowedCourses;
+    if (!allowed || allowed.length === 0) return this.groupedMappings;
     return this.groupedMappings.filter(g => 
       allowed.some(ac => 
         g.courseName.toLowerCase() === ac.toLowerCase() ||
@@ -170,8 +171,9 @@ export class CopoMapping implements OnInit {
   }
 
   get filteredCourseOutcomes() {
-    if (this.role !== 'student' && this.selectedBranch === 'ALL') return this.courseOutcomes;
+    if (this.role === 'admin' && this.selectedBranch === 'ALL') return this.courseOutcomes;
     const allowed = this.studentAllowedCourses;
+    if (!allowed || allowed.length === 0) return this.courseOutcomes;
     return this.courseOutcomes.filter(co => 
       allowed.some(ac => 
         (co.course || '').toLowerCase() === ac.toLowerCase() ||
@@ -179,6 +181,42 @@ export class CopoMapping implements OnInit {
         ac.toLowerCase().includes((co.course || '').toLowerCase())
       )
     );
+  }
+
+  matrixSelectedCourse: string = 'ALL';
+
+  get uniqueMatrixPos(): ProgramOutcome[] {
+    const seen = new Set<string>();
+    return this.programOutcomes.filter(po => {
+      const code = (po.poNumber || '').trim().toUpperCase();
+      if (!code || seen.has(code)) return false;
+      seen.add(code);
+      return true;
+    });
+  }
+
+  get matrixCourseList(): string[] {
+    const seen = new Set<string>();
+    const list: string[] = [];
+    this.filteredCourseOutcomes.forEach(co => {
+      if (co.course && !seen.has(co.course)) {
+        seen.add(co.course);
+        list.push(co.course);
+      }
+    });
+    return list;
+  }
+
+  get matrixCourseOutcomes(): CourseOutcome[] {
+    let list = this.filteredCourseOutcomes;
+    if (this.matrixSelectedCourse && this.matrixSelectedCourse !== 'ALL') {
+      list = list.filter(co => 
+        (co.course || '').toLowerCase() === this.matrixSelectedCourse.toLowerCase() ||
+        (co.course || '').toLowerCase().includes(this.matrixSelectedCourse.toLowerCase()) ||
+        this.matrixSelectedCourse.toLowerCase().includes((co.course || '').toLowerCase())
+      );
+    }
+    return list;
   }
 
   mappingLevels = [
@@ -567,14 +605,14 @@ export class CopoMapping implements OnInit {
   }
 
   exportMatrixCsv(): void {
-    if (this.programOutcomes.length === 0 || this.courseOutcomes.length === 0) {
+    if (this.uniqueMatrixPos.length === 0 || this.matrixCourseOutcomes.length === 0) {
       this.toast.warning('No matrix data available to export.');
       return;
     }
-    const headers = ['Course - CO', ...this.programOutcomes.map(po => po.poNumber)];
-    const rows = this.courseOutcomes.map(outcome => {
+    const headers = ['Course - CO', ...this.uniqueMatrixPos.map(po => po.poNumber)];
+    const rows = this.matrixCourseOutcomes.map(outcome => {
       const row = [`"${outcome.course} - ${outcome.co}"`];
-      this.programOutcomes.forEach(po => {
+      this.uniqueMatrixPos.forEach(po => {
         const level = this.getMatrixLevel(outcome.course, outcome.co, po.poNumber);
         row.push(level !== undefined ? `"${level}"` : '""');
       });
