@@ -27,18 +27,18 @@
             </div>
             <div class="section-card">
                 <h3>CO-PO Maps</h3>
-                <strong>{{ mappings.length }}</strong>
+                <strong>{{ totalFilteredMappings }}</strong>
                 <p>Course outcome mappings currently tracked.</p>
             </div>
             <div class="section-card">
                 <h3>Approved Mappings</h3>
-                <strong>{{ mappings.filter(isApproved).length }}</strong>
+                <strong>{{ totalApprovedMappings }}</strong>
                 <p>Mappings approved by admin.</p>
             </div>
         </div>
 
         <!-- Branch Filter Navigation Bar -->
-        <div class="branch-filter-toolbar">
+        <div class="branch-filter-toolbar" *ngIf="role !== 'student'">
             <button type="button" 
                 class="filter-pill-btn" 
                 [class.active]="selectedBranch === 'MY_BRANCH'"
@@ -81,6 +81,11 @@
                 (click)="selectedBranch = 'ALL'">
                 🌐 All Branches
             </button>
+        </div>
+        <div class="branch-filter-toolbar" *ngIf="role === 'student'">
+            <div class="filter-pill-btn active" style="cursor: default;">
+                💻 Enrolled Courses: Computer Science & Engineering (CSE)
+            </div>
         </div>
 
         <!-- Add CO (Admin / Faculty Only) -->
@@ -209,7 +214,7 @@
 
         <div *ngIf="filteredGroupedMappings.length === 0" class="table-card">
             <h2>Mapped COs to POs</h2>
-            <p class="empty-state-text">No CO-PO mappings created yet for the selected courses.</p>
+            <p class="empty-state-text">No CO-PO mappings found for your enrolled courses.</p>
         </div>
 
         <div class="table-card">

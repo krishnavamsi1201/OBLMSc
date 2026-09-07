@@ -126,26 +126,34 @@ export class CopoMapping implements OnInit {
   };
 
   get studentAllowedCourses(): string[] {
+    if (this.role === 'student') {
+      const branch = this.currentActiveBranch;
+      const cseEnrolled = ['CS101', 'CS102', 'CS103', 'CS301', 'CS302', 'CS102L', 'DS Lab', 'DS', 'RLMCA205', 'CC', 'OOP', 'Database', 'Data Structures', 'Operating Systems', 'Computer Networks', 'Software Engineering'];
+      const list: string[] = branch === 'CSE' ? [...cseEnrolled] : [...(this.branchCoursesMap[branch] || cseEnrolled)];
+      
+      try {
+        const studentCourses = JSON.parse(localStorage.getItem('obslmsStudentCourses') || '[]');
+        const name = (this.studentName || '').toLowerCase();
+        studentCourses.forEach((sc: any) => {
+          if ((sc.studentName || '').toLowerCase().includes(name)) {
+            if (sc.courseCode && !list.includes(sc.courseCode)) list.push(sc.courseCode);
+            if (sc.courseTitle && !list.includes(sc.courseTitle)) list.push(sc.courseTitle);
+          }
+        });
+      } catch {}
+      return list;
+    }
+
     const list: string[] = [...(this.branchCoursesMap[this.currentActiveBranch] || [])];
     try {
       const assigned = JSON.parse(localStorage.getItem('userAssignedCourses') || '[]');
       assigned.forEach((a: string) => { if (!list.includes(a)) list.push(a); });
     } catch {}
-    try {
-      const studentCourses = JSON.parse(localStorage.getItem('obslmsStudentCourses') || '[]');
-      const name = (this.studentName || '').toLowerCase();
-      studentCourses.forEach((sc: any) => {
-        if ((sc.studentName || '').toLowerCase().includes(name)) {
-          if (sc.courseCode && !list.includes(sc.courseCode)) list.push(sc.courseCode);
-          if (sc.courseTitle && !list.includes(sc.courseTitle)) list.push(sc.courseTitle);
-        }
-      });
-    } catch {}
     return list;
   }
 
   get currentActiveBranch(): string {
-    if (this.selectedBranch === 'MY_BRANCH') {
+    if (this.selectedBranch === 'MY_BRANCH' || this.role === 'student') {
       const d = (this.studentDept || '').toLowerCase();
       if (d.includes('computer') || d.includes('cse')) return 'CSE';
       if (d.includes('information') || d.includes('it')) return 'IT';
@@ -160,27 +168,45 @@ export class CopoMapping implements OnInit {
   get filteredGroupedMappings() {
     if (this.role === 'admin' && this.selectedBranch === 'ALL') return this.groupedMappings;
     const allowed = this.studentAllowedCourses;
-    if (!allowed || allowed.length === 0) return this.groupedMappings;
-    return this.groupedMappings.filter(g => 
-      allowed.some(ac => 
-        g.courseName.toLowerCase() === ac.toLowerCase() ||
-        g.courseName.toLowerCase().includes(ac.toLowerCase()) || 
-        ac.toLowerCase().includes(g.courseName.toLowerCase())
-      )
-    );
+    return this.groupedMappings.filter(g => {
+      const gName = g.courseName.toLowerCase();
+      if (this.currentActiveBranch === 'CSE' || this.role === 'student') {
+        const civilKeywords = ['fmhm', 'civil', 'survey', 'hydraul', 'ce234', 'solid mechanics', 'smse'];
+        if (civilKeywords.some(ck => gName.includes(ck))) return false;
+      }
+      if (!allowed || allowed.length === 0) return true;
+      return allowed.some(ac => 
+        gName === ac.toLowerCase() ||
+        gName.includes(ac.toLowerCase()) || 
+        ac.toLowerCase().includes(gName)
+      );
+    });
   }
 
   get filteredCourseOutcomes() {
     if (this.role === 'admin' && this.selectedBranch === 'ALL') return this.courseOutcomes;
     const allowed = this.studentAllowedCourses;
-    if (!allowed || allowed.length === 0) return this.courseOutcomes;
-    return this.courseOutcomes.filter(co => 
-      allowed.some(ac => 
-        (co.course || '').toLowerCase() === ac.toLowerCase() ||
-        (co.course || '').toLowerCase().includes(ac.toLowerCase()) || 
-        ac.toLowerCase().includes((co.course || '').toLowerCase())
-      )
-    );
+    return this.courseOutcomes.filter(co => {
+      const c = (co.course || '').toLowerCase();
+      if (this.currentActiveBranch === 'CSE' || this.role === 'student') {
+        const civilKeywords = ['fmhm', 'civil', 'survey', 'hydraul', 'ce234', 'solid mechanics', 'smse'];
+        if (civilKeywords.some(ck => c.includes(ck))) return false;
+      }
+      if (!allowed || allowed.length === 0) return true;
+      return allowed.some(ac => 
+        c === ac.toLowerCase() ||
+        c.includes(ac.toLowerCase()) || 
+        ac.toLowerCase().includes(c)
+      );
+    });
+  }
+
+  get totalFilteredMappings(): number {
+    return this.filteredGroupedMappings.reduce((sum, g) => sum + g.mappings.length, 0);
+  }
+
+  get totalApprovedMappings(): number {
+    return this.filteredGroupedMappings.reduce((sum, g) => sum + g.mappings.filter(this.isApproved).length, 0);
   }
 
   matrixSelectedCourse: string = 'ALL';
@@ -641,7 +667,7 @@ export class CopoMapping implements OnInit {
     const dept = this.studentDept || 'Computer Science & Engineering';
 
     let tableRows = '';
-    this.groupedMappings.forEach(grp => {
+    this.filteredGroupedMappings.forEach(grp => {
       grp.mappings.forEach(m => {
         tableRows += `
           <tr>

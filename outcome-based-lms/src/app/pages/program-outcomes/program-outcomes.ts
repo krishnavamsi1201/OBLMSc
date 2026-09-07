@@ -573,19 +573,31 @@ export class ProgramOutcomes implements OnInit {
       let matchesDept = true;
       if (this.userRole === 'faculty') {
         const targetShort = this.shortDept.toLowerCase();
-        matchesDept = prog.includes(targetShort) || 
-                      prog.includes((this.facultyDept || '').toLowerCase().split(' ')[0]) || 
-                      (this.facultyDept || '').toLowerCase().includes(prog) ||
-                      targetShort === 'cse';
+        if (targetShort === 'cse') {
+          const nonCse = ['civil', 'mechanical', 'ece', 'electronic', 'electrical'];
+          if (nonCse.some(b => prog.includes(b))) {
+            return false;
+          }
+          matchesDept = prog.includes('cse') || prog.includes('computer') || prog.includes('engineering') || !prog;
+        } else {
+          matchesDept = prog.includes(targetShort) || 
+                        prog.includes((this.facultyDept || '').toLowerCase().split(' ')[0]) || 
+                        (this.facultyDept || '').toLowerCase().includes(prog);
+        }
       } else if (this.userRole === 'student') {
-        const targetShort = this.shortDept.toLowerCase();
-        matchesDept = prog.includes(targetShort) || 
-                      prog.includes((this.studentDept || '').toLowerCase().split(' ')[0]) || 
-                      (this.studentDept || '').toLowerCase().includes(prog) ||
-                      targetShort === 'cse';
+        const short = this.shortDept.toLowerCase();
+        if (short === 'cse') {
+          const nonCse = ['civil', 'mechanical', 'ece', 'electronic', 'electrical'];
+          if (nonCse.some(b => prog.includes(b))) {
+            return false;
+          }
+          matchesDept = prog.includes('cse') || prog.includes('computer') || prog.includes('engineering') || !prog;
+        } else {
+          matchesDept = prog.includes(short);
+        }
       } else if (this.selectedDeptFilter) {
         const filt = this.selectedDeptFilter.toLowerCase();
-        matchesDept = prog.includes(filt) || filt === 'cse';
+        matchesDept = prog.includes(filt);
       }
 
       return matchesSearch && matchesDept;

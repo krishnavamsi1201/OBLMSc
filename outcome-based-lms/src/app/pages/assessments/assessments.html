@@ -14,23 +14,23 @@
         <div class="summary-grid">
             <div class="section-card">
                 <h3>Assignments</h3>
-                <strong>{{ assessments.filter(a => a.type === 'Assignment').length }}</strong>
+                <strong>{{ countByType('Assignment') }}</strong>
                 <p>Active assignments in current courses.</p>
             </div>
             <div class="section-card">
                 <h3>Quizzes</h3>
-                <strong>{{ assessments.filter(a => a.type === 'Quiz').length }}</strong>
+                <strong>{{ countByType('Quiz') }}</strong>
                 <p>Quizzes scheduled for evaluation.</p>
             </div>
             <div class="section-card">
                 <h3>Mid Exams</h3>
-                <strong>{{ assessments.filter(a => a.type === 'Mid Exam').length }}</strong>
+                <strong>{{ countByType('Mid Exam') }}</strong>
                 <p>Midterm examinations scheduled.</p>
             </div>
             <div class="section-card">
-                <h3>Lab Exams</h3>
-                <strong>{{ assessments.filter(a => a.type === 'Lab Exam').length }}</strong>
-                <p>Lab practical evaluation items.</p>
+                <h3>Final Exams</h3>
+                <strong>{{ countByType('Final Exam') }}</strong>
+                <p>End-semester examinations scheduled.</p>
             </div>
         </div>
 

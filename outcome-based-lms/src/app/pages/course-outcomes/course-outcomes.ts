@@ -269,6 +269,10 @@ export class CourseOutcomes {
             )
           );
         }
+        if (this.role === 'student') {
+          const civilKeywords = ['fmhm', 'civil', 'survey', 'hydraul', 'ce234', 'solid mechanics', 'smse'];
+          list = list.filter(co => !civilKeywords.some(ck => (co.course || '').toLowerCase().includes(ck)));
+        }
         this.courseOutcomes = list;
         try {
           localStorage.setItem('obslmsCourseOutcomes', JSON.stringify(this.courseOutcomes));
@@ -287,6 +291,10 @@ export class CourseOutcomes {
                 (co.course && (co.course.toLowerCase().includes(a.toLowerCase()) || a.toLowerCase().includes(co.course.toLowerCase())))
               )
             );
+          }
+          if (this.role === 'student') {
+            const civilKeywords = ['fmhm', 'civil', 'survey', 'hydraul', 'ce234', 'solid mechanics', 'smse'];
+            list = list.filter(co => !civilKeywords.some(ck => (co.course || '').toLowerCase().includes(ck)));
           }
           this.courseOutcomes = list;
         } catch {
