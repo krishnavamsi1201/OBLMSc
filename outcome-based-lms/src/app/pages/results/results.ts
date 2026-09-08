@@ -43,8 +43,48 @@ export interface StudentResult {
     <div class="content">
 
         <div class="page-header">
-            <h1>📋 Student Semester Results & Marksheet</h1>
-            <p>{{ role === 'student' ? 'Official semester performance transcript, SGPA/CGPA breakdown, and complete marksheet download.' : 'Faculty dashboard for internal/external results, grading, and pass/fail analysis.' }}</p>
+            <div class="header-text-block">
+                <h1>📋 Student Semester Results & Marksheet</h1>
+                <p>{{ role === 'student' ? 'Official semester performance transcript, SGPA/CGPA breakdown, and complete marksheet download.' : 'Faculty & Admin dashboard for viewing individual student marksheets, semester results, and class analytics.' }}</p>
+            </div>
+            
+            <!-- View Mode Switcher for Faculty and Admin -->
+            <div class="mode-toggle-group" *ngIf="role !== 'student'">
+                <button type="button" 
+                        class="mode-btn" 
+                        [class.active]="viewMode === 'class'" 
+                        (click)="setViewMode('class')">
+                    <span class="material-icons">groups</span> Class Overview
+                </button>
+                <button type="button" 
+                        class="mode-btn" 
+                        [class.active]="viewMode === 'student'" 
+                        (click)="setViewMode('student')">
+                    <span class="material-icons">person_search</span> Student Marksheet View
+                </button>
+            </div>
+        </div>
+
+        <!-- Student Selector Banner for Faculty & Admin when in Student View Mode -->
+        <div class="student-picker-banner" *ngIf="role !== 'student' && viewMode === 'student'">
+            <div class="picker-label-wrap">
+                <span class="material-icons picker-icon">account_circle</span>
+                <div>
+                    <span class="picker-sub">Selected Student:</span>
+                    <strong class="picker-name">{{ studentName }} ({{ studentRoll }})</strong>
+                </div>
+            </div>
+            <div class="picker-controls">
+                <label for="studentSelect" class="picker-select-label">Choose Student:</label>
+                <select id="studentSelect" class="student-dropdown" [(ngModel)]="studentName" (ngModelChange)="onStudentSelect($event)">
+                    <option *ngFor="let stu of availableStudentsList" [value]="stu.name">
+                        {{ stu.name }} ({{ stu.roll || 'CUTM' }}) - {{ stu.dept || 'CSE' }}
+                    </option>
+                </select>
+                <button type="button" class="btn-switch-back" (click)="setViewMode('class')">
+                    ← Back to Class Overview
+                </button>
+            </div>
         </div>
 
         <!-- Semester Selection Filter Toolbar -->
@@ -64,32 +104,32 @@ export interface StudentResult {
             </div>
         </div>
 
-        <!-- Summary Statistics (Faculty/Admin View) -->
-        <div class="summary-grid" *ngIf="role !== 'student'">
+        <!-- Summary Statistics (Faculty/Admin Class Overview) -->
+        <div class="summary-grid" *ngIf="role !== 'student' && viewMode === 'class'">
+            <div class="section-card">
+                <h3>Total Evaluated Students</h3>
+                <strong>{{ availableStudentsList.length || 3 }}</strong>
+                <p>Registered students across active courses.</p>
+            </div>
             <div class="section-card">
                 <h3>Internal Average</h3>
                 <strong>{{ internalAverage }}%</strong>
-                <p>Average internal score across students.</p>
+                <p>Average internal score across class.</p>
             </div>
             <div class="section-card">
                 <h3>External Average</h3>
                 <strong>{{ externalAverage }}%</strong>
-                <p>Average external score across students.</p>
+                <p>Average external score across class.</p>
             </div>
             <div class="section-card">
-                <h3>Pass Rate</h3>
-                <strong>{{ passRate }}%</strong>
-                <p>Class pass percentage based on final results.</p>
-            </div>
-            <div class="section-card">
-                <h3>OBE Weights Configured</h3>
-                <strong style="font-size: 1.4rem; margin-top: 14px;">{{ getObeWeights().internal }}% Int / {{ getObeWeights().external }}% Ext</strong>
-                <p>Configured grading ratios.</p>
+                <h3>Class Pass Rate</h3>
+                <strong style="color: #4ade80;">{{ passRate }}%</strong>
+                <p>Passing percentage for evaluated subjects.</p>
             </div>
         </div>
 
-        <!-- Student Personal Summary (Student View) -->
-        <div class="summary-grid" *ngIf="role === 'student'">
+        <!-- Student Personal Summary (Student View & Faculty/Admin Single Student View) -->
+        <div class="summary-grid" *ngIf="role === 'student' || viewMode === 'student'">
             <div class="section-card">
                 <h3>Semester SGPA</h3>
                 <strong style="color: #d4af37;">{{ semesterSgpa }}</strong>
@@ -114,12 +154,12 @@ export interface StudentResult {
 
         <div class="action-row">
             <button type="button" class="btn-download" (click)="downloadResults()">
-                📥 Download Complete {{ selectedSemester }} Marksheet (CSV)
+                📥 Download {{ studentName }}'s {{ selectedSemester }} Marksheet (CSV)
             </button>
-            <button type="button" class="btn-print" (click)="printTranscript()" *ngIf="role === 'student'">
-                🖨️ Export Official Marksheet PDF
+            <button type="button" class="btn-print" (click)="printTranscript()" *ngIf="role === 'student' || viewMode === 'student'">
+                🖨️ Export Official Marksheet PDF ({{ studentName }})
             </button>
-            <button type="button" class="btn-print" (click)="triggerBatchPrint()" *ngIf="role !== 'student'" style="background: #10b981;">
+            <button type="button" class="btn-print" (click)="triggerBatchPrint()" *ngIf="role !== 'student' && viewMode === 'class'" style="background: #10b981;">
                 🖨️ Export Batch Transcripts (Selected: {{ getSelectedCount() }})
             </button>
             <span class="status-message" *ngIf="downloadMessage">{{ downloadMessage }}</span>
@@ -144,8 +184,9 @@ export interface StudentResult {
             </div>
             
             <div class="table-header-row">
-                <h2>{{ role === 'student' ? studentName + ' — ' + selectedSemester + ' Grade Sheet' : 'Class Result Analysis' }}</h2>
-                <div class="sem-stats-pills" *ngIf="role === 'student'">
+                <h2>{{ (role === 'student' || viewMode === 'student') ? studentName + ' — ' + selectedSemester + ' Official Grade Sheet' : 'Class Results & Student Performance' }}</h2>
+                <div class="sem-stats-pills" *ngIf="role === 'student' || viewMode === 'student'">
+                    <span class="stat-badge">Student: <strong>{{ studentName }}</strong></span>
                     <span class="stat-badge">Semester: <strong>{{ selectedSemester }}</strong></span>
                     <span class="stat-badge">SGPA: <strong>{{ semesterSgpa }}</strong></span>
                     <span class="stat-badge">Credits: <strong>{{ semesterCredits.earned }}</strong></span>
@@ -153,8 +194,8 @@ export interface StudentResult {
                 </div>
             </div>
             
-            <!-- Student Semester Table -->
-            <table *ngIf="role === 'student'">
+            <!-- Student Semester Detailed Table (Shown in Student Role OR Faculty/Admin Single Student View) -->
+            <table *ngIf="role === 'student' || viewMode === 'student'">
                 <thead>
                     <tr>
                         <th style="width: 110px;">Code</th>
@@ -187,8 +228,8 @@ export interface StudentResult {
                 </tbody>
             </table>
 
-            <!-- Semester Summary Footer for Student -->
-            <div class="student-sem-summary-footer" *ngIf="role === 'student'">
+            <!-- Semester Summary Footer for Student View -->
+            <div class="student-sem-summary-footer" *ngIf="role === 'student' || viewMode === 'student'">
                 <div class="summary-metric-item">
                     <span>Total Courses:</span>
                     <strong>{{ displayedCourses.length }}</strong>
@@ -211,19 +252,20 @@ export interface StudentResult {
                 </div>
             </div>
 
-            <!-- Faculty / Admin Table -->
-            <table *ngIf="role !== 'student' && filteredResults.length > 0">
+            <!-- Faculty / Admin Class Overview Table -->
+            <table *ngIf="role !== 'student' && viewMode === 'class' && filteredResults.length > 0">
                 <thead>
                     <tr>
                         <th style="width: 40px; text-align: center;">
                             <input type="checkbox" (change)="selectAllStudents($event)" [checked]="isAllSelected()" />
                         </th>
-                        <th>Student</th>
-                        <th>Course</th>
-                        <th>Internal ({{ getObeWeights().internal }}%)</th>
-                        <th>External ({{ getObeWeights().external }}%)</th>
-                        <th>Final Grade</th>
-                        <th>Status</th>
+                        <th>Student Name</th>
+                        <th>Course / Assessment</th>
+                        <th style="text-align: center;">Internal ({{ getObeWeights().internal }}%)</th>
+                        <th style="text-align: center;">External ({{ getObeWeights().external }}%)</th>
+                        <th style="text-align: center;">Final Grade</th>
+                        <th style="text-align: center;">Status</th>
+                        <th style="text-align: center; width: 140px;">Action</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -231,16 +273,23 @@ export interface StudentResult {
                         <td style="text-align: center;">
                             <input type="checkbox" [(ngModel)]="selectedStudentsForPrint[result.student]" />
                         </td>
-                        <td><strong>{{ result.student }}</strong></td>
+                        <td>
+                            <strong style="color: #ffffff;">{{ result.student }}</strong>
+                        </td>
                         <td>{{ result.course }}</td>
-                        <td>{{ result.internal }}%</td>
-                        <td>{{ result.external }}%</td>
-                        <td><span class="grade-badge" [class.excellent]="result.grade === 'O' || result.grade === 'A+'">{{ result.grade }}</span></td>
-                        <td><span class="status-pill" [class.pass]="result.status === 'Pass'" [class.fail]="result.status === 'Fail'">{{ result.status }}</span></td>
+                        <td style="text-align: center;">{{ result.internal }}%</td>
+                        <td style="text-align: center;">{{ result.external }}%</td>
+                        <td style="text-align: center;"><span class="grade-badge" [class.excellent]="result.grade === 'O' || result.grade === 'A+'">{{ result.grade }}</span></td>
+                        <td style="text-align: center;"><span class="status-pill" [class.pass]="result.status === 'Pass'" [class.fail]="result.status === 'Fail'">{{ result.status }}</span></td>
+                        <td style="text-align: center;">
+                            <button type="button" class="btn-view-single" (click)="viewSpecificStudent(result.student)" title="View complete marksheet for {{ result.student }}">
+                                👁️ View Marksheet
+                            </button>
+                        </td>
                     </tr>
                 </tbody>
             </table>
-            <p *ngIf="role !== 'student' && filteredResults.length === 0" class="empty-state">No academic results match your search.</p>
+            <p *ngIf="role !== 'student' && viewMode === 'class' && filteredResults.length === 0" class="empty-state">No academic results match your search.</p>
 
             <!-- Signatures for Printed Marksheet -->
             <div class="print-signatures-area">
@@ -336,6 +385,148 @@ export interface StudentResult {
 <app-footer></app-footer>`,
   styles: [
     `
+    .page-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 16px;
+      margin-bottom: 20px;
+    }
+    .header-text-block h1 {
+      margin: 0;
+      color: #ffffff;
+      font-size: 1.6rem;
+      font-weight: 800;
+    }
+    .header-text-block p {
+      margin: 4px 0 0;
+      color: #94a3b8;
+      font-size: 0.92rem;
+    }
+    .mode-toggle-group {
+      display: flex;
+      gap: 8px;
+      background: #091024;
+      padding: 4px;
+      border-radius: 10px;
+      border: 1px solid #1f2f54;
+    }
+    .mode-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 16px;
+      background: transparent;
+      color: #94a3b8;
+      border: none;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    .mode-btn .material-icons {
+      font-size: 18px;
+    }
+    .mode-btn.active {
+      background: linear-gradient(135deg, #d4af37 0%, #b38f28 100%);
+      color: #0a1128;
+      box-shadow: 0 4px 12px rgba(212, 175, 55, 0.3);
+    }
+    .mode-btn:not(.active):hover {
+      background: #18284e;
+      color: #ffffff;
+    }
+
+    .student-picker-banner {
+      background: linear-gradient(135deg, #101f42 0%, #0d1733 100%);
+      border: 1px solid #2a4175;
+      border-radius: 12px;
+      padding: 14px 20px;
+      margin-bottom: 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 14px;
+      box-shadow: 0 4px 18px rgba(0, 0, 0, 0.3);
+    }
+    .picker-label-wrap {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .picker-icon {
+      font-size: 32px;
+      color: #d4af37;
+    }
+    .picker-sub {
+      display: block;
+      font-size: 11px;
+      color: #94a3b8;
+      text-transform: uppercase;
+      font-weight: 700;
+    }
+    .picker-name {
+      color: #ffffff;
+      font-size: 1.05rem;
+    }
+    .picker-controls {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    .picker-select-label {
+      color: #cbd5e1;
+      font-weight: 700;
+      font-size: 13px;
+    }
+    .student-dropdown {
+      padding: 8px 14px;
+      border-radius: 8px;
+      border: 1px solid #1f2f54;
+      background: #091024;
+      color: #ffffff;
+      font-weight: 600;
+      font-size: 13.5px;
+      outline: none;
+      min-width: 240px;
+      cursor: pointer;
+    }
+    .btn-switch-back {
+      padding: 8px 14px;
+      border-radius: 8px;
+      background: #18284e;
+      color: #cbd5e1;
+      border: 1px solid #2a4175;
+      font-size: 12.5px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    .btn-switch-back:hover {
+      background: #243b70;
+      color: #ffffff;
+    }
+    .btn-view-single {
+      background: rgba(212, 175, 55, 0.15);
+      color: #fde68a;
+      border: 1px solid rgba(212, 175, 55, 0.35);
+      padding: 6px 12px;
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    .btn-view-single:hover {
+      background: #d4af37;
+      color: #0a1128;
+      transform: translateY(-1px);
+    }
+
     .semester-filter-toolbar {
       background: #101b38;
       border: 1px solid #1f2f54;
@@ -572,10 +763,12 @@ export interface StudentResult {
 export class Results implements OnInit, OnDestroy {
   role: string | null = null;
   userName = 'Student';
-  studentName = 'Krishnavamsi';
-  studentRoll = 'CUTM2026CSE042';
+  studentName = 'vamsi';
+  studentRoll = '646456455';
   studentDept = 'Computer Science & Engineering';
   currentDate = new Date();
+
+  viewMode: 'class' | 'student' = 'class';
 
   semesterOptions: string[] = [
     'Semester 1',
@@ -594,6 +787,14 @@ export class Results implements OnInit, OnDestroy {
 
   studentResults: StudentResult[] = [];
   filteredResults: StudentResult[] = [];
+
+  availableStudentsList: { name: string; roll: string; dept: string; email: string }[] = [
+    { name: 'vamsi', roll: '646456455', dept: 'Computer Science & Engineering', email: 'vamsi1201@gmail.com' },
+    { name: 'Krishnavamsi', roll: 'CUTM2026CSE042', dept: 'Computer Science & Engineering', email: 'krishnavamsi1201@gmail.com' },
+    { name: 'Raj Kumar', roll: 'CUTM2026CSE018', dept: 'Computer Science & Engineering', email: 'raj.kumar@oblms.edu' },
+    { name: 'zing', roll: '4444444556', dept: 'Civil Engineering', email: 'zing@gmail.com' },
+    { name: 'Aarav Mehta', roll: 'CUTM2026CSE003', dept: 'Computer Science & Engineering', email: 'aarav.mehta@oblms.edu' }
+  ];
 
   // Batch Printing bindings
   selectedStudentsForPrint: { [name: string]: boolean } = {};
@@ -679,16 +880,26 @@ export class Results implements OnInit, OnDestroy {
   constructor() {
     try {
       this.role = localStorage.getItem('userRole')?.toLowerCase() || null;
-      this.userName = localStorage.getItem('userName') || 'Krishnavamsi';
-      this.studentName = localStorage.getItem('userName') || 'Krishnavamsi';
-      this.studentRoll = localStorage.getItem('userRoll') || 'CUTM2026CSE042';
-      this.studentDept = localStorage.getItem('userDept') || localStorage.getItem('userDepartment') || 'Computer Science & Engineering';
+      this.userName = localStorage.getItem('userName') || 'vamsi';
+      
+      if (this.role === 'student') {
+        this.studentName = this.userName;
+        this.studentRoll = localStorage.getItem('userRoll') || localStorage.getItem('userId') || '646456455';
+        this.studentDept = localStorage.getItem('userDept') || localStorage.getItem('userDepartment') || 'Computer Science & Engineering';
+        this.viewMode = 'student';
+      } else {
+        this.studentName = 'vamsi';
+        this.studentRoll = '646456455';
+        this.studentDept = 'Computer Science & Engineering';
+        this.viewMode = 'class';
+      }
     } catch {
       this.role = null;
     }
   }
 
   ngOnInit(): void {
+    this.loadStudentsList();
     this.loadResultsData();
 
     this.syncSub = this.syncService.events$.subscribe((e) => {
@@ -700,6 +911,59 @@ export class Results implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.syncSub?.unsubscribe();
+  }
+
+  setViewMode(mode: 'class' | 'student'): void {
+    this.viewMode = mode;
+    this.cdr.detectChanges();
+  }
+
+  viewSpecificStudent(sName: string): void {
+    this.studentName = sName;
+    const match = this.availableStudentsList.find(s => s.name.toLowerCase() === sName.toLowerCase());
+    if (match) {
+      this.studentRoll = match.roll || 'CUTM2026CSE042';
+      this.studentDept = match.dept || 'Computer Science & Engineering';
+    }
+    this.viewMode = 'student';
+    this.cdr.detectChanges();
+  }
+
+  onStudentSelect(sName: string): void {
+    this.studentName = sName;
+    const match = this.availableStudentsList.find(s => s.name.toLowerCase() === sName.toLowerCase());
+    if (match) {
+      this.studentRoll = match.roll || 'CUTM2026CSE042';
+      this.studentDept = match.dept || 'Computer Science & Engineering';
+    }
+    this.cdr.detectChanges();
+  }
+
+  private loadStudentsList(): void {
+    this.http.get<any[]>('http://localhost:8080/api/users').subscribe({
+      next: (users) => {
+        if (Array.isArray(users)) {
+          const studentUsers = users
+            .filter(u => u.role?.toUpperCase() === 'STUDENT')
+            .map(u => ({
+              name: u.name,
+              roll: u.id,
+              dept: u.department || 'Computer Science & Engineering',
+              email: u.email
+            }));
+          if (studentUsers.length > 0) {
+            this.availableStudentsList = studentUsers;
+            if (this.role !== 'student' && !this.studentName && studentUsers[0]) {
+              this.studentName = studentUsers[0].name;
+              this.studentRoll = studentUsers[0].roll;
+              this.studentDept = studentUsers[0].dept;
+            }
+            this.cdr.detectChanges();
+          }
+        }
+      },
+      error: () => {}
+    });
   }
 
   selectSemester(sem: string): void {
