@@ -13,6 +13,11 @@ interface ScheduleEntry {
   subject: string;
   room: string;
   facultyName?: string;
+  isAdjusted?: boolean;
+  substituteName?: string;
+  requesterName?: string;
+  topicInstructions?: string;
+  isExtraClass?: boolean;
 }
 
 @Component({
@@ -116,7 +121,7 @@ interface ScheduleEntry {
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 10px;">
                 <div>
                     <h2 style="margin: 0; font-size: 1.25rem; color: #ffffff; font-weight: 800;">📅 Weekly Timetable Matrix</h2>
-                    <p style="color: #94a3b8; font-size: 0.88rem; margin: 4px 0 0 0;">2–3 classes per day with alternating leisure & self-study slots (no continuous leisure).</p>
+                    <p style="color: #94a3b8; font-size: 0.88rem; margin: 4px 0 0 0;">2–3 classes per day with alternating leisure & self-study slots. Live-synced with faculty substitutions & extra classes.</p>
                 </div>
                 <div class="matrix-legend" style="display: flex; gap: 14px; font-size: 12px; font-weight: 600; flex-wrap: wrap;">
                     <span style="display: inline-flex; align-items: center; gap: 5px; color: #fde68a;">
@@ -126,7 +131,13 @@ interface ScheduleEntry {
                         <span style="width: 10px; height: 10px; border-radius: 3px; background: rgba(16, 185, 129, 0.2); border: 1px solid #10b981;"></span> Lab / Practical
                     </span>
                     <span style="display: inline-flex; align-items: center; gap: 5px; color: #a5b4fc;">
-                        <span style="width: 10px; height: 10px; border-radius: 3px; background: rgba(99, 102, 241, 0.2); border: 1px solid #6366f1;"></span> Leisure / Library / Sports
+                        <span style="width: 10px; height: 10px; border-radius: 3px; background: rgba(99, 102, 241, 0.2); border: 1px solid #6366f1;"></span> Leisure / Library
+                    </span>
+                    <span style="display: inline-flex; align-items: center; gap: 5px; color: #38bdf8;">
+                        <span style="width: 10px; height: 10px; border-radius: 3px; background: rgba(56, 189, 248, 0.25); border: 1px solid #38bdf8;"></span> 🔄 Substitute Adjustment
+                    </span>
+                    <span style="display: inline-flex; align-items: center; gap: 5px; color: #c084fc;">
+                        <span style="width: 10px; height: 10px; border-radius: 3px; background: rgba(192, 132, 252, 0.25); border: 1px solid #c084fc;"></span> ⭐ Extra Class
                     </span>
                 </div>
             </div>
@@ -154,7 +165,20 @@ interface ScheduleEntry {
                                 <div *ngIf="getSlot(d, p) as slot" 
                                      class="matrix-slot-card"
                                      [class.lab-card]="isLab(slot)"
-                                     [class.leisure-card]="isLeisure(slot)">
+                                     [class.leisure-card]="isLeisure(slot)"
+                                     [class.adjusted-card]="slot.isAdjusted"
+                                     [class.extra-card]="slot.isExtraClass"
+                                     [title]="slot.isAdjusted ? ('Substituted by ' + slot.substituteName + ' (Covering for ' + slot.requesterName + ')') : (slot.isExtraClass ? 'Extra Remedial Lecture by ' + slot.facultyName : '')">
+                                    
+                                    <!-- Substitute Tag -->
+                                    <div *ngIf="slot.isAdjusted" class="substitute-pill">
+                                        🔄 Sub: {{ slot.substituteName }}
+                                    </div>
+                                    <!-- Extra Class Tag -->
+                                    <div *ngIf="slot.isExtraClass" class="extra-pill">
+                                        ⭐ Extra Class: {{ slot.facultyName }}
+                                    </div>
+
                                     <div class="slot-subject">{{ slot.subject }}</div>
                                     <div class="slot-room">
                                         {{ isLeisure(slot) ? '📍' : (isLab(slot) ? '🔬' : '🚪') }} {{ slot.room }}
@@ -171,7 +195,14 @@ interface ScheduleEntry {
         </div>
 
         <div class="table-card">
-            <h2>Weekly Timetable List ({{ filteredSchedule.length }})</h2>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; flex-wrap: wrap; gap: 10px;">
+                <h2 style="margin: 0;">Weekly Timetable List ({{ filteredSchedule.length }})</h2>
+                <div *ngIf="role === 'faculty' || role === 'admin'">
+                    <a href="/class-adjustments" class="btn btn-secondary" style="font-size: 12px; text-decoration: none; padding: 6px 14px; display: inline-flex; align-items: center; gap: 6px;">
+                        🔄 Manage Class Adjustments & Extra Classes
+                    </a>
+                </div>
+            </div>
             
             <!-- Search & Filters -->
             <div class="filter-row">
@@ -183,8 +214,18 @@ interface ScheduleEntry {
                     </select>
                 </label>
                 <label>
-                    Search Subject / Room:
-                    <input type="text" [(ngModel)]="searchSubject" (input)="applyFilters()" placeholder="Filter subjects..." />
+                    Type Filter:
+                    <select [(ngModel)]="typeFilter" (change)="applyFilters()">
+                        <option value="">All Slots</option>
+                        <option value="adjusted">🔄 Only Adjusted Slots</option>
+                        <option value="extra">⭐ Only Extra Classes</option>
+                        <option value="classes">📚 Regular Classes Only</option>
+                        <option value="leisure">☕ Leisure & Self-Study</option>
+                    </select>
+                </label>
+                <label>
+                    Search Subject / Room / Faculty:
+                    <input type="text" [(ngModel)]="searchSubject" (input)="applyFilters()" placeholder="Filter subjects or substitute faculty..." />
                 </label>
             </div>
 
@@ -195,6 +236,7 @@ interface ScheduleEntry {
                         <th>Period</th>
                         <th>Subject / Activity</th>
                         <th>Location</th>
+                        <th>Faculty / Substitution</th>
                         <th *ngIf="role === 'admin' || role === 'faculty'">Actions</th>
                     </tr>
                 </thead>
@@ -206,15 +248,28 @@ interface ScheduleEntry {
                             <span [style.color]="isLeisure(entry) ? '#a5b4fc' : (isLab(entry) ? '#34d399' : '#ffffff')">
                                 {{ entry.subject }}
                             </span>
+                            <span *ngIf="entry.isExtraClass" class="extra-badge-pill">⭐ Extra Lecture</span>
                         </td>
                         <td><span class="room-badge">{{ entry.room }}</span></td>
+                        <td>
+                            <div *ngIf="entry.isAdjusted" class="substitute-info-box">
+                                <span class="sub-name">🔄 <strong>{{ entry.substituteName }}</strong></span>
+                                <small class="sub-for">Covering for: {{ entry.requesterName }}</small>
+                            </div>
+                            <div *ngIf="entry.isExtraClass" class="extra-info-box">
+                                <span style="color: #c084fc; font-weight: 700;">👨‍🏫 {{ entry.facultyName || 'Faculty' }}</span>
+                            </div>
+                            <span *ngIf="!entry.isAdjusted && !entry.isExtraClass" style="color: #94a3b8; font-size: 12px;">
+                                Regular Department Faculty
+                            </span>
+                        </td>
                         <td *ngIf="role === 'admin' || role === 'faculty'" class="actions-cell">
                             <button class="edit-btn" (click)="editEntry(entry)">Edit</button>
                             <button class="danger" (click)="deleteEntry(entry)">Delete</button>
                         </td>
                     </tr>
                     <tr *ngIf="filteredSchedule.length === 0">
-                        <td colspan="5" class="empty-state">No schedule slots match your search.</td>
+                        <td [attr.colspan]="(role === 'admin' || role === 'faculty') ? 6 : 5" class="empty-state">No schedule slots match your search.</td>
                     </tr>
                 </tbody>
             </table>
@@ -500,6 +555,70 @@ interface ScheduleEntry {
       background: rgba(99, 102, 241, 0.25);
       color: #c7d2fe;
       border-color: rgba(99, 102, 241, 0.4);
+    }
+
+    .matrix-slot-card.adjusted-card {
+      background: linear-gradient(135deg, rgba(56, 189, 248, 0.12) 0%, rgba(16, 27, 56, 0.9) 100%);
+      border: 1px solid #38bdf8;
+      box-shadow: 0 0 12px rgba(56, 189, 248, 0.2);
+    }
+
+    .matrix-slot-card.extra-card {
+      background: linear-gradient(135deg, rgba(192, 132, 252, 0.15) 0%, rgba(16, 27, 56, 0.9) 100%);
+      border: 1px solid #c084fc;
+      box-shadow: 0 0 12px rgba(192, 132, 252, 0.2);
+    }
+
+    .substitute-pill {
+      background: #0284c7;
+      color: #ffffff;
+      font-size: 9px;
+      font-weight: 800;
+      padding: 2px 6px;
+      border-radius: 4px;
+      letter-spacing: 0.3px;
+      white-space: nowrap;
+      margin-bottom: 2px;
+    }
+
+    .extra-pill {
+      background: #9333ea;
+      color: #ffffff;
+      font-size: 9px;
+      font-weight: 800;
+      padding: 2px 6px;
+      border-radius: 4px;
+      letter-spacing: 0.3px;
+      white-space: nowrap;
+      margin-bottom: 2px;
+    }
+
+    .extra-badge-pill {
+      display: inline-block;
+      margin-left: 8px;
+      background: rgba(192, 132, 252, 0.2);
+      color: #c084fc;
+      border: 1px solid rgba(192, 132, 252, 0.4);
+      padding: 2px 7px;
+      border-radius: 4px;
+      font-size: 10.5px;
+      font-weight: 700;
+    }
+
+    .substitute-info-box {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .sub-name {
+      color: #38bdf8;
+      font-size: 13px;
+    }
+
+    .sub-for {
+      color: #94a3b8;
+      font-size: 11px;
     }
 
     .slot-subject {
@@ -883,7 +1002,11 @@ export class Timetable implements OnInit {
 
   // Filters
   dayFilter = '';
+  typeFilter = '';
   searchSubject = '';
+
+  approvedAdjustments: any[] = [];
+  extraClasses: any[] = [];
 
   constructor(private http: HttpClient) {
     try {
@@ -924,28 +1047,143 @@ export class Timetable implements OnInit {
   private loadTimetable(): void {
     const branchFallback = this.getBranchSchedule(this.userDept);
 
-    // For students, always provide their department-specific full weekly schedule
-    if (this.role === 'student') {
-      this.weeklySchedule = branchFallback;
-      this.applyFilters();
-      return;
-    }
-
+    // Load backend timetable slots if applicable
     this.http.get<ScheduleEntry[]>('http://localhost:8080/api/timetable').subscribe({
       next: (data) => {
         const isCSE = this.userDept.toLowerCase().includes('computer') || this.userDept.toLowerCase().includes('cse');
-        if (Array.isArray(data) && data.length >= 25 && isCSE && this.role !== 'faculty') {
+        if (Array.isArray(data) && data.length >= 25 && isCSE && this.role !== 'faculty' && this.role !== 'student') {
           this.weeklySchedule = data;
         } else {
           this.weeklySchedule = branchFallback;
         }
-        this.applyFilters();
+        this.loadAdjustmentsAndOverlay();
       },
       error: () => {
         this.weeklySchedule = branchFallback;
-        this.applyFilters();
+        this.loadAdjustmentsAndOverlay();
       }
     });
+  }
+
+  private loadAdjustmentsAndOverlay(): void {
+    // 1. Fetch Class Adjustments from API / Local Storage
+    this.http.get<any[]>('http://localhost:8080/api/class-adjustments').subscribe({
+      next: (adjustments) => {
+        if (Array.isArray(adjustments) && adjustments.length > 0) {
+          this.approvedAdjustments = adjustments.filter(a => a.status === 'APPROVED' || a.notifiedStudents);
+        } else {
+          this.loadLocalAdjustments();
+        }
+        this.overlayAdjustmentsAndExtraClasses();
+      },
+      error: () => {
+        this.loadLocalAdjustments();
+        this.overlayAdjustmentsAndExtraClasses();
+      }
+    });
+  }
+
+  private loadLocalAdjustments(): void {
+    try {
+      const stored = localStorage.getItem('obslmsClassAdjustments');
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        if (Array.isArray(parsed)) {
+          this.approvedAdjustments = parsed.filter((a: any) => a.status === 'APPROVED' || a.notifiedStudents);
+          return;
+        }
+      }
+    } catch {}
+
+    // Fallback sample approved adjustment for live display
+    this.approvedAdjustments = [
+      {
+        id: 1,
+        courseName: 'Fluid Mechanics & Hydraulic Machinery (FMHM)',
+        substituteName: 'Prof. Sunita Sharma',
+        requesterName: 'Prof. Ramesh Babu',
+        adjustmentDate: '2026-09-10',
+        period: '09:00 AM - 10:00 AM',
+        room: 'CE-LH-101',
+        status: 'APPROVED'
+      }
+    ];
+  }
+
+  private overlayAdjustmentsAndExtraClasses(): void {
+    // Load extra classes from local storage
+    try {
+      const storedExtra = localStorage.getItem('obslmsExtraClasses');
+      if (storedExtra) {
+        this.extraClasses = JSON.parse(storedExtra);
+      }
+    } catch {}
+
+    // 1. Overlay Adjustments
+    this.weeklySchedule.forEach(slot => {
+      // Normalize comparison strings
+      const sSubject = (slot.subject || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+      const sPeriod = (slot.period || '').trim().toLowerCase().split(' - ')[0].trim();
+
+      const matchedAdj = this.approvedAdjustments.find(a => {
+        const aSubject = (a.courseName || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+        const aPeriod = (a.period || '').trim().toLowerCase().split(' - ')[0].trim();
+        
+        const subjectMatch = sSubject.includes(aSubject) || aSubject.includes(sSubject);
+        const periodMatch = sPeriod === aPeriod;
+
+        let dayMatch = true;
+        if (a.adjustmentDate) {
+          try {
+            const adjDay = new Date(a.adjustmentDate).toLocaleDateString('en-US', { weekday: 'long' });
+            if (adjDay && slot.day) {
+              dayMatch = adjDay.toLowerCase() === slot.day.toLowerCase();
+            }
+          } catch {}
+        }
+
+        return (subjectMatch && periodMatch) || (subjectMatch && dayMatch);
+      });
+
+      if (matchedAdj) {
+        slot.isAdjusted = true;
+        slot.substituteName = matchedAdj.substituteName;
+        slot.requesterName = matchedAdj.requesterName;
+        slot.topicInstructions = matchedAdj.topicInstructions;
+      }
+    });
+
+    // 2. Overlay Extra Classes
+    if (Array.isArray(this.extraClasses) && this.extraClasses.length > 0) {
+      this.extraClasses.forEach(extra => {
+        const targetDay = (extra.day || 'Monday').toLowerCase();
+        const targetPeriodStart = (extra.period || '09:00 AM').split(' - ')[0].trim().toLowerCase();
+
+        const existingSlot = this.weeklySchedule.find(s => 
+          s.day.toLowerCase() === targetDay && 
+          (s.period || '').toLowerCase().startsWith(targetPeriodStart)
+        );
+
+        if (existingSlot) {
+          existingSlot.subject = extra.courseName;
+          existingSlot.room = extra.room;
+          existingSlot.facultyName = extra.facultyName;
+          existingSlot.isExtraClass = true;
+        } else {
+          this.weeklySchedule.push({
+            id: Date.now() + Math.floor(Math.random() * 1000),
+            day: extra.day,
+            period: extra.period,
+            subject: extra.courseName,
+            room: extra.room,
+            facultyName: extra.facultyName,
+            isExtraClass: true
+          });
+        }
+      });
+    }
+
+    this.applyFilters();
   }
 
   getSlot(day: string, period: string): ScheduleEntry | null {
@@ -977,9 +1215,26 @@ export class Timetable implements OnInit {
       result = result.filter(e => e.day === this.dayFilter);
     }
 
+    if (this.typeFilter) {
+      if (this.typeFilter === 'adjusted') {
+        result = result.filter(e => e.isAdjusted === true);
+      } else if (this.typeFilter === 'extra') {
+        result = result.filter(e => e.isExtraClass === true);
+      } else if (this.typeFilter === 'classes') {
+        result = result.filter(e => !this.isLeisure(e) && !e.isExtraClass);
+      } else if (this.typeFilter === 'leisure') {
+        result = result.filter(e => this.isLeisure(e));
+      }
+    }
+
     if (this.searchSubject.trim()) {
       const q = this.searchSubject.toLowerCase();
-      result = result.filter(e => e.subject.toLowerCase().includes(q));
+      result = result.filter(e => 
+        e.subject.toLowerCase().includes(q) || 
+        (e.room && e.room.toLowerCase().includes(q)) ||
+        (e.substituteName && e.substituteName.toLowerCase().includes(q)) ||
+        (e.facultyName && e.facultyName.toLowerCase().includes(q))
+      );
     }
 
     // Sort by Day and Period

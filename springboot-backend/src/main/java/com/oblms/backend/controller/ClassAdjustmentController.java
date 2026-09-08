@@ -129,6 +129,37 @@ public class ClassAdjustmentController {
         adj.setRejectionReason(null);
         adj.setUpdatedAt(LocalDateTime.now());
         ClassAdjustment saved = adjustmentRepository.save(adj);
+
+        // 1. Notify the requester faculty
+        try {
+            AppNotification facultyNotif = new AppNotification(
+                    null,
+                    adj.getRequesterId() != null ? adj.getRequesterId() : "FACULTY",
+                    adj.getRequesterName(),
+                    "FACULTY",
+                    "✅ Class Adjustment Accepted: " + adj.getCourseName(),
+                    "Prof. " + adj.getSubstituteName() + " has ACCEPTED your substitute lecture request for " + adj.getCourseName() + " on " + adj.getAdjustmentDate() + " (" + adj.getPeriod() + ").",
+                    "success",
+                    "/class-adjustments"
+            );
+            notificationRepository.save(facultyNotif);
+
+            // 2. Notify Admin about the substitute allocation
+            AppNotification adminNotif = new AppNotification(
+                    null,
+                    "ADMIN",
+                    "Institutional Administration",
+                    "ADMIN",
+                    "🔄 Substitute Faculty Allocated: " + adj.getCourseName(),
+                    "[Admin Notice] Prof. " + adj.getSubstituteName() + " has accepted substitute lecture coverage for " + adj.getCourseName() + " on " + adj.getAdjustmentDate() + " (" + adj.getPeriod() + ") in Room " + adj.getRoom() + " requested by Prof. " + adj.getRequesterName() + ".",
+                    "info",
+                    "/timetable"
+            );
+            notificationRepository.save(adminNotif);
+        } catch (Exception e) {
+            System.err.println("Failed to send approval notifications: " + e.getMessage());
+        }
+
         return ResponseEntity.ok(saved);
     }
 
@@ -149,6 +180,24 @@ public class ClassAdjustmentController {
         adj.setRejectionReason(reason);
         adj.setUpdatedAt(LocalDateTime.now());
         ClassAdjustment saved = adjustmentRepository.save(adj);
+
+        // Notify requester faculty about rejection
+        try {
+            AppNotification facultyNotif = new AppNotification(
+                    null,
+                    adj.getRequesterId() != null ? adj.getRequesterId() : "FACULTY",
+                    adj.getRequesterName(),
+                    "FACULTY",
+                    "❌ Class Adjustment Declined: " + adj.getCourseName(),
+                    "Prof. " + adj.getSubstituteName() + " was unable to accept your substitute request for " + adj.getCourseName() + " on " + adj.getAdjustmentDate() + ". Reason: \"" + reason + "\"",
+                    "warning",
+                    "/class-adjustments"
+            );
+            notificationRepository.save(facultyNotif);
+        } catch (Exception e) {
+            System.err.println("Failed to send rejection notification: " + e.getMessage());
+        }
+
         return ResponseEntity.ok(saved);
     }
 
@@ -159,7 +208,7 @@ public class ClassAdjustmentController {
         return ResponseEntity.ok().build();
     }
 
-    // Broadcast Class Adjustment Notification to Registered Students
+    // Broadcast Class Adjustment Notification to Registered Students AND Admin
     @PostMapping("/{id}/notify-students")
     public ResponseEntity<?> notifyStudents(
             @PathVariable Long id,
@@ -221,7 +270,7 @@ public class ClassAdjustmentController {
             }
 
             // 2. Also send broadcast notification for role STUDENT
-            AppNotification broadcast = new AppNotification(
+            AppNotification broadcastStudent = new AppNotification(
                     null,
                     "ALL",
                     "All Registered Students",
@@ -231,12 +280,126 @@ public class ClassAdjustmentController {
                     "warning",
                     "/timetable"
             );
-            notificationRepository.save(broadcast);
+            notificationRepository.save(broadcastStudent);
+
+            // 3. Send Notification to Institutional Admin
+            List<User> admins = userRepository.findAll().stream()
+                    .filter(u -> u.getRole() != null && "ADMIN".equalsIgnoreCase(u.getRole().trim()))
+                    .toList();
+            
+            String adminMsg = "[Admin Notice] Faculty substitution confirmed & broadcasted: " + subFaculty + " is allocated to conduct " + courseName + " on " + adj.getAdjustmentDate() + " (" + adj.getPeriod() + ") in Room " + adj.getRoom() + " requested by " + adj.getRequesterName() + ".";
+            for (User admin : admins) {
+                AppNotification adminNotif = new AppNotification(
+                        null,
+                        admin.getId() != null ? admin.getId() : "ADMIN",
+                        admin.getName(),
+                        "ADMIN",
+                        "🔄 Class Adjustment Confirmed: " + courseName,
+                        adminMsg,
+                        "info",
+                        "/timetable"
+                );
+                notificationRepository.save(adminNotif);
+            }
+
+            AppNotification broadcastAdmin = new AppNotification(
+                    null,
+                    "ADMIN",
+                    "Admin Office",
+                    "ADMIN",
+                    "🔄 Class Adjustment Confirmed: " + courseName,
+                    adminMsg,
+                    "info",
+                    "/timetable"
+            );
+            notificationRepository.save(broadcastAdmin);
 
             return ResponseEntity.ok(Map.of(
-                    "message", "Class adjustment notification sent to registered students successfully!",
+                    "message", "Class adjustment notification sent to registered students & Admin successfully!",
                     "adjustment", saved,
                     "deliveredCount", deliveredCount
+            ));
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.internalServerError().body(Map.of("error", e.getMessage()));
+        }
+    }
+
+    // Schedule Extra Class / Remedial Lecture with integrated notifications & timetable sync
+    @PostMapping("/extra-class")
+    public ResponseEntity<?> scheduleExtraClass(@RequestBody Map<String, String> payload) {
+        try {
+            String facultyId = payload.getOrDefault("facultyId", "FAC001");
+            String facultyName = payload.getOrDefault("facultyName", "Faculty");
+            String courseName = payload.getOrDefault("courseName", "Extra Lecture");
+            String date = payload.getOrDefault("date", "");
+            String day = payload.getOrDefault("day", "Monday");
+            String period = payload.getOrDefault("period", "09:00 AM - 10:00 AM");
+            String room = payload.getOrDefault("room", "LH-101");
+            String topic = payload.getOrDefault("topic", "Remedial & Extra Practice Session");
+
+            String studentTitle = "📅 Extra Class Scheduled: " + courseName;
+            String studentMsg = "Attention: An extra remedial lecture for " + courseName + " has been scheduled by " + facultyName + " on " + date + " (" + day + ", " + period + ") in Room " + room + ". Topic/Agenda: \"" + topic + "\".";
+
+            // 1. Notify all students
+            List<User> students = userRepository.findAll().stream()
+                    .filter(u -> u.getRole() != null && "STUDENT".equalsIgnoreCase(u.getRole().trim()))
+                    .toList();
+
+            for (User student : students) {
+                AppNotification notif = new AppNotification(
+                        null,
+                        student.getId() != null ? student.getId() : student.getEmail(),
+                        student.getName(),
+                        "STUDENT",
+                        studentTitle,
+                        studentMsg,
+                        "warning",
+                        "/timetable"
+                );
+                notificationRepository.save(notif);
+            }
+
+            AppNotification broadcastStudent = new AppNotification(
+                    null,
+                    "ALL",
+                    "All Registered Students",
+                    "STUDENT",
+                    studentTitle,
+                    studentMsg,
+                    "warning",
+                    "/timetable"
+            );
+            notificationRepository.save(broadcastStudent);
+
+            // 2. Notify Admin
+            String adminTitle = "📅 Extra Lecture Booked: " + courseName;
+            String adminMsg = "[Admin Notice] " + facultyName + " has booked an extra lecture for " + courseName + " on " + date + " (" + day + ", " + period + ") in Room " + room + ". Topic: \"" + topic + "\".";
+
+            AppNotification adminNotif = new AppNotification(
+                    null,
+                    "ADMIN",
+                    "Academic Admin",
+                    "ADMIN",
+                    adminTitle,
+                    adminMsg,
+                    "info",
+                    "/timetable"
+            );
+            notificationRepository.save(adminNotif);
+
+            return ResponseEntity.ok(Map.of(
+                    "success", true,
+                    "message", "Extra lecture scheduled and dual notifications broadcasted to Students and Admin!",
+                    "details", Map.of(
+                            "courseName", courseName,
+                            "facultyName", facultyName,
+                            "date", date,
+                            "day", day,
+                            "period", period,
+                            "room", room,
+                            "topic", topic
+                    )
             ));
         } catch (Exception e) {
             e.printStackTrace();
