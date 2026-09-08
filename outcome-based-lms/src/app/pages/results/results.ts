@@ -6,6 +6,7 @@ import { Sidebar } from '../../shared/sidebar/sidebar';
 import { Footer } from '../../shared/footer/footer';
 import { HttpClient } from '@angular/common/http';
 import { SyncService } from '../../shared/services/sync.service';
+import { ToastService } from '../../shared/services/toast.service';
 import { Subscription } from 'rxjs';
 
 export interface SemesterCourseRecord {
@@ -803,6 +804,7 @@ export class Results implements OnInit, OnDestroy {
   private http = inject(HttpClient);
   private cdr = inject(ChangeDetectorRef);
   private syncService = inject(SyncService);
+  private toastService = inject(ToastService);
   private syncSub?: Subscription;
 
   // Complete 8-Semester Academic Curriculum with Official Grades
@@ -1156,11 +1158,12 @@ export class Results implements OnInit, OnDestroy {
   triggerBatchPrint(): void {
     const selected = Object.keys(this.selectedStudentsForPrint).filter(k => this.selectedStudentsForPrint[k]);
     if (selected.length === 0) {
-      alert('Please select at least one student to export batch transcripts.');
+      this.toastService.warning('Please select at least one student to export batch transcripts.');
       return;
     }
     
     this.selectedBatchStudents = selected;
+    this.toastService.info(`Preparing transcripts for ${selected.length} student(s)... 📄`);
     document.body.classList.add('batch-mode');
     
     try {
