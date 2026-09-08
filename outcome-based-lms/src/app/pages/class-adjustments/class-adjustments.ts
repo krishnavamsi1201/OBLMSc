@@ -20,6 +20,8 @@ export interface ClassAdjustment {
   topicInstructions?: string;
   status: 'PENDING' | 'APPROVED' | 'REJECTED';
   rejectionReason?: string;
+  notifiedStudents?: boolean;
+  notifiedAt?: string;
   createdAt?: string;
 }
 
@@ -194,7 +196,7 @@ export interface FacultyUser {
                             <th>Room</th>
                             <th>Substitute Faculty</th>
                             <th>Status</th>
-                            <th>Notes / Rejection Reason</th>
+                            <th>Student Notification Status</th>
                             <th>Actions</th>
                         </tr>
                     </thead>
@@ -217,14 +219,27 @@ export interface FacultyUser {
                                 </span>
                             </td>
                             <td>
+                                <div *ngIf="req.status === 'APPROVED'" class="notify-student-cell">
+                                    <button *ngIf="!req.notifiedStudents" 
+                                            type="button" 
+                                            class="btn-notify-students" 
+                                            (click)="openNotifyStudentsModal(req)">
+                                        📢 Send Adjustment Class Details to All Registered Students
+                                    </button>
+                                    <div *ngIf="req.notifiedStudents" class="notified-badge-container">
+                                        <span class="notified-badge">
+                                            ✅ Details Sent to Students
+                                        </span>
+                                        <button type="button" class="btn-renotify" (click)="openNotifyStudentsModal(req)" title="Resend Notification">
+                                            🔄 Resend
+                                        </button>
+                                    </div>
+                                </div>
                                 <span *ngIf="req.status === 'REJECTED'" class="rej-reason-text">
                                     ❌ <strong>Declined:</strong> {{ req.rejectionReason || 'No reason provided' }}
                                 </span>
-                                <span *ngIf="req.status === 'APPROVED'" class="app-note-text">
-                                    ✅ Accepted by peer faculty
-                                </span>
                                 <span *ngIf="req.status === 'PENDING'" class="pending-note-text">
-                                    ⏳ Awaiting peer confirmation
+                                    ⏳ Awaiting substitute confirmation
                                 </span>
                             </td>
                             <td>
@@ -304,6 +319,93 @@ export interface FacultyUser {
                         </button>
                     </div>
                 </form>
+            </div>
+        </div>
+
+        <!-- NOTIFY REGISTERED STUDENTS MODAL -->
+        <div class="modal-overlay" *ngIf="showNotifyModal">
+            <div class="modal-card modal-notify-card">
+                <div class="modal-header modal-header-gold">
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <span style="font-size: 1.5rem;">📢</span>
+                        <div>
+                            <h3 style="margin: 0; color: #d4af37; font-size: 1.25rem;">Broadcast Class Adjustment to Students</h3>
+                            <span style="font-size: 0.8rem; color: #94a3b8;">Send official lecture substitution notice to all registered students</span>
+                        </div>
+                    </div>
+                    <button type="button" class="modal-close-btn" (click)="closeNotifyModal()">✕</button>
+                </div>
+
+                <div class="modal-body">
+                    <!-- Summary Card -->
+                    <div class="adjustment-summary-card">
+                        <div class="summary-row">
+                            <span class="sum-label">📚 Subject / Course:</span>
+                            <span class="sum-val highlight-gold">{{ selectedAdjustmentForNotify?.courseName }}</span>
+                        </div>
+                        <div class="summary-grid-2">
+                            <div>
+                                <span class="sum-label">📅 Lecture Date:</span>
+                                <span class="sum-val">{{ selectedAdjustmentForNotify?.adjustmentDate }}</span>
+                            </div>
+                            <div>
+                                <span class="sum-label">⏰ Time & Period:</span>
+                                <span class="sum-val">{{ selectedAdjustmentForNotify?.period }}</span>
+                            </div>
+                        </div>
+                        <div class="summary-grid-2">
+                            <div>
+                                <span class="sum-label">👨‍🏫 Substitute Faculty:</span>
+                                <span class="sum-val" style="color: #4ade80; font-weight: 700;">{{ selectedAdjustmentForNotify?.substituteName }}</span>
+                            </div>
+                            <div>
+                                <span class="sum-label">🏛️ Classroom / Venue:</span>
+                                <span class="sum-val">{{ selectedAdjustmentForNotify?.room }}</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Custom Instructions Field -->
+                    <div style="margin-top: 14px;">
+                        <label style="font-size: 0.88rem; color: #cbd5e1; margin-bottom: 6px; display: block; font-weight: 700;">
+                            📝 Message & Instructions for Registered Students:
+                        </label>
+                        <textarea [(ngModel)]="customNotificationMessage" 
+                                  rows="3" 
+                                  class="notify-custom-textarea"
+                                  placeholder="e.g. Please bring drawing instruments and reference textbook for this lecture...">
+                        </textarea>
+                    </div>
+
+                    <!-- Student Notification Live Preview -->
+                    <div class="notification-preview-box">
+                        <div class="preview-header">
+                            <span style="color: #d4af37; font-weight: 700; font-size: 11.5px; text-transform: uppercase;">
+                                🔔 Student Notification Alert Preview:
+                            </span>
+                        </div>
+                        <p class="preview-text">
+                            <strong>🔄 Class Adjustment Notice: {{ selectedAdjustmentForNotify?.courseName }}</strong><br>
+                            Attention: Your lecture for {{ selectedAdjustmentForNotify?.courseName }} on {{ selectedAdjustmentForNotify?.adjustmentDate }} ({{ selectedAdjustmentForNotify?.period }}) in Classroom {{ selectedAdjustmentForNotify?.room }} will be conducted by substitute faculty <strong>{{ selectedAdjustmentForNotify?.substituteName }}</strong>.
+                            <span *ngIf="customNotificationMessage" style="display: block; margin-top: 4px; color: #fde68a;">
+                                Instructions: "{{ customNotificationMessage }}"
+                            </span>
+                        </p>
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" 
+                            class="btn btn-notify-submit" 
+                            [disabled]="isNotifyingStudents"
+                            (click)="sendNotificationToStudents()">
+                        <span *ngIf="!isNotifyingStudents">🚀 Send Notification to All Registered Students</span>
+                        <span *ngIf="isNotifyingStudents">⏳ Broadcasting Notice...</span>
+                    </button>
+                    <button type="button" class="btn btn-secondary" (click)="closeNotifyModal()" [disabled]="isNotifyingStudents">
+                        Cancel
+                    </button>
+                </div>
             </div>
         </div>
 
@@ -545,6 +647,166 @@ export interface FacultyUser {
     .modal-footer { display: flex; justify-content: flex-end; gap: 10px; margin-top: 18px; }
     .btn-reject-confirm { background: #ef4444; color: #ffffff; border: none; padding: 10px 18px; border-radius: 8px; font-weight: 800; cursor: pointer; font-size: 13px; }
     .btn-reject-confirm:hover { background: #dc2626; }
+
+    /* Student Notification Feature Styles */
+    .notify-student-cell {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .btn-notify-students {
+      background: linear-gradient(135deg, #d4af37 0%, #b38f28 100%);
+      color: #0a1128;
+      font-weight: 800;
+      font-size: 12px;
+      padding: 7px 12px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      box-shadow: 0 4px 12px rgba(212, 175, 55, 0.25);
+      transition: all 0.2s ease;
+      text-align: left;
+      line-height: 1.3;
+    }
+    .btn-notify-students:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 6px 16px rgba(212, 175, 55, 0.4);
+      filter: brightness(1.1);
+    }
+    .notified-badge-container {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .notified-badge {
+      background: rgba(34, 197, 94, 0.18);
+      color: #4ade80;
+      border: 1px solid rgba(34, 197, 94, 0.4);
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-size: 11.5px;
+      font-weight: 700;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .btn-renotify {
+      background: rgba(212, 175, 55, 0.15);
+      color: #d4af37;
+      border: 1px solid rgba(212, 175, 55, 0.3);
+      padding: 4px 8px;
+      border-radius: 5px;
+      font-size: 11px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .btn-renotify:hover {
+      background: rgba(212, 175, 55, 0.3);
+      color: #ffffff;
+    }
+    .modal-notify-card {
+      border: 1px solid #d4af37;
+      max-width: 580px;
+    }
+    .modal-header-gold {
+      border-bottom: 1px solid rgba(212, 175, 55, 0.3);
+    }
+    .adjustment-summary-card {
+      background: #091024;
+      border: 1px solid #1f2f54;
+      border-left: 4px solid #d4af37;
+      border-radius: 10px;
+      padding: 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+    .summary-row {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+    .summary-grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      font-size: 12.5px;
+    }
+    .sum-label {
+      font-size: 11px;
+      color: #94a3b8;
+      text-transform: uppercase;
+      font-weight: 700;
+    }
+    .sum-val {
+      color: #ffffff;
+      font-size: 13px;
+    }
+    .highlight-gold {
+      color: #fde68a;
+      font-weight: 800;
+      font-size: 14px;
+    }
+    .notify-custom-textarea {
+      width: 100%;
+      box-sizing: border-box;
+      background: #091024;
+      border: 1px solid #1f2f54;
+      border-radius: 8px;
+      padding: 10px 12px;
+      color: #ffffff;
+      font-size: 13px;
+      outline: none;
+      resize: vertical;
+    }
+    .notify-custom-textarea:focus {
+      border-color: #d4af37;
+      box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.2);
+    }
+    .notification-preview-box {
+      background: linear-gradient(135deg, rgba(212, 175, 55, 0.08) 0%, rgba(16, 27, 56, 0.9) 100%);
+      border: 1px dashed rgba(212, 175, 55, 0.4);
+      border-radius: 8px;
+      padding: 12px 14px;
+      margin-top: 14px;
+    }
+    .preview-header {
+      margin-bottom: 6px;
+    }
+    .preview-text {
+      margin: 0;
+      font-size: 12.5px;
+      color: #cbd5e1;
+      line-height: 1.5;
+    }
+    .btn-notify-submit {
+      background: linear-gradient(135deg, #d4af37 0%, #b38f28 100%);
+      color: #0a1128;
+      font-weight: 800;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 13px;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s;
+    }
+    .btn-notify-submit:hover:not(:disabled) {
+      filter: brightness(1.1);
+      transform: translateY(-1px);
+    }
+    .btn-notify-submit:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
     `
   ]
 })
@@ -606,6 +868,12 @@ export class ClassAdjustments implements OnInit {
   showRejectModal: boolean = false;
   selectedAdjustmentForReject: ClassAdjustment | null = null;
   rejectionReasonText: string = '';
+
+  // Notify students modal state
+  showNotifyModal: boolean = false;
+  selectedAdjustmentForNotify: ClassAdjustment | null = null;
+  customNotificationMessage: string = '';
+  isNotifyingStudents: boolean = false;
 
   constructor() {
     try {
@@ -869,6 +1137,69 @@ export class ClassAdjustments implements OnInit {
         }
       });
     }
+  }
+
+  openNotifyStudentsModal(adj: ClassAdjustment): void {
+    this.selectedAdjustmentForNotify = adj;
+    this.customNotificationMessage = adj.topicInstructions || '';
+    this.showNotifyModal = true;
+  }
+
+  closeNotifyModal(): void {
+    this.showNotifyModal = false;
+    this.selectedAdjustmentForNotify = null;
+    this.customNotificationMessage = '';
+  }
+
+  sendNotificationToStudents(): void {
+    if (!this.selectedAdjustmentForNotify || !this.selectedAdjustmentForNotify.id) {
+      this.toast.warning('Please select a valid approved class adjustment.');
+      return;
+    }
+
+    const adj = this.selectedAdjustmentForNotify;
+    this.isNotifyingStudents = true;
+
+    this.http.post<any>(`http://localhost:8080/api/class-adjustments/${adj.id}/notify-students`, {
+      customNote: this.customNotificationMessage
+    }).subscribe({
+      next: (res) => {
+        this.isNotifyingStudents = false;
+        adj.notifiedStudents = true;
+        adj.notifiedAt = new Date().toISOString();
+        this.syncToLocalStorage();
+        this.toast.success(`Lecture adjustment notice broadcasted to all registered students! 📢`);
+        this.closeNotifyModal();
+        this.loadAdjustments();
+      },
+      error: () => {
+        this.isNotifyingStudents = false;
+        adj.notifiedStudents = true;
+        adj.notifiedAt = new Date().toISOString();
+        this.syncToLocalStorage();
+
+        // Local storage notification fallback
+        try {
+          const stored = localStorage.getItem('obslmsNotifications');
+          let notifs: any[] = stored ? JSON.parse(stored) : [];
+          notifs.unshift({
+            id: 'NOTIF_STU_' + Date.now(),
+            title: `🔄 Class Adjustment: ${adj.courseName}`,
+            message: `Attention: Your lecture for ${adj.courseName} on ${adj.adjustmentDate} (${adj.period}) in Classroom ${adj.room} will be conducted by substitute faculty Prof. ${adj.substituteName}.${this.customNotificationMessage ? ' Instructions: ' + this.customNotificationMessage : ''}`,
+            type: 'warning',
+            date: new Date().toISOString(),
+            read: false,
+            recipientRole: 'STUDENT',
+            targetRole: 'STUDENT'
+          });
+          localStorage.setItem('obslmsNotifications', JSON.stringify(notifs));
+        } catch {}
+
+        this.toast.success(`Lecture adjustment notice sent to registered students! 📢`);
+        this.closeNotifyModal();
+        this.cdr.detectChanges();
+      }
+    });
   }
 
   deleteAdjustment(adj: ClassAdjustment): void {

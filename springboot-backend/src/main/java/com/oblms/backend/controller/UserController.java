@@ -87,6 +87,7 @@ public class UserController {
                 userToSave.setDepartment(department);
             }
             userToSave.setEnrolledCourses(enrolled);
+        } else {
             if (id == null || id.isEmpty()) {
                 String prefix = "STUDENT".equalsIgnoreCase(role) ? "STU" : "FAC";
                 long max = 0;

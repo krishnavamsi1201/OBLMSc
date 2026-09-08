@@ -44,6 +44,9 @@ public class ClassAdjustment {
     @Column(columnDefinition = "TEXT")
     private String rejectionReason;
 
+    private Boolean notifiedStudents = false;
+    private LocalDateTime notifiedAt;
+
     private LocalDateTime createdAt = LocalDateTime.now();
     private LocalDateTime updatedAt;
 
@@ -103,6 +106,12 @@ public class ClassAdjustment {
 
     public String getRejectionReason() { return rejectionReason; }
     public void setRejectionReason(String rejectionReason) { this.rejectionReason = rejectionReason; }
+
+    public Boolean getNotifiedStudents() { return notifiedStudents; }
+    public void setNotifiedStudents(Boolean notifiedStudents) { this.notifiedStudents = notifiedStudents; }
+
+    public LocalDateTime getNotifiedAt() { return notifiedAt; }
+    public void setNotifiedAt(LocalDateTime notifiedAt) { this.notifiedAt = notifiedAt; }
 
     public LocalDateTime getCreatedAt() { return createdAt; }
     public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
