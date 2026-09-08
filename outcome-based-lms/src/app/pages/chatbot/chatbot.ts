@@ -209,7 +209,7 @@ export class Chatbot implements OnInit, OnDestroy {
       ],
       generationConfig: {
         temperature: 0.7,
-        maxOutputTokens: 1200
+        maxOutputTokens: 8192
       }
     };
 
@@ -560,12 +560,21 @@ Guidelines:
       .replace(/&/g, '&amp;')
       .replace(/</g, '&lt;')
       .replace(/>/g, '&gt;')
+      // Code blocks ```code```
+      .replace(/```([\s\S]*?)```/g, '<pre class="code-block"><code>$1</code></pre>')
+      // Headings ### or ####
+      .replace(/^### (.*$)/gm, '<h4 class="md-h4">$1</h4>')
+      .replace(/^#### (.*$)/gm, '<h5 class="md-h5">$1</h5>')
+      // Horizontal dividers ---
+      .replace(/^---$/gm, '<hr class="md-divider" />')
       // Bold **text**
       .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
       // Inline code `code`
       .replace(/`([^`]+)`/g, '<code class="inline-code">$1</code>')
       // Bullet items starting with * or • or -
       .replace(/^[•\*\-]\s+(.*)$/gm, '<div class="bullet-item">• $1</div>')
+      // Numbered lists 1. 2. 3.
+      .replace(/^(\d+)\.\s+(.*)$/gm, '<div class="bullet-item"><strong>$1.</strong> $2</div>')
       // Clean duplicate line breaks
       .replace(/\n\n/g, '<div class="para-gap"></div>')
       .replace(/\n/g, '<br>');

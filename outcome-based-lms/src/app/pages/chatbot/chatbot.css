@@ -354,6 +354,39 @@
   height: 6px;
 }
 
+.code-block {
+  background: #091024;
+  border: 1px solid #1e293b;
+  border-radius: 8px;
+  padding: 10px 12px;
+  margin: 8px 0;
+  overflow-x: auto;
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 11.5px;
+  color: #38bdf8;
+  white-space: pre-wrap;
+}
+
+.md-h4 {
+  color: #fde68a;
+  font-size: 13px;
+  font-weight: 700;
+  margin: 10px 0 4px 0;
+}
+
+.md-h5 {
+  color: #93c5fd;
+  font-size: 12px;
+  font-weight: 600;
+  margin: 8px 0 3px 0;
+}
+
+.md-divider {
+  border: none;
+  border-top: 1px solid #1f2f54;
+  margin: 8px 0;
+}
+
 /* Bot Message Action Toolbar */
 .message-actions-toolbar {
   display: flex;
