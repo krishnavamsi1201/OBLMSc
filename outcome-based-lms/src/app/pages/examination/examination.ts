@@ -1,4 +1,4 @@
-import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef, inject } from '@angular/core';
 import { RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -6,6 +6,7 @@ import { Navbar } from '../../shared/navbar/navbar';
 import { Sidebar } from '../../shared/sidebar/sidebar';
 import { Footer } from '../../shared/footer/footer';
 import { HttpClient } from '@angular/common/http';
+import { ToastService } from '../../shared/services/toast.service';
 
 interface ExamSchedule {
   id: number;
@@ -96,9 +97,11 @@ export class Examination implements OnInit {
     this.filteredExams = results;
   }
 
+  private toastService = inject(ToastService);
+
   openExamForm(): void {
     if (this.role !== 'admin' && this.role !== 'faculty') {
-      alert('Only admins and faculty can manage examinations.');
+      this.toastService.warning('Only admins and faculty can manage examinations.');
       return;
     }
     this.showExamForm = true;
@@ -108,7 +111,7 @@ export class Examination implements OnInit {
 
   saveExam(): void {
     if (!this.currentExam.title || !this.currentExam.course || !this.currentExam.date || !this.currentExam.room) {
-      alert('Please fill all required exam details.');
+      this.toastService.warning('Please fill in all required exam details.');
       return;
     }
 
@@ -126,9 +129,10 @@ export class Examination implements OnInit {
       next: () => {
         this.loadData();
         this.closeExamForm();
+        this.toastService.success('Examination schedule saved successfully! 📝');
       },
       error: () => {
-        alert('Failed to save examination schedule.');
+        this.toastService.error('Failed to save examination schedule.');
       }
     });
   }
@@ -143,16 +147,15 @@ export class Examination implements OnInit {
   }
 
   deleteExam(exam: ExamSchedule): void {
-    if (confirm('Are you sure you want to delete this examination?')) {
-      this.http.delete('http://localhost:8080/api/exams/' + exam.id).subscribe({
-        next: () => {
-          this.loadData();
-        },
-        error: () => {
-          alert('Failed to delete examination.');
-        }
-      });
-    }
+    this.http.delete('http://localhost:8080/api/exams/' + exam.id).subscribe({
+      next: () => {
+        this.loadData();
+        this.toastService.info('Examination schedule deleted.');
+      },
+      error: () => {
+        this.toastService.error('Failed to delete examination.');
+      }
+    });
   }
 
   closeExamForm(): void {

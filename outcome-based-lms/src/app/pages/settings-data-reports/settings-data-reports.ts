@@ -1,9 +1,10 @@
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Navbar } from '../../shared/navbar/navbar';
 import { Sidebar } from '../../shared/sidebar/sidebar';
 import { Footer } from '../../shared/footer/footer';
+import { ToastService } from '../../shared/services/toast.service';
 
 @Component({
   selector: 'app-settings-data-reports',
@@ -92,9 +93,11 @@ export class SettingsDataReports {
     this.reportSettings = { exportFormat: 'pdf', includeHistory: true, backupFrequency: 'weekly' };
   }
 
+  private toastService = inject(ToastService);
+
   saveReportSettings(): void {
     localStorage.setItem(this.storageKey, JSON.stringify(this.reportSettings));
-    alert('Report settings saved successfully.');
+    this.toastService.success('Report settings saved successfully! 📊');
   }
 
   downloadReport(): void {
@@ -106,5 +109,6 @@ export class SettingsDataReports {
     link.download = `faculty-report.${this.reportSettings.exportFormat}`;
     link.click();
     URL.revokeObjectURL(url);
+    this.toastService.success('Academic Report downloaded successfully! 📥');
   }
 }

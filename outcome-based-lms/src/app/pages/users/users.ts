@@ -1,8 +1,9 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { HttpClient } from '@angular/common/http';
+import { ToastService } from '../../shared/services/toast.service';
 
 import { Navbar } from '../../shared/navbar/navbar';
 import { Sidebar } from '../../shared/sidebar/sidebar';
@@ -105,9 +106,11 @@ export class Users implements OnInit {
     this.currentUser = { ...user };
   }
 
+  private toastService = inject(ToastService);
+
   saveUser(): void {
     if (!this.currentUser.id.trim() || !this.currentUser.name.trim() || !this.currentUser.email.trim()) {
-      alert('Please fill out all user profile details.');
+      this.toastService.warning('Please fill out all user profile details.');
       return;
     }
 
@@ -115,26 +118,24 @@ export class Users implements OnInit {
       next: () => {
         this.loadUsers();
         this.resetUserForm();
-        alert('User profile saved successfully.');
+        this.toastService.success('User profile saved successfully! 👤');
       },
       error: () => {
-        alert('Failed to save user profile.');
+        this.toastService.error('Failed to save user profile.');
       }
     });
   }
 
   deleteUser(user: UserRecord): void {
-    if (confirm(`Are you sure you want to delete user ${user.name}?`)) {
-      this.http.delete('http://localhost:8080/api/users/' + user.id).subscribe({
-        next: () => {
-          this.loadUsers();
-          alert('User profile deleted.');
-        },
-        error: () => {
-          alert('Failed to delete user.');
-        }
-      });
-    }
+    this.http.delete('http://localhost:8080/api/users/' + user.id).subscribe({
+      next: () => {
+        this.loadUsers();
+        this.toastService.info(`User ${user.name} removed.`);
+      },
+      error: () => {
+        this.toastService.error('Failed to delete user.');
+      }
+    });
   }
 
   changeRole(user: UserRecord, newRole: string): void {
@@ -144,10 +145,10 @@ export class Users implements OnInit {
     this.http.post<UserRecord>('http://localhost:8080/api/users', updatedUser).subscribe({
       next: () => {
         this.loadUsers();
-        alert(`Role changed successfully to ${newRole}.`);
+        this.toastService.success(`Role changed successfully to ${newRole}.`);
       },
       error: () => {
-        alert('Failed to change user role.');
+        this.toastService.error('Failed to change user role.');
       }
     });
   }

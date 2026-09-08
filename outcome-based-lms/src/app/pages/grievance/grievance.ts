@@ -7,6 +7,7 @@ import { Sidebar } from '../../shared/sidebar/sidebar';
 import { Footer } from '../../shared/footer/footer';
 import { HttpClient } from '@angular/common/http';
 import { SyncService } from '../../shared/services/sync.service';
+import { ToastService } from '../../shared/services/toast.service';
 import { Subscription } from 'rxjs';
 
 interface GrievanceComment {
@@ -134,9 +135,11 @@ export class Grievance implements OnInit, OnDestroy {
     this.filteredGrievances = results.sort((a, b) => b.id - a.id); // Show newest first
   }
 
+  private toastService = inject(ToastService);
+
   submitGrievance(): void {
     if (!this.newGrievance.title.trim() || !this.newGrievance.description.trim()) {
-      alert('Please fill in both the title and description.');
+      this.toastService.warning('Please fill in both title and description for your grievance.');
       return;
     }
 
@@ -169,12 +172,12 @@ export class Grievance implements OnInit, OnDestroy {
         };
         this.http.post('http://localhost:8080/api/grievances/' + (res?.id || payload.id) + '/comments', commentPayload).subscribe(() => {
           this.loadData();
-          alert('Your grievance has been successfully submitted.');
+          this.toastService.success('Your grievance has been successfully submitted! 📝');
         });
       },
       error: () => {
         this.loadData();
-        alert('Your grievance has been successfully recorded.');
+        this.toastService.success('Your grievance has been successfully recorded! 📝');
       }
     });
 
@@ -249,18 +252,18 @@ export class Grievance implements OnInit, OnDestroy {
           this.http.post('http://localhost:8080/api/grievances/' + this.selectedGrievance!.id + '/comments', commentPayload).subscribe(() => {
             this.loadData();
             this.closeUpdateModal();
-            alert('Grievance status and resolution updated successfully.');
+            this.toastService.success('Grievance status and resolution updated successfully! 📋');
           });
         } else {
           this.loadData();
           this.closeUpdateModal();
-          alert('Grievance status and resolution updated successfully.');
+          this.toastService.success('Grievance status and resolution updated successfully! 📋');
         }
       },
       error: () => {
         this.loadData();
         this.closeUpdateModal();
-        alert('Grievance status and resolution updated successfully.');
+        this.toastService.success('Grievance status and resolution updated successfully! 📋');
       }
     });
   }
@@ -279,9 +282,10 @@ export class Grievance implements OnInit, OnDestroy {
       next: () => {
         this.loadComments(grievance.id);
         this.newCommentText = '';
+        this.toastService.success('Comment added successfully.');
       },
       error: () => {
-        alert('Failed to send comment.');
+        this.toastService.error('Failed to send comment.');
       }
     });
   }

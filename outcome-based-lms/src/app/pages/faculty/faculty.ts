@@ -696,12 +696,12 @@ export class Faculty implements OnInit {
   saveAllMarks(): void {
     const validRows = this.markEntryRows.filter(r => r.studentName.trim().length > 0);
     if (validRows.length === 0) {
-      alert('Please enter at least one student mark.');
+      this.toast.warning('Please enter at least one student mark.');
       return;
     }
 
     if (!this.markEntryAssessmentTitle.trim()) {
-      alert('Please enter an Assessment Title.');
+      this.toast.warning('Please enter an Assessment Title.');
       return;
     }
 
@@ -714,7 +714,7 @@ export class Faculty implements OnInit {
 
     this.facultyDataService.bulkSaveMarks(marksToSave);
     this.closeMarkEntryModal();
-    alert(`Successfully saved ${marksToSave.length} mark entries! Recalculating real-time attainment...`);
+    this.toast.success(`Successfully saved ${marksToSave.length} mark entries! Recalculating attainment...`);
     this.loadDashboardData();
   }
 
@@ -749,7 +749,7 @@ export class Faculty implements OnInit {
 
       const lines = text.split(/\r?\n/).map(l => l.trim()).filter(l => l.length > 0);
       if (lines.length <= 1) {
-        alert('CSV file is empty or missing data rows.');
+        this.toast.warning('CSV file is empty or missing data rows.');
         return;
       }
 
@@ -767,7 +767,7 @@ export class Faculty implements OnInit {
 
       if (parsedRows.length > 0) {
         this.markEntryRows = parsedRows;
-        alert(`Successfully imported ${parsedRows.length} student scores from CSV!`);
+        this.toast.success(`Successfully imported ${parsedRows.length} student scores from CSV!`);
       }
     };
     reader.readAsText(file);
@@ -934,7 +934,7 @@ export class Faculty implements OnInit {
 
   saveLecture(): void {
     if (!this.lectureTopic.trim()) {
-      alert('Please enter a lecture topic.');
+      this.toast.warning('Please enter a lecture topic.');
       return;
     }
 
@@ -948,7 +948,7 @@ export class Faculty implements OnInit {
     });
 
     this.closeAddLectureModal();
-    alert('Lecture delivery logged successfully! Updating syllabus coverage...');
+    this.toast.success('Lecture delivery logged successfully! 📚');
     this.loadDashboardData();
   }
 
@@ -987,7 +987,7 @@ export class Faculty implements OnInit {
 
     const selectedCOs = Object.keys(this.qpCOs).filter(k => this.qpCOs[k]);
     if (selectedCOs.length === 0) {
-      alert('Please select at least one Course Outcome (CO).');
+      this.toast.warning('Please select at least one Course Outcome (CO).');
       return;
     }
 
@@ -1181,7 +1181,7 @@ export class Faculty implements OnInit {
 
   saveCqiAction(): void {
     if (!this.cqiCourse || !this.cqiIssueDescription || !this.cqiActionPlan) {
-      alert('Please fill all required CQI fields.');
+      this.toast.warning('Please fill all required CQI fields.');
       return;
     }
 
@@ -1196,7 +1196,7 @@ export class Faculty implements OnInit {
 
     this.cqiActionsList = this.facultyDataService.getCqiActions();
     this.closeCqiModal();
-    alert('CQI Action Plan recorded successfully.');
+    this.toast.success('CQI Action Plan recorded successfully! 📈');
   }
 
   // ==========================================

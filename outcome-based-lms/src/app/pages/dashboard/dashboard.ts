@@ -1,4 +1,4 @@
-﻿import { Component, OnInit } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { MatButtonModule } from '@angular/material/button';
@@ -51,27 +51,27 @@ export class Dashboard implements OnInit {
   }
 
   viewAttendance() {
-    alert('Attendance details will be shown here.');
+    this.router.navigate(['/attendance']);
   }
 
   viewPerformance() {
-    alert('Performance / CGPA details will be shown here.');
+    this.router.navigate(['/performance']);
   }
 
   viewTimetable() {
-    alert('Timetable view will be shown here.');
+    this.router.navigate(['/timetable']);
   }
 
   viewFees() {
-    alert('Fees and payment status will be shown here.');
+    this.router.navigate(['/student/fees']);
   }
 
   viewAdmitCard() {
-    alert('Admit Card PDF/download will be available here.');
+    this.router.navigate(['/examination']);
   }
 
   giveFeedback() {
-    alert('Feedback form will open here.');
+    this.router.navigate(['/grievance']);
   }
 
 }

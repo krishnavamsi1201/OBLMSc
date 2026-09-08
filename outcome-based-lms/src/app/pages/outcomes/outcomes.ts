@@ -163,7 +163,7 @@ export class Outcomes implements OnInit {
 
   saveOutcome(): void {
     if (!this.currentOutcome.code || !this.currentOutcome.description.trim() || !this.currentOutcome.bloomsLevel || (this.currentOutcome.type === 'CO' && !this.currentOutcome.course)) {
-      alert('Please fill all required fields.');
+      this.toast.warning('Please fill in all required Outcome fields.');
       return;
     }
 

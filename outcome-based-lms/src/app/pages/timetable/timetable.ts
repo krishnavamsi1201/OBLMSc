@@ -1,10 +1,11 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Navbar } from '../../shared/navbar/navbar';
 import { Sidebar } from '../../shared/sidebar/sidebar';
 import { Footer } from '../../shared/footer/footer';
 import { HttpClient } from '@angular/common/http';
+import { ToastService } from '../../shared/services/toast.service';
 
 interface ScheduleEntry {
   id: number;
@@ -1246,9 +1247,11 @@ export class Timetable implements OnInit {
     });
   }
 
+  private toastService = inject(ToastService);
+
   saveSchedule(): void {
     if (!this.currentEntry.period || !this.currentEntry.subject || !this.currentEntry.room) {
-      alert('Please fill all required schedule details.');
+      this.toastService.warning('Please fill in all required schedule details.');
       return;
     }
 
@@ -1264,9 +1267,10 @@ export class Timetable implements OnInit {
       next: () => {
         this.loadTimetable();
         this.resetForm();
+        this.toastService.success('Timetable slot saved successfully! 🗓️');
       },
       error: () => {
-        alert('Failed to save schedule slot.');
+        this.toastService.error('Failed to save schedule slot.');
       }
     });
   }
@@ -1283,9 +1287,10 @@ export class Timetable implements OnInit {
     this.http.delete('http://localhost:8080/api/timetable/' + entry.id).subscribe({
       next: () => {
         this.loadTimetable();
+        this.toastService.info('Timetable slot removed.');
       },
       error: () => {
-        alert('Failed to delete schedule slot.');
+        this.toastService.error('Failed to delete schedule slot.');
       }
     });
   }

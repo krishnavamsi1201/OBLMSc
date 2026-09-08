@@ -370,7 +370,7 @@ export class CopoMapping implements OnInit {
 
   saveMapping() {
     if (this.role === 'student') {
-      alert('Only admins and faculty can manage CO-PO mappings.');
+      this.toast.warning('Only admins and faculty can manage CO-PO mappings.');
       return;
     }
 
@@ -403,7 +403,7 @@ export class CopoMapping implements OnInit {
 
   editMapping(index: number) {
     if (this.role === 'student') {
-      alert('Only admins and faculty can manage CO-PO mappings.');
+      this.toast.warning('Only admins and faculty can manage CO-PO mappings.');
       return;
     }
     this.editIndex = index;
@@ -435,7 +435,7 @@ export class CopoMapping implements OnInit {
 
   deleteMapping(index: number) {
     if (this.role === 'student') {
-      alert('Only admins and faculty can manage CO-PO mappings.');
+      this.toast.warning('Only admins and faculty can manage CO-PO mappings.');
       return;
     }
     const target = this.mappings[index];
@@ -469,7 +469,7 @@ export class CopoMapping implements OnInit {
 
   addProgramOutcome() {
     if (this.role === 'student') {
-      alert('Only admins and faculty can manage Program Outcomes.');
+      this.toast.warning('Only admins and faculty can manage Program Outcomes.');
       return;
     }
 
@@ -506,7 +506,7 @@ export class CopoMapping implements OnInit {
 
   addCourseOutcome() {
     if (this.role === 'student') {
-      alert('Only admins and faculty can manage Course Outcomes.');
+      this.toast.warning('Only admins and faculty can manage Course Outcomes.');
       return;
     }
 

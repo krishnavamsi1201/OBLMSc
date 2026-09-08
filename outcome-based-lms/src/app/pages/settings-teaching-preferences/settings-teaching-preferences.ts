@@ -1,9 +1,10 @@
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Navbar } from '../../shared/navbar/navbar';
 import { Sidebar } from '../../shared/sidebar/sidebar';
 import { Footer } from '../../shared/footer/footer';
+import { ToastService } from '../../shared/services/toast.service';
 
 @Component({
   selector: 'app-settings-teaching-preferences',
@@ -103,8 +104,10 @@ export class SettingsTeachingPreferences {
     };
   }
 
+  private toastService = inject(ToastService);
+
   savePreferences(): void {
     localStorage.setItem(this.storageKey, JSON.stringify(this.preferences));
-    alert('Teaching preferences saved successfully.');
+    this.toastService.success('Teaching preferences saved successfully! 🎓');
   }
 }

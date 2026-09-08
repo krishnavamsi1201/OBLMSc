@@ -1,9 +1,10 @@
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Navbar } from '../../shared/navbar/navbar';
 import { Sidebar } from '../../shared/sidebar/sidebar';
 import { Footer } from '../../shared/footer/footer';
+import { ToastService } from '../../shared/services/toast.service';
 
 @Component({
   selector: 'app-settings-appearance',
@@ -368,20 +369,21 @@ export class SettingsAppearance {
     };
   }
 
+  private toastService = inject(ToastService);
+
   saveAppearance(): void {
     localStorage.setItem(this.storageKey, JSON.stringify(this.appearance));
     
     // Apply theme to document
     document.documentElement.style.colorScheme = this.appearance.theme;
     
-    alert('✅ Appearance preferences saved successfully.');
+    this.toastService.success('Appearance preferences saved successfully! 🎨');
   }
 
   resetToDefaults(): void {
-    if (confirm('Are you sure you want to reset all appearance settings to defaults?')) {
-      this.resetDefaults();
-      this.saveAppearance();
-    }
+    this.resetDefaults();
+    this.saveAppearance();
+    this.toastService.info('Appearance settings reset to default.');
   }
 
   getColorSchemeColor(schemeId: string): string {

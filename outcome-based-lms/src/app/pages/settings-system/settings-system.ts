@@ -1,9 +1,10 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Navbar } from '../../shared/navbar/navbar';
 import { Sidebar } from '../../shared/sidebar/sidebar';
 import { Footer } from '../../shared/footer/footer';
+import { ToastService } from '../../shared/services/toast.service';
 
 interface AuditLog {
   user: string;
@@ -221,9 +222,11 @@ export class SettingsSystem implements OnInit {
     } catch {}
   }
 
+  private toastService = inject(ToastService);
+
   saveSystemSettings(): void {
     if (this.system.internalWeight + this.system.externalWeight !== 100) {
-      alert('Error: Internal and External weights must equal 100%.');
+      this.toastService.error('Internal and External weights must equal 100%.');
       return;
     }
 
@@ -232,14 +235,13 @@ export class SettingsSystem implements OnInit {
     // Log setting modification
     this.logAction(`Updated system parameters: Target=${this.system.obeTarget}%, Weight Ratios=${this.system.internalWeight}% Int / ${this.system.externalWeight}% Ext`);
     
-    alert('System & OBE parameters saved successfully.');
+    this.toastService.success('System & OBE parameters saved successfully! ⚙️');
   }
 
   clearAuditLogs(): void {
-    if (confirm('Are you sure you want to clear the system audit trail?')) {
-      localStorage.setItem('obslmsAuditLogs', '[]');
-      this.auditLogs = [];
-      this.logAction('Cleared system audit logs');
-    }
+    localStorage.setItem('obslmsAuditLogs', '[]');
+    this.auditLogs = [];
+    this.logAction('Cleared system audit logs');
+    this.toastService.info('System audit trail cleared.');
   }
 }
