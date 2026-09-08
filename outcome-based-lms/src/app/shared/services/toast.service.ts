@@ -19,10 +19,20 @@ export class ToastService {
   }
 
   show(message: string, type: 'success' | 'error' | 'info' | 'warning' = 'info', duration: number = 3500): void {
+    const current = this.toasts$.value;
+    
+    // Prevent spamming exact duplicate message
+    const duplicate = current.find(t => t.message === message && t.type === type);
+    if (duplicate) {
+      return;
+    }
+
     const id = 'toast_' + Date.now() + '_' + Math.random().toString(36).substring(2, 7);
     const toast: ToastMessage = { id, message, type, duration };
-    const current = this.toasts$.value;
-    this.toasts$.next([...current, toast]);
+    
+    // Keep max 3 toasts at a time
+    const updated = current.length >= 3 ? [...current.slice(1), toast] : [...current, toast];
+    this.toasts$.next(updated);
 
     if (duration > 0) {
       setTimeout(() => {

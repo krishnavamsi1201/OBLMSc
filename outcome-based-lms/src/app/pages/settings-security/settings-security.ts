@@ -1,6 +1,7 @@
 import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { HttpClient } from '@angular/common/http';
 import { Navbar } from '../../shared/navbar/navbar';
 import { Sidebar } from '../../shared/sidebar/sidebar';
 import { Footer } from '../../shared/footer/footer';
@@ -89,8 +90,9 @@ import { ToastService } from '../../shared/services/toast.service';
         </div>
 
         <div class="form-actions">
-          <button type="submit" class="btn-save-pwd" [disabled]="securityForm.invalid">
-            💾 Save Password
+          <button type="submit" class="btn-save-pwd" [disabled]="securityForm.invalid || isSubmitting">
+            <span *ngIf="!isSubmitting">💾 Save Password</span>
+            <span *ngIf="isSubmitting">⏳ Updating Password...</span>
           </button>
         </div>
       </form>
@@ -244,6 +246,7 @@ import { ToastService } from '../../shared/services/toast.service';
   `]
 })
 export class SettingsSecurity {
+  private http = inject(HttpClient);
   private toastService = inject(ToastService);
 
   currentPassword = '';
@@ -253,16 +256,11 @@ export class SettingsSecurity {
   showCurrent = false;
   showNew = false;
   showConfirm = false;
+  isSubmitting = false;
 
   private readonly passwordKey = 'userPassword';
 
   changePassword(): void {
-    const savedPassword = localStorage.getItem(this.passwordKey) || 'password';
-    if (this.currentPassword !== savedPassword) {
-      this.toastService.error('Current password is incorrect.');
-      return;
-    }
-
     if (this.newPassword !== this.confirmPassword) {
       this.toastService.warning('New password and confirmation do not match.');
       return;
@@ -273,10 +271,47 @@ export class SettingsSecurity {
       return;
     }
 
-    localStorage.setItem(this.passwordKey, this.newPassword);
-    this.currentPassword = '';
-    this.newPassword = '';
-    this.confirmPassword = '';
-    this.toastService.success('Password updated successfully! 🔒');
+    this.isSubmitting = true;
+
+    const userId = localStorage.getItem('userId') || '';
+    const userEmail = localStorage.getItem('userEmail') || '';
+    const userName = localStorage.getItem('userName') || '';
+
+    const payload = {
+      userId: userId,
+      email: userEmail,
+      name: userName,
+      currentPassword: this.currentPassword,
+      newPassword: this.newPassword
+    };
+
+    this.http.post<any>('http://localhost:8080/api/auth/change-password', payload).subscribe({
+      next: (res) => {
+        this.isSubmitting = false;
+        localStorage.setItem(this.passwordKey, this.newPassword);
+        this.currentPassword = '';
+        this.newPassword = '';
+        this.confirmPassword = '';
+        this.toastService.success(res.message || 'Password updated successfully! 🔒');
+      },
+      error: (err) => {
+        this.isSubmitting = false;
+        // Check local fallback if backend is offline
+        const savedPassword = localStorage.getItem(this.passwordKey) || 'password';
+        if (err.status === 0 || err.status >= 500) {
+          if (this.currentPassword === savedPassword) {
+            localStorage.setItem(this.passwordKey, this.newPassword);
+            this.currentPassword = '';
+            this.newPassword = '';
+            this.confirmPassword = '';
+            this.toastService.success('Password updated successfully! 🔒');
+            return;
+          }
+        }
+
+        const msg = err.error?.message || 'Current password is incorrect.';
+        this.toastService.error(msg);
+      }
+    });
   }
 }
