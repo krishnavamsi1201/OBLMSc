@@ -1,11 +1,11 @@
 <!-- Floating Chat Button -->
-<button class="chat-float-btn" (click)="toggleChat()" title="Chat with OBLMS Academic Super-AI">
+<button class="chat-float-btn" (click)="toggleChat()" title="OBLMS Chatbot">
   <span class="float-icon">🤖</span>
   <span class="float-pulse"></span>
-  <span class="ai-badge-chip">Gemini AI</span>
+  <span class="ai-badge-chip">AI</span>
 </button>
 
-<!-- Chat Window -->
+<!-- Chat Popup Window -->
 <div class="chat-popup" [class.chat-expanded]="isExpanded" *ngIf="isOpen">
   <div class="chatbot-card">
     
@@ -15,21 +15,20 @@
         <div class="bot-avatar">🤖</div>
         <div>
           <div class="bot-title-row">
-            <h3>OBLMS Academic Super-AI</h3>
-            <span class="ai-model-tag">✨ {{ selectedModel }}</span>
+            <h3>OBLMS Chatbot</h3>
+            <span class="ai-model-tag">⚡ {{ selectedModel }}</span>
           </div>
-          <span class="bot-status"><span class="status-dot"></span> Live • Google Gemini & RAG Database</span>
+          <span class="bot-status"><span class="status-dot"></span> Online • Gemini AI</span>
         </div>
       </div>
       
       <div class="header-tools">
-        <button type="button" class="tool-icon-btn" (click)="openSettings()" title="AI & API Key Settings">⚙️</button>
-        <button type="button" class="tool-icon-btn" (click)="exportChatTranscript()" title="Export Transcript">📥</button>
-        <button type="button" class="tool-icon-btn" (click)="clearChat()" title="Clear Chat History">🗑️</button>
+        <button type="button" class="tool-icon-btn" (click)="openSettings()" title="AI Settings">⚙️</button>
+        <button type="button" class="tool-icon-btn" (click)="clearChat()" title="Clear Chat">🗑️</button>
         <button type="button" class="tool-icon-btn" (click)="toggleExpand()" [title]="isExpanded ? 'Collapse' : 'Expand'">
           {{ isExpanded ? '🗗' : '🗖' }}
         </button>
-        <button type="button" class="close-btn" (click)="toggleChat()" title="Close chat">✕</button>
+        <button type="button" class="close-btn" (click)="toggleChat()" title="Close">✕</button>
       </div>
     </div>
 
@@ -41,24 +40,29 @@
         class="persona-pill-btn" 
         [class.active]="selectedPersona === p.id"
         (click)="selectPersona(p.id)">
-        {{ p.icon }} {{ p.label }}
+        {{ p.label }}
       </button>
     </div>
 
     <div class="chat-body">
-      <!-- Quick Prompt Carousel -->
-      <div class="quick-prompts-bar">
-        <button 
-          *ngFor="let p of quickPrompts" 
-          type="button" 
-          class="quick-prompt-pill" 
-          (click)="sendQuickPrompt(p)">
-          {{ p }}
-        </button>
-      </div>
-
       <!-- Messages Area -->
       <div class="messages">
+        
+        <!-- Quick Starter Prompts (shown when chat is initial) -->
+        <div class="quick-prompts-card" *ngIf="messages.length <= 2">
+          <div class="quick-prompts-title">✨ Popular Questions:</div>
+          <div class="quick-prompts-grid">
+            <button 
+              *ngFor="let p of quickPrompts" 
+              type="button" 
+              class="quick-prompt-pill" 
+              (click)="sendQuickPrompt(p)">
+              {{ p }}
+            </button>
+          </div>
+        </div>
+
+        <!-- Chat Messages List -->
         <div
           *ngFor="let message of messages; let i = index"
           [ngClass]="{
@@ -70,14 +74,13 @@
           <div class="bubble-wrap">
             <div class="message-meta-row">
               <span class="message-label">
-                {{ message.from === 'user' ? '👤 You' : '🤖 Academic AI' }}
+                {{ message.from === 'user' ? '👤 You' : '🤖 OBLMS AI' }}
               </span>
               <span class="message-time" *ngIf="message.timestamp">{{ message.timestamp }}</span>
             </div>
 
-            <div class="message-text">
-              {{ message.text }}
-            </div>
+            <!-- Parsed Markdown HTML -->
+            <div class="message-text" [innerHTML]="renderMarkdown(message.text)"></div>
 
             <!-- Bot Message Actions (Copy & Read Aloud) -->
             <div class="message-actions-toolbar" *ngIf="message.from === 'bot'">
@@ -85,7 +88,7 @@
                       class="msg-action-btn" 
                       (click)="speakMessage(message.text, i)" 
                       [title]="speakingMessageIndex === i ? 'Stop Speaking' : 'Read Aloud'">
-                {{ speakingMessageIndex === i ? '⏹️ Stop' : '🔊 Read Aloud' }}
+                {{ speakingMessageIndex === i ? '⏹️ Stop' : '🔊 Listen' }}
               </button>
               <button type="button" 
                       class="msg-action-btn" 
@@ -105,17 +108,17 @@
           </div>
         </div>
 
-        <!-- Thinking / Generating Animation Indicator -->
+        <!-- Thinking / Generating Indicator -->
         <div class="message-row message-bot" *ngIf="isThinking">
           <div class="bubble-wrap">
-            <div class="message-label">🤖 Academic AI</div>
+            <div class="message-label">🤖 OBLMS AI</div>
             <div class="message-text thinking-bubble">
               <span class="thinking-dots">
                 <span class="dot"></span>
                 <span class="dot"></span>
                 <span class="dot"></span>
               </span>
-              <span style="font-size: 12px; color: #94a3b8; margin-left: 8px;">Gemini AI is analyzing & generating answer...</span>
+              <span class="thinking-text">Gemini AI is analyzing...</span>
             </div>
           </div>
         </div>
@@ -133,14 +136,29 @@
 
       <!-- Chat Actions & Voice Input -->
       <div class="chat-actions">
+        <!-- Voice Listening Banner (only when active) -->
+        <div class="voice-listening-banner" *ngIf="isListening">
+          <span class="mic-wave">🎙️</span>
+          <span>Listening to your voice... Speak now</span>
+          <button type="button" class="voice-cancel-btn" (click)="toggleVoice()">Stop</button>
+        </div>
+
         <form class="chat-form" (ngSubmit)="sendMessage()">
           <div class="input-container">
+            <button
+              type="button"
+              class="input-mic-btn"
+              [class.active-mic]="isListening"
+              (click)="toggleVoice()"
+              [title]="isListening ? 'Stop Listening' : 'Voice Input'">
+              🎙️
+            </button>
             <input
               type="text"
               [(ngModel)]="userMessage"
               (ngModelChange)="onInputChange()"
               name="message"
-              placeholder="Ask anything: syllabus, formulas, code, safe bunks, timetable..." 
+              placeholder="Ask syllabus, code, formulas, attendance, bunks..." 
               class="custom-chat-input"
               autocomplete="off"
               [disabled]="isThinking"
@@ -150,18 +168,6 @@
             </button>
           </div>
         </form>
-
-        <div class="voice-controls">
-          <button
-            type="button"
-            class="mic-pill-btn"
-            [class.listening]="isListening"
-            (click)="toggleVoice()">
-            {{ isListening ? '⏹️ Stop' : '🎙️ Speak Voice Input' }}
-          </button>
-
-          <span class="voice-status-text" [class.active-voice]="isListening">{{ voiceStatus }}</span>
-        </div>
       </div>
     </div>
   </div>
@@ -172,27 +178,23 @@
   <div class="settings-modal-card">
     <div class="settings-modal-header">
       <div style="display: flex; align-items: center; gap: 8px;">
-        <span style="font-size: 1.4rem;">⚙️</span>
-        <h3 style="margin: 0; color: #d4af37; font-size: 1.2rem;">Google Gemini AI Settings</h3>
+        <span style="font-size: 1.3rem;">⚙️</span>
+        <h3 style="margin: 0; color: #d4af37; font-size: 1.15rem;">OBLMS Chatbot Settings</h3>
       </div>
       <button type="button" class="close-btn" (click)="closeSettings()">✕</button>
     </div>
 
     <div class="settings-modal-body">
-      <p style="font-size: 0.85rem; color: #94a3b8; margin: 0 0 14px 0; line-height: 1.4;">
-        Configure your Google Gemini API Key and select model preferences for OBLMS Academic Super-AI.
-      </p>
-
       <label class="setting-field-label">
         Google Gemini API Key
-        <input type="text" [(ngModel)]="geminiApiKey" placeholder="Enter AI Studio Key (e.g. AIzaSy...)" class="setting-input" />
+        <input type="password" [(ngModel)]="geminiApiKey" placeholder="Enter Gemini API Key (e.g. AQ...)" class="setting-input" />
       </label>
       <span style="font-size: 11px; color: #4ade80; display: block; margin-top: 4px;">
-        ✅ Current API Key configured and active.
+        ✅ Active & Connected to Google Gemini AI.
       </span>
 
       <label class="setting-field-label" style="margin-top: 14px;">
-        Active AI Model
+        AI Model
         <select [(ngModel)]="selectedModel" class="setting-input">
           <option *ngFor="let m of availableModels" [value]="m.id">{{ m.name }}</option>
         </select>
