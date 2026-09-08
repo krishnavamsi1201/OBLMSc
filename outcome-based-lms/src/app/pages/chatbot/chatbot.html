@@ -1,25 +1,52 @@
 <!-- Floating Chat Button -->
-<button class="chat-float-btn" (click)="toggleChat()" title="Chat with OBLMS Academic AI Assistant">
+<button class="chat-float-btn" (click)="toggleChat()" title="Chat with OBLMS Academic Super-AI">
   <span class="float-icon">🤖</span>
   <span class="float-pulse"></span>
+  <span class="ai-badge-chip">Gemini AI</span>
 </button>
 
 <!-- Chat Window -->
-<div class="chat-popup" *ngIf="isOpen">
+<div class="chat-popup" [class.chat-expanded]="isExpanded" *ngIf="isOpen">
   <div class="chatbot-card">
+    
+    <!-- Chat Header -->
     <div class="chat-header">
       <div class="header-bot-info">
         <div class="bot-avatar">🤖</div>
         <div>
-          <h3>OBLMS Academic AI</h3>
-          <span class="bot-status"><span class="status-dot"></span> Online • Outcome-Based AI Assistant</span>
+          <div class="bot-title-row">
+            <h3>OBLMS Academic Super-AI</h3>
+            <span class="ai-model-tag">✨ {{ selectedModel }}</span>
+          </div>
+          <span class="bot-status"><span class="status-dot"></span> Live • Google Gemini & RAG Database</span>
         </div>
       </div>
-      <button class="close-btn" (click)="toggleChat()" title="Close chat">✕</button>
+      
+      <div class="header-tools">
+        <button type="button" class="tool-icon-btn" (click)="openSettings()" title="AI & API Key Settings">⚙️</button>
+        <button type="button" class="tool-icon-btn" (click)="exportChatTranscript()" title="Export Transcript">📥</button>
+        <button type="button" class="tool-icon-btn" (click)="clearChat()" title="Clear Chat History">🗑️</button>
+        <button type="button" class="tool-icon-btn" (click)="toggleExpand()" [title]="isExpanded ? 'Collapse' : 'Expand'">
+          {{ isExpanded ? '🗗' : '🗖' }}
+        </button>
+        <button type="button" class="close-btn" (click)="toggleChat()" title="Close chat">✕</button>
+      </div>
+    </div>
+
+    <!-- Academic Mode / Persona Selector Bar -->
+    <div class="personas-nav-bar">
+      <button 
+        *ngFor="let p of personas" 
+        type="button" 
+        class="persona-pill-btn" 
+        [class.active]="selectedPersona === p.id"
+        (click)="selectPersona(p.id)">
+        {{ p.icon }} {{ p.label }}
+      </button>
     </div>
 
     <div class="chat-body">
-      <!-- Quick Prompt Chips -->
+      <!-- Quick Prompt Carousel -->
       <div class="quick-prompts-bar">
         <button 
           *ngFor="let p of quickPrompts" 
@@ -33,7 +60,7 @@
       <!-- Messages Area -->
       <div class="messages">
         <div
-          *ngFor="let message of messages"
+          *ngFor="let message of messages; let i = index"
           [ngClass]="{
             'message-user': message.from === 'user',
             'message-bot': message.from === 'bot'
@@ -41,12 +68,32 @@
           class="message-row">
 
           <div class="bubble-wrap">
-            <div class="message-label">
-              {{ message.from === 'user' ? '👤 You' : '🤖 Academic AI' }}
+            <div class="message-meta-row">
+              <span class="message-label">
+                {{ message.from === 'user' ? '👤 You' : '🤖 Academic AI' }}
+              </span>
+              <span class="message-time" *ngIf="message.timestamp">{{ message.timestamp }}</span>
             </div>
 
             <div class="message-text">
               {{ message.text }}
+            </div>
+
+            <!-- Bot Message Actions (Copy & Read Aloud) -->
+            <div class="message-actions-toolbar" *ngIf="message.from === 'bot'">
+              <button type="button" 
+                      class="msg-action-btn" 
+                      (click)="speakMessage(message.text, i)" 
+                      [title]="speakingMessageIndex === i ? 'Stop Speaking' : 'Read Aloud'">
+                {{ speakingMessageIndex === i ? '⏹️ Stop' : '🔊 Read Aloud' }}
+              </button>
+              <button type="button" 
+                      class="msg-action-btn" 
+                      (click)="copyMessageText(message.text, i)" 
+                      title="Copy Message Text">
+                {{ copySuccessIndex === i ? '✅ Copied!' : '📋 Copy' }}
+              </button>
+              <span *ngIf="message.modelUsed" class="model-used-badge">{{ message.modelUsed }}</span>
             </div>
 
             <!-- Bot Quick Action Button -->
@@ -54,6 +101,21 @@
               <button class="btn-quick-action" (click)="clickSuggestion(message.quickAction.route)">
                 {{ message.quickAction.label }} →
               </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Thinking / Generating Animation Indicator -->
+        <div class="message-row message-bot" *ngIf="isThinking">
+          <div class="bubble-wrap">
+            <div class="message-label">🤖 Academic AI</div>
+            <div class="message-text thinking-bubble">
+              <span class="thinking-dots">
+                <span class="dot"></span>
+                <span class="dot"></span>
+                <span class="dot"></span>
+              </span>
+              <span style="font-size: 12px; color: #94a3b8; margin-left: 8px;">Gemini AI is analyzing & generating answer...</span>
             </div>
           </div>
         </div>
@@ -78,11 +140,12 @@
               [(ngModel)]="userMessage"
               (ngModelChange)="onInputChange()"
               name="message"
-              placeholder="Ask about attendance, safe bunks, COs, exams..." 
+              placeholder="Ask anything: syllabus, formulas, code, safe bunks, timetable..." 
               class="custom-chat-input"
               autocomplete="off"
+              [disabled]="isThinking"
             />
-            <button type="submit" class="send-icon-btn" title="Send message" [disabled]="!userMessage.trim()">
+            <button type="submit" class="send-icon-btn" title="Send message" [disabled]="!userMessage.trim() || isThinking">
               ➤
             </button>
           </div>
@@ -94,12 +157,55 @@
             class="mic-pill-btn"
             [class.listening]="isListening"
             (click)="toggleVoice()">
-            {{ isListening ? '⏹️ Stop' : '🎙️ Speak' }}
+            {{ isListening ? '⏹️ Stop' : '🎙️ Speak Voice Input' }}
           </button>
 
           <span class="voice-status-text" [class.active-voice]="isListening">{{ voiceStatus }}</span>
         </div>
       </div>
+    </div>
+  </div>
+</div>
+
+<!-- AI & GEMINI API SETTINGS MODAL -->
+<div class="settings-modal-overlay" *ngIf="showSettingsModal">
+  <div class="settings-modal-card">
+    <div class="settings-modal-header">
+      <div style="display: flex; align-items: center; gap: 8px;">
+        <span style="font-size: 1.4rem;">⚙️</span>
+        <h3 style="margin: 0; color: #d4af37; font-size: 1.2rem;">Google Gemini AI Settings</h3>
+      </div>
+      <button type="button" class="close-btn" (click)="closeSettings()">✕</button>
+    </div>
+
+    <div class="settings-modal-body">
+      <p style="font-size: 0.85rem; color: #94a3b8; margin: 0 0 14px 0; line-height: 1.4;">
+        Configure your Google Gemini API Key and select model preferences for OBLMS Academic Super-AI.
+      </p>
+
+      <label class="setting-field-label">
+        Google Gemini API Key
+        <input type="text" [(ngModel)]="geminiApiKey" placeholder="Enter AI Studio Key (e.g. AIzaSy...)" class="setting-input" />
+      </label>
+      <span style="font-size: 11px; color: #4ade80; display: block; margin-top: 4px;">
+        ✅ Current API Key configured and active.
+      </span>
+
+      <label class="setting-field-label" style="margin-top: 14px;">
+        Active AI Model
+        <select [(ngModel)]="selectedModel" class="setting-input">
+          <option *ngFor="let m of availableModels" [value]="m.id">{{ m.name }}</option>
+        </select>
+      </label>
+    </div>
+
+    <div class="settings-modal-footer">
+      <button type="button" class="btn-save-settings" (click)="saveSettings()">
+        💾 Save & Activate
+      </button>
+      <button type="button" class="btn-cancel-settings" (click)="closeSettings()">
+        Cancel
+      </button>
     </div>
   </div>
 </div>

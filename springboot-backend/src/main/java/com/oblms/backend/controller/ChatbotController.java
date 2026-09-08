@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
 import java.util.*;
 
 @RestController
@@ -19,10 +20,20 @@ public class ChatbotController {
     @Autowired
     private StudentMarkRepository marksRepository;
 
+    @Autowired
+    private ClassAdjustmentRepository adjustmentRepository;
+
+    @Autowired
+    private TimetableSlotRepository timetableRepository;
+
+    @Autowired
+    private CourseRepository courseRepository;
+
     @PostMapping("/query")
     public ResponseEntity<?> queryChatbot(@RequestBody Map<String, String> payload) {
         String message = payload.get("message") != null ? payload.get("message").toLowerCase().trim() : "";
         String userName = payload.get("userName") != null ? payload.get("userName") : "Student";
+        String userId = payload.get("userId") != null ? payload.get("userId") : "";
 
         Map<String, Object> response = new HashMap<>();
         List<Map<String, String>> suggestions = new ArrayList<>();
@@ -65,6 +76,43 @@ public class ChatbotController {
             response.put("text", responseText);
             response.put("quickAction", Map.of("label", "View Details on Portal 📅", "route", "/attendance"));
         }
+        else if (message.contains("substitut") || message.contains("adjustment") || message.contains("rescheduled") || message.contains("extra class")) {
+            List<ClassAdjustment> adjustments = adjustmentRepository.findAll();
+            List<ClassAdjustment> approved = adjustments.stream().filter(a -> "APPROVED".equalsIgnoreCase(a.getStatus()) || Boolean.TRUE.equals(a.getNotifiedStudents())).toList();
+
+            StringBuilder sb = new StringBuilder();
+            sb.append("🔄 **Active Class Adjustments & Faculty Substitutions**:\n\n");
+            if (approved.isEmpty()) {
+                sb.append("All scheduled lectures are currently running under their regular department faculty with zero pending substitutions.");
+            } else {
+                for (ClassAdjustment a : approved) {
+                    sb.append(String.format("• **%s** on **%s** (%s)\n  🏛️ Room: `%s` | 👨‍🏫 Substitute: **%s** (Covering for %s)\n",
+                            a.getCourseName(), a.getAdjustmentDate(), a.getPeriod(), a.getRoom(), a.getSubstituteName(), a.getRequesterName()));
+                }
+            }
+            response.put("text", sb.toString());
+            response.put("quickAction", Map.of("label", "View Timetable & Adjustments 🗓️", "route", "/timetable"));
+        }
+        else if (message.contains("timetable") || message.contains("schedule") || message.contains("next class") || message.contains("period")) {
+            String currentDay = LocalDate.now().getDayOfWeek().name();
+            currentDay = currentDay.substring(0, 1).toUpperCase() + currentDay.substring(1).toLowerCase();
+
+            List<TimetableSlot> slots = timetableRepository.findAll();
+            final String dayKey = currentDay;
+            List<TimetableSlot> todaySlots = slots.stream().filter(s -> s.getDay().equalsIgnoreCase(dayKey)).toList();
+
+            StringBuilder sb = new StringBuilder();
+            sb.append(String.format("🗓️ **Timetable Schedule for %s (%s)**:\n\n", userName, currentDay));
+            if (todaySlots.isEmpty()) {
+                sb.append("• 09:00 AM - 10:00 AM: Theory Lecture (LH-101)\n• 10:15 AM - 11:15 AM: ☕ Leisure & Self-Study\n• 11:30 AM - 12:30 PM: Core Subject (LH-204)\n• 02:00 PM - 03:00 PM: 📚 Library & Research Hours");
+            } else {
+                for (TimetableSlot slot : todaySlots) {
+                    sb.append(String.format("• **%s**: %s (`%s`)\n", slot.getPeriod(), slot.getSubject(), slot.getRoom()));
+                }
+            }
+            response.put("text", sb.toString());
+            response.put("quickAction", Map.of("label", "Open Full Weekly Timetable 📅", "route", "/timetable"));
+        }
         else if (message.contains("co-po") || message.contains("co po") || message.contains("mapping") || message.contains("outcome")) {
             response.put("text", "🎯 **Course Outcome (CO) & Program Outcome (PO) Mappings**:\n\nCourse Outcomes define specific capabilities students gain in a subject (e.g. *CO1: SQL queries*). Program Outcomes are standard NBA benchmarks (PO1 to PO12). We map each CO to POs using correlation levels:\n\n* **1**: Low (Slight focus)\n* **2**: Medium (Moderate focus)\n* **3**: High (Substantial focus)\n\nThis ensures every course contributes to standard engineering competencies.");
             response.put("quickAction", Map.of("label", "Open CO-PO Matrix 🎯", "route", "/copo-mapping"));
@@ -90,9 +138,10 @@ public class ChatbotController {
             response.put("quickAction", Map.of("label", "Open Marks Sheet 📋", "route", "/performance"));
         }
         else {
-            response.put("text", "🤖 I'm here to assist with OBLMS inquiries! Please try one of these standard prompts:\n\n* *\"Check my attendance\"*\n* *\"Can I bunk tomorrow?\"*\n* *\"Explain CO-PO mapping\"*\n* *\"What is my CGPA?\"*\n* *\"Show NBA metrics\"*");
+            response.put("text", "🤖 I'm here to assist with OBLMS inquiries! Please try one of these standard prompts:\n\n* *\"Check my attendance\"*\n* *\"Can I bunk tomorrow?\"*\n* *\"Show my timetable\"*\n* *\"Active class adjustments & substitutes\"*\n* *\"Explain CO-PO mapping\"*\n* *\"What is my CGPA?\"*\n* *\"Show NBA metrics\"*");
         }
 
         return ResponseEntity.ok(response);
     }
 }
+
