@@ -82,8 +82,8 @@
           <button 
             *ngIf="notif.actionUrl"
             class="btn-action action-link"
-            [routerLink]="notif.actionUrl"
-            title="Open related page">
+            (click)="handleActionClick(notif)"
+            title="Open related page / View details">
             🔗
           </button>
           <button 
@@ -106,6 +106,50 @@
             (click)="deleteNotification(notif.id)"
             title="Delete notification">
             ✕
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- CLASS ADJUSTMENT & NOTIFICATION DETAIL MODAL -->
+    <div class="modal-overlay" *ngIf="showDetailModal" (click)="closeDetailModal()">
+      <div class="modal-card modal-adjustment-view" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+          <div style="display: flex; align-items: center; gap: 10px;">
+            <span style="font-size: 1.8rem;">📢</span>
+            <div>
+              <h3 style="margin: 0; color: #d4af37; font-size: 1.25rem;">{{ selectedModalNotif?.title }}</h3>
+              <span style="font-size: 0.82rem; color: #94a3b8;">Academic Lecture Notice & Instructions</span>
+            </div>
+          </div>
+          <button type="button" class="modal-close-btn" (click)="closeDetailModal()">✕</button>
+        </div>
+
+        <div class="modal-body" style="padding: 18px 0;">
+          <div class="notice-detail-card">
+            <div class="notice-meta-tag">
+              <span class="type-pill" [style.backgroundColor]="getTypeColor(selectedModalNotif?.type || 'warning')">
+                {{ (selectedModalNotif?.type || 'warning') | uppercase }}
+              </span>
+              <span style="font-size: 0.8rem; color: #94a3b8;">
+                🕐 {{ getTimeAgo(selectedModalNotif?.timestamp || '') }}
+              </span>
+            </div>
+            <p class="notice-full-text">
+              {{ selectedModalNotif?.message }}
+            </p>
+          </div>
+        </div>
+
+        <div class="modal-footer" style="display: flex; justify-content: flex-end; gap: 12px; margin-top: 10px;">
+          <button type="button" class="btn btn-action-primary" (click)="goToTimetable()">
+            🗓️ View Timetable
+          </button>
+          <button type="button" class="btn btn-action-secondary" (click)="goToCourses()">
+            📚 View My Courses
+          </button>
+          <button type="button" class="btn btn-secondary" (click)="closeDetailModal()">
+            Close
           </button>
         </div>
       </div>

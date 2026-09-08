@@ -214,7 +214,7 @@ public class ClassAdjustmentController {
                         title,
                         fullMessage,
                         "warning",
-                        "/notifications"
+                        "/timetable"
                 );
                 notificationRepository.save(notif);
                 deliveredCount++;
@@ -229,7 +229,7 @@ public class ClassAdjustmentController {
                     title,
                     fullMessage,
                     "warning",
-                    "/notifications"
+                    "/timetable"
             );
             notificationRepository.save(broadcast);
 

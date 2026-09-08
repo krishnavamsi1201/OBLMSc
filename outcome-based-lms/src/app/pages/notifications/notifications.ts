@@ -258,6 +258,9 @@ export class Notifications implements OnInit {
     }
   }
 
+  selectedModalNotif: Notification | null = null;
+  showDetailModal: boolean = false;
+
   getUnreadCount(): number {
     return this.allNotifications.filter(n => !n.isRead).length;
   }
@@ -276,8 +279,37 @@ export class Notifications implements OnInit {
   }
 
   navigate(url?: string): void {
-    if (url) {
+    if (url && url !== '/notifications') {
       this.router.navigateByUrl(url);
+    } else {
+      this.router.navigateByUrl('/timetable');
     }
+  }
+
+  handleActionClick(notif: Notification): void {
+    this.markAsRead(notif);
+    if (notif.title.toLowerCase().includes('adjustment') || (notif.message && notif.message.toLowerCase().includes('substitute faculty'))) {
+      this.selectedModalNotif = notif;
+      this.showDetailModal = true;
+    } else if (notif.actionUrl && notif.actionUrl !== '/notifications') {
+      this.router.navigateByUrl(notif.actionUrl);
+    } else {
+      this.router.navigateByUrl('/timetable');
+    }
+  }
+
+  closeDetailModal(): void {
+    this.showDetailModal = false;
+    this.selectedModalNotif = null;
+  }
+
+  goToTimetable(): void {
+    this.closeDetailModal();
+    this.router.navigateByUrl('/timetable');
+  }
+
+  goToCourses(): void {
+    this.closeDetailModal();
+    this.router.navigateByUrl('/courses');
   }
 }
