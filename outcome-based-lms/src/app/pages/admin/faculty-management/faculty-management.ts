@@ -506,7 +506,18 @@ export class FacultyManagement implements OnInit {
   }
 
   private generateId(): string {
-    return 'FAC-' + Date.now() + '-' + Math.floor(Math.random() * 1000);
+    const existingNums = this.facultyList
+      .map(f => f.id)
+      .filter(id => id && id.toUpperCase().startsWith('FAC'))
+      .map(id => {
+        const digits = id.replace(/[^0-9]/g, '');
+        return digits ? parseInt(digits, 10) : 0;
+      })
+      .filter(num => !isNaN(num) && num > 0 && num < 10000);
+
+    const maxNum = existingNums.length > 0 ? Math.max(...existingNums) : 0;
+    const nextNum = maxNum + 1;
+    return 'FAC' + String(nextNum).padStart(3, '0');
   }
 
   getCoursesDisplay(courses: string[]): string {

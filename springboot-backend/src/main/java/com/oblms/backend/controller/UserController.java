@@ -87,11 +87,22 @@ public class UserController {
                 userToSave.setDepartment(department);
             }
             userToSave.setEnrolledCourses(enrolled);
-        } else {
             if (id == null || id.isEmpty()) {
                 String prefix = "STUDENT".equalsIgnoreCase(role) ? "STU" : "FAC";
-                long count = userRepository.count() + 1;
-                id = String.format("%s%03d", prefix, count);
+                long max = 0;
+                List<User> list = userRepository.findAll();
+                for (User u : list) {
+                    if (u.getId() != null && u.getId().toUpperCase().startsWith(prefix)) {
+                        String num = u.getId().replaceAll("[^0-9]", "");
+                        if (!num.isEmpty()) {
+                            try {
+                                long val = Long.parseLong(num);
+                                if (val > max && val < 100000) max = val;
+                            } catch (Exception ignored) {}
+                        }
+                    }
+                }
+                id = String.format("%s%03d", prefix, max + 1);
             }
             userToSave = new User(id, name, email, password, role.toUpperCase(), department);
             userToSave.setEnrolledCourses(enrolled);
