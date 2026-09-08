@@ -1,7 +1,7 @@
 import { Component, OnInit, inject, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Router, RouterLink } from '@angular/router';
+import { Router } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { Navbar } from '../../shared/navbar/navbar';
 import { Sidebar } from '../../shared/sidebar/sidebar';
@@ -21,7 +21,7 @@ interface Notification {
 @Component({
   selector: 'app-notifications',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink, Navbar, Sidebar, Footer],
+  imports: [CommonModule, FormsModule, Navbar, Sidebar, Footer],
   templateUrl: './notifications.html',
   styleUrls: ['./notifications.css']
 })
