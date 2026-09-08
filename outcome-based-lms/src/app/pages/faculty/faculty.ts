@@ -244,6 +244,9 @@ export class Faculty implements OnInit {
           const storedQB = this.getSafeJson('obslmsQuestionBank') as QuestionBankItem[];
           const subs = storedQB.map(q => q.subject).filter(Boolean);
           this.allSubjectsList = Array.from(new Set([...subs, ...data.courses.map((c: any) => c.name)]));
+
+          // Load pending class adjustment requests for banner alert
+          this.loadPendingClassAdjustments();
         } catch (e: any) {
           console.error('Error processing dashboard data:', e);
           this.error = 'Error processing dashboard data: ' + e.message;
@@ -337,6 +340,39 @@ export class Faculty implements OnInit {
       courseName: cName,
       cos: groups.get(cName)!
     }));
+  }
+
+  loadPendingClassAdjustments(): void {
+    const myName = (this.facultyName || '').toLowerCase().trim();
+    const myId = (localStorage.getItem('userId') || '').toLowerCase().trim();
+
+    this.http.get<any[]>('http://localhost:8080/api/class-adjustments').subscribe({
+      next: (data) => {
+        if (Array.isArray(data)) {
+          const pending = data.filter((a: any) => 
+            a.status === 'PENDING' && (
+              (a.substituteId && a.substituteId.toLowerCase() === myId) ||
+              (a.substituteName && (a.substituteName.toLowerCase().includes(myName) || myName.includes(a.substituteName.toLowerCase())))
+            )
+          );
+          this.pendingAdjustmentCount = pending.length;
+          this.cdr.detectChanges();
+        }
+      },
+      error: () => {
+        try {
+          const stored = JSON.parse(localStorage.getItem('obslmsClassAdjustments') || '[]');
+          const pending = stored.filter((a: any) => 
+            a.status === 'PENDING' && (
+              (a.substituteId && a.substituteId.toLowerCase() === myId) ||
+              (a.substituteName && (a.substituteName.toLowerCase().includes(myName) || myName.includes(a.substituteName.toLowerCase())))
+            )
+          );
+          this.pendingAdjustmentCount = pending.length;
+          this.cdr.detectChanges();
+        } catch {}
+      }
+    });
   }
 
   toggleCoGroup(courseName: string): void {

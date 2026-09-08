@@ -38,6 +38,22 @@
       </div>
     </div>
     
+    <!-- Real-Time Class Adjustment & Substitute Lecture Alert Banner -->
+    <div *ngIf="activeClassAdjustmentAlert" class="class-adjustment-student-banner" style="background: linear-gradient(135deg, #101b38 0%, #1a2a50 100%); border: 1px solid #d4af37; border-left: 5px solid #d4af37; border-radius: 14px; padding: 16px 20px; margin-bottom: 24px; display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; box-shadow: 0 8px 24px rgba(212, 175, 55, 0.18);">
+      <div style="display: flex; align-items: center; gap: 14px; flex: 1;">
+        <span style="font-size: 2rem;">📢</span>
+        <div>
+          <strong style="color: #fde68a; font-size: 1.05rem; display: block;">{{ activeClassAdjustmentAlert.title }}</strong>
+          <span style="color: #cbd5e1; font-size: 0.88rem; line-height: 1.4; display: block; margin-top: 3px;">{{ activeClassAdjustmentAlert.message }}</span>
+        </div>
+      </div>
+      <div style="display: flex; gap: 10px; align-items: center;">
+        <button type="button" (click)="navigate('/notifications')" style="background: linear-gradient(135deg, #d4af37 0%, #b38f28 100%); color: #0a1128; font-weight: 800; border: none; padding: 8px 16px; border-radius: 8px; cursor: pointer; font-size: 13px; text-decoration: none; display: inline-flex; align-items: center; gap: 4px;">
+          View Notices →
+        </button>
+      </div>
+    </div>
+
     <!-- Attendance Warning Alert (Only if enrolled and attendance actually recorded below 75) -->
     <div *ngIf="stats.enrolledCourses > 0 && stats.attendancePercentage > 0 && stats.attendancePercentage < 75" class="attendance-warning-alert">
       <span class="material-icons alert-icon-symbol">warning</span>

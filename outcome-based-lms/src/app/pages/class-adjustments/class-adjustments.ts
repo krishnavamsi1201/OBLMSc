@@ -899,6 +899,9 @@ export class ClassAdjustments implements OnInit {
   }
 
   get myIncomingRequests(): ClassAdjustment[] {
+    if (this.userRole === 'admin') {
+      return this.allAdjustments;
+    }
     const myName = (this.currentFacultyName || '').toLowerCase().trim();
     const myId = (this.currentFacultyId || '').toLowerCase().trim();
     return this.allAdjustments.filter(a => 
@@ -908,6 +911,9 @@ export class ClassAdjustments implements OnInit {
   }
 
   get myOutgoingRequests(): ClassAdjustment[] {
+    if (this.userRole === 'admin') {
+      return this.allAdjustments;
+    }
     const myName = (this.currentFacultyName || '').toLowerCase().trim();
     const myId = (this.currentFacultyId || '').toLowerCase().trim();
     return this.allAdjustments.filter(a => 

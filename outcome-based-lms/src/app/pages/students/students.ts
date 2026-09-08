@@ -139,6 +139,8 @@ export class Students implements OnInit, OnDestroy {
     pendingExams: 0
   };
 
+  activeClassAdjustmentAlert: any = null;
+
   showAttendanceWarning = false;
   attendanceWarningMsg = '';
 
@@ -470,6 +472,9 @@ export class Students implements OnInit, OnDestroy {
           this.notifications = data.notifications || [];
           this.semesterResults = data.semesterResults || [];
           this.selectSemester(this.selectedSemester);
+
+          // Check for active class adjustment broadcasts
+          this.loadActiveClassAdjustmentAlert();
           this.cdr.detectChanges();
         } catch (e) {
           console.error('Error processing student dashboard data:', e);
@@ -477,7 +482,31 @@ export class Students implements OnInit, OnDestroy {
       },
       error: (err) => {
         console.error('Error fetching student dashboard from backend:', err);
+        this.loadActiveClassAdjustmentAlert();
       }
+    });
+  }
+
+  loadActiveClassAdjustmentAlert(): void {
+    const uId = localStorage.getItem('userId') || '';
+    const email = localStorage.getItem('userEmail') || '';
+    const name = localStorage.getItem('userName') || '';
+    const url = `http://localhost:8080/api/notifications?userId=${encodeURIComponent(uId)}&email=${encodeURIComponent(email)}&name=${encodeURIComponent(name)}&role=STUDENT`;
+
+    this.http.get<any[]>(url).subscribe({
+      next: (notifs) => {
+        if (Array.isArray(notifs)) {
+          const adjNotif = notifs.find(n => 
+            (n.title && n.title.toLowerCase().includes('adjustment')) ||
+            (n.message && n.message.toLowerCase().includes('substitute faculty'))
+          );
+          if (adjNotif) {
+            this.activeClassAdjustmentAlert = adjNotif;
+            this.cdr.detectChanges();
+          }
+        }
+      },
+      error: () => {}
     });
   }
 
