@@ -231,8 +231,14 @@
 								</div>
 							</div>
 							<div class="co-footer">
-								<small>{{ co.assessedStudentsCount }} Student Assessments Evaluated</small>
-								<button *ngIf="co.status !== 'Achieved'" class="cqi-mini-btn" (click)="openCqiModal(co)">Plan Remedial Action</button>
+								<span class="co-assessed-info">
+									<span class="material-icons assessed-icon">analytics</span>
+									<span>{{ co.assessedStudentsCount }} Evaluated</span>
+								</span>
+								<button *ngIf="co.status !== 'Achieved'" class="cqi-mini-btn" (click)="openCqiModal(co)" title="Plan remedial action for sub-target CO attainment">
+									<span class="cqi-btn-icon">⚡</span>
+									<span>Plan Remedial Action</span>
+								</button>
 							</div>
 						</div>
 					</div>
