@@ -1,0 +1,557 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mxfile host="app.diagrams.net" modified="2026-09-12T13:30:00.000Z" agent="OBLMS AI Assistant" version="24.7.5">
+  <diagram name="OBLMS ER Diagram" id="oblms_er_diagram_2026">
+    <mxGraphModel dx="1600" dy="1100" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1700" pageHeight="1200" background="#ffffff">
+      <root>
+        <mxCell id="0"/>
+        <mxCell id="1" parent="0"/>
+
+        <!-- TITLE HEADER -->
+        <mxCell id="header_container" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e3f2fd;strokeColor=#90caf9;strokeWidth=1;arcSize=20;" vertex="1" parent="1">
+          <mxGeometry x="600" y="20" width="500" height="60" as="geometry"/>
+        </mxCell>
+        <mxCell id="header_title" value="ER Diagram&#xa;Outcome Based Learning Management System (OBLMS)" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontFamily=Helvetica;fontSize=16;fontStyle=1;fontColor=#0d47a1;" vertex="1" parent="1">
+          <mxGeometry x="600" y="25" width="500" height="50" as="geometry"/>
+        </mxCell>
+
+        <!-- ================= ENTITY: STUDENT ================= -->
+        <mxCell id="ent_student" value="&lt;b&gt;STUDENT&lt;/b&gt;" style="swimlane;fontStyle=1;childLayout=stackLayout;horizontal=1;startSize=26;fillColor=#d4edda;strokeColor=#28a745;fontColor=#155724;rounded=1;shadow=1;" vertex="1" parent="1">
+          <mxGeometry x="40" y="110" width="160" height="230" as="geometry"/>
+        </mxCell>
+        <mxCell id="st_pk" value="&lt;b&gt;PK&lt;/b&gt; student_id" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=6;fontSize=11;fontStyle=1;" vertex="1" parent="ent_student">
+          <mxGeometry y="26" width="160" height="20" as="geometry"/>
+        </mxCell>
+        <mxCell id="st_line" value="" style="line;strokeWidth=1;fillColor=none;align=left;verticalAlign=middle;spacingTop=-1;spacingLeft=3;spacingRight=3;rotatable=0;labelPosition=right;points=[];portConstraint=eastwest;strokeColor=#28a745;" vertex="1" parent="ent_student">
+          <mxGeometry y="46" width="160" height="4" as="geometry"/>
+        </mxCell>
+        <mxCell id="st_attrs" value="name&#xa;email&#xa;password&#xa;roll_number&#xa;department&#xa;year&#xa;section&#xa;phone&#xa;status" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=6;fontSize=11;" vertex="1" parent="ent_student">
+          <mxGeometry y="50" width="160" height="175" as="geometry"/>
+        </mxCell>
+
+        <!-- ================= ENTITY: ENROLLMENT ================= -->
+        <mxCell id="ent_enrollment" value="&lt;b&gt;ENROLLMENT&lt;/b&gt;" style="swimlane;fontStyle=1;childLayout=stackLayout;horizontal=1;startSize=26;fillColor=#fce4ec;strokeColor=#e91e63;fontColor=#880e4f;rounded=1;shadow=1;" vertex="1" parent="1">
+          <mxGeometry x="380" y="130" width="170" height="150" as="geometry"/>
+        </mxCell>
+        <mxCell id="en_pk" value="&lt;b&gt;PK&lt;/b&gt; enrollment_id" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=6;fontSize=11;fontStyle=1;" vertex="1" parent="ent_enrollment">
+          <mxGeometry y="26" width="170" height="20" as="geometry"/>
+        </mxCell>
+        <mxCell id="en_line" value="" style="line;strokeWidth=1;fillColor=none;strokeColor=#e91e63;" vertex="1" parent="ent_enrollment">
+          <mxGeometry y="46" width="170" height="4" as="geometry"/>
+        </mxCell>
+        <mxCell id="en_attrs" value="&lt;b&gt;FK&lt;/b&gt; student_id&#xa;&lt;b&gt;FK&lt;/b&gt; course_id&#xa;enrollment_date&#xa;status" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=6;fontSize=11;" vertex="1" parent="ent_enrollment">
+          <mxGeometry y="50" width="170" height="95" as="geometry"/>
+        </mxCell>
+
+        <!-- ================= ENTITY: COURSE ================= -->
+        <mxCell id="ent_course" value="&lt;b&gt;COURSE&lt;/b&gt;" style="swimlane;fontStyle=1;childLayout=stackLayout;horizontal=1;startSize=26;fillColor=#ede7f6;strokeColor=#673ab7;fontColor=#311b92;rounded=1;shadow=1;" vertex="1" parent="1">
+          <mxGeometry x="720" y="110" width="170" height="200" as="geometry"/>
+        </mxCell>
+        <mxCell id="co_pk" value="&lt;b&gt;PK&lt;/b&gt; course_id" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=6;fontSize=11;fontStyle=1;" vertex="1" parent="ent_course">
+          <mxGeometry y="26" width="170" height="20" as="geometry"/>
+        </mxCell>
+        <mxCell id="co_line" value="" style="line;strokeWidth=1;fillColor=none;strokeColor=#673ab7;" vertex="1" parent="ent_course">
+          <mxGeometry y="46" width="170" height="4" as="geometry"/>
+        </mxCell>
+        <mxCell id="co_attrs" value="course_code&#xa;course_name&#xa;semester&#xa;department&#xa;credits&#xa;description&#xa;status" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=6;fontSize=11;" vertex="1" parent="ent_course">
+          <mxGeometry y="50" width="170" height="145" as="geometry"/>
+        </mxCell>
+
+        <!-- ================= ENTITY: COURSE_OUTCOME ================= -->
+        <mxCell id="ent_course_outcome" value="&lt;b&gt;COURSE_OUTCOME&lt;/b&gt;" style="swimlane;fontStyle=1;childLayout=stackLayout;horizontal=1;startSize=26;fillColor=#fff8e1;strokeColor=#ffc107;fontColor=#e65100;rounded=1;shadow=1;" vertex="1" parent="1">
+          <mxGeometry x="1070" y="110" width="180" height="175" as="geometry"/>
+        </mxCell>
+        <mxCell id="cout_pk" value="&lt;b&gt;PK&lt;/b&gt; co_id" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=6;fontSize=11;fontStyle=1;" vertex="1" parent="ent_course_outcome">
+          <mxGeometry y="26" width="180" height="20" as="geometry"/>
+        </mxCell>
+        <mxCell id="cout_fk" value="&lt;b&gt;FK&lt;/b&gt; course_id" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=6;fontSize=11;fontStyle=1;" vertex="1" parent="ent_course_outcome">
+          <mxGeometry y="46" width="180" height="20" as="geometry"/>
+        </mxCell>
+        <mxCell id="cout_line" value="" style="line;strokeWidth=1;fillColor=none;strokeColor=#ffc107;" vertex="1" parent="ent_course_outcome">
+          <mxGeometry y="66" width="180" height="4" as="geometry"/>
+        </mxCell>
+        <mxCell id="cout_attrs" value="co_number&#xa;co_description&#xa;bloom_level&#xa;status" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=6;fontSize=11;" vertex="1" parent="ent_course_outcome">
+          <mxGeometry y="70" width="180" height="100" as="geometry"/>
+        </mxCell>
+
+        <!-- ================= ENTITY: FACULTY ================= -->
+        <mxCell id="ent_faculty" value="&lt;b&gt;FACULTY&lt;/b&gt;" style="swimlane;fontStyle=1;childLayout=stackLayout;horizontal=1;startSize=26;fillColor=#fce4ec;strokeColor=#e91e63;fontColor=#880e4f;rounded=1;shadow=1;" vertex="1" parent="1">
+          <mxGeometry x="40" y="380" width="160" height="190" as="geometry"/>
+        </mxCell>
+        <mxCell id="fac_pk" value="&lt;b&gt;PK&lt;/b&gt; faculty_id" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=6;fontSize=11;fontStyle=1;" vertex="1" parent="ent_faculty">
+          <mxGeometry y="26" width="160" height="20" as="geometry"/>
+        </mxCell>
+        <mxCell id="fac_line" value="" style="line;strokeWidth=1;fillColor=none;strokeColor=#e91e63;" vertex="1" parent="ent_faculty">
+          <mxGeometry y="46" width="160" height="4" as="geometry"/>
+        </mxCell>
+        <mxCell id="fac_attrs" value="name&#xa;email&#xa;password&#xa;department&#xa;designation&#xa;phone&#xa;status" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=6;fontSize=11;" vertex="1" parent="ent_faculty">
+          <mxGeometry y="50" width="160" height="135" as="geometry"/>
+        </mxCell>
+
+        <!-- ================= ENTITY: COURSE_ALLOCATION ================= -->
+        <mxCell id="ent_course_alloc" value="&lt;b&gt;COURSE_ALLOCATION&lt;/b&gt;" style="swimlane;fontStyle=1;childLayout=stackLayout;horizontal=1;startSize=26;fillColor=#e8f5e9;strokeColor=#4caf50;fontColor=#1b5e20;rounded=1;shadow=1;" vertex="1" parent="1">
+          <mxGeometry x="380" y="340" width="180" height="180" as="geometry"/>
+        </mxCell>
+        <mxCell id="ca_pk" value="&lt;b&gt;PK&lt;/b&gt; allocation_id" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=6;fontSize=11;fontStyle=1;" vertex="1" parent="ent_course_alloc">
+          <mxGeometry y="26" width="180" height="20" as="geometry"/>
+        </mxCell>
+        <mxCell id="ca_line" value="" style="line;strokeWidth=1;fillColor=none;strokeColor=#4caf50;" vertex="1" parent="ent_course_alloc">
+          <mxGeometry y="46" width="180" height="4" as="geometry"/>
+        </mxCell>
+        <mxCell id="ca_attrs" value="&lt;b&gt;FK&lt;/b&gt; faculty_id&#xa;&lt;b&gt;FK&lt;/b&gt; course_id&#xa;academic_year&#xa;semester&#xa;section&#xa;status" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=6;fontSize=11;" vertex="1" parent="ent_course_alloc">
+          <mxGeometry y="50" width="180" height="125" as="geometry"/>
+        </mxCell>
+
+        <!-- ================= ENTITY: ASSESSMENT ================= -->
+        <mxCell id="ent_assessment" value="&lt;b&gt;ASSESSMENT&lt;/b&gt;" style="swimlane;fontStyle=1;childLayout=stackLayout;horizontal=1;startSize=26;fillColor=#e1f5fe;strokeColor=#0288d1;fontColor=#01579b;rounded=1;shadow=1;" vertex="1" parent="1">
+          <mxGeometry x="580" y="420" width="180" height="205" as="geometry"/>
+        </mxCell>
+        <mxCell id="ass_pk" value="&lt;b&gt;PK&lt;/b&gt; assessment_id" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=6;fontSize=11;fontStyle=1;" vertex="1" parent="ent_assessment">
+          <mxGeometry y="26" width="180" height="20" as="geometry"/>
+        </mxCell>
+        <mxCell id="ass_fk" value="&lt;b&gt;FK&lt;/b&gt; course_id" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=6;fontSize=11;fontStyle=1;" vertex="1" parent="ent_assessment">
+          <mxGeometry y="46" width="180" height="20" as="geometry"/>
+        </mxCell>
+        <mxCell id="ass_line" value="" style="line;strokeWidth=1;fillColor=none;strokeColor=#0288d1;" vertex="1" parent="ent_assessment">
+          <mxGeometry y="66" width="180" height="4" as="geometry"/>
+        </mxCell>
+        <mxCell id="ass_attrs" value="assessment_type&#xa;(Quiz/Assignment/Mid/Sem)&#xa;title&#xa;total_marks&#xa;date&#xa;status" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=6;fontSize=11;" vertex="1" parent="ent_assessment">
+          <mxGeometry y="70" width="180" height="130" as="geometry"/>
+        </mxCell>
+
+        <!-- ================= ENTITY: QUESTION ================= -->
+        <mxCell id="ent_question" value="&lt;b&gt;QUESTION&lt;/b&gt;" style="swimlane;fontStyle=1;childLayout=stackLayout;horizontal=1;startSize=26;fillColor=#f3e5f5;strokeColor=#8e24aa;fontColor=#4a148c;rounded=1;shadow=1;" vertex="1" parent="1">
+          <mxGeometry x="840" y="420" width="170" height="195" as="geometry"/>
+        </mxCell>
+        <mxCell id="q_pk" value="&lt;b&gt;PK&lt;/b&gt; question_id" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=6;fontSize=11;fontStyle=1;" vertex="1" parent="ent_question">
+          <mxGeometry y="26" width="170" height="20" as="geometry"/>
+        </mxCell>
+        <mxCell id="q_fk" value="&lt;b&gt;FK&lt;/b&gt; assessment_id" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=6;fontSize=11;fontStyle=1;" vertex="1" parent="ent_question">
+          <mxGeometry y="46" width="170" height="20" as="geometry"/>
+        </mxCell>
+        <mxCell id="q_line" value="" style="line;strokeWidth=1;fillColor=none;strokeColor=#8e24aa;" vertex="1" parent="ent_question">
+          <mxGeometry y="66" width="170" height="4" as="geometry"/>
+        </mxCell>
+        <mxCell id="q_attrs" value="question_text&#xa;marks&#xa;co_id (FK)&#xa;question_type&#xa;difficulty_level&#xa;status" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=6;fontSize=11;" vertex="1" parent="ent_question">
+          <mxGeometry y="70" width="170" height="120" as="geometry"/>
+        </mxCell>
+
+        <!-- ================= ENTITY: CO_PO_MAPPING ================= -->
+        <mxCell id="ent_copo_mapping" value="&lt;b&gt;CO_PO_MAPPING&lt;/b&gt;" style="swimlane;fontStyle=1;childLayout=stackLayout;horizontal=1;startSize=26;fillColor=#e8f5e9;strokeColor=#4caf50;fontColor=#1b5e20;rounded=1;shadow=1;" vertex="1" parent="1">
+          <mxGeometry x="960" y="370" width="160" height="165" as="geometry"/>
+        </mxCell>
+        <mxCell id="copo_pk" value="&lt;b&gt;PK&lt;/b&gt; mapping_id" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=6;fontSize=11;fontStyle=1;" vertex="1" parent="ent_copo_mapping">
+          <mxGeometry y="26" width="160" height="20" as="geometry"/>
+        </mxCell>
+        <mxCell id="copo_line" value="" style="line;strokeWidth=1;fillColor=none;strokeColor=#4caf50;" vertex="1" parent="ent_copo_mapping">
+          <mxGeometry y="46" width="160" height="4" as="geometry"/>
+        </mxCell>
+        <mxCell id="copo_attrs" value="&lt;b&gt;FK&lt;/b&gt; co_id&#xa;&lt;b&gt;FK&lt;/b&gt; po_id&#xa;mapping_level&#xa;(1 / 2 / 3)&#xa;status" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=6;fontSize=11;" vertex="1" parent="ent_copo_mapping">
+          <mxGeometry y="50" width="160" height="110" as="geometry"/>
+        </mxCell>
+
+        <!-- ================= ENTITY: PROGRAM_OUTCOME ================= -->
+        <mxCell id="ent_program_outcome" value="&lt;b&gt;PROGRAM_OUTCOME&lt;/b&gt;" style="swimlane;fontStyle=1;childLayout=stackLayout;horizontal=1;startSize=26;fillColor=#fce4ec;strokeColor=#e91e63;fontColor=#880e4f;rounded=1;shadow=1;" vertex="1" parent="1">
+          <mxGeometry x="1220" y="375" width="170" height="135" as="geometry"/>
+        </mxCell>
+        <mxCell id="po_pk" value="&lt;b&gt;PK&lt;/b&gt; po_id" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=6;fontSize=11;fontStyle=1;" vertex="1" parent="ent_program_outcome">
+          <mxGeometry y="26" width="170" height="20" as="geometry"/>
+        </mxCell>
+        <mxCell id="po_line" value="" style="line;strokeWidth=1;fillColor=none;strokeColor=#e91e63;" vertex="1" parent="ent_program_outcome">
+          <mxGeometry y="46" width="170" height="4" as="geometry"/>
+        </mxCell>
+        <mxCell id="po_attrs" value="po_number&#xa;po_description&#xa;status" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=6;fontSize=11;" vertex="1" parent="ent_program_outcome">
+          <mxGeometry y="50" width="170" height="80" as="geometry"/>
+        </mxCell>
+
+        <!-- ================= ENTITY: ATTENDANCE ================= -->
+        <mxCell id="ent_attendance" value="&lt;b&gt;ATTENDANCE&lt;/b&gt;" style="swimlane;fontStyle=1;childLayout=stackLayout;horizontal=1;startSize=26;fillColor=#e1f5fe;strokeColor=#0288d1;fontColor=#01579b;rounded=1;shadow=1;" vertex="1" parent="1">
+          <mxGeometry x="170" y="555" width="170" height="200" as="geometry"/>
+        </mxCell>
+        <mxCell id="att_pk" value="&lt;b&gt;PK&lt;/b&gt; attendance_id" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=6;fontSize=11;fontStyle=1;" vertex="1" parent="ent_attendance">
+          <mxGeometry y="26" width="170" height="20" as="geometry"/>
+        </mxCell>
+        <mxCell id="att_line" value="" style="line;strokeWidth=1;fillColor=none;strokeColor=#0288d1;" vertex="1" parent="ent_attendance">
+          <mxGeometry y="46" width="170" height="4" as="geometry"/>
+        </mxCell>
+        <mxCell id="att_attrs" value="&lt;b&gt;FK&lt;/b&gt; student_id&#xa;&lt;b&gt;FK&lt;/b&gt; course_id&#xa;&lt;b&gt;FK&lt;/b&gt; faculty_id&#xa;date&#xa;status (Present/Absent)&#xa;remarks" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=6;fontSize=11;" vertex="1" parent="ent_attendance">
+          <mxGeometry y="50" width="170" height="145" as="geometry"/>
+        </mxCell>
+
+        <!-- ================= ENTITY: STUDENT_ANSWER ================= -->
+        <mxCell id="ent_student_answer" value="&lt;b&gt;STUDENT_ANSWER&lt;/b&gt;" style="swimlane;fontStyle=1;childLayout=stackLayout;horizontal=1;startSize=26;fillColor=#fce4ec;strokeColor=#e91e63;fontColor=#880e4f;rounded=1;shadow=1;" vertex="1" parent="1">
+          <mxGeometry x="575" y="700" width="190" height="185" as="geometry"/>
+        </mxCell>
+        <mxCell id="sa_pk" value="&lt;b&gt;PK&lt;/b&gt; answer_id" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=6;fontSize=11;fontStyle=1;" vertex="1" parent="ent_student_answer">
+          <mxGeometry y="26" width="190" height="20" as="geometry"/>
+        </mxCell>
+        <mxCell id="sa_line" value="" style="line;strokeWidth=1;fillColor=none;strokeColor=#e91e63;" vertex="1" parent="ent_student_answer">
+          <mxGeometry y="46" width="190" height="4" as="geometry"/>
+        </mxCell>
+        <mxCell id="sa_attrs" value="&lt;b&gt;FK&lt;/b&gt; assessment_id&#xa;&lt;b&gt;FK&lt;/b&gt; student_id&#xa;&lt;b&gt;FK&lt;/b&gt; question_id&#xa;answer_text&#xa;marks_obtained&#xa;submitted_at&#xa;status" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=6;fontSize=11;" vertex="1" parent="ent_student_answer">
+          <mxGeometry y="50" width="190" height="130" as="geometry"/>
+        </mxCell>
+
+        <!-- ================= ENTITY: RESULT ================= -->
+        <mxCell id="ent_result" value="&lt;b&gt;RESULT&lt;/b&gt;" style="swimlane;fontStyle=1;childLayout=stackLayout;horizontal=1;startSize=26;fillColor=#fff3e0;strokeColor=#ff9800;fontColor=#e65100;rounded=1;shadow=1;" vertex="1" parent="1">
+          <mxGeometry x="870" y="620" width="170" height="190" as="geometry"/>
+        </mxCell>
+        <mxCell id="res_pk" value="&lt;b&gt;PK&lt;/b&gt; result_id" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=6;fontSize=11;fontStyle=1;" vertex="1" parent="ent_result">
+          <mxGeometry y="26" width="170" height="20" as="geometry"/>
+        </mxCell>
+        <mxCell id="res_line" value="" style="line;strokeWidth=1;fillColor=none;strokeColor=#ff9800;" vertex="1" parent="ent_result">
+          <mxGeometry y="46" width="170" height="4" as="geometry"/>
+        </mxCell>
+        <mxCell id="res_attrs" value="&lt;b&gt;FK&lt;/b&gt; student_id&#xa;&lt;b&gt;FK&lt;/b&gt; assessment_id&#xa;total_marks&#xa;marks_obtained&#xa;grade&#xa;published_at&#xa;status" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=6;fontSize=11;" vertex="1" parent="ent_result">
+          <mxGeometry y="50" width="170" height="135" as="geometry"/>
+        </mxCell>
+
+        <!-- ================= ENTITY: ATTAINMENT ================= -->
+        <mxCell id="ent_attainment" value="&lt;b&gt;ATTAINMENT&lt;/b&gt;" style="swimlane;fontStyle=1;childLayout=stackLayout;horizontal=1;startSize=26;fillColor=#e1f5fe;strokeColor=#0288d1;fontColor=#01579b;rounded=1;shadow=1;" vertex="1" parent="1">
+          <mxGeometry x="1200" y="600" width="190" height="185" as="geometry"/>
+        </mxCell>
+        <mxCell id="att_res_pk" value="&lt;b&gt;PK&lt;/b&gt; attainment_id" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=6;fontSize=11;fontStyle=1;" vertex="1" parent="ent_attainment">
+          <mxGeometry y="26" width="190" height="20" as="geometry"/>
+        </mxCell>
+        <mxCell id="att_res_line" value="" style="line;strokeWidth=1;fillColor=none;strokeColor=#0288d1;" vertex="1" parent="ent_attainment">
+          <mxGeometry y="46" width="190" height="4" as="geometry"/>
+        </mxCell>
+        <mxCell id="att_res_attrs" value="&lt;b&gt;FK&lt;/b&gt; co_id&#xa;&lt;b&gt;FK&lt;/b&gt; assessment_id&#xa;target_level&#xa;attained_level&#xa;attainment_percentage&#xa;status" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=6;fontSize=11;" vertex="1" parent="ent_attainment">
+          <mxGeometry y="50" width="190" height="130" as="geometry"/>
+        </mxCell>
+
+        <!-- ================= ENTITY: FEEDBACK ================= -->
+        <mxCell id="ent_feedback" value="&lt;b&gt;FEEDBACK&lt;/b&gt;" style="swimlane;fontStyle=1;childLayout=stackLayout;horizontal=1;startSize=26;fillColor=#fff8e1;strokeColor=#ffc107;fontColor=#e65100;rounded=1;shadow=1;" vertex="1" parent="1">
+          <mxGeometry x="85" y="770" width="150" height="200" as="geometry"/>
+        </mxCell>
+        <mxCell id="fb_pk" value="&lt;b&gt;PK&lt;/b&gt; feedback_id" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=6;fontSize=11;fontStyle=1;" vertex="1" parent="ent_feedback">
+          <mxGeometry y="26" width="150" height="20" as="geometry"/>
+        </mxCell>
+        <mxCell id="fb_line" value="" style="line;strokeWidth=1;fillColor=none;strokeColor=#ffc107;" vertex="1" parent="ent_feedback">
+          <mxGeometry y="46" width="150" height="4" as="geometry"/>
+        </mxCell>
+        <mxCell id="fb_attrs" value="&lt;b&gt;FK&lt;/b&gt; student_id&#xa;&lt;b&gt;FK&lt;/b&gt; course_id&#xa;&lt;b&gt;FK&lt;/b&gt; faculty_id&#xa;feedback_text&#xa;rating&#xa;date&#xa;status" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=6;fontSize=11;" vertex="1" parent="ent_feedback">
+          <mxGeometry y="50" width="150" height="145" as="geometry"/>
+        </mxCell>
+
+        <!-- ================= ENTITY: GRIEVANCE ================= -->
+        <mxCell id="ent_grievance" value="&lt;b&gt;GRIEVANCE&lt;/b&gt;" style="swimlane;fontStyle=1;childLayout=stackLayout;horizontal=1;startSize=26;fillColor=#f3e5f5;strokeColor=#8e24aa;fontColor=#4a148c;rounded=1;shadow=1;" vertex="1" parent="1">
+          <mxGeometry x="330" y="760" width="160" height="235" as="geometry"/>
+        </mxCell>
+        <mxCell id="gr_pk" value="&lt;b&gt;PK&lt;/b&gt; grievance_id" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=6;fontSize=11;fontStyle=1;" vertex="1" parent="ent_grievance">
+          <mxGeometry y="26" width="160" height="20" as="geometry"/>
+        </mxCell>
+        <mxCell id="gr_line" value="" style="line;strokeWidth=1;fillColor=none;strokeColor=#8e24aa;" vertex="1" parent="ent_grievance">
+          <mxGeometry y="46" width="160" height="4" as="geometry"/>
+        </mxCell>
+        <mxCell id="gr_attrs" value="&lt;b&gt;FK&lt;/b&gt; student_id&#xa;&lt;b&gt;FK&lt;/b&gt; course_id&#xa;subject&#xa;description&#xa;status&#xa;submitted_at&#xa;resolved_by (FK)&#xa;resolved_at" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=6;fontSize=11;" vertex="1" parent="ent_grievance">
+          <mxGeometry y="50" width="160" height="180" as="geometry"/>
+        </mxCell>
+
+        <!-- ================= ENTITY: ADMIN ================= -->
+        <mxCell id="ent_admin" value="&lt;b&gt;ADMIN&lt;/b&gt;" style="swimlane;fontStyle=1;childLayout=stackLayout;horizontal=1;startSize=26;fillColor=#d4edda;strokeColor=#28a745;fontColor=#155724;rounded=1;shadow=1;" vertex="1" parent="1">
+          <mxGeometry x="620" y="870" width="160" height="160" as="geometry"/>
+        </mxCell>
+        <mxCell id="adm_pk" value="&lt;b&gt;PK&lt;/b&gt; admin_id" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=6;fontSize=11;fontStyle=1;" vertex="1" parent="ent_admin">
+          <mxGeometry y="26" width="160" height="20" as="geometry"/>
+        </mxCell>
+        <mxCell id="adm_line" value="" style="line;strokeWidth=1;fillColor=none;strokeColor=#28a745;" vertex="1" parent="ent_admin">
+          <mxGeometry y="46" width="160" height="4" as="geometry"/>
+        </mxCell>
+        <mxCell id="adm_attrs" value="name&#xa;email&#xa;password&#xa;role&#xa;phone&#xa;status" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=6;fontSize=11;" vertex="1" parent="ent_admin">
+          <mxGeometry y="50" width="160" height="105" as="geometry"/>
+        </mxCell>
+
+        <!-- ================= RELATIONSHIP DIAMONDS ================= -->
+        <!-- Student -> Enrollment -->
+        <mxCell id="rel_enrolls_in" value="Enrolls in" style="rhombus;whiteSpace=wrap;html=1;fillColor=#e1f5fe;strokeColor=#0288d1;fontStyle=1;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="245" y="175" width="80" height="50" as="geometry"/>
+        </mxCell>
+
+        <!-- Enrollment -> Course -->
+        <mxCell id="rel_enr_course" value="Has" style="rhombus;whiteSpace=wrap;html=1;fillColor=#e1f5fe;strokeColor=#0288d1;fontStyle=1;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="600" y="175" width="70" height="45" as="geometry"/>
+        </mxCell>
+
+        <!-- Course -> Course Outcome -->
+        <mxCell id="rel_defines" value="Defines" style="rhombus;whiteSpace=wrap;html=1;fillColor=#e1f5fe;strokeColor=#0288d1;fontStyle=1;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="940" y="175" width="80" height="50" as="geometry"/>
+        </mxCell>
+
+        <!-- Faculty -> Course Allocation -->
+        <mxCell id="rel_teaches" value="Teaches" style="rhombus;whiteSpace=wrap;html=1;fillColor=#e1f5fe;strokeColor=#0288d1;fontStyle=1;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="250" y="415" width="80" height="50" as="geometry"/>
+        </mxCell>
+
+        <!-- Faculty -> Attendance -->
+        <mxCell id="rel_records_att" value="Records /&#xa;Takes" style="rhombus;whiteSpace=wrap;html=1;fillColor=#e1f5fe;strokeColor=#0288d1;fontStyle=1;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="65" y="595" width="80" height="50" as="geometry"/>
+        </mxCell>
+
+        <!-- Course Allocation / Faculty -> Assessment -->
+        <mxCell id="rel_creates_ass" value="Creates" style="rhombus;whiteSpace=wrap;html=1;fillColor=#e1f5fe;strokeColor=#0288d1;fontStyle=1;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="260" y="490" width="75" height="45" as="geometry"/>
+        </mxCell>
+
+        <!-- Course -> Assessment -->
+        <mxCell id="rel_course_ass" value="Has" style="rhombus;whiteSpace=wrap;html=1;fillColor=#e1f5fe;strokeColor=#0288d1;fontStyle=1;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="635" y="330" width="70" height="45" as="geometry"/>
+        </mxCell>
+
+        <!-- Assessment -> Question -->
+        <mxCell id="rel_contains_q" value="Contains" style="rhombus;whiteSpace=wrap;html=1;fillColor=#e1f5fe;strokeColor=#0288d1;fontStyle=1;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="765" y="490" width="70" height="45" as="geometry"/>
+        </mxCell>
+
+        <!-- Assessment -> Student Answer -->
+        <mxCell id="rel_ass_answer" value="Has" style="rhombus;whiteSpace=wrap;html=1;fillColor=#e1f5fe;strokeColor=#0288d1;fontStyle=1;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="635" y="640" width="70" height="45" as="geometry"/>
+        </mxCell>
+
+        <!-- Assessment -> Result -->
+        <mxCell id="rel_generates_res" value="Generates" style="rhombus;whiteSpace=wrap;html=1;fillColor=#e1f5fe;strokeColor=#0288d1;fontStyle=1;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="775" y="650" width="75" height="45" as="geometry"/>
+        </mxCell>
+
+        <!-- Result -> Attainment -->
+        <mxCell id="rel_res_attainment" value="Contributes to" style="rhombus;whiteSpace=wrap;html=1;fillColor=#e1f5fe;strokeColor=#0288d1;fontStyle=1;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="1070" y="695" width="90" height="45" as="geometry"/>
+        </mxCell>
+
+        <!-- Course Outcome -> Attainment -->
+        <mxCell id="rel_co_attainment" value="Used for" style="rhombus;whiteSpace=wrap;html=1;fillColor=#e1f5fe;strokeColor=#0288d1;fontStyle=1;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="1310" y="530" width="75" height="45" as="geometry"/>
+        </mxCell>
+
+        <!-- Course Outcome -> CO PO Mapping -->
+        <mxCell id="rel_mapped_to" value="Mapped to" style="rhombus;whiteSpace=wrap;html=1;fillColor=#e1f5fe;strokeColor=#0288d1;fontStyle=1;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="1005" y="300" width="80" height="45" as="geometry"/>
+        </mxCell>
+
+        <!-- CO PO Mapping -> Program Outcome -->
+        <mxCell id="rel_maps_to_po" value="Maps to" style="rhombus;whiteSpace=wrap;html=1;fillColor=#e1f5fe;strokeColor=#0288d1;fontStyle=1;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="1135" y="420" width="70" height="45" as="geometry"/>
+        </mxCell>
+
+        <!-- Student -> Feedback -->
+        <mxCell id="rel_submits_fb" value="Submits" style="rhombus;whiteSpace=wrap;html=1;fillColor=#e1f5fe;strokeColor=#0288d1;fontStyle=1;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="10" y="785" width="70" height="45" as="geometry"/>
+        </mxCell>
+
+        <!-- Student -> Grievance -->
+        <mxCell id="rel_raises_gr" value="Raises" style="rhombus;whiteSpace=wrap;html=1;fillColor=#e1f5fe;strokeColor=#0288d1;fontStyle=1;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="250" y="830" width="70" height="45" as="geometry"/>
+        </mxCell>
+
+        <!-- Grievance -> Admin -->
+        <mxCell id="rel_resolved_by" value="Resolved by" style="rhombus;whiteSpace=wrap;html=1;fillColor=#e1f5fe;strokeColor=#0288d1;fontStyle=1;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="510" y="890" width="85" height="45" as="geometry"/>
+        </mxCell>
+
+
+        <!-- ================= CONNECTORS WITH CARDINALITY ================= -->
+        <!-- Student to rel_enrolls_in -->
+        <mxCell id="edge_st_rel" value="1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=none;strokeColor=#0d47a1;strokeWidth=1.5;fontStyle=1;" edge="1" parent="1" source="ent_student" target="rel_enrolls_in">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <!-- rel_enrolls_in to Enrollment -->
+        <mxCell id="edge_rel_enr" value="N" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=none;strokeColor=#0d47a1;strokeWidth=1.5;fontStyle=1;" edge="1" parent="1" source="rel_enrolls_in" target="ent_enrollment">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <!-- Enrollment to rel_enr_course -->
+        <mxCell id="edge_enr_rel" value="N" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=none;strokeColor=#0d47a1;strokeWidth=1.5;fontStyle=1;" edge="1" parent="1" source="ent_enrollment" target="rel_enr_course">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <!-- rel_enr_course to Course -->
+        <mxCell id="edge_rel_course" value="1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=none;strokeColor=#0d47a1;strokeWidth=1.5;fontStyle=1;" edge="1" parent="1" source="rel_enr_course" target="ent_course">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <!-- Course to rel_defines -->
+        <mxCell id="edge_crs_def" value="1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=none;strokeColor=#0d47a1;strokeWidth=1.5;fontStyle=1;" edge="1" parent="1" source="ent_course" target="rel_defines">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <!-- rel_defines to Course Outcome -->
+        <mxCell id="edge_def_co" value="N" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=none;strokeColor=#0d47a1;strokeWidth=1.5;fontStyle=1;" edge="1" parent="1" source="rel_defines" target="ent_course_outcome">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <!-- Faculty to rel_teaches -->
+        <mxCell id="edge_fac_rel" value="1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=none;strokeColor=#0d47a1;strokeWidth=1.5;fontStyle=1;" edge="1" parent="1" source="ent_faculty" target="rel_teaches">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <!-- rel_teaches to Course Allocation -->
+        <mxCell id="edge_rel_ca" value="N" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=none;strokeColor=#0d47a1;strokeWidth=1.5;fontStyle=1;" edge="1" parent="1" source="rel_teaches" target="ent_course_alloc">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <!-- Faculty to rel_records_att -->
+        <mxCell id="edge_fac_att" value="1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=none;strokeColor=#0d47a1;strokeWidth=1.5;fontStyle=1;" edge="1" parent="1" source="ent_faculty" target="rel_records_att">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <!-- rel_records_att to Attendance -->
+        <mxCell id="edge_rel_att" value="N" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=none;strokeColor=#0d47a1;strokeWidth=1.5;fontStyle=1;" edge="1" parent="1" source="rel_records_att" target="ent_attendance">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <!-- Course to rel_course_ass -->
+        <mxCell id="edge_crs_ass" value="1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=none;strokeColor=#0d47a1;strokeWidth=1.5;fontStyle=1;" edge="1" parent="1" source="ent_course" target="rel_course_ass">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <!-- rel_course_ass to Assessment -->
+        <mxCell id="edge_rel_ass" value="N" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=none;strokeColor=#0d47a1;strokeWidth=1.5;fontStyle=1;" edge="1" parent="1" source="rel_course_ass" target="ent_assessment">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <!-- Assessment to rel_contains_q -->
+        <mxCell id="edge_ass_q" value="1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=none;strokeColor=#0d47a1;strokeWidth=1.5;fontStyle=1;" edge="1" parent="1" source="ent_assessment" target="rel_contains_q">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <!-- rel_contains_q to Question -->
+        <mxCell id="edge_rel_q" value="N" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=none;strokeColor=#0d47a1;strokeWidth=1.5;fontStyle=1;" edge="1" parent="1" source="rel_contains_q" target="ent_question">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <!-- Course Outcome to rel_mapped_to -->
+        <mxCell id="edge_co_mapped" value="N" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=none;strokeColor=#0d47a1;strokeWidth=1.5;fontStyle=1;" edge="1" parent="1" source="ent_course_outcome" target="rel_mapped_to">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <!-- rel_mapped_to to CO_PO_MAPPING -->
+        <mxCell id="edge_mapped_copo" value="N" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=none;strokeColor=#0d47a1;strokeWidth=1.5;fontStyle=1;" edge="1" parent="1" source="rel_mapped_to" target="ent_copo_mapping">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <!-- CO_PO_MAPPING to rel_maps_to_po -->
+        <mxCell id="edge_copo_relpo" value="N" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=none;strokeColor=#0d47a1;strokeWidth=1.5;fontStyle=1;" edge="1" parent="1" source="ent_copo_mapping" target="rel_maps_to_po">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <!-- rel_maps_to_po to Program Outcome -->
+        <mxCell id="edge_relpo_po" value="1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=none;strokeColor=#0d47a1;strokeWidth=1.5;fontStyle=1;" edge="1" parent="1" source="rel_maps_to_po" target="ent_program_outcome">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <!-- Assessment to rel_ass_answer -->
+        <mxCell id="edge_ass_sa" value="1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=none;strokeColor=#0d47a1;strokeWidth=1.5;fontStyle=1;" edge="1" parent="1" source="ent_assessment" target="rel_ass_answer">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <!-- rel_ass_answer to Student Answer -->
+        <mxCell id="edge_rel_sa" value="N" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=none;strokeColor=#0d47a1;strokeWidth=1.5;fontStyle=1;" edge="1" parent="1" source="rel_ass_answer" target="ent_student_answer">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <!-- Assessment to rel_generates_res -->
+        <mxCell id="edge_ass_res" value="1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=none;strokeColor=#0d47a1;strokeWidth=1.5;fontStyle=1;" edge="1" parent="1" source="ent_assessment" target="rel_generates_res">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <!-- rel_generates_res to Result -->
+        <mxCell id="edge_rel_res" value="N" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=none;strokeColor=#0d47a1;strokeWidth=1.5;fontStyle=1;" edge="1" parent="1" source="rel_generates_res" target="ent_result">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <!-- Result to rel_res_attainment -->
+        <mxCell id="edge_res_att" value="1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=none;strokeColor=#0d47a1;strokeWidth=1.5;fontStyle=1;" edge="1" parent="1" source="ent_result" target="rel_res_attainment">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <!-- rel_res_attainment to Attainment -->
+        <mxCell id="edge_rel_att_target" value="N" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=none;strokeColor=#0d47a1;strokeWidth=1.5;fontStyle=1;" edge="1" parent="1" source="rel_res_attainment" target="ent_attainment">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <!-- Course Outcome to rel_co_attainment -->
+        <mxCell id="edge_co_used_for" value="1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=none;strokeColor=#0d47a1;strokeWidth=1.5;fontStyle=1;" edge="1" parent="1" source="ent_course_outcome" target="rel_co_attainment">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="1350" y="200"/>
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <!-- rel_co_attainment to Attainment -->
+        <mxCell id="edge_rel_att_co" value="N" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=none;strokeColor=#0d47a1;strokeWidth=1.5;fontStyle=1;" edge="1" parent="1" source="rel_co_attainment" target="ent_attainment">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <!-- Student to Feedback -->
+        <mxCell id="edge_st_fb" value="1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=none;strokeColor=#0d47a1;strokeWidth=1.5;fontStyle=1;" edge="1" parent="1" source="ent_student" target="rel_submits_fb">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="20" y="225"/>
+              <mxPoint x="20" y="805"/>
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <!-- rel_submits_fb to Feedback -->
+        <mxCell id="edge_rel_fb" value="N" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=none;strokeColor=#0d47a1;strokeWidth=1.5;fontStyle=1;" edge="1" parent="1" source="rel_submits_fb" target="ent_feedback">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <!-- Student to Grievance -->
+        <mxCell id="edge_st_gr" value="1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=none;strokeColor=#0d47a1;strokeWidth=1.5;fontStyle=1;" edge="1" parent="1" source="ent_student" target="rel_raises_gr">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="35" y="850"/>
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <!-- rel_raises_gr to Grievance -->
+        <mxCell id="edge_rel_gr" value="N" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=none;strokeColor=#0d47a1;strokeWidth=1.5;fontStyle=1;" edge="1" parent="1" source="rel_raises_gr" target="ent_grievance">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <!-- Grievance to rel_resolved_by -->
+        <mxCell id="edge_gr_res_rel" value="N" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=none;strokeColor=#0d47a1;strokeWidth=1.5;fontStyle=1;" edge="1" parent="1" source="ent_grievance" target="rel_resolved_by">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <!-- rel_resolved_by to Admin -->
+        <mxCell id="edge_rel_adm" value="1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=none;strokeColor=#0d47a1;strokeWidth=1.5;fontStyle=1;" edge="1" parent="1" source="rel_resolved_by" target="ent_admin">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+
+        <!-- ================= LEGEND BOX ================= -->
+        <mxCell id="legend_box" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8f9fa;strokeColor=#cfd8dc;strokeWidth=1.5;" vertex="1" parent="1">
+          <mxGeometry x="840" y="860" width="180" height="200" as="geometry"/>
+        </mxCell>
+        <mxCell id="leg_title" value="&lt;b&gt;Legend&lt;/b&gt;" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontSize=12;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="850" y="865" width="80" height="20" as="geometry"/>
+        </mxCell>
+        <mxCell id="leg_ent_icon" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d4edda;strokeColor=#28a745;" vertex="1" parent="1">
+          <mxGeometry x="855" y="895" width="25" height="15" as="geometry"/>
+        </mxCell>
+        <mxCell id="leg_ent_txt" value="Entity (Table)" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="890" y="892" width="100" height="20" as="geometry"/>
+        </mxCell>
+        <mxCell id="leg_rel_icon" value="" style="rhombus;whiteSpace=wrap;html=1;fillColor=#e1f5fe;strokeColor=#0288d1;" vertex="1" parent="1">
+          <mxGeometry x="855" y="920" width="25" height="15" as="geometry"/>
+        </mxCell>
+        <mxCell id="leg_rel_txt" value="Relationship" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="890" y="917" width="100" height="20" as="geometry"/>
+        </mxCell>
+        <mxCell id="leg_pk_txt" value="&lt;b&gt;PK&lt;/b&gt;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;Primary Key" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="855" y="945" width="140" height="20" as="geometry"/>
+        </mxCell>
+        <mxCell id="leg_fk_txt" value="&lt;b&gt;FK&lt;/b&gt;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;Foreign Key" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="855" y="970" width="140" height="20" as="geometry"/>
+        </mxCell>
+        <mxCell id="leg_card1" value="&lt;b&gt;1&lt;/b&gt;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;One (Cardinality)" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="855" y="995" width="150" height="20" as="geometry"/>
+        </mxCell>
+        <mxCell id="leg_cardn" value="&lt;b&gt;N&lt;/b&gt;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;Many (Cardinality)" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="855" y="1020" width="150" height="20" as="geometry"/>
+        </mxCell>
+
+
+        <!-- ================= KEY FEATURES BOX ================= -->
+        <mxCell id="feat_box" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8f9fa;strokeColor=#90caf9;strokeWidth=1;strokeDashed=1;" vertex="1" parent="1">
+          <mxGeometry x="1050" y="860" width="280" height="200" as="geometry"/>
+        </mxCell>
+        <mxCell id="feat_title" value="&lt;b&gt;Key Features Represented&lt;/b&gt;" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontSize=11;fontStyle=1;fontColor=#0d47a1;" vertex="1" parent="1">
+          <mxGeometry x="1060" y="865" width="220" height="20" as="geometry"/>
+        </mxCell>
+        <mxCell id="feat_items" value="• Student, Faculty and Admin management&#xa;• Course and CO management&#xa;• CO-PO mapping (Levels 1, 2, 3)&#xa;• Assessments and Question bank&#xa;• Attendance tracking&#xa;• Result and Attainment calculation&#xa;• Feedback &amp; Grievance handling" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=top;fontSize=10.5;fontColor=#37474f;" vertex="1" parent="1">
+          <mxGeometry x="1060" y="890" width="260" height="160" as="geometry"/>
+        </mxCell>
+
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
