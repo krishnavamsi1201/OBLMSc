@@ -224,10 +224,11 @@ export class Login implements OnInit {
           localStorage.setItem('userDepartment', dept);
 
           const dLow = dept.toLowerCase();
-          const shortDept = (dLow.includes('mechanical') || dLow.includes('me')) ? 'ME' :
-                            (dLow.includes('civil') || dLow.includes('ce')) ? 'Civil' :
-                            (dLow.includes('electronic') || dLow.includes('ece')) ? 'ECE' :
-                            (dLow.includes('information') || dLow.includes('it')) ? 'IT' : 'CSE';
+          const shortDept = (dLow.includes('computer') || dLow.includes('cse') || dLow.includes('cs')) ? 'CSE' :
+                            (dLow.includes('information') || dLow.includes('it')) ? 'IT' :
+                            (dLow.includes('electronic') || dLow.includes('ece') || dLow.includes('ee')) ? 'ECE' :
+                            (dLow.includes('mechanical') || dLow.includes('mech')) ? 'ME' :
+                            (dLow.includes('civil') || dLow === 'ce') ? 'Civil' : 'CSE';
           const numStr = (response.id || '').replace(/[^0-9]/g, '');
           const rollNum = 'CUTM2026' + shortDept + (numStr.length > 0 ? numStr.padStart(3, '0').slice(-3) : '042');
           localStorage.setItem('userRoll', rollNum);

@@ -485,16 +485,16 @@ export class Courses implements OnInit, OnDestroy {
     const title = (course.title || '').toLowerCase().trim();
     const dept = (localStorage.getItem('userDepartment') || localStorage.getItem('userDept') || '').toLowerCase();
 
-    // 1. Mechanical Engineering
-    if (dept.includes('mech') || dept.includes('me')) {
-      return code.startsWith('ME') || code.startsWith('AU') || code === 'KM' || code === 'IC' || code === '04ME6512' || code === 'SMSE' || code === 'EM IV' ||
-             title.includes('metallurgy') || title.includes('kinematics') || title.includes('combustion') || title.includes('engine') || title.includes('cad') || title.includes('chassis') || title.includes('mechanical') || title.includes('automobile');
+    // 1. Computer Science & Engineering (CSE)
+    if (dept.includes('comp') || dept.includes('cse') || dept.includes('cs')) {
+      return code.startsWith('CS') || code === 'DS' || code === 'OOP' || code === 'CC' || code === 'OOMD' || code === 'HPC' || code === 'DS LAB' || code === 'C++ LAB' || code === 'RLMCA101' || code === 'RLMCA201' || code === 'RLMCA205' || code === 'RLMCA231' ||
+             title.includes('data structure') || title.includes('database') || title.includes('algorithm') || title.includes('compiler') || title.includes('networks') || title.includes('computer') || title.includes('machine learning') || title.includes('artificial intelligence') || title.includes('software engineering');
     }
 
-    // 2. Civil Engineering
-    if (dept.includes('civil') || dept.includes('ce')) {
-      return code.startsWith('CE') || code === 'FMHM' || code === 'SMSE' || code === 'EMII' || code === 'HS300' || code === 'ECS' ||
-             title.includes('fluid') || title.includes('survey') || title.includes('structural') || title.includes('civil') || title.includes('hydraulic') || title.includes('concrete');
+    // 2. Information Technology (IT)
+    if (dept.includes('info') || dept.includes('it')) {
+      return code.startsWith('IT') || code === 'LINUX' || code === 'WT' || code === 'CS361' || code === 'RLMCA108' || code === 'LINUX LAB' || code === 'OPEN LAB' ||
+             title.includes('linux') || title.includes('shell') || title.includes('web tech') || title.includes('cloud') || title.includes('devops') || title.includes('soft computing') || title.includes('operations research');
     }
 
     // 3. Electronics & Communication Engineering (ECE)
@@ -503,15 +503,19 @@ export class Courses implements OnInit, OnDestroy {
              title.includes('microprocessor') || title.includes('logic design') || title.includes('signal') || title.includes('electronics') || title.includes('embedded') || title.includes('switching theory');
     }
 
-    // 4. Information Technology (IT)
-    if (dept.includes('info') || dept.includes('it')) {
-      return code.startsWith('IT') || code === 'LINUX' || code === 'WT' || code === 'CS361' || code === 'RLMCA108' || code === 'LINUX LAB' || code === 'OPEN LAB' ||
-             title.includes('linux') || title.includes('shell') || title.includes('web tech') || title.includes('cloud') || title.includes('devops') || title.includes('soft computing') || title.includes('operations research');
+    // 4. Mechanical Engineering
+    if (dept.includes('mech') || dept.includes('me')) {
+      return code.startsWith('ME') || code.startsWith('AU') || code === 'KM' || code === 'IC' || code === '04ME6512' || code === 'SMSE' || code === 'EM IV' ||
+             title.includes('metallurgy') || title.includes('kinematics') || title.includes('combustion') || title.includes('engine') || title.includes('cad') || title.includes('chassis') || title.includes('mechanical') || title.includes('automobile');
     }
 
-    // 5. Computer Science & Engineering (CSE)
-    return code.startsWith('CS') || code === 'DS' || code === 'OOP' || code === 'CC' || code === 'OOMD' || code === 'HPC' || code === 'DS LAB' || code === 'C++ LAB' || code === 'RLMCA101' || code === 'RLMCA201' || code === 'RLMCA205' || code === 'RLMCA231' ||
-           title.includes('data structure') || title.includes('database') || title.includes('algorithm') || title.includes('compiler') || title.includes('networks') || title.includes('computer') || title.includes('machine learning') || title.includes('artificial intelligence') || title.includes('software engineering');
+    // 5. Civil Engineering
+    if (dept.includes('civil') || dept === 'ce') {
+      return code.startsWith('CE') || code === 'FMHM' || code === 'SMSE' || code === 'EMII' || code === 'HS300' || code === 'ECS' ||
+             title.includes('fluid') || title.includes('survey') || title.includes('structural') || title.includes('civil') || title.includes('hydraulic') || title.includes('concrete');
+    }
+
+    return code.startsWith('CS') || title.includes('computer');
   }
 
   isEnrolled(courseCode: string): boolean {

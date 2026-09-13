@@ -602,12 +602,12 @@ export class Subjects implements OnInit {
 
   get shortDept(): string {
     const d = this.userDept.toLowerCase();
-    if (d.includes('computer') || d.includes('cse')) return 'CSE';
+    if (d.includes('computer') || d.includes('cse') || d.includes('cs')) return 'CSE';
     if (d.includes('information') || d.includes('it')) return 'IT';
-    if (d.includes('electronic') || d.includes('ece')) return 'ECE';
-    if (d.includes('mechanical') || d.includes('me')) return 'ME';
-    if (d.includes('civil') || d.includes('ce')) return 'Civil';
-    return 'Engineering';
+    if (d.includes('electronic') || d.includes('ece') || d.includes('ee')) return 'ECE';
+    if (d.includes('mechanical') || d.includes('mech')) return 'ME';
+    if (d.includes('civil') || d === 'ce') return 'Civil';
+    return 'CSE';
   }
 
   get registeredCount(): number {
@@ -890,14 +890,16 @@ export class Subjects implements OnInit {
           // Branch curriculum mode: only student's department subjects
           const uDept = this.userDept.toLowerCase();
           let matchesStudentDept = false;
-          if (uDept.includes('mech') || uDept.includes('me')) {
-            matchesStudentDept = sDept.includes('mech') || sDept.includes('me') || sDept.includes('auto');
-          } else if (uDept.includes('civil') || uDept.includes('ce')) {
-            matchesStudentDept = sDept.includes('civil') || sDept.includes('ce');
-          } else if (uDept.includes('elect') || uDept.includes('ece')) {
-            matchesStudentDept = sDept.includes('elect') || sDept.includes('ece');
+          if (uDept.includes('comp') || uDept.includes('cse') || uDept.includes('cs')) {
+            matchesStudentDept = sDept.includes('comp') || sDept.includes('cse') || sDept.includes('cs');
           } else if (uDept.includes('info') || uDept.includes('it')) {
             matchesStudentDept = sDept.includes('info') || sDept.includes('it');
+          } else if (uDept.includes('elect') || uDept.includes('ece') || uDept.includes('ee')) {
+            matchesStudentDept = sDept.includes('elect') || sDept.includes('ece') || sDept.includes('ee');
+          } else if (uDept.includes('mech') || uDept.includes('me')) {
+            matchesStudentDept = sDept.includes('mech') || sDept.includes('me') || sDept.includes('auto');
+          } else if (uDept.includes('civil') || uDept === 'ce') {
+            matchesStudentDept = sDept.includes('civil') || sDept.includes('ce');
           } else {
             matchesStudentDept = sDept.includes('comp') || sDept.includes('cse');
           }

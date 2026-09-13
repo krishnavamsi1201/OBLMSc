@@ -155,11 +155,11 @@ export class CopoMapping implements OnInit {
   get currentActiveBranch(): string {
     if (this.selectedBranch === 'MY_BRANCH' || this.role === 'student') {
       const d = (this.studentDept || '').toLowerCase();
-      if (d.includes('computer') || d.includes('cse')) return 'CSE';
+      if (d.includes('computer') || d.includes('cse') || d.includes('cs')) return 'CSE';
       if (d.includes('information') || d.includes('it')) return 'IT';
-      if (d.includes('electronic') || d.includes('ece')) return 'ECE';
-      if (d.includes('mechanical') || d.includes('me')) return 'ME';
-      if (d.includes('civil') || d.includes('ce')) return 'Civil';
+      if (d.includes('electronic') || d.includes('ece') || d.includes('ee')) return 'ECE';
+      if (d.includes('mechanical') || d.includes('mech')) return 'ME';
+      if (d.includes('civil') || d === 'ce') return 'Civil';
       return 'CSE';
     }
     return this.selectedBranch;

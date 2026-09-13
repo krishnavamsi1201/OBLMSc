@@ -512,7 +512,7 @@ public class DashboardStatsController {
             student = studentOpt.get();
         } else {
             // Create runtime transient user matching the studentId requested
-            student = new User(studentId, studentId, studentId, "password", "STUDENT", "Mechanical Engineering");
+            student = new User(studentId, studentId, studentId, "password", "STUDENT", "Computer Science & Engineering");
         }
 
         String studentName = student.getName() != null ? student.getName() : studentId;
@@ -528,6 +528,20 @@ public class DashboardStatsController {
                 .map(String::trim)
                 .filter(s -> !s.isEmpty())
                 .toList();
+        } else {
+            if (dLow.contains("comp") || dLow.contains("cse") || dLow.contains("cs")) {
+                enrolledCodes = List.of("CS101", "CS102", "CS103", "CS301", "CS302");
+            } else if (dLow.contains("info") || dLow.contains("it")) {
+                enrolledCodes = List.of("IT305", "CS303", "Linux", "WT");
+            } else if (dLow.contains("elect") || dLow.contains("ece")) {
+                enrolledCodes = List.of("MES", "DSLD", "EC206", "EE407");
+            } else if (dLow.contains("mech") || dLow.contains("me")) {
+                enrolledCodes = List.of("ME210", "KM", "IC", "04ME6512");
+            } else if (dLow.contains("civil") || dLow.equals("ce")) {
+                enrolledCodes = List.of("FMHM", "SMSE", "CE234", "EMII");
+            } else {
+                enrolledCodes = List.of("CS101", "CS102", "CS103", "CS301", "CS302");
+            }
         }
 
         // 2. Fetch all faculty members to map who teaches each course
@@ -747,7 +761,11 @@ public class DashboardStatsController {
         studentInfo.put("name", student.getName());
         studentInfo.put("email", student.getEmail());
         studentInfo.put("department", dept);
-        String shortDept = dept.contains("Computer") ? "CSE" : dept.contains("Information") ? "IT" : dept.contains("Electronics") ? "ECE" : dept.contains("Mechanical") ? "ME" : "Civil";
+        String shortDept = (dept.contains("Computer") || dept.contains("CSE") || dept.toLowerCase().contains("comp") || dept.toLowerCase().contains("cs")) ? "CSE" : 
+                           (dept.contains("Information") || dept.contains("IT")) ? "IT" : 
+                           (dept.contains("Electronics") || dept.contains("ECE")) ? "ECE" : 
+                           (dept.contains("Mechanical") || dept.contains("ME")) ? "ME" : 
+                           (dept.contains("Civil") || dept.equalsIgnoreCase("CE")) ? "Civil" : "CSE";
         String numStr = student.getId() != null ? student.getId().replaceAll("[^0-9]", "") : "";
         if (numStr.isEmpty()) numStr = "042";
         int parsedNum = 42;

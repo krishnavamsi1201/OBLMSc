@@ -124,7 +124,7 @@ export class CoAttainment implements OnInit {
           assigned = ['MES', 'DSLD', 'EC206', 'EE407', 'CS203'];
         } else if (dept.includes('mechanical') || dept.includes('me')) {
           assigned = ['ME210', 'KM', 'IC', '04ME6512'];
-        } else if (dept.includes('civil') || dept.includes('ce')) {
+        } else if (dept.includes('civil') || dept === 'ce') {
           assigned = ['FMHM', 'SMSE', 'CE234', 'EMII'];
         }
       }

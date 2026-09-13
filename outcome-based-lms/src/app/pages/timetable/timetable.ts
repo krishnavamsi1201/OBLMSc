@@ -749,10 +749,11 @@ export class Timetable implements OnInit {
       return this.userAssignedCourses.join(', ');
     }
     const d = this.userDept.toLowerCase();
-    if (d.includes('civil') || d.includes('ce')) return 'Fluid Mechanics & Hydraulic Machinery (FMHM), Structural Mechanics (SMSE), Surveying Field Practice Lab';
-    if (d.includes('mech') || d.includes('me')) return 'Metallurgy & Materials (ME210), Kinematics of Machinery (KM), CAD/CAM Lab';
-    if (d.includes('elect') || d.includes('ece')) return 'Microprocessors & Embedded Systems (MES), Digital Systems (DSLD), Hardware Lab';
+    if (d.includes('comp') || d.includes('cse') || d.includes('cs')) return 'Database Management Systems (CS101), Java & OOPs (CS102), Operating Systems (CS301)';
     if (d.includes('info') || d.includes('it')) return 'Web Technologies (IT305), Linux Programming, Cloud DevOps (CS303)';
+    if (d.includes('elect') || d.includes('ece')) return 'Microprocessors & Embedded Systems (MES), Digital Systems (DSLD), Hardware Lab';
+    if (d.includes('mech') || d.includes('me')) return 'Metallurgy & Materials (ME210), Kinematics of Machinery (KM), CAD/CAM Lab';
+    if (d.includes('civil') || d === 'ce') return 'Fluid Mechanics & Hydraulic Machinery (FMHM), Structural Mechanics (SMSE), Surveying Field Practice Lab';
     return 'Database Management Systems (CS101), Java & OOPs (CS102), Operating Systems (CS301)';
   }
 
@@ -791,7 +792,7 @@ export class Timetable implements OnInit {
   getBranchSchedule(dept: string): ScheduleEntry[] {
     const d = (dept || '').toLowerCase();
 
-    if (d.includes('civil') || d.includes('ce')) {
+    if (d.includes('civil') || d === 'ce') {
       return [
         // Monday: 3 classes, 2 leisure (Alternating: Class -> Leisure -> Class -> Library -> Class)
         { id: 1, day: 'Monday', period: '09:00 AM - 10:00 AM', subject: 'Fluid Mechanics & Hydraulic Machinery (FMHM)', room: 'CE-LH-101' },
