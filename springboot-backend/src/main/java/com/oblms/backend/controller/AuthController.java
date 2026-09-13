@@ -54,14 +54,6 @@ public class AuthController {
         if (userOpt.isEmpty()) {
             userOpt = userRepository.findByIdIgnoreCase(identifier);
         }
-        // Alias check for Ramesh Babu
-        if (userOpt.isEmpty() && (identifier.equalsIgnoreCase("ramesh.babu@oblms.edu") || identifier.equalsIgnoreCase("ramesh@oblms.edu") || identifier.equalsIgnoreCase("ramesh"))) {
-            userOpt = userRepository.findById("FAC001");
-        }
-        // Alias check for Krishnavamsi / Vamsi
-        if (userOpt.isEmpty() && (identifier.equalsIgnoreCase("krishnavamsi1201@gmail.com") || identifier.equalsIgnoreCase("krishnavamsi@gmail.com") || identifier.equalsIgnoreCase("krishnavamsi") || identifier.equalsIgnoreCase("vamsi1201@gmail.com") || identifier.equalsIgnoreCase("vamsi") || identifier.equalsIgnoreCase("STU004"))) {
-            userOpt = userRepository.findById("646456455");
-        }
 
         if (userOpt.isEmpty()) {
             return ResponseEntity.status(401).body(Map.of(
@@ -132,13 +124,6 @@ public class AuthController {
                 userOpt = userRepository.findAll().stream()
                     .filter(u -> u.getName().equalsIgnoreCase(identifier) || u.getName().toLowerCase().contains(identifier.toLowerCase()))
                     .findFirst();
-            }
-        }
-
-        // If identifier wasn't found or was empty, check if only one user is matching or fallback to finding by current password
-        if (userOpt.isEmpty() && !identifier.isEmpty()) {
-            if (identifier.equalsIgnoreCase("vamsi") || identifier.equalsIgnoreCase("krishnavamsi") || identifier.equalsIgnoreCase("vamsi1201@gmail.com")) {
-                userOpt = userRepository.findById("646456455");
             }
         }
 
