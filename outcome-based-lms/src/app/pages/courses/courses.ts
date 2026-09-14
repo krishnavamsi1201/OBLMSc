@@ -53,10 +53,10 @@ export class Courses implements OnInit, OnDestroy {
       const matchesSearch = !q || c.code.toLowerCase().includes(q) || c.title.toLowerCase().includes(q) || (c.faculty && c.faculty.toLowerCase().includes(q));
       const matchesSem = !this.selectedSemester || c.semester === this.selectedSemester;
 
-      // Student Role: ONLY show subjects belonging to their branch or already enrolled
+      // Student Role: ONLY show subjects belonging strictly to their branch
       if (this.role === 'student') {
         const matchesBranch = this.isCourseMatchingStudentBranch(c);
-        if (!matchesBranch && !this.isEnrolled(c.code)) {
+        if (!matchesBranch) {
           return false;
         }
       }
@@ -132,7 +132,9 @@ export class Courses implements OnInit, OnDestroy {
     this.courseService.getCourses().subscribe({
       next: (data) => {
         if (data && data.length > 0) {
-          this.courses = data;
+          const existingCodes = new Set(data.map(d => (d.code || '').toUpperCase().trim()));
+          const cseDefaults = DEFAULT_DATABASE_COURSES.filter(dc => !existingCodes.has(dc.code.toUpperCase().trim()));
+          this.courses = [...data, ...cseDefaults];
           this.cdr.detectChanges();
         }
       },

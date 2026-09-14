@@ -28,20 +28,23 @@ public class CourseController {
 
     @PostConstruct
     public void seedCourses() {
-        if (courseRepository.count() == 0) {
-            List<Course> defaultCourses = List.of(
-                new Course(null, "CS101", "Database Management Systems", "Dr. Ramesh Babu", "Semester 3"),
-                new Course(null, "CS102", "Data Structures & Algorithms", "Prof. Sunita Sharma", "Semester 3"),
-                new Course(null, "CS103", "Object-Oriented Programming", "Dr. Ramesh Babu", "Semester 3"),
-                new Course(null, "CS201", "Operating Systems", "Dr. Amit Patel", "Semester 4"),
-                new Course(null, "CS202", "Machine Learning & Data Science", "Prof. Sunita Sharma", "Semester 5"),
-                new Course(null, "CS301", "Computer Networks", "Dr. Priya Nair", "Semester 5"),
-                new Course(null, "CS302", "Software Engineering", "Prof. Rajesh Verma", "Semester 6"),
-                new Course(null, "CS303", "Cloud Computing & DevOps", "Dr. Amit Patel", "Semester 6"),
-                new Course(null, "CS401", "Artificial Intelligence", "Dr. Ramesh Babu", "Semester 7"),
-                new Course(null, "CS402", "Cyber Security & Cryptography", "Prof. Rajesh Verma", "Semester 7")
-            );
-            courseRepository.saveAll(defaultCourses);
+        List<Course> defaultCourses = List.of(
+            new Course(null, "CS101", "Database Management Systems", "Dr. Ramesh Babu", "Semester 3"),
+            new Course(null, "CS102", "Data Structures & Algorithms", "Prof. Sunita Sharma", "Semester 3"),
+            new Course(null, "CS103", "Object-Oriented Programming with Java", "Dr. Ramesh Babu", "Semester 3"),
+            new Course(null, "CS201", "Operating Systems", "Dr. Amit Patel", "Semester 4"),
+            new Course(null, "CS202", "Machine Learning & Data Science", "Prof. Sunita Sharma", "Semester 5"),
+            new Course(null, "CS301", "Computer Networks", "Dr. Priya Nair", "Semester 5"),
+            new Course(null, "CS302", "Software Engineering & Agile Methodologies", "Prof. Rajesh Verma", "Semester 6"),
+            new Course(null, "CS303", "Cloud Computing & DevOps", "Dr. Amit Patel", "Semester 6"),
+            new Course(null, "CS401", "Artificial Intelligence & Neural Networks", "Dr. Ramesh Babu", "Semester 7"),
+            new Course(null, "CS402", "Cyber Security & Cryptography", "Prof. Rajesh Verma", "Semester 7")
+        );
+        for (Course c : defaultCourses) {
+            Optional<Course> existing = courseRepository.findByCodeIgnoreCase(c.getCode());
+            if (existing.isEmpty()) {
+                courseRepository.save(c);
+            }
         }
     }
 
