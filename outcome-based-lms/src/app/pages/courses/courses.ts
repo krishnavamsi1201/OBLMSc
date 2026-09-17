@@ -7,7 +7,7 @@ import { Footer } from '../../shared/footer/footer';
 import { MatButtonModule } from '@angular/material/button';
 import { HttpClient } from '@angular/common/http';
 import { ToastService } from '../../shared/services/toast.service';
-import { CourseService, AppCourse } from '../../shared/services/course.service';
+import { CourseService, AppCourse, DEFAULT_DATABASE_COURSES } from '../../shared/services/course.service';
 import { SyncService } from '../../shared/services/sync.service';
 import { Subscription } from 'rxjs';
 
