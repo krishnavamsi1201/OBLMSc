@@ -1,0 +1,269 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mxfile host="app.diagrams.net" modified="2026-09-12T17:30:00.000Z" agent="OBLMS AI Assistant" version="24.7.5">
+  <diagram name="OBLMS System Architecture" id="oblms_system_arch_consistent_2026">
+    <mxGraphModel dx="1600" dy="1200" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1500" pageHeight="1650" background="#ffffff">
+      <root>
+        <mxCell id="0"/>
+        <mxCell id="1" parent="0"/>
+
+        <!-- ================= MAIN HEADER BANNER ================= -->
+        <mxCell id="hdr_banner" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#0d47a1;strokeColor=#0a3880;strokeWidth=2;arcSize=4;shadow=1;" vertex="1" parent="1">
+          <mxGeometry x="30" y="15" width="1440" height="65" as="geometry"/>
+        </mxCell>
+        <mxCell id="hdr_title" value="&lt;b style=&quot;font-size:19px;color:#ffffff;&quot;&gt;OBLMS – System Architecture Diagram&lt;/b&gt;&lt;br/&gt;&lt;span style=&quot;font-size:13px;color:#e3f2fd;&quot;&gt;Outcome Based Learning Management System&lt;/span&gt;" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" vertex="1" parent="1">
+          <mxGeometry x="350" y="18" width="800" height="60" as="geometry"/>
+        </mxCell>
+        <mxCell id="hdr_right" value="&lt;span style=&quot;font-size:12px;color:#e3f2fd;&quot;&gt;Learn &amp;nbsp;|&amp;nbsp; Assess &amp;nbsp;|&amp;nbsp; Improve&lt;/span&gt;&lt;br/&gt;&lt;b style=&quot;font-size:13px;color:#ffffff;&quot;&gt;Empower Education&lt;/b&gt;" style="text;html=1;strokeColor=none;fillColor=none;align=right;verticalAlign=middle;whiteSpace=wrap;rounded=0;spacingRight=20;" vertex="1" parent="1">
+          <mxGeometry x="1180" y="18" width="280" height="60" as="geometry"/>
+        </mxCell>
+
+
+        <!-- ================= LAYER 1: PRESENTATION LAYER (FRONTEND) ================= -->
+        <mxCell id="l1_container" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f0f9ff;strokeColor=#0284c7;strokeWidth=1.8;strokeDashed=1;arcSize=4;" vertex="1" parent="1">
+          <mxGeometry x="30" y="100" width="1440" height="235" as="geometry"/>
+        </mxCell>
+        <mxCell id="l1_header" value="&lt;b style=&quot;font-size:15px;color:#0369a1;&quot;&gt;1. Presentation Layer (Frontend)&lt;/b&gt;&lt;br/&gt;&lt;span style=&quot;font-size:12px;color:#0284c7;&quot;&gt;Web Application (Angular)&lt;/span&gt;" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=top;whiteSpace=wrap;rounded=0;spacingLeft=15;spacingTop=10;" vertex="1" parent="1">
+          <mxGeometry x="35" y="105" width="400" height="45" as="geometry"/>
+        </mxCell>
+
+        <!-- Student Portal Card -->
+        <mxCell id="card_student_portal" value="&lt;div style=&quot;display:flex;align-items:center;justify-content:center;gap:8px;padding-top:6px;&quot;&gt;&lt;span style=&quot;font-size:18px;&quot;&gt;👤&lt;/span&gt; &lt;b style=&quot;font-size:14px;color:#0f172a;&quot;&gt;Student Portal&lt;/b&gt;&lt;/div&gt;&lt;hr style=&quot;border:0;border-top:1px solid #bae6fd;margin:6px 0 10px 0;&quot;/&gt;&lt;ul style=&quot;margin:0;padding-left:22px;text-align:left;font-size:12px;color:#334155;line-height:1.7;&quot;&gt;&lt;li&gt;View Courses&lt;/li&gt;&lt;li&gt;Take Assessments&lt;/li&gt;&lt;li&gt;View Results&lt;/li&gt;&lt;li&gt;Raise Feedback / Grievance&lt;/li&gt;&lt;/ul&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#38bdf8;strokeWidth=1.5;align=center;verticalAlign=top;shadow=1;" vertex="1" parent="1">
+          <mxGeometry x="60" y="155" width="280" height="160" as="geometry"/>
+        </mxCell>
+
+        <!-- Faculty Portal Card -->
+        <mxCell id="card_faculty_portal" value="&lt;div style=&quot;display:flex;align-items:center;justify-content:center;gap:8px;padding-top:6px;&quot;&gt;&lt;span style=&quot;font-size:18px;&quot;&gt;👨‍🏫&lt;/span&gt; &lt;b style=&quot;font-size:14px;color:#0f172a;&quot;&gt;Faculty Portal&lt;/b&gt;&lt;/div&gt;&lt;hr style=&quot;border:0;border-top:1px solid #bae6fd;margin:6px 0 10px 0;&quot;/&gt;&lt;ul style=&quot;margin:0;padding-left:22px;text-align:left;font-size:12px;color:#334155;line-height:1.7;&quot;&gt;&lt;li&gt;Manage Courses&lt;/li&gt;&lt;li&gt;Create Assessments&lt;/li&gt;&lt;li&gt;Enter Marks&lt;/li&gt;&lt;li&gt;View Attainment Reports&lt;/li&gt;&lt;/ul&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#38bdf8;strokeWidth=1.5;align=center;verticalAlign=top;shadow=1;" vertex="1" parent="1">
+          <mxGeometry x="380" y="155" width="280" height="160" as="geometry"/>
+        </mxCell>
+
+        <!-- Admin Portal Card -->
+        <mxCell id="card_admin_portal" value="&lt;div style=&quot;display:flex;align-items:center;justify-content:center;gap:8px;padding-top:6px;&quot;&gt;&lt;span style=&quot;font-size:18px;&quot;&gt;⚙️&lt;/span&gt; &lt;b style=&quot;font-size:14px;color:#0f172a;&quot;&gt;Admin Portal&lt;/b&gt;&lt;/div&gt;&lt;hr style=&quot;border:0;border-top:1px solid #bae6fd;margin:6px 0 10px 0;&quot;/&gt;&lt;ul style=&quot;margin:0;padding-left:22px;text-align:left;font-size:12px;color:#334155;line-height:1.7;&quot;&gt;&lt;li&gt;Manage Users&lt;/li&gt;&lt;li&gt;Configure Academic Data&lt;/li&gt;&lt;li&gt;Monitor System&lt;/li&gt;&lt;li&gt;Generate Reports&lt;/li&gt;&lt;/ul&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#38bdf8;strokeWidth=1.5;align=center;verticalAlign=top;shadow=1;" vertex="1" parent="1">
+          <mxGeometry x="700" y="155" width="280" height="160" as="geometry"/>
+        </mxCell>
+
+        <!-- Angular Web Frontend Card -->
+        <mxCell id="card_angular_info" value="&lt;div style=&quot;display:flex;align-items:center;justify-content:center;gap:8px;padding-top:6px;&quot;&gt;&lt;b style=&quot;font-size:22px;color:#dd0031;&quot;&gt;🅰&lt;/b&gt;&lt;div&gt;&lt;b style=&quot;font-size:14px;color:#dd0031;&quot;&gt;Angular&lt;/b&gt;&lt;br/&gt;&lt;span style=&quot;font-size:11px;color:#64748b;&quot;&gt;(Web Frontend)&lt;/span&gt;&lt;/div&gt;&lt;/div&gt;&lt;hr style=&quot;border:0;border-top:1px solid #bae6fd;margin:6px 0 10px 0;&quot;/&gt;&lt;ul style=&quot;margin:0;padding-left:22px;text-align:left;font-size:12px;color:#334155;line-height:1.7;&quot;&gt;&lt;li&gt;Responsive UI&lt;/li&gt;&lt;li&gt;Role-based Access&lt;/li&gt;&lt;li&gt;Web / Mobile Support&lt;/li&gt;&lt;/ul&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#38bdf8;strokeWidth=1.5;align=center;verticalAlign=top;shadow=1;" vertex="1" parent="1">
+          <mxGeometry x="1170" y="125" width="270" height="190" as="geometry"/>
+        </mxCell>
+
+
+        <!-- ================= CONNECTOR 1: HTTPS / REST API ================= -->
+        <mxCell id="conn_l1_l2" value="HTTPS / REST API" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;startArrow=classic;endArrow=classic;strokeColor=#0284c7;strokeWidth=2;strokeDashed=1;fontSize=12;fontStyle=1;fontColor:#0369a1;labelBackgroundColor=#ffffff;labelBorderColor=#0284c7;exitX=0.5;exitY=1;entryX=0.5;entryY=0;" edge="1" parent="1" source="l1_container" target="l2_container">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+
+        <!-- ================= LAYER 2: APPLICATION LAYER (BACKEND) ================= -->
+        <mxCell id="l2_container" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f0fdf4;strokeColor=#16a34a;strokeWidth=1.8;strokeDashed=1;arcSize=4;" vertex="1" parent="1">
+          <mxGeometry x="30" y="380" width="1440" height="380" as="geometry"/>
+        </mxCell>
+        <mxCell id="l2_header" value="&lt;b style=&quot;font-size:15px;color:#15803d;&quot;&gt;2. Application Layer (Backend)&lt;/b&gt;&lt;br/&gt;&lt;span style=&quot;font-size:12px;color:#16a34a;&quot;&gt;Spring Boot (Microservices / Modular Architecture)&lt;/span&gt;" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=top;whiteSpace=wrap;rounded=0;spacingLeft=15;spacingTop=10;" vertex="1" parent="1">
+          <mxGeometry x="35" y="385" width="450" height="45" as="geometry"/>
+        </mxCell>
+        <mxCell id="l2_badge" value="&lt;div style=&quot;display:flex;align-items:center;gap:6px;&quot;&gt;&lt;span style=&quot;font-size:22px;color:#6db33f;&quot;&gt;🍃&lt;/span&gt; &lt;div style=&quot;text-align:left;&quot;&gt;&lt;b style=&quot;font-size:14px;color:#15803d;&quot;&gt;Spring Boot&lt;/b&gt;&lt;br/&gt;&lt;span style=&quot;font-size:11px;color:#16a34a;&quot;&gt;(REST APIs)&lt;/span&gt;&lt;/div&gt;&lt;/div&gt;" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" vertex="1" parent="1">
+          <mxGeometry x="640" y="388" width="220" height="40" as="geometry"/>
+        </mxCell>
+
+        <!-- SERVICES ROW 1 (5 Cards) -->
+        <!-- 1. Authentication Service -->
+        <mxCell id="srv_auth" value="&lt;div style=&quot;display:flex;align-items:center;justify-content:center;gap:6px;padding-top:4px;&quot;&gt;&lt;span style=&quot;font-size:15px;&quot;&gt;🔒&lt;/span&gt; &lt;b style=&quot;font-size:12px;color:#0f172a;&quot;&gt;Authentication&lt;br/&gt;Service&lt;/b&gt;&lt;/div&gt;&lt;hr style=&quot;border:0;border-top:1px solid #bbf7d0;margin:4px 0 8px 0;&quot;/&gt;&lt;ul style=&quot;margin:0;padding-left:18px;text-align:left;font-size:11px;color:#334155;line-height:1.6;&quot;&gt;&lt;li&gt;Login / JWT Tokens&lt;/li&gt;&lt;li&gt;Role Management&lt;/li&gt;&lt;li&gt;Access Control&lt;/li&gt;&lt;/ul&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#4ade80;strokeWidth=1.5;align=center;verticalAlign=top;shadow=1;" vertex="1" parent="1">
+          <mxGeometry x="50" y="440" width="260" height="135" as="geometry"/>
+        </mxCell>
+
+        <!-- 2. User Management Service -->
+        <mxCell id="srv_user" value="&lt;div style=&quot;display:flex;align-items:center;justify-content:center;gap:6px;padding-top:4px;&quot;&gt;&lt;span style=&quot;font-size:15px;&quot;&gt;👥&lt;/span&gt; &lt;b style=&quot;font-size:12px;color:#0f172a;&quot;&gt;User Management&lt;br/&gt;Service&lt;/b&gt;&lt;/div&gt;&lt;hr style=&quot;border:0;border-top:1px solid #bbf7d0;margin:4px 0 8px 0;&quot;/&gt;&lt;ul style=&quot;margin:0;padding-left:18px;text-align:left;font-size:11px;color:#334155;line-height:1.6;&quot;&gt;&lt;li&gt;Student Management&lt;/li&gt;&lt;li&gt;Faculty Management&lt;/li&gt;&lt;li&gt;Admin Management&lt;/li&gt;&lt;/ul&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#4ade80;strokeWidth=1.5;align=center;verticalAlign=top;shadow=1;" vertex="1" parent="1">
+          <mxGeometry x="335" y="440" width="260" height="135" as="geometry"/>
+        </mxCell>
+
+        <!-- 3. Course Management Service (Updated: Replaced Subjects with Course Outcomes & Allocation) -->
+        <mxCell id="srv_course" value="&lt;div style=&quot;display:flex;align-items:center;justify-content:center;gap:6px;padding-top:4px;&quot;&gt;&lt;span style=&quot;font-size:15px;&quot;&gt;📖&lt;/span&gt; &lt;b style=&quot;font-size:12px;color:#0f172a;&quot;&gt;Course Management&lt;br/&gt;Service&lt;/b&gt;&lt;/div&gt;&lt;hr style=&quot;border:0;border-top:1px solid #bbf7d0;margin:4px 0 8px 0;&quot;/&gt;&lt;ul style=&quot;margin:0;padding-left:18px;text-align:left;font-size:11px;color:#334155;line-height:1.6;&quot;&gt;&lt;li&gt;Manage Courses&lt;/li&gt;&lt;li&gt;Course Allocation&lt;/li&gt;&lt;li&gt;Define COs &amp;amp; POs&lt;/li&gt;&lt;/ul&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#4ade80;strokeWidth=1.5;align=center;verticalAlign=top;shadow=1;" vertex="1" parent="1">
+          <mxGeometry x="620" y="440" width="260" height="135" as="geometry"/>
+        </mxCell>
+
+        <!-- 4. Assessment Service (Updated: Question Bank & Evaluation) -->
+        <mxCell id="srv_assess" value="&lt;div style=&quot;display:flex;align-items:center;justify-content:center;gap:6px;padding-top:4px;&quot;&gt;&lt;span style=&quot;font-size:15px;&quot;&gt;📋&lt;/span&gt; &lt;b style=&quot;font-size:12px;color:#0f172a;&quot;&gt;Assessment&lt;br/&gt;Service&lt;/b&gt;&lt;/div&gt;&lt;hr style=&quot;border:0;border-top:1px solid #bbf7d0;margin:4px 0 8px 0;&quot;/&gt;&lt;ul style=&quot;margin:0;padding-left:18px;text-align:left;font-size:11px;color:#334155;line-height:1.6;&quot;&gt;&lt;li&gt;Create Assessments&lt;/li&gt;&lt;li&gt;Question Bank (CO tagged)&lt;/li&gt;&lt;li&gt;Evaluate &amp;amp; Store Answers&lt;/li&gt;&lt;/ul&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#4ade80;strokeWidth=1.5;align=center;verticalAlign=top;shadow=1;" vertex="1" parent="1">
+          <mxGeometry x="905" y="440" width="260" height="135" as="geometry"/>
+        </mxCell>
+
+        <!-- 5. Attendance Service -->
+        <mxCell id="srv_attend" value="&lt;div style=&quot;display:flex;align-items:center;justify-content:center;gap:6px;padding-top:4px;&quot;&gt;&lt;span style=&quot;font-size:15px;&quot;&gt;📅&lt;/span&gt; &lt;b style=&quot;font-size:12px;color:#0f172a;&quot;&gt;Attendance&lt;br/&gt;Service&lt;/b&gt;&lt;/div&gt;&lt;hr style=&quot;border:0;border-top:1px solid #bbf7d0;margin:4px 0 8px 0;&quot;/&gt;&lt;ul style=&quot;margin:0;padding-left:18px;text-align:left;font-size:11px;color:#334155;line-height:1.6;&quot;&gt;&lt;li&gt;Mark Attendance&lt;/li&gt;&lt;li&gt;View Attendance&lt;/li&gt;&lt;li&gt;Generate Reports&lt;/li&gt;&lt;/ul&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#4ade80;strokeWidth=1.5;align=center;verticalAlign=top;shadow=1;" vertex="1" parent="1">
+          <mxGeometry x="1190" y="440" width="260" height="135" as="geometry"/>
+        </mxCell>
+
+        <!-- SERVICES ROW 2 (5 Cards) -->
+        <!-- 6. CO-PO Mapping Service -->
+        <mxCell id="srv_copo" value="&lt;div style=&quot;display:flex;align-items:center;justify-content:center;gap:6px;padding-top:4px;&quot;&gt;&lt;span style=&quot;font-size:15px;&quot;&gt;🔀&lt;/span&gt; &lt;b style=&quot;font-size:12px;color:#0f172a;&quot;&gt;CO-PO Mapping&lt;br/&gt;Service&lt;/b&gt;&lt;/div&gt;&lt;hr style=&quot;border:0;border-top:1px solid #bbf7d0;margin:4px 0 8px 0;&quot;/&gt;&lt;ul style=&quot;margin:0;padding-left:18px;text-align:left;font-size:11px;color:#334155;line-height:1.6;&quot;&gt;&lt;li&gt;Manage COs &amp;amp; POs&lt;/li&gt;&lt;li&gt;Map CO-PO Matrix&lt;/li&gt;&lt;li&gt;Set Target Levels&lt;/li&gt;&lt;/ul&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#4ade80;strokeWidth=1.5;align=center;verticalAlign=top;shadow=1;" vertex="1" parent="1">
+          <mxGeometry x="50" y="595" width="260" height="135" as="geometry"/>
+        </mxCell>
+
+        <!-- 7. Attainment Calculation Service -->
+        <mxCell id="srv_attain" value="&lt;div style=&quot;display:flex;align-items:center;justify-content:center;gap:6px;padding-top:4px;&quot;&gt;&lt;span style=&quot;font-size:15px;&quot;&gt;📊&lt;/span&gt; &lt;b style=&quot;font-size:12px;color:#0f172a;&quot;&gt;Attainment&lt;br/&gt;Calculation Service&lt;/b&gt;&lt;/div&gt;&lt;hr style=&quot;border:0;border-top:1px solid #bbf7d0;margin:4px 0 8px 0;&quot;/&gt;&lt;ul style=&quot;margin:0;padding-left:18px;text-align:left;font-size:11px;color:#334155;line-height:1.6;&quot;&gt;&lt;li&gt;Calculate CO Attainment&lt;/li&gt;&lt;li&gt;Calculate PO Attainment&lt;/li&gt;&lt;li&gt;Generate Attainment Reports&lt;/li&gt;&lt;/ul&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#4ade80;strokeWidth=1.5;align=center;verticalAlign=top;shadow=1;" vertex="1" parent="1">
+          <mxGeometry x="335" y="595" width="260" height="135" as="geometry"/>
+        </mxCell>
+
+        <!-- 8. Feedback & Grievance Service -->
+        <mxCell id="srv_feed_griev" value="&lt;div style=&quot;display:flex;align-items:center;justify-content:center;gap:6px;padding-top:4px;&quot;&gt;&lt;span style=&quot;font-size:15px;&quot;&gt;💬&lt;/span&gt; &lt;b style=&quot;font-size:12px;color:#0f172a;&quot;&gt;Feedback &amp;amp; Grievance&lt;br/&gt;Service&lt;/b&gt;&lt;/div&gt;&lt;hr style=&quot;border:0;border-top:1px solid #bbf7d0;margin:4px 0 8px 0;&quot;/&gt;&lt;ul style=&quot;margin:0;padding-left:18px;text-align:left;font-size:11px;color:#334155;line-height:1.6;&quot;&gt;&lt;li&gt;Collect Feedback&lt;/li&gt;&lt;li&gt;Handle Grievances&lt;/li&gt;&lt;li&gt;Resolve Issues&lt;/li&gt;&lt;/ul&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#4ade80;strokeWidth=1.5;align=center;verticalAlign=top;shadow=1;" vertex="1" parent="1">
+          <mxGeometry x="620" y="595" width="260" height="135" as="geometry"/>
+        </mxCell>
+
+        <!-- 9. Notification Service -->
+        <mxCell id="srv_notif" value="&lt;div style=&quot;display:flex;align-items:center;justify-content:center;gap:6px;padding-top:4px;&quot;&gt;&lt;span style=&quot;font-size:15px;&quot;&gt;✉️&lt;/span&gt; &lt;b style=&quot;font-size:12px;color:#0f172a;&quot;&gt;Notification&lt;br/&gt;Service&lt;/b&gt;&lt;/div&gt;&lt;hr style=&quot;border:0;border-top:1px solid #bbf7d0;margin:4px 0 8px 0;&quot;/&gt;&lt;ul style=&quot;margin:0;padding-left:18px;text-align:left;font-size:11px;color:#334155;line-height:1.6;&quot;&gt;&lt;li&gt;Email Notifications&lt;/li&gt;&lt;li&gt;System Alerts&lt;/li&gt;&lt;li&gt;Reminders&lt;/li&gt;&lt;/ul&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#4ade80;strokeWidth=1.5;align=center;verticalAlign=top;shadow=1;" vertex="1" parent="1">
+          <mxGeometry x="905" y="595" width="260" height="135" as="geometry"/>
+        </mxCell>
+
+        <!-- 10. Report Generation Service -->
+        <mxCell id="srv_report" value="&lt;div style=&quot;display:flex;align-items:center;justify-content:center;gap:6px;padding-top:4px;&quot;&gt;&lt;span style=&quot;font-size:15px;&quot;&gt;📄&lt;/span&gt; &lt;b style=&quot;font-size:12px;color:#0f172a;&quot;&gt;Report Generation&lt;br/&gt;Service&lt;/b&gt;&lt;/div&gt;&lt;hr style=&quot;border:0;border-top:1px solid #bbf7d0;margin:4px 0 8px 0;&quot;/&gt;&lt;ul style=&quot;margin:0;padding-left:18px;text-align:left;font-size:11px;color:#334155;line-height:1.6;&quot;&gt;&lt;li&gt;Student Performance&lt;/li&gt;&lt;li&gt;Attainment Reports&lt;/li&gt;&lt;li&gt;Export to PDF / Excel&lt;/li&gt;&lt;/ul&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#4ade80;strokeWidth=1.5;align=center;verticalAlign=top;shadow=1;" vertex="1" parent="1">
+          <mxGeometry x="1190" y="595" width="260" height="135" as="geometry"/>
+        </mxCell>
+
+
+        <!-- ================= CONNECTOR 2: JPA / HIBERNATE ================= -->
+        <mxCell id="conn_l2_l3" value="JPA / Hibernate" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;startArrow=classic;endArrow=classic;strokeColor=#16a34a;strokeWidth=2;strokeDashed=1;fontSize=12;fontStyle=1;fontColor:#15803d;labelBackgroundColor=#ffffff;labelBorderColor=#16a34a;exitX=0.5;exitY=1;entryX=0.5;entryY=0;" edge="1" parent="1" source="l2_container" target="l3_container">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+
+        <!-- ================= LAYER 3: DATA LAYER (100% MATCHING ER & UML SCHEMA) ================= -->
+        <mxCell id="l3_container" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#faf5ff;strokeColor=#9333ea;strokeWidth=1.8;strokeDashed=1;arcSize=4;" vertex="1" parent="1">
+          <mxGeometry x="30" y="795" width="1440" height="235" as="geometry"/>
+        </mxCell>
+        <mxCell id="l3_header" value="&lt;b style=&quot;font-size:15px;color:#6b21a8;&quot;&gt;3. Data Layer&lt;/b&gt;&lt;br/&gt;&lt;span style=&quot;font-size:12px;color:#9333ea;&quot;&gt;MySQL Database&lt;/span&gt;" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=top;whiteSpace=wrap;rounded=0;spacingLeft=15;spacingTop=10;" vertex="1" parent="1">
+          <mxGeometry x="35" y="800" width="300" height="45" as="geometry"/>
+        </mxCell>
+
+        <!-- MySQL Cylinder 3D Shape -->
+        <mxCell id="db_mysql" value="&lt;div style=&quot;padding-top:40px;text-align:center;&quot;&gt;&lt;div style=&quot;font-size:24px;font-weight:bold;color:#00758f;&quot;&gt;🐬 MySQL&lt;sub style=&quot;font-size:12px;&quot;&gt;™&lt;/sub&gt;&lt;/div&gt;&lt;/div&gt;" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=15;fillColor=#e0f2fe;strokeColor=#0284c7;strokeWidth=2;shadow=1;" vertex="1" parent="1">
+          <mxGeometry x="340" y="835" width="220" height="165" as="geometry"/>
+        </mxCell>
+
+        <!-- Database Tables Container (15 Exact Normalized Tables matching ER & UML) -->
+        <mxCell id="db_tables_box" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#d8b4fe;strokeWidth=1.5;shadow=1;" vertex="1" parent="1">
+          <mxGeometry x="600" y="815" width="850" height="195" as="geometry"/>
+        </mxCell>
+        <mxCell id="db_tables_title" value="&lt;b style=&quot;font-size:13px;color:#6b21a8;&quot;&gt;Database Tables (OBLMS Schema)&lt;/b&gt;" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" vertex="1" parent="1">
+          <mxGeometry x="600" y="820" width="850" height="25" as="geometry"/>
+        </mxCell>
+
+        <!-- Row 1: Users, Students, Faculty, Admins, Courses -->
+        <mxCell id="tbl_users" value="users" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f3e8ff;strokeColor=#a855f7;strokeWidth=1.2;fontColor:#581c87;fontSize=12;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="615" y="855" width="150" height="34" as="geometry"/>
+        </mxCell>
+        <mxCell id="tbl_students" value="students" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f3e8ff;strokeColor=#a855f7;strokeWidth=1.2;fontColor:#581c87;fontSize=12;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="780" y="855" width="150" height="34" as="geometry"/>
+        </mxCell>
+        <mxCell id="tbl_faculty" value="faculty" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f3e8ff;strokeColor=#a855f7;strokeWidth=1.2;fontColor:#581c87;fontSize=12;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="945" y="855" width="150" height="34" as="geometry"/>
+        </mxCell>
+        <mxCell id="tbl_admins" value="admins" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f3e8ff;strokeColor=#a855f7;strokeWidth=1.2;fontColor:#581c87;fontSize=12;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="1110" y="855" width="150" height="34" as="geometry"/>
+        </mxCell>
+        <mxCell id="tbl_courses" value="courses" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f3e8ff;strokeColor=#a855f7;strokeWidth=1.2;fontColor:#581c87;fontSize=12;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="1275" y="855" width="155" height="34" as="geometry"/>
+        </mxCell>
+
+        <!-- Row 2: Course Outcomes, Program Outcomes, CO-PO Mapping, Course Allocations, Assessments -->
+        <mxCell id="tbl_co" value="course_outcomes" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f3e8ff;strokeColor=#a855f7;strokeWidth=1.2;fontColor:#581c87;fontSize=12;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="615" y="905" width="150" height="34" as="geometry"/>
+        </mxCell>
+        <mxCell id="tbl_po" value="program_outcomes" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f3e8ff;strokeColor=#a855f7;strokeWidth=1.2;fontColor:#581c87;fontSize=12;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="780" y="905" width="150" height="34" as="geometry"/>
+        </mxCell>
+        <mxCell id="tbl_copomap" value="co_po_mapping" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f3e8ff;strokeColor=#a855f7;strokeWidth=1.2;fontColor:#581c87;fontSize=12;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="945" y="905" width="150" height="34" as="geometry"/>
+        </mxCell>
+        <mxCell id="tbl_alloc" value="course_allocations" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f3e8ff;strokeColor=#a855f7;strokeWidth=1.2;fontColor:#581c87;fontSize=12;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="1110" y="905" width="150" height="34" as="geometry"/>
+        </mxCell>
+        <mxCell id="tbl_assess" value="assessments" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f3e8ff;strokeColor=#a855f7;strokeWidth=1.2;fontColor:#581c87;fontSize=12;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="1275" y="905" width="155" height="34" as="geometry"/>
+        </mxCell>
+
+        <!-- Row 3: Questions, Student Answers, Results, Attainment, Attendance (with Feedback, Grievance logged in audit/services) -->
+        <mxCell id="tbl_questions" value="questions" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f3e8ff;strokeColor=#a855f7;strokeWidth=1.2;fontColor:#581c87;fontSize=12;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="615" y="955" width="150" height="34" as="geometry"/>
+        </mxCell>
+        <mxCell id="tbl_answers" value="student_answers" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f3e8ff;strokeColor=#a855f7;strokeWidth=1.2;fontColor:#581c87;fontSize=12;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="780" y="955" width="150" height="34" as="geometry"/>
+        </mxCell>
+        <mxCell id="tbl_results" value="results" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f3e8ff;strokeColor=#a855f7;strokeWidth=1.2;fontColor:#581c87;fontSize=12;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="945" y="955" width="150" height="34" as="geometry"/>
+        </mxCell>
+        <mxCell id="tbl_attain" value="attainment" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f3e8ff;strokeColor=#a855f7;strokeWidth=1.2;fontColor:#581c87;fontSize=12;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="1110" y="955" width="150" height="34" as="geometry"/>
+        </mxCell>
+        <mxCell id="tbl_attendance" value="attendance" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f3e8ff;strokeColor=#a855f7;strokeWidth=1.2;fontColor:#581c87;fontSize=12;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="1275" y="955" width="155" height="34" as="geometry"/>
+        </mxCell>
+
+
+        <!-- ================= LAYER 4: EXTERNAL SYSTEMS & LEGEND ================= -->
+        <!-- External Systems Box (Left/Center) -->
+        <mxCell id="l4_container" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fffbeb;strokeColor=#f59e0b;strokeWidth=1.8;strokeDashed=1;arcSize=4;" vertex="1" parent="1">
+          <mxGeometry x="30" y="1080" width="1120" height="210" as="geometry"/>
+        </mxCell>
+        <mxCell id="l4_header" value="&lt;b style=&quot;font-size:15px;color:#b45309;&quot;&gt;4. External Systems&lt;/b&gt;&lt;br/&gt;&lt;span style=&quot;font-size:12px;color:#d97706;&quot;&gt;(Third-party Integrations)&lt;/span&gt;" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=top;whiteSpace=wrap;rounded=0;spacingLeft=15;spacingTop=10;" vertex="1" parent="1">
+          <mxGeometry x="35" y="1085" width="230" height="45" as="geometry"/>
+        </mxCell>
+
+        <!-- External 1: Email Service -->
+        <mxCell id="ext_email" value="&lt;div style=&quot;display:flex;align-items:center;justify-content:center;gap:6px;padding-top:4px;&quot;&gt;&lt;span style=&quot;font-size:16px;&quot;&gt;✉️&lt;/span&gt; &lt;div style=&quot;text-align:left;&quot;&gt;&lt;b style=&quot;font-size:13px;color:#0f172a;&quot;&gt;Email Service&lt;/b&gt;&lt;br/&gt;&lt;span style=&quot;font-size:11px;color:#64748b;&quot;&gt;(SMTP / SendGrid)&lt;/span&gt;&lt;/div&gt;&lt;/div&gt;&lt;hr style=&quot;border:0;border-top:1px solid #fde68a;margin:6px 0 8px 0;&quot;/&gt;&lt;ul style=&quot;margin:0;padding-left:18px;text-align:left;font-size:11px;color:#334155;line-height:1.7;&quot;&gt;&lt;li&gt;Send Notifications&lt;/li&gt;&lt;li&gt;Password Reset&lt;/li&gt;&lt;li&gt;Assessment Alerts&lt;/li&gt;&lt;/ul&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#fbbf24;strokeWidth=1.5;align=center;verticalAlign=top;shadow=1;" vertex="1" parent="1">
+          <mxGeometry x="270" y="1115" width="260" height="155" as="geometry"/>
+        </mxCell>
+
+        <!-- External 2: AI Chatbot API -->
+        <mxCell id="ext_chatbot" value="&lt;div style=&quot;display:flex;align-items:center;justify-content:center;gap:6px;padding-top:4px;&quot;&gt;&lt;span style=&quot;font-size:16px;&quot;&gt;🤖&lt;/span&gt; &lt;div style=&quot;text-align:left;&quot;&gt;&lt;b style=&quot;font-size:13px;color:#0f172a;&quot;&gt;AI Chatbot API&lt;/b&gt;&lt;br/&gt;&lt;span style=&quot;font-size:11px;color:#64748b;&quot;&gt;(Optional)&lt;/span&gt;&lt;/div&gt;&lt;/div&gt;&lt;hr style=&quot;border:0;border-top:1px solid #fde68a;margin:6px 0 8px 0;&quot;/&gt;&lt;ul style=&quot;margin:0;padding-left:18px;text-align:left;font-size:11px;color:#334155;line-height:1.7;&quot;&gt;&lt;li&gt;Academic Query Support&lt;/li&gt;&lt;li&gt;FAQ Assistance&lt;/li&gt;&lt;li&gt;Student Helpdesk&lt;/li&gt;&lt;/ul&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#fbbf24;strokeWidth=1.5;align=center;verticalAlign=top;shadow=1;" vertex="1" parent="1">
+          <mxGeometry x="560" y="1115" width="260" height="155" as="geometry"/>
+        </mxCell>
+
+        <!-- External 3: Examination System -->
+        <mxCell id="ext_exam" value="&lt;div style=&quot;display:flex;align-items:center;justify-content:center;gap:6px;padding-top:4px;&quot;&gt;&lt;span style=&quot;font-size:16px;&quot;&gt;🏛️&lt;/span&gt; &lt;div style=&quot;text-align:left;&quot;&gt;&lt;b style=&quot;font-size:13px;color:#0f172a;&quot;&gt;Examination System&lt;/b&gt;&lt;br/&gt;&lt;span style=&quot;font-size:11px;color:#64748b;&quot;&gt;(External)&lt;/span&gt;&lt;/div&gt;&lt;/div&gt;&lt;hr style=&quot;border:0;border-top:1px solid #fde68a;margin:6px 0 8px 0;&quot;/&gt;&lt;ul style=&quot;margin:0;padding-left:18px;text-align:left;font-size:11px;color:#334155;line-height:1.7;&quot;&gt;&lt;li&gt;Import / Export Data&lt;/li&gt;&lt;li&gt;University Integration&lt;/li&gt;&lt;li&gt;Result Synchronization&lt;/li&gt;&lt;/ul&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#fbbf24;strokeWidth=1.5;align=center;verticalAlign=top;shadow=1;" vertex="1" parent="1">
+          <mxGeometry x="850" y="1115" width="270" height="155" as="geometry"/>
+        </mxCell>
+
+        <!-- Legend Box (Right side) -->
+        <mxCell id="box_legend" value="&lt;div style=&quot;padding:8px 12px;&quot;&gt;&lt;b style=&quot;font-size:14px;color:#0f172a;&quot;&gt;Legend&lt;/b&gt;&lt;hr style=&quot;border:0;border-top:1px solid #cbd5e1;margin:6px 0 10px 0;&quot;/&gt;&lt;table style=&quot;font-size:12px;width:100%;color:#1e293b;line-height:2;&quot;&gt;&lt;tr&gt;&lt;td style=&quot;width:35px;&quot;&gt;&lt;div style=&quot;width:24px;height:14px;background:#e0f2fe;border:1px solid #0284c7;border-radius:3px;&quot;&gt;&lt;/div&gt;&lt;/td&gt;&lt;td&gt;Presentation Layer&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;&lt;div style=&quot;width:24px;height:14px;background:#dcfce7;border:1px solid #16a34a;border-radius:3px;&quot;&gt;&lt;/div&gt;&lt;/td&gt;&lt;td&gt;Application Layer&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;&lt;div style=&quot;width:24px;height:14px;background:#f3e8ff;border:1px solid #9333ea;border-radius:3px;&quot;&gt;&lt;/div&gt;&lt;/td&gt;&lt;td&gt;Data Layer&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;&lt;div style=&quot;width:24px;height:14px;background:#fef3c7;border:1px solid #f59e0b;border-radius:3px;&quot;&gt;&lt;/div&gt;&lt;/td&gt;&lt;td&gt;External System&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td style=&quot;font-size:14px;font-weight:bold;color:#0f172a;&quot;&gt;➔&lt;/td&gt;&lt;td&gt;Data Flow&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/div&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#94a3b8;strokeWidth=1.5;align=left;verticalAlign=top;shadow=1;" vertex="1" parent="1">
+          <mxGeometry x="1170" y="1080" width="300" height="210" as="geometry"/>
+        </mxCell>
+
+
+        <!-- ================= CONNECTORS FROM DATA LAYER TO EXTERNAL SYSTEMS ================= -->
+        <!-- Central Bus / Trunk -->
+        <mxCell id="conn_trunk" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=none;strokeColor=#475569;strokeWidth=1.8;strokeDashed=1;exitX=0.5;exitY=1;entryX=0.5;entryY=0;" edge="1" parent="1" source="l3_container" target="l4_container">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="750" y="1030"/>
+              <mxPoint x="750" y="1055"/>
+              <mxPoint x="590" y="1055"/>
+              <mxPoint x="590" y="1080"/>
+            </Array>
+          </mxGeometry>
+        </mxCell>
+
+        <!-- Branch to Email -->
+        <mxCell id="conn_to_email" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=classic;strokeColor=#475569;strokeWidth=1.8;strokeDashed=1;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="400" y="1055" as="sourcePoint"/>
+            <mxPoint x="400" y="1115" as="targetPoint"/>
+          </mxGeometry>
+        </mxCell>
+
+        <!-- Branch to Chatbot -->
+        <mxCell id="conn_to_chatbot" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=classic;strokeColor=#475569;strokeWidth=1.8;strokeDashed=1;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="690" y="1055" as="sourcePoint"/>
+            <mxPoint x="690" y="1115" as="targetPoint"/>
+          </mxGeometry>
+        </mxCell>
+
+        <!-- Branch to Exam System -->
+        <mxCell id="conn_to_exam" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=classic;strokeColor=#475569;strokeWidth=1.8;strokeDashed=1;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="985" y="1055" as="sourcePoint"/>
+            <mxPoint x="985" y="1115" as="targetPoint"/>
+          </mxGeometry>
+        </mxCell>
+
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
