@@ -52,17 +52,27 @@ public class CourseRequestController {
             }
 
             // Check if identical request is already pending to avoid duplicates
-            if (request.getStudentId() != null && request.getCourseCode() != null) {
-                List<CourseRequest> existing = courseRequestRepository.findByStudentId(request.getStudentId());
+            if (request.getCourseCode() != null) {
+                String searchId = request.getStudentId() != null ? request.getStudentId() : "";
+                List<CourseRequest> existing = new ArrayList<>();
+                if (!searchId.isEmpty()) {
+                    existing.addAll(courseRequestRepository.findByStudentId(searchId));
+                }
+                if (request.getStudentEmail() != null && !request.getStudentEmail().isEmpty()) {
+                    existing.addAll(courseRequestRepository.findByStudentEmailIgnoreCase(request.getStudentEmail()));
+                }
+
                 boolean alreadyPending = existing.stream().anyMatch(r -> 
                     "Pending".equalsIgnoreCase(r.getStatus()) && 
-                    request.getCourseCode().equalsIgnoreCase(r.getCourseCode())
+                    request.getCourseCode().trim().equalsIgnoreCase(r.getCourseCode() != null ? r.getCourseCode().trim() : "")
                 );
                 if (alreadyPending) {
                     return ResponseEntity.ok(Map.of("message", "Enrollment request already pending", "status", "Pending"));
                 }
             }
 
+            // Explicitly set ID to null so Hibernate relies on MySQL AUTO_INCREMENT
+            request.setId(null);
             CourseRequest saved = courseRequestRepository.save(request);
 
             try {

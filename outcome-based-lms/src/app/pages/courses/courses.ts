@@ -584,7 +584,6 @@ export class Courses implements OnInit, OnDestroy {
     }
 
     const payload = {
-      id: Date.now(),
       studentId: currentStudentId,
       studentName: currentStudentName,
       studentEmail: currentStudentEmail,
@@ -606,7 +605,7 @@ export class Courses implements OnInit, OnDestroy {
         r.status === 'Pending'
       );
       if (!exists) {
-        list.push(payload);
+        list.push({ ...payload, id: Date.now() });
         localStorage.setItem('obslmsCourseRequests', JSON.stringify(list));
       }
     } catch {}
@@ -616,7 +615,22 @@ export class Courses implements OnInit, OnDestroy {
     this.cdr.detectChanges();
 
     this.http.post('http://localhost:8080/api/courses/requests', payload).subscribe({
-      next: () => {
+      next: (res: any) => {
+        if (res && res.id) {
+          try {
+            const stored = localStorage.getItem('obslmsCourseRequests');
+            const list = stored ? JSON.parse(stored) : [];
+            const idx = list.findIndex((r: any) => 
+              (r.studentName || '').toLowerCase() === currentStudentName.toLowerCase() && 
+              (r.courseCode || '').toUpperCase().trim() === code && 
+              r.status === 'Pending'
+            );
+            if (idx >= 0) {
+              list[idx].id = res.id;
+              localStorage.setItem('obslmsCourseRequests', JSON.stringify(list));
+            }
+          } catch {}
+        }
         this.cdr.detectChanges();
       },
       error: () => {

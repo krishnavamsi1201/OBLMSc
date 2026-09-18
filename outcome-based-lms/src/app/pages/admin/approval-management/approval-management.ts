@@ -259,7 +259,7 @@ export class ApprovalManagement implements OnInit {
         const courseCode = item.details?.courseCode || item.details?.courseTitle || '';
 
         // 1. Sync directly with Spring Boot MySQL database
-        if (item.details?.id && typeof item.details.id === 'number') {
+        if (item.details?.id) {
           this.http.put(`http://localhost:8080/api/courses/requests/${item.details.id}/approve`, {}).subscribe({
             next: () => {
               this.loadApprovalItems();
@@ -362,6 +362,13 @@ export class ApprovalManagement implements OnInit {
       item.details.rejectionReason = this.rejectionReasonText;
 
       if (item.type === 'course-enrollment') {
+        if (item.details?.id) {
+          this.http.put(`http://localhost:8080/api/courses/requests/${item.details.id}/reject`, { remarks: this.rejectionReasonText }).subscribe({
+            next: () => {
+              this.loadApprovalItems();
+            }
+          });
+        }
         try {
           const stored = localStorage.getItem('obslmsCourseRequests');
           if (stored) {
