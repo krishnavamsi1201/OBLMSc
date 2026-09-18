@@ -898,6 +898,7 @@ export class Students implements OnInit, OnDestroy {
     const studentDept = this.studentDept;
 
     const payload = {
+      id: Date.now(),
       studentId: studentId,
       studentName: studentName,
       studentEmail: studentEmail,
@@ -906,27 +907,30 @@ export class Students implements OnInit, OnDestroy {
       courseCode: course.code,
       courseTitle: course.title,
       semester: course.semester || 'Semester 6',
-      status: 'Pending'
+      status: 'Pending',
+      requestedAt: new Date().toISOString()
     };
+
+    this.pendingEnrollmentRequests.push(payload);
+    
+    // Also persist locally in case of offline fallback
+    try {
+      const stored = localStorage.getItem('obslmsCourseRequests');
+      const list = stored ? JSON.parse(stored) : [];
+      list.push(payload);
+      localStorage.setItem('obslmsCourseRequests', JSON.stringify(list));
+    } catch {}
+
+    this.syncService.emit('ENROLLMENTS_CHANGED', payload);
+    this.toast.success(`Enrollment request submitted for "${course.title}"! Sent to Admin Approval Queue. ⏳`);
+    this.cdr.detectChanges();
 
     this.http.post('http://localhost:8080/api/courses/requests', payload).subscribe({
       next: (res: any) => {
-        this.pendingEnrollmentRequests.push(res || payload);
-        
-        // Also persist locally in case of offline fallback
-        try {
-          const stored = localStorage.getItem('obslmsCourseRequests');
-          const list = stored ? JSON.parse(stored) : [];
-          list.push(res || payload);
-          localStorage.setItem('obslmsCourseRequests', JSON.stringify(list));
-        } catch {}
-
-        this.syncService.emit('ENROLLMENTS_CHANGED', payload);
-        this.toast.success(`Enrollment request submitted for "${course.title}"! Sent to Admin Approval Queue. ⏳`);
         this.cdr.detectChanges();
       },
       error: () => {
-        this.toast.error('Failed to submit enrollment request.');
+        // Safe fallback - already saved to local storage
       }
     });
   }

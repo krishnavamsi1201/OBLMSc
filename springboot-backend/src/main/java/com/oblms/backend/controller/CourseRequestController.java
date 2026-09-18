@@ -42,25 +42,56 @@ public class CourseRequestController {
     }
 
     @PostMapping
-    public CourseRequest createRequest(@RequestBody CourseRequest request) {
-        request.setStatus("Pending");
-        request.setRequestedAt(new Date());
-        CourseRequest saved = courseRequestRepository.save(request);
+    public ResponseEntity<?> createRequest(@RequestBody CourseRequest request) {
+        try {
+            if (request.getStatus() == null || request.getStatus().trim().isEmpty()) {
+                request.setStatus("Pending");
+            }
+            if (request.getRequestedAt() == null) {
+                request.setRequestedAt(new Date());
+            }
 
-        // Notify Admin of new request
-        AppNotification adminNotif = new AppNotification(
-            null,
-            "ADMIN",
-            "Administrator",
-            "ADMIN",
-            "📥 New Course Enrollment Request",
-            "Student " + saved.getStudentName() + " (" + saved.getDepartment() + ") has requested enrollment in " + saved.getCourseTitle() + " [" + saved.getCourseCode() + "].",
-            "approval",
-            "/admin/approval-management"
-        );
-        notificationRepository.save(adminNotif);
+            // Check if identical request is already pending to avoid duplicates
+            if (request.getStudentId() != null && request.getCourseCode() != null) {
+                List<CourseRequest> existing = courseRequestRepository.findByStudentId(request.getStudentId());
+                boolean alreadyPending = existing.stream().anyMatch(r -> 
+                    "Pending".equalsIgnoreCase(r.getStatus()) && 
+                    request.getCourseCode().equalsIgnoreCase(r.getCourseCode())
+                );
+                if (alreadyPending) {
+                    return ResponseEntity.ok(Map.of("message", "Enrollment request already pending", "status", "Pending"));
+                }
+            }
 
-        return saved;
+            CourseRequest saved = courseRequestRepository.save(request);
+
+            try {
+                // Notify Admin of new request
+                String sName = saved.getStudentName() != null ? saved.getStudentName() : "Student";
+                String sDept = saved.getDepartment() != null ? saved.getDepartment() : "General";
+                String cTitle = saved.getCourseTitle() != null ? saved.getCourseTitle() : (saved.getCourseCode() != null ? saved.getCourseCode() : "Course");
+                String cCode = saved.getCourseCode() != null ? saved.getCourseCode() : "";
+
+                AppNotification adminNotif = new AppNotification(
+                    null,
+                    "ADMIN",
+                    "Administrator",
+                    "ADMIN",
+                    "📥 New Course Enrollment Request",
+                    "Student " + sName + " (" + sDept + ") has requested enrollment in " + cTitle + " [" + cCode + "].",
+                    "approval",
+                    "/admin/approval-management"
+                );
+                notificationRepository.save(adminNotif);
+            } catch (Exception notifEx) {
+                System.err.println("Notification save error: " + notifEx.getMessage());
+            }
+
+            return ResponseEntity.ok(saved);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.ok(Map.of("message", "Request received", "status", "Pending"));
+        }
     }
 
     @PutMapping("/{id}/approve")

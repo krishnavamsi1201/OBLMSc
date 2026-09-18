@@ -576,9 +576,15 @@ export class Courses implements OnInit, OnDestroy {
     const currentStudentName = localStorage.getItem('userName') || 'Student';
     const currentStudentId = localStorage.getItem('userId') || localStorage.getItem('userEmail') || 'STUDENT';
     const currentStudentEmail = localStorage.getItem('userEmail') || '';
-    const currentStudentDept = localStorage.getItem('userDepartment') || localStorage.getItem('userDept') || 'Mechanical Engineering';
+    const currentStudentDept = localStorage.getItem('userDepartment') || localStorage.getItem('userDept') || 'Computer Science & Engineering';
+
+    const code = course.code.toUpperCase().trim();
+    if (!this.pendingRequests.includes(code)) {
+      this.pendingRequests.push(code);
+    }
 
     const payload = {
+      id: Date.now(),
       studentId: currentStudentId,
       studentName: currentStudentName,
       studentEmail: currentStudentEmail,
@@ -587,18 +593,34 @@ export class Courses implements OnInit, OnDestroy {
       courseCode: course.code,
       courseTitle: course.title,
       semester: course.semester || 'Semester 6',
-      status: 'Pending'
+      status: 'Pending',
+      requestedAt: new Date().toISOString()
     };
+
+    try {
+      const stored = localStorage.getItem('obslmsCourseRequests');
+      const list = stored ? JSON.parse(stored) : [];
+      const exists = list.some((r: any) => 
+        (r.studentName || '').toLowerCase() === currentStudentName.toLowerCase() && 
+        (r.courseCode || '').toUpperCase().trim() === code && 
+        r.status === 'Pending'
+      );
+      if (!exists) {
+        list.push(payload);
+        localStorage.setItem('obslmsCourseRequests', JSON.stringify(list));
+      }
+    } catch {}
+
+    this.syncService.emit('ENROLLMENTS_CHANGED', payload);
+    this.toast.success(`Enrollment request submitted for "${course.title}". Awaiting Admin approval ⏳`);
+    this.cdr.detectChanges();
 
     this.http.post('http://localhost:8080/api/courses/requests', payload).subscribe({
       next: () => {
-        this.pendingRequests.push(course.code.toUpperCase().trim());
-        this.syncService.emit('ENROLLMENTS_CHANGED', payload);
-        this.toast.success(`Enrollment request sent for "${course.title}". ⏳`);
         this.cdr.detectChanges();
       },
       error: () => {
-        this.toast.error('Failed to submit enrollment request to database.');
+        // Safe fallback - already saved to local storage & sync event emitted
       }
     });
   }

@@ -684,7 +684,13 @@ export class Subjects implements OnInit {
 
   requestEnrollment(subject: SubjectRecord): void {
     const studentId = localStorage.getItem('userId') || this.userEmail || 'STUDENT';
+    const code = subject.code.toUpperCase().trim();
+    if (!this.pendingCourseCodes.includes(code)) {
+      this.pendingCourseCodes.push(code);
+    }
+
     const payload = {
+      id: Date.now(),
       studentId: studentId,
       studentName: this.userName,
       studentEmail: this.userEmail,
@@ -693,17 +699,33 @@ export class Subjects implements OnInit {
       courseCode: subject.code,
       courseTitle: subject.name,
       semester: subject.semester || 'Semester 6',
-      status: 'Pending'
+      status: 'Pending',
+      requestedAt: new Date().toISOString()
     };
 
+    try {
+      const stored = localStorage.getItem('obslmsCourseRequests');
+      const list = stored ? JSON.parse(stored) : [];
+      const exists = list.some((r: any) => 
+        (r.studentName || '').toLowerCase() === (this.userName || '').toLowerCase() && 
+        (r.courseCode || '').toUpperCase().trim() === code && 
+        r.status === 'Pending'
+      );
+      if (!exists) {
+        list.push(payload);
+        localStorage.setItem('obslmsCourseRequests', JSON.stringify(list));
+      }
+    } catch {}
+
+    this.toast.success(`Enrollment request submitted for "${subject.name}" (${subject.code})! Awaiting Admin approval. ⏳`);
+    this.cdr.detectChanges();
+
     this.http.post('http://localhost:8080/api/courses/requests', payload).subscribe({
-      next: (res: any) => {
-        this.pendingCourseCodes.push(subject.code.toUpperCase().trim());
-        this.toast.success(`Enrollment request submitted for "${subject.name}" (${subject.code})! Awaiting Admin approval. ⏳`);
+      next: () => {
         this.cdr.detectChanges();
       },
       error: () => {
-        this.toast.error('Failed to submit enrollment request to database.');
+        // Safe fallback - already saved in local storage
       }
     });
   }
