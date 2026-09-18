@@ -425,15 +425,16 @@
           </div>
           
           <div class="classes-list">
-            <div class="class-item" *ngFor="let cls of filteredSchedule" [class.active-class]="cls.isCurrent">
+            <div class="class-item" *ngFor="let cls of filteredSchedule" [class.active-class]="cls.isCurrent" [class.leisure-class-item]="isLeisure(cls)">
               <div class="class-time-col">
                 <span class="time-text">{{ cls.period }}</span>
                 <span *ngIf="cls.isCurrent" class="live-pill">🟢 NEXT CLASS</span>
+                <span *ngIf="isLeisure(cls)" class="leisure-pill">☕ LEISURE</span>
               </div>
               <div class="class-divider-line"></div>
               <div class="class-details">
                 <strong>{{ cls.subject }}</strong>
-                <span class="class-room-badge">📍 Room: {{ cls.room }}</span>
+                <span class="class-room-badge" [class.leisure-room-badge]="isLeisure(cls)">📍 Location: {{ cls.room }}</span>
               </div>
             </div>
             <div class="empty-list" *ngIf="filteredSchedule.length === 0">

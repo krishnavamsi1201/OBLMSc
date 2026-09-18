@@ -761,10 +761,10 @@ export class Timetable implements OnInit {
     if (!slot || !slot.subject) return false;
     const s = slot.subject.toLowerCase();
     const r = (slot.room || '').toLowerCase();
-    return s.includes('leisure') || s.includes('free') || s.includes('self-study') || 
+    return s.includes('leisure') || s.includes('laser') || s.includes('free') || s.includes('self-study') || 
            s.includes('library') || s.includes('sports') || s.includes('lounge') ||
            s.includes('recess') || s.includes('break') || s.includes('hobbies') ||
-           s.includes('journal') || s.includes('mentoring') ||
+           s.includes('journal') || s.includes('mentoring') || s.includes('reading') ||
            r.includes('library') || r.includes('ground') || r.includes('lounge') || r.includes('zone') || r.includes('reading hall');
   }
 
@@ -788,7 +788,7 @@ export class Timetable implements OnInit {
     return this.todayClasses.filter(s => !this.isLeisure(s)).length;
   }
 
-  // Generate strictly 2 or 3 classes per day with strictly alternating leisure slots (no continuous leisure)
+  // Generate strictly 2 or 3 classes per day with strictly alternating leisure slots (no continuous classes)
   getBranchSchedule(dept: string): ScheduleEntry[] {
     const d = (dept || '').toLowerCase();
 
@@ -882,119 +882,137 @@ export class Timetable implements OnInit {
       ];
     } else if (d.includes('elect') || d.includes('ece')) {
       return [
+        // Monday: 3 classes, 2 leisure (Alternating: Class -> Leisure -> Class -> Library -> Class)
         { id: 1, day: 'Monday', period: '09:00 AM - 10:00 AM', subject: 'Microprocessors & Embedded Systems (MES)', room: 'EC-LH-101' },
-        { id: 2, day: 'Monday', period: '10:15 AM - 11:15 AM', subject: 'Digital Systems & Logic Designs (DSLD)', room: 'EC-LH-102' },
-        { id: 3, day: 'Monday', period: '11:30 AM - 12:30 PM', subject: 'Computer Organization (EC206)', room: 'EC-LH-101' },
-        { id: 4, day: 'Monday', period: '02:00 PM - 03:00 PM', subject: 'Digital Signal Processing (EE407)', room: 'EC-LH-204' },
-        { id: 5, day: 'Monday', period: '03:15 PM - 04:15 PM', subject: 'Analog & Digital Communication (CS203)', room: 'EC-LH-204' },
+        { id: 2, day: 'Monday', period: '10:15 AM - 11:15 AM', subject: '☕ Leisure & Self-Study', room: 'Reading Hall' },
+        { id: 3, day: 'Monday', period: '11:30 AM - 12:30 PM', subject: 'Digital Systems & Logic Designs (DSLD)', room: 'EC-LH-102' },
+        { id: 4, day: 'Monday', period: '02:00 PM - 03:00 PM', subject: '📚 Library & Hardware Documentation', room: 'Central Library' },
+        { id: 5, day: 'Monday', period: '03:15 PM - 04:15 PM', subject: 'Computer Organization (EC206)', room: 'EC-LH-101' },
 
+        // Tuesday: 3 classes, 2 leisure (Alternating: Class -> Leisure -> Class -> Lab -> Leisure)
         { id: 6, day: 'Tuesday', period: '09:00 AM - 10:00 AM', subject: 'Digital Systems & Logic Designs (DSLD)', room: 'EC-LH-102' },
-        { id: 7, day: 'Tuesday', period: '10:15 AM - 11:15 AM', subject: 'Microprocessors & Embedded Systems (MES)', room: 'EC-LH-101' },
+        { id: 7, day: 'Tuesday', period: '10:15 AM - 11:15 AM', subject: '☕ Leisure & Robotics Club', room: 'Activity Center' },
         { id: 8, day: 'Tuesday', period: '11:30 AM - 12:30 PM', subject: 'Digital Signal Processing (EE407)', room: 'EC-LH-204' },
         { id: 9, day: 'Tuesday', period: '02:00 PM - 03:00 PM', subject: 'Microprocessors & Hardware Lab', room: 'Hardware Lab' },
-        { id: 10, day: 'Tuesday', period: '03:15 PM - 04:15 PM', subject: 'Microprocessors & Hardware Lab', room: 'Hardware Lab' },
+        { id: 10, day: 'Tuesday', period: '03:15 PM - 04:15 PM', subject: '☕ Leisure & Peer Mentoring', room: 'Student Lounge' },
 
+        // Wednesday: 2 classes, 3 leisure (Alternating: Class -> Leisure -> Class -> Library -> Sports)
         { id: 11, day: 'Wednesday', period: '09:00 AM - 10:00 AM', subject: 'Computer Organization (EC206)', room: 'EC-LH-101' },
-        { id: 12, day: 'Wednesday', period: '10:15 AM - 11:15 AM', subject: 'Analog & Digital Communication (CS203)', room: 'EC-LH-204' },
+        { id: 12, day: 'Wednesday', period: '10:15 AM - 11:15 AM', subject: '☕ Leisure & Recess / Hobbies', room: 'Campus Zone' },
         { id: 13, day: 'Wednesday', period: '11:30 AM - 12:30 PM', subject: 'Microprocessors & Embedded Systems (MES)', room: 'EC-LH-101' },
-        { id: 14, day: 'Wednesday', period: '02:00 PM - 03:00 PM', subject: 'VLSI Circuit Design & Verilog Modeling', room: 'EC-LH-102' },
-        { id: 15, day: 'Wednesday', period: '03:15 PM - 04:15 PM', subject: 'Technical Seminar & Research Discussion', room: 'Seminar Hall' },
+        { id: 14, day: 'Wednesday', period: '02:00 PM - 03:00 PM', subject: '📚 Library & Research Journal', room: 'Central Library' },
+        { id: 15, day: 'Wednesday', period: '03:15 PM - 04:15 PM', subject: '⚽ Sports & Physical Activity', room: 'Campus Ground' },
 
+        // Thursday: 3 classes, 2 leisure (Alternating: Class -> Leisure -> Class -> Lab -> Library)
         { id: 16, day: 'Thursday', period: '09:00 AM - 10:00 AM', subject: 'Digital Signal Processing (EE407)', room: 'EC-LH-204' },
-        { id: 17, day: 'Thursday', period: '10:15 AM - 11:15 AM', subject: 'Computer Organization (EC206)', room: 'EC-LH-101' },
-        { id: 18, day: 'Thursday', period: '11:30 AM - 12:30 PM', subject: 'Digital Systems & Logic Designs (DSLD)', room: 'EC-LH-102' },
+        { id: 17, day: 'Thursday', period: '10:15 AM - 11:15 AM', subject: '☕ Leisure & Self-Study', room: 'Reading Hall' },
+        { id: 18, day: 'Thursday', period: '11:30 AM - 12:30 PM', subject: 'Analog & Digital Communication (CS203)', room: 'EC-LH-204' },
         { id: 19, day: 'Thursday', period: '02:00 PM - 03:00 PM', subject: 'Logic Design & Simulation Lab (LD LAB)', room: 'Logic Lab' },
-        { id: 20, day: 'Thursday', period: '03:15 PM - 04:15 PM', subject: 'Logic Design & Simulation Lab (LD LAB)', room: 'Logic Lab' },
+        { id: 20, day: 'Thursday', period: '03:15 PM - 04:15 PM', subject: '📚 Library & Circuit Design Cases', room: 'Central Library' },
 
+        // Friday: 3 classes, 2 leisure (Alternating: Class -> Leisure -> Class -> Sports -> Lab)
         { id: 21, day: 'Friday', period: '09:00 AM - 10:00 AM', subject: 'Analog & Digital Communication (CS203)', room: 'EC-LH-204' },
-        { id: 22, day: 'Friday', period: '10:15 AM - 11:15 AM', subject: 'Microprocessors & Embedded Systems (MES)', room: 'EC-LH-101' },
-        { id: 23, day: 'Friday', period: '11:30 AM - 12:30 PM', subject: 'Digital Systems & Logic Designs (DSLD)', room: 'EC-LH-102' },
-        { id: 24, day: 'Friday', period: '02:00 PM - 03:00 PM', subject: 'Embedded IoT & Robotics Workshop', room: 'IoT Lab' },
-        { id: 25, day: 'Friday', period: '03:15 PM - 04:15 PM', subject: 'Outcome-Based Remedial & Mentoring', room: 'EC-LH-101' },
+        { id: 22, day: 'Friday', period: '10:15 AM - 11:15 AM', subject: '☕ Leisure & Faculty Consultation', room: 'Faculty Lounge' },
+        { id: 23, day: 'Friday', period: '11:30 AM - 12:30 PM', subject: 'VLSI Circuit Design & Verilog Modeling', room: 'EC-LH-102' },
+        { id: 24, day: 'Friday', period: '02:00 PM - 03:00 PM', subject: '⚽ Sports & Fitness Hours', room: 'Campus Ground' },
+        { id: 25, day: 'Friday', period: '03:15 PM - 04:15 PM', subject: 'Embedded IoT & Robotics Workshop', room: 'IoT Lab' },
 
+        // Saturday: 2 classes, 3 leisure (Alternating: Class -> Leisure -> Class -> Library -> Leisure)
         { id: 26, day: 'Saturday', period: '09:00 AM - 10:00 AM', subject: 'Wireless & Optical Communications', room: 'EC-LH-101' },
-        { id: 27, day: 'Saturday', period: '10:15 AM - 11:15 AM', subject: 'Hardware Mini-Project Evaluation', room: 'Hardware Lab' },
+        { id: 27, day: 'Saturday', period: '10:15 AM - 11:15 AM', subject: '☕ Leisure & Project Brainstorming', room: 'Activity Center' },
         { id: 28, day: 'Saturday', period: '11:30 AM - 12:30 PM', subject: 'Expert Guest Lecture / Webinar', room: 'Seminar Hall' },
-        { id: 29, day: 'Saturday', period: '02:00 PM - 03:00 PM', subject: 'Library & Reading Session', room: 'Central Library' },
-        { id: 30, day: 'Saturday', period: '03:15 PM - 04:15 PM', subject: 'Sports & Student Clubs', room: 'Campus Ground' }
+        { id: 29, day: 'Saturday', period: '02:00 PM - 03:00 PM', subject: '📚 Library & Gate Prep Session', room: 'Central Library' },
+        { id: 30, day: 'Saturday', period: '03:15 PM - 04:15 PM', subject: '☕ Leisure & Weekend Review', room: 'Student Lounge' }
       ];
     } else if (d.includes('info') || d.includes('it')) {
       return [
+        // Monday: 3 classes, 2 leisure (Alternating: Class -> Leisure -> Class -> Library -> Class)
         { id: 1, day: 'Monday', period: '09:00 AM - 10:00 AM', subject: 'Operating Systems & Systems Programming (IT305)', room: 'IT-LH-101' },
-        { id: 2, day: 'Monday', period: '10:15 AM - 11:15 AM', subject: 'Linux & Shell Programming (Linux)', room: 'IT-LH-102' },
-        { id: 3, day: 'Monday', period: '11:30 AM - 12:30 PM', subject: 'Web Technologies & Frameworks (WT)', room: 'IT-LH-101' },
-        { id: 4, day: 'Monday', period: '02:00 PM - 03:00 PM', subject: 'Soft Computing (CS361)', room: 'IT-LH-204' },
+        { id: 2, day: 'Monday', period: '10:15 AM - 11:15 AM', subject: '☕ Leisure & Self-Study', room: 'Reading Hall' },
+        { id: 3, day: 'Monday', period: '11:30 AM - 12:30 PM', subject: 'Linux & Shell Programming (Linux)', room: 'IT-LH-102' },
+        { id: 4, day: 'Monday', period: '02:00 PM - 03:00 PM', subject: '📚 Library & Open Source Research', room: 'Central Library' },
         { id: 5, day: 'Monday', period: '03:15 PM - 04:15 PM', subject: 'Database Systems & SQL (CS303)', room: 'IT-LH-204' },
 
-        { id: 6, day: 'Tuesday', period: '09:00 AM - 10:00 AM', subject: 'Linux & Shell Programming (Linux)', room: 'IT-LH-102' },
-        { id: 7, day: 'Tuesday', period: '10:15 AM - 11:15 AM', subject: 'Web Technologies & Frameworks (WT)', room: 'IT-LH-101' },
-        { id: 8, day: 'Tuesday', period: '11:30 AM - 12:30 PM', subject: 'Operating Systems & Systems Programming (IT305)', room: 'IT-LH-101' },
-        { id: 9, day: 'Tuesday', period: '02:00 PM - 03:00 PM', subject: 'Linux & Open Source Lab', room: 'Linux Lab' },
-        { id: 10, day: 'Tuesday', period: '03:15 PM - 04:15 PM', subject: 'Linux & Open Source Lab', room: 'Linux Lab' },
+        // Tuesday: 3 classes, 2 leisure (Alternating: Class -> Leisure -> Class -> Lab -> Leisure)
+        { id: 6, day: 'Tuesday', period: '09:00 AM - 10:00 AM', subject: 'Web Technologies & Frameworks (WT)', room: 'IT-LH-101' },
+        { id: 7, day: 'Tuesday', period: '10:15 AM - 11:15 AM', subject: '☕ Leisure & Web Dev Club', room: 'Innovation Hub' },
+        { id: 8, day: 'Tuesday', period: '11:30 AM - 12:30 PM', subject: 'Soft Computing & AI (CS361)', room: 'IT-LH-204' },
+        { id: 9, day: 'Tuesday', period: '02:00 PM - 03:00 PM', subject: 'Linux & Open Source Practical Lab', room: 'Linux Lab' },
+        { id: 10, day: 'Tuesday', period: '03:15 PM - 04:15 PM', subject: '☕ Leisure & Peer Mentoring', room: 'Student Lounge' },
 
-        { id: 11, day: 'Wednesday', period: '09:00 AM - 10:00 AM', subject: 'Database Systems & SQL (CS303)', room: 'IT-LH-204' },
-        { id: 12, day: 'Wednesday', period: '10:15 AM - 11:15 AM', subject: 'Soft Computing (CS361)', room: 'IT-LH-204' },
-        { id: 13, day: 'Wednesday', period: '11:30 AM - 12:30 PM', subject: 'Web Technologies & Frameworks (WT)', room: 'IT-LH-101' },
-        { id: 14, day: 'Wednesday', period: '02:00 PM - 03:00 PM', subject: 'Full-Stack Web Development Workshop', room: 'Web Lab' },
-        { id: 15, day: 'Wednesday', period: '03:15 PM - 04:15 PM', subject: 'Technical Seminar & Code Review', room: 'Seminar Hall' },
+        // Wednesday: 2 classes, 3 leisure (Alternating: Class -> Leisure -> Class -> Library -> Sports)
+        { id: 11, day: 'Wednesday', period: '09:00 AM - 10:00 AM', subject: 'Operating Systems & Systems Programming (IT305)', room: 'IT-LH-101' },
+        { id: 12, day: 'Wednesday', period: '10:15 AM - 11:15 AM', subject: '☕ Leisure & Recess / Hobbies', room: 'Campus Zone' },
+        { id: 13, day: 'Wednesday', period: '11:30 AM - 12:30 PM', subject: 'Database Systems & SQL (CS303)', room: 'IT-LH-204' },
+        { id: 14, day: 'Wednesday', period: '02:00 PM - 03:00 PM', subject: '📚 Library & Technical Research', room: 'Central Library' },
+        { id: 15, day: 'Wednesday', period: '03:15 PM - 04:15 PM', subject: '⚽ Sports & Physical Fitness', room: 'Campus Ground' },
 
-        { id: 16, day: 'Thursday', period: '09:00 AM - 10:00 AM', subject: 'Operating Systems & Systems Programming (IT305)', room: 'IT-LH-101' },
-        { id: 17, day: 'Thursday', period: '10:15 AM - 11:15 AM', subject: 'Database Systems & SQL (CS303)', room: 'IT-LH-204' },
-        { id: 18, day: 'Thursday', period: '11:30 AM - 12:30 PM', subject: 'Linux & Shell Programming (Linux)', room: 'IT-LH-102' },
+        // Thursday: 3 classes, 2 leisure (Alternating: Class -> Leisure -> Class -> Lab -> Library)
+        { id: 16, day: 'Thursday', period: '09:00 AM - 10:00 AM', subject: 'Linux & Shell Programming (Linux)', room: 'IT-LH-102' },
+        { id: 17, day: 'Thursday', period: '10:15 AM - 11:15 AM', subject: '☕ Leisure & Self-Study', room: 'Reading Hall' },
+        { id: 18, day: 'Thursday', period: '11:30 AM - 12:30 PM', subject: 'Web Technologies & Frameworks (WT)', room: 'IT-LH-101' },
         { id: 19, day: 'Thursday', period: '02:00 PM - 03:00 PM', subject: 'Web Technologies Practical Lab', room: 'Web Lab' },
-        { id: 20, day: 'Thursday', period: '03:15 PM - 04:15 PM', subject: 'Web Technologies Practical Lab', room: 'Web Lab' },
+        { id: 20, day: 'Thursday', period: '03:15 PM - 04:15 PM', subject: '📚 Library & Full-Stack Projects', room: 'Central Library' },
 
+        // Friday: 3 classes, 2 leisure (Alternating: Class -> Leisure -> Class -> Sports -> Lab)
         { id: 21, day: 'Friday', period: '09:00 AM - 10:00 AM', subject: 'Soft Computing (CS361)', room: 'IT-LH-204' },
-        { id: 22, day: 'Friday', period: '10:15 AM - 11:15 AM', subject: 'Operating Systems & Systems Programming (IT305)', room: 'IT-LH-101' },
-        { id: 23, day: 'Friday', period: '11:30 AM - 12:30 PM', subject: 'Web Technologies & Frameworks (WT)', room: 'IT-LH-101' },
-        { id: 24, day: 'Friday', period: '02:00 PM - 03:00 PM', subject: 'Cyber Security & Network Forensics', room: 'IT-LH-102' },
+        { id: 22, day: 'Friday', period: '10:15 AM - 11:15 AM', subject: '☕ Leisure & Faculty Consultation', room: 'Faculty Lounge' },
+        { id: 23, day: 'Friday', period: '11:30 AM - 12:30 PM', subject: 'Cyber Security & Network Forensics', room: 'IT-LH-102' },
+        { id: 24, day: 'Friday', period: '02:00 PM - 03:00 PM', subject: '⚽ Sports & Recreation', room: 'Campus Ground' },
         { id: 25, day: 'Friday', period: '03:15 PM - 04:15 PM', subject: 'Outcome-Based Remedial & Mentoring', room: 'IT-LH-101' },
 
+        // Saturday: 2 classes, 3 leisure (Alternating: Class -> Leisure -> Class -> Library -> Leisure)
         { id: 26, day: 'Saturday', period: '09:00 AM - 10:00 AM', subject: 'Cloud Infrastructure & DevOps Practicum', room: 'IT-LH-101' },
-        { id: 27, day: 'Saturday', period: '10:15 AM - 11:15 AM', subject: 'Capstone Project Evaluation & Viva', room: 'Web Lab' },
+        { id: 27, day: 'Saturday', period: '10:15 AM - 11:15 AM', subject: '☕ Leisure & Hackathon Brainstorming', room: 'Innovation Hub' },
         { id: 28, day: 'Saturday', period: '11:30 AM - 12:30 PM', subject: 'Industry Expert Guest Lecture', room: 'Seminar Hall' },
-        { id: 29, day: 'Saturday', period: '02:00 PM - 03:00 PM', subject: 'Library & Reading Session', room: 'Central Library' },
-        { id: 30, day: 'Saturday', period: '03:15 PM - 04:15 PM', subject: 'Sports & Student Clubs', room: 'Campus Ground' }
+        { id: 29, day: 'Saturday', period: '02:00 PM - 03:00 PM', subject: '📚 Library & Certification Prep', room: 'Central Library' },
+        { id: 30, day: 'Saturday', period: '03:15 PM - 04:15 PM', subject: '☕ Leisure & Weekend Review', room: 'Student Lounge' }
       ];
     }
     
-    // Default CSE Schedule (Monday to Saturday, 5 periods each day, completely balanced)
+    // Balanced CSE Schedule (Alternating 2–3 classes per day with rich Leisure, Library & Sports slots - NO continuous classes)
     return [
+      // Monday: 3 classes, 2 leisure (Alternating: Class -> Leisure -> Class -> Library -> Class)
       { id: 1, day: 'Monday', period: '09:00 AM - 10:00 AM', subject: 'Database Management Systems (CS101)', room: 'LH-101' },
-      { id: 2, day: 'Monday', period: '10:15 AM - 11:15 AM', subject: 'Data Structures & Algorithms (CS103)', room: 'LH-204' },
-      { id: 3, day: 'Monday', period: '11:30 AM - 12:30 PM', subject: 'Operating Systems (CS301)', room: 'LH-101' },
-      { id: 4, day: 'Monday', period: '02:00 PM - 03:00 PM', subject: 'Java & OOPs Programming (CS102)', room: 'LH-305' },
-      { id: 5, day: 'Monday', period: '03:15 PM - 04:15 PM', subject: 'Computer Networks (CS302)', room: 'Lab-2B' },
+      { id: 2, day: 'Monday', period: '10:15 AM - 11:15 AM', subject: '☕ Leisure & Self-Study', room: 'Reading Hall' },
+      { id: 3, day: 'Monday', period: '11:30 AM - 12:30 PM', subject: 'Data Structures & Algorithms (CS103)', room: 'LH-204' },
+      { id: 4, day: 'Monday', period: '02:00 PM - 03:00 PM', subject: '📚 Library & Digital Research', room: 'Central Library' },
+      { id: 5, day: 'Monday', period: '03:15 PM - 04:15 PM', subject: 'Operating Systems (CS301)', room: 'LH-101' },
 
+      // Tuesday: 3 classes, 2 leisure (Alternating: Class -> Leisure -> Class -> Lab -> Leisure)
       { id: 6, day: 'Tuesday', period: '09:00 AM - 10:00 AM', subject: 'Java & OOPs Programming (CS102)', room: 'LH-204' },
-      { id: 7, day: 'Tuesday', period: '10:15 AM - 11:15 AM', subject: 'Computer Networks (CS302)', room: 'LH-101' },
-      { id: 8, day: 'Tuesday', period: '11:30 AM - 12:30 PM', subject: 'Database Management Systems (CS101)', room: 'LH-305' },
-      { id: 9, day: 'Tuesday', period: '02:00 PM - 03:00 PM', subject: 'Database & SQL Lab Session', room: 'Lab-4A' },
-      { id: 10, day: 'Tuesday', period: '03:15 PM - 04:15 PM', subject: 'Database & SQL Lab Session', room: 'Lab-4A' },
+      { id: 7, day: 'Tuesday', period: '10:15 AM - 11:15 AM', subject: '☕ Leisure & Coding Club', room: 'Innovation Hub' },
+      { id: 8, day: 'Tuesday', period: '11:30 AM - 12:30 PM', subject: 'Computer Networks (CS302)', room: 'LH-101' },
+      { id: 9, day: 'Tuesday', period: '02:00 PM - 03:00 PM', subject: 'Database & SQL Practical Lab', room: 'Lab-4A' },
+      { id: 10, day: 'Tuesday', period: '03:15 PM - 04:15 PM', subject: '☕ Leisure & Peer Mentoring', room: 'Student Lounge' },
 
+      // Wednesday: 2 classes, 3 leisure (Alternating: Class -> Leisure -> Class -> Library -> Sports)
       { id: 11, day: 'Wednesday', period: '09:00 AM - 10:00 AM', subject: 'Operating Systems (CS301)', room: 'LH-101' },
-      { id: 12, day: 'Wednesday', period: '10:15 AM - 11:15 AM', subject: 'Database Management Systems (CS101)', room: 'LH-305' },
-      { id: 13, day: 'Wednesday', period: '11:30 AM - 12:30 PM', subject: 'Data Structures & Algorithms (CS103)', room: 'LH-204' },
-      { id: 14, day: 'Wednesday', period: '02:00 PM - 03:00 PM', subject: 'Discrete Mathematics & Graph Theory', room: 'LH-101' },
-      { id: 15, day: 'Wednesday', period: '03:15 PM - 04:15 PM', subject: 'Technical Seminar & OBE Review', room: 'Seminar Hall' },
+      { id: 12, day: 'Wednesday', period: '10:15 AM - 11:15 AM', subject: '☕ Leisure & Recess / Hobbies', room: 'Campus Zone' },
+      { id: 13, day: 'Wednesday', period: '11:30 AM - 12:30 PM', subject: 'Database Management Systems (CS101)', room: 'LH-305' },
+      { id: 14, day: 'Wednesday', period: '02:00 PM - 03:00 PM', subject: '📚 Library & Technical Research', room: 'Central Library' },
+      { id: 15, day: 'Wednesday', period: '03:15 PM - 04:15 PM', subject: '⚽ Sports & Physical Fitness', room: 'Sports Ground' },
 
+      // Thursday: 3 classes, 2 leisure (Alternating: Class -> Leisure -> Class -> Lab -> Library)
       { id: 16, day: 'Thursday', period: '09:00 AM - 10:00 AM', subject: 'Data Structures & Algorithms (CS103)', room: 'LH-305' },
-      { id: 17, day: 'Thursday', period: '10:15 AM - 11:15 AM', subject: 'Operating Systems (CS301)', room: 'LH-101' },
+      { id: 17, day: 'Thursday', period: '10:15 AM - 11:15 AM', subject: '☕ Leisure & Self-Study', room: 'Reading Hall' },
       { id: 18, day: 'Thursday', period: '11:30 AM - 12:30 PM', subject: 'Java & OOPs Programming (CS102)', room: 'LH-204' },
       { id: 19, day: 'Thursday', period: '02:00 PM - 03:00 PM', subject: 'Java & OOPs Practical Lab', room: 'Lab-2B' },
-      { id: 20, day: 'Thursday', period: '03:15 PM - 04:15 PM', subject: 'Java & OOPs Practical Lab', room: 'Lab-2B' },
+      { id: 20, day: 'Thursday', period: '03:15 PM - 04:15 PM', subject: '📚 Library & Project Discussion', room: 'Central Library' },
 
+      // Friday: 3 classes, 2 leisure (Alternating: Class -> Leisure -> Class -> Sports -> Lab)
       { id: 21, day: 'Friday', period: '09:00 AM - 10:00 AM', subject: 'Computer Networks (CS302)', room: 'LH-305' },
-      { id: 22, day: 'Friday', period: '10:15 AM - 11:15 AM', subject: 'Java & OOPs Programming (CS102)', room: 'LH-101' },
-      { id: 23, day: 'Friday', period: '11:30 AM - 12:30 PM', subject: 'Database Management Systems (CS101)', room: 'LH-204' },
-      { id: 24, day: 'Friday', period: '02:00 PM - 03:00 PM', subject: 'Cloud Computing & DevOps Workshop', room: 'LH-101' },
-      { id: 25, day: 'Friday', period: '03:15 PM - 04:15 PM', subject: 'Outcome-Based Assessment / Remedial', room: 'LH-204' },
+      { id: 22, day: 'Friday', period: '10:15 AM - 11:15 AM', subject: '☕ Leisure & Faculty Consultation', room: 'Faculty Lounge' },
+      { id: 23, day: 'Friday', period: '11:30 AM - 12:30 PM', subject: 'Cloud Computing & DevOps (CS303)', room: 'LH-101' },
+      { id: 24, day: 'Friday', period: '02:00 PM - 03:00 PM', subject: '⚽ Sports & Student Activity Club', room: 'Campus Ground' },
+      { id: 25, day: 'Friday', period: '03:15 PM - 04:15 PM', subject: 'Outcome-Based Remedial & Mentoring', room: 'LH-204' },
 
-      { id: 26, day: 'Saturday', period: '09:00 AM - 10:00 AM', subject: 'Software Engineering & Agile Methodologies', room: 'LH-204' },
-      { id: 27, day: 'Saturday', period: '10:15 AM - 11:15 AM', subject: 'Mini-Project Review & Coding Practice', room: 'Lab-4A' },
-      { id: 28, day: 'Saturday', period: '11:30 AM - 12:30 PM', subject: 'Industry Expert Guest Lecture / Webinar', room: 'Seminar Hall' },
-      { id: 29, day: 'Saturday', period: '02:00 PM - 03:00 PM', subject: 'Library & Reading Session', room: 'Central Library' },
-      { id: 30, day: 'Saturday', period: '03:15 PM - 04:15 PM', subject: 'Sports & Student Clubs', room: 'Campus Ground' }
+      // Saturday: 2 classes, 3 leisure (Alternating: Class -> Leisure -> Class -> Library -> Leisure)
+      { id: 26, day: 'Saturday', period: '09:00 AM - 10:00 AM', subject: 'Software Engineering & Agile (CS302)', room: 'LH-204' },
+      { id: 27, day: 'Saturday', period: '10:15 AM - 11:15 AM', subject: '☕ Leisure & Hackathon Brainstorming', room: 'Innovation Hub' },
+      { id: 28, day: 'Saturday', period: '11:30 AM - 12:30 PM', subject: 'Industry Expert Webinar / Seminar', room: 'Seminar Hall' },
+      { id: 29, day: 'Saturday', period: '02:00 PM - 03:00 PM', subject: '📚 Library & Competitive Coding', room: 'Central Library' },
+      { id: 30, day: 'Saturday', period: '03:15 PM - 04:15 PM', subject: '☕ Leisure & Weekend Review', room: 'Student Lounge' }
     ];
   }
 

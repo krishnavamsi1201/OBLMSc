@@ -275,6 +275,15 @@ export class Students implements OnInit, OnDestroy {
     );
   }
 
+  isLeisure(cls: TimetableEntry): boolean {
+    if (!cls || !cls.subject) return false;
+    const s = cls.subject.toLowerCase();
+    const r = (cls.room || '').toLowerCase();
+    return s.includes('leisure') || s.includes('laser') || s.includes('free') || s.includes('self-study') || 
+           s.includes('library') || s.includes('sports') || s.includes('recess') || s.includes('break') ||
+           s.includes('mentoring') || r.includes('library') || r.includes('ground') || r.includes('reading hall') || r.includes('lounge');
+  }
+
   get filteredGrades(): StudentGrade[] {
     if (!this.searchQuery.trim()) return this.recentGrades;
     const q = this.searchQuery.toLowerCase();

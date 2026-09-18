@@ -689,18 +689,64 @@ public class DashboardStatsController {
             groupedCOs.add(group);
         }
 
-        // 4. Timetable today schedule strictly for enrolled courses
+        // 4. Timetable today schedule with balanced classes & alternating leisure periods
         List<Map<String, Object>> todaySchedule = new ArrayList<>();
         String[] periods = { "09:00 AM - 10:00 AM", "10:15 AM - 11:15 AM", "11:30 AM - 12:30 PM", "02:00 PM - 03:00 PM", "03:15 PM - 04:15 PM" };
-        String[] rooms = { "LH-101", "Lab-2B", "LH-204", "Seminar Hall", "Lab-4A" };
-        for (int i = 0; i < Math.min(studentCourses.size(), periods.length); i++) {
-            Course c = studentCourses.get(i);
+        
+        // Slot 1 (09:00 AM - 10:00 AM): Course 1
+        if (studentCourses.size() > 0) {
+            Course c = studentCourses.get(0);
             Map<String, Object> slot = new HashMap<>();
-            slot.put("period", periods[i]);
+            slot.put("period", periods[0]);
             slot.put("subject", c.getTitle() + " (" + c.getCode() + ")");
-            slot.put("room", rooms[i % rooms.length]);
-            slot.put("isCurrent", i == 0);
+            slot.put("room", "LH-101");
+            slot.put("isCurrent", true);
             todaySchedule.add(slot);
+        }
+        
+        // Slot 2 (10:15 AM - 11:15 AM): Leisure & Self-Study
+        Map<String, Object> leisureSlot1 = new HashMap<>();
+        leisureSlot1.put("period", periods[1]);
+        leisureSlot1.put("subject", "☕ Leisure & Self-Study");
+        leisureSlot1.put("room", "Reading Hall");
+        leisureSlot1.put("isCurrent", false);
+        todaySchedule.add(leisureSlot1);
+
+        // Slot 3 (11:30 AM - 12:30 PM): Course 2
+        if (studentCourses.size() > 1) {
+            Course c = studentCourses.get(1);
+            Map<String, Object> slot = new HashMap<>();
+            slot.put("period", periods[2]);
+            slot.put("subject", c.getTitle() + " (" + c.getCode() + ")");
+            slot.put("room", "LH-204");
+            slot.put("isCurrent", false);
+            todaySchedule.add(slot);
+        }
+
+        // Slot 4 (02:00 PM - 03:00 PM): Library & Digital Research
+        Map<String, Object> leisureSlot2 = new HashMap<>();
+        leisureSlot2.put("period", periods[3]);
+        leisureSlot2.put("subject", "📚 Library & Digital Research");
+        leisureSlot2.put("room", "Central Library");
+        leisureSlot2.put("isCurrent", false);
+        todaySchedule.add(leisureSlot2);
+
+        // Slot 5 (03:15 PM - 04:15 PM): Course 3 or Sports
+        if (studentCourses.size() > 2) {
+            Course c = studentCourses.get(2);
+            Map<String, Object> slot = new HashMap<>();
+            slot.put("period", periods[4]);
+            slot.put("subject", c.getTitle() + " (" + c.getCode() + ")");
+            slot.put("room", "Lab-4A");
+            slot.put("isCurrent", false);
+            todaySchedule.add(slot);
+        } else {
+            Map<String, Object> sportsSlot = new HashMap<>();
+            sportsSlot.put("period", periods[4]);
+            sportsSlot.put("subject", "⚽ Sports & Student Activity Club");
+            sportsSlot.put("room", "Campus Ground");
+            sportsSlot.put("isCurrent", false);
+            todaySchedule.add(sportsSlot);
         }
 
         // 5. Recent Grades strictly from student_marks table in database
