@@ -174,6 +174,20 @@ export class Login implements OnInit {
     this.role = role;
   }
 
+  setDemoAccount(role: 'admin' | 'faculty' | 'student'): void {
+    this.role = role;
+    if (role === 'admin') {
+      this.identifier = 'admin@oblms.edu';
+      this.password = 'root';
+    } else if (role === 'faculty') {
+      this.identifier = 'ramesh.babu@oblms.edu';
+      this.password = 'password';
+    } else if (role === 'student') {
+      this.identifier = 'krishnavamsi@gmail.com';
+      this.password = 'password';
+    }
+  }
+
   togglePasswordVisibility(): void {
     this.showPassword = !this.showPassword;
   }
@@ -185,7 +199,15 @@ export class Login implements OnInit {
       return;
     }
 
-    if (!this.role) {
+    // Smart auto-role detection if needed
+    const lowerId = cleanId.toLowerCase();
+    if (lowerId.includes('admin') || lowerId.startsWith('adm')) {
+      this.role = 'admin';
+    } else if (lowerId.startsWith('fac') || lowerId.includes('ramesh.babu') || lowerId.includes('sunita.sharma') || lowerId.includes('amit.patel') || lowerId.includes('priya.nair') || lowerId.includes('rajesh.verma')) {
+      this.role = 'faculty';
+    } else if (lowerId.startsWith('stu') || lowerId.includes('krishna') || lowerId.includes('vamsi') || lowerId.includes('raj.kumar') || lowerId.includes('aarav') || lowerId.includes('aditya') || lowerId.includes('ananya')) {
+      this.role = 'student';
+    } else if (!this.role) {
       this.role = 'student';
     }
 

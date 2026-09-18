@@ -54,6 +54,17 @@ public class AuthController {
         if (userOpt.isEmpty()) {
             userOpt = userRepository.findByIdIgnoreCase(identifier);
         }
+        // Alias check for Ramesh Babu
+        if (userOpt.isEmpty() && (identifier.equalsIgnoreCase("ramesh.babu@oblms.edu") || identifier.equalsIgnoreCase("ramesh@oblms.edu") || identifier.equalsIgnoreCase("ramesh"))) {
+            userOpt = userRepository.findByIdIgnoreCase("FAC001");
+        }
+        // Alias check for Krishnavamsi / Vamsi
+        if (userOpt.isEmpty() && (identifier.equalsIgnoreCase("krishnavamsi@gmail.com") || identifier.equalsIgnoreCase("krishnavamsi1201@gmail.com") || identifier.equalsIgnoreCase("vamsi1201@gmail.com") || identifier.equalsIgnoreCase("vamsi") || identifier.equalsIgnoreCase("krishnavamsi") || identifier.equalsIgnoreCase("STU004"))) {
+            userOpt = userRepository.findByIdIgnoreCase("STU004");
+            if (userOpt.isEmpty()) {
+                userOpt = userRepository.findByIdIgnoreCase("646456455");
+            }
+        }
 
         if (userOpt.isEmpty()) {
             return ResponseEntity.status(401).body(Map.of(

@@ -279,6 +279,50 @@ form {
   font-weight: 700;
 }
 
+/* Quick One-Click Demo Box */
+.quick-demo-box {
+  margin-top: 14px;
+  padding-top: 14px;
+  border-top: 1px solid #1f2f54;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.demo-label {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: #fde68a;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.demo-btn-group {
+  display: flex;
+  gap: 6px;
+  justify-content: center;
+}
+
+.demo-btn {
+  flex: 1;
+  padding: 7px 10px;
+  background: #132247;
+  border: 1px solid #25396b;
+  color: #cbd5e1;
+  border-radius: 7px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.demo-btn:hover {
+  background: #d4af37;
+  border-color: #d4af37;
+  color: #0a1128;
+  font-weight: 700;
+}
+
 /* Bottom Stats Panel */
 .stats-panel {
   display: grid;
