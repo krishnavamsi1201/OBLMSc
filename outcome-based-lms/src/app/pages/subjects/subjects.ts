@@ -7,6 +7,7 @@ import { Navbar } from '../../shared/navbar/navbar';
 import { Sidebar } from '../../shared/sidebar/sidebar';
 import { Footer } from '../../shared/footer/footer';
 import { ToastService } from '../../shared/services/toast.service';
+import { DEFAULT_DATABASE_COURSES } from '../../shared/services/course.service';
 
 interface SubjectRecord {
   id: number;
@@ -757,7 +758,7 @@ export class Subjects implements OnInit {
           const backendSubs: SubjectRecord[] = courses.map((item, idx) => {
             const code = (item.code || '').trim();
             const name = (item.title || item.name || '').trim();
-            const type = (name.toLowerCase().includes('lab') || code.toLowerCase().includes('lab')) ? 'Lab' : (name.toLowerCase().includes('elective') ? 'Elective' : 'Theory');
+            const type = (name.toLowerCase().includes('lab') || code.toLowerCase().includes('lab') || code.endsWith('L')) ? 'Lab' : (name.toLowerCase().includes('elective') ? 'Elective' : 'Theory');
             const dept = item.department || this.getDepartmentName(code, name);
             const credits = type === 'Lab' ? 2 : (type === 'Elective' ? 3 : 4);
             const isReg = this.isCourseEnrolled(code, name);
@@ -801,42 +802,24 @@ export class Subjects implements OnInit {
   }
 
   private loadFallbackSubjects(): void {
-    const fallbackList: SubjectRecord[] = [
-      // Computer Science & Engineering
-      { id: 1, code: 'CS101', name: 'Database Management Systems', type: 'Theory', credits: 4, semester: 'Semester 3', department: 'Computer Science & Engineering', isRegistered: true },
-      { id: 2, code: 'CS102', name: 'Data Structures & Algorithms', type: 'Theory', credits: 4, semester: 'Semester 3', department: 'Computer Science & Engineering', isRegistered: true },
-      { id: 3, code: 'CS103', name: 'Object-Oriented Programming with Java', type: 'Theory', credits: 4, semester: 'Semester 3', department: 'Computer Science & Engineering', isRegistered: true },
-      { id: 4, code: 'CS201', name: 'Operating Systems', type: 'Theory', credits: 4, semester: 'Semester 4', department: 'Computer Science & Engineering', isRegistered: true },
-      { id: 5, code: 'CS202', name: 'Machine Learning & Data Science', type: 'Theory', credits: 4, semester: 'Semester 5', department: 'Computer Science & Engineering', isRegistered: false },
-      { id: 6, code: 'CS301', name: 'Computer Networks', type: 'Theory', credits: 4, semester: 'Semester 5', department: 'Computer Science & Engineering', isRegistered: true },
-      { id: 7, code: 'CS302', name: 'Software Engineering & Agile Methodologies', type: 'Theory', credits: 4, semester: 'Semester 6', department: 'Computer Science & Engineering', isRegistered: true },
-      { id: 8, code: 'CS401', name: 'Artificial Intelligence & Neural Networks', type: 'Theory', credits: 4, semester: 'Semester 7', department: 'Computer Science & Engineering', isRegistered: false },
-      { id: 9, code: 'CS402', name: 'Cyber Security & Cryptography', type: 'Theory', credits: 4, semester: 'Semester 7', department: 'Computer Science & Engineering', isRegistered: false },
-      { id: 10, code: 'CS101L', name: 'DBMS & SQL Practical Laboratory', type: 'Lab', credits: 2, semester: 'Semester 3', department: 'Computer Science & Engineering', isRegistered: true },
-      { id: 11, code: 'CS102L', name: 'Data Structures Practical Lab', type: 'Lab', credits: 2, semester: 'Semester 3', department: 'Computer Science & Engineering', isRegistered: true },
-
-      // Information Technology
-      { id: 12, code: 'IT305', name: 'Web Technology & Modern Frameworks', type: 'Theory', credits: 4, semester: 'Semester 6', department: 'Information Technology', isRegistered: false },
-      { id: 13, code: 'CS303', name: 'Cloud Computing & DevOps Architecture', type: 'Theory', credits: 4, semester: 'Semester 6', department: 'Information Technology', isRegistered: false },
-      { id: 14, code: 'LINUX', name: 'Linux System Administration & Shell Scripting', type: 'Theory', credits: 4, semester: 'Semester 5', department: 'Information Technology', isRegistered: false },
-      { id: 15, code: 'OPEN LAB', name: 'Open Source Software Laboratory', type: 'Lab', credits: 2, semester: 'Semester 5', department: 'Information Technology', isRegistered: false },
-
-      // Electronics & Communication Engineering
-      { id: 16, code: 'MES', name: 'Microprocessors & Embedded Systems', type: 'Theory', credits: 4, semester: 'Semester 5', department: 'Electronics & Communication Engineering', isRegistered: false },
-      { id: 17, code: 'DSLD', name: 'Digital Signal & Logic Design', type: 'Theory', credits: 4, semester: 'Semester 4', department: 'Electronics & Communication Engineering', isRegistered: false },
-      { id: 18, code: 'EC206', name: 'VLSI Design & Embedded Systems', type: 'Theory', credits: 4, semester: 'Semester 6', department: 'Electronics & Communication Engineering', isRegistered: false },
-      { id: 19, code: 'HARDWARE LAB', name: 'Microprocessor & Hardware Lab', type: 'Lab', credits: 2, semester: 'Semester 5', department: 'Electronics & Communication Engineering', isRegistered: false },
-
-      // Mechanical Engineering
-      { id: 20, code: 'ME210', name: 'Kinematics & Dynamics of Machines', type: 'Theory', credits: 4, semester: 'Semester 4', department: 'Mechanical Engineering', isRegistered: false },
-      { id: 21, code: '04ME6512', name: 'Computer Aided Design and Manufacturing (CAD/CAM)', type: 'Theory', credits: 4, semester: 'Semester 6', department: 'Mechanical Engineering', isRegistered: false },
-      { id: 22, code: 'AU203', name: 'Automobile Chassis & Powertrain Engineering', type: 'Theory', credits: 4, semester: 'Semester 5', department: 'Mechanical Engineering', isRegistered: false },
-
-      // Civil Engineering
-      { id: 23, code: 'FMHM', name: 'Fluid Mechanics and Hydraulic Machinery', type: 'Theory', credits: 4, semester: 'Semester 4', department: 'Civil Engineering', isRegistered: false },
-      { id: 24, code: 'SMSE', name: 'Strength of Materials and Structural Engineering', type: 'Theory', credits: 4, semester: 'Semester 5', department: 'Civil Engineering', isRegistered: false },
-      { id: 25, code: 'CE234', name: 'Fluid Mechanics & Hydraulics Practical Lab', type: 'Lab', credits: 2, semester: 'Semester 4', department: 'Civil Engineering', isRegistered: false }
-    ];
+    const fallbackList: SubjectRecord[] = DEFAULT_DATABASE_COURSES.map((item, idx) => {
+      const code = (item.code || '').trim();
+      const name = (item.title || '').trim();
+      const type = (name.toLowerCase().includes('lab') || code.toLowerCase().includes('lab') || code.endsWith('L')) ? 'Lab' : (name.toLowerCase().includes('elective') ? 'Elective' : 'Theory');
+      const dept = this.getDepartmentName(code, name);
+      const credits = type === 'Lab' ? 2 : 4;
+      const isReg = this.isCourseEnrolled(code, name);
+      return {
+        id: item.id || (idx + 1),
+        code: code,
+        name: name,
+        type: type,
+        credits: credits,
+        semester: item.semester || 'Semester 6',
+        department: dept,
+        isRegistered: isReg
+      };
+    });
     this.subjects = fallbackList;
     try {
       localStorage.setItem('obslmsSubjects', JSON.stringify(this.subjects));
@@ -866,45 +849,35 @@ export class Subjects implements OnInit {
     const c = (code || '').toUpperCase().trim();
     const n = (name || '').toLowerCase().trim();
 
-    // 1. Civil Engineering
-    if (c === 'FMHM' || c === 'SMSE' || c === 'CE234' || c === 'EMII' || c.startsWith('CE') || 
-        n.includes('fluid mechanics') || n.includes('strength of materials') || 
-        n.includes('structural') || n.includes('civil') || n.includes('survey')) {
+    // 1. Prefix checks (High Priority)
+    if (c.startsWith('CS') || c === 'DS' || c === 'DS LAB' || c === 'OOP' || c === 'C++ LAB' || c === 'OOMD' || c === 'CC' || c === 'C' || c === 'COMPUTER LAB' || c === 'HPC' || c.startsWith('RLMCA')) {
+      return 'Computer Science & Engineering';
+    }
+    if (c.startsWith('IT') || c === 'LINUX' || c === 'LINUX LAB' || c === 'OPEN LAB' || c === 'WT') {
+      return 'Information Technology';
+    }
+    if (c.startsWith('EC') || c.startsWith('EE') || c === 'MES' || c === 'DSLD' || c === 'AMP' || c === 'HARDWARE LAB' || c === 'LD LAB') {
+      return 'Electronics & Communication Engineering';
+    }
+    if (c.startsWith('ME') || c.startsWith('AU') || c === 'KM' || c === 'IC' || c === '04ME6512') {
+      return 'Mechanical Engineering';
+    }
+    if (c.startsWith('CE') || c === 'FMHM' || c === 'SMSE') {
       return 'Civil Engineering';
     }
 
-    // 2. Mechanical Engineering
-    if (c === 'ME210' || c === 'KM' || c === 'IC' || c === '04ME6512' || c === 'AU203' || c.startsWith('ME') || c.startsWith('AU') ||
-        n.includes('kinematics') || n.includes('i c engine') || n.includes('metallurgy') || 
-        n.includes('manufacturing') || n.includes('auto chassis') || n.includes('cad') || n.includes('mechanical')) {
+    // 2. Keyword fallback checks
+    if (n.includes('fluid mechanics') || n.includes('strength of materials') || n.includes('structural') || n.includes('civil') || n.includes('survey') || n.includes('concrete')) {
+      return 'Civil Engineering';
+    }
+    if (n.includes('kinematics') || n.includes('thermodynamics') || n.includes('metallurgy') || n.includes('manufacturing') || n.includes('automobile') || n.includes('cad') || n.includes('mechanical')) {
       return 'Mechanical Engineering';
     }
-
-    // 3. Electronics & Communication Engineering (ECE)
-    if (c === 'MES' || c === 'DSLD' || c === 'CS203' || c === 'CS207' || c === 'EC206' || c === 'EE407' || c === 'AMP' || c === 'HARDWARE LAB' || c === 'EE233' || c === 'LD LAB' || c.startsWith('EC') || c.startsWith('EE') ||
-        n.includes('microprocessor') || n.includes('logic design') || n.includes('switching theory') || 
-        n.includes('electronics') || n.includes('digital signal') || n.includes('hardware & microprocessor')) {
+    if (n.includes('microprocessor') || n.includes('vlsi') || n.includes('analog circuit') || n.includes('electronics') || n.includes('signal') || n.includes('hardware')) {
       return 'Electronics & Communication Engineering';
     }
-
-    // 4. Information Technology (IT)
-    if (c === 'IT305' || c === 'CS303' || c === 'LINUX' || c === 'LINUX LAB' || c === 'OPEN LAB' || c === 'WT' || c === 'RLMCA108' || c.startsWith('IT') ||
-        n.includes('web tech') || n.includes('shell programming') || n.includes('linux') || 
-        n.includes('cloud') || n.includes('devops') || n.includes('open source') || n.includes('operations research')) {
+    if (n.includes('web tech') || n.includes('linux') || n.includes('devops') || n.includes('information') || n.includes('full stack')) {
       return 'Information Technology';
-    }
-
-    // 5. Computer Science & Engineering (CSE)
-    if (c.startsWith('CS') || c === 'DS' || c === 'DS LAB' || c === 'OOP' || c === 'C++ LAB' || c === 'OOMD' || c === 'CC' || c === 'C' || c === 'COMPUTER LAB' || c === 'HPC' || c === 'RLMCA101' || c === 'RLMCA201' || c === 'RLMCA205' || c === 'RLMCA231' ||
-        n.includes('data structure') || n.includes('database') || n.includes('algorithm') || 
-        n.includes('c++') || n.includes('compiler') || n.includes('computer networks') || 
-        n.includes('programming in c') || n.includes('object oriented') || n.includes('soft computing') || n.includes('high performance')) {
-      return 'Computer Science & Engineering';
-    }
-
-    // 6. Foundation / General Engineering (INMCA202 Probability & Statistics, etc.)
-    if (c === 'INMCA202' || c === 'STATISTICS' || c === 'EM IV' || c === 'INMCA102' || c === 'ECS' || c === 'HS300' || c === 'OTHER') {
-      return 'General Engineering';
     }
 
     return 'Computer Science & Engineering';
