@@ -3,7 +3,10 @@
   "version": 1,
   "cli": {
     "packageManager": "npm",
-    "analytics": "dcfcfdb9-180b-4e08-a869-25e1aebb3c24"
+    "analytics": "dcfcfdb9-180b-4e08-a869-25e1aebb3c24",
+    "cache": {
+      "enabled": false
+    }
   },
   "newProjectRoot": "projects",
   "projects": {
@@ -27,7 +30,7 @@
             ],
             "styles": [
               "src/material-theme.scss",
-              "node_modules/bootstrap/dist/css/bootstrap.min.css",
+              "bootstrap/dist/css/bootstrap.min.css",
               "src/styles.css"
             ],
             "optimization": {
