@@ -22,6 +22,7 @@ interface TimetableEntry {
   period: string;
   subject: string;
   room: string;
+  facultyName?: string;
   isCurrent?: boolean;
 }
 

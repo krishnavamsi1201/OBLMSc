@@ -700,6 +700,7 @@ public class DashboardStatsController {
             slot.put("period", periods[0]);
             slot.put("subject", c.getTitle() + " (" + c.getCode() + ")");
             slot.put("room", "LH-101");
+            slot.put("facultyName", c.getFaculty() != null ? c.getFaculty() : "Dr. Biswaranjan");
             slot.put("isCurrent", true);
             todaySchedule.add(slot);
         }
@@ -709,6 +710,7 @@ public class DashboardStatsController {
         leisureSlot1.put("period", periods[1]);
         leisureSlot1.put("subject", "☕ Leisure & Self-Study");
         leisureSlot1.put("room", "Reading Hall");
+        leisureSlot1.put("facultyName", null);
         leisureSlot1.put("isCurrent", false);
         todaySchedule.add(leisureSlot1);
 
@@ -719,6 +721,7 @@ public class DashboardStatsController {
             slot.put("period", periods[2]);
             slot.put("subject", c.getTitle() + " (" + c.getCode() + ")");
             slot.put("room", "LH-204");
+            slot.put("facultyName", c.getFaculty() != null ? c.getFaculty() : "Prof. Priya Sharma");
             slot.put("isCurrent", false);
             todaySchedule.add(slot);
         }
@@ -728,6 +731,7 @@ public class DashboardStatsController {
         leisureSlot2.put("period", periods[3]);
         leisureSlot2.put("subject", "📚 Library & Digital Research");
         leisureSlot2.put("room", "Central Library");
+        leisureSlot2.put("facultyName", null);
         leisureSlot2.put("isCurrent", false);
         todaySchedule.add(leisureSlot2);
 
@@ -738,6 +742,7 @@ public class DashboardStatsController {
             slot.put("period", periods[4]);
             slot.put("subject", c.getTitle() + " (" + c.getCode() + ")");
             slot.put("room", "Lab-4A");
+            slot.put("facultyName", c.getFaculty() != null ? c.getFaculty() : "Dr. Rajesh Sen");
             slot.put("isCurrent", false);
             todaySchedule.add(slot);
         } else {
@@ -745,6 +750,7 @@ public class DashboardStatsController {
             sportsSlot.put("period", periods[4]);
             sportsSlot.put("subject", "⚽ Sports & Student Activity Club");
             sportsSlot.put("room", "Campus Ground");
+            sportsSlot.put("facultyName", null);
             sportsSlot.put("isCurrent", false);
             todaySchedule.add(sportsSlot);
         }

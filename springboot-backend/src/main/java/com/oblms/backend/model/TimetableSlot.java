@@ -22,6 +22,9 @@ public class TimetableSlot {
     @Column(nullable = false)
     private String room;
 
+    @Column(nullable = true)
+    private String facultyName;
+
     // Constructors
     public TimetableSlot() {}
 
@@ -31,6 +34,15 @@ public class TimetableSlot {
         this.period = period;
         this.subject = subject;
         this.room = room;
+    }
+
+    public TimetableSlot(Long id, String day, String period, String subject, String room, String facultyName) {
+        this.id = id;
+        this.day = day;
+        this.period = period;
+        this.subject = subject;
+        this.room = room;
+        this.facultyName = facultyName;
     }
 
     // Getters and Setters
@@ -48,4 +60,7 @@ public class TimetableSlot {
 
     public String getRoom() { return room; }
     public void setRoom(String room) { this.room = room; }
+
+    public String getFacultyName() { return facultyName; }
+    public void setFacultyName(String facultyName) { this.facultyName = facultyName; }
 }
