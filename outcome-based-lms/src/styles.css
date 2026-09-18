@@ -1,5 +1,6 @@
 /* You can add global styles to this file, and also import other style files */
 :root {
+    color-scheme: dark;
     --bg-start: rgba(95, 168, 255, 0.18);
     --bg-mid: rgba(17, 50, 84, 0.96);
     --bg-end: rgba(12, 22, 42, 1);
@@ -873,8 +874,26 @@ body, html {
     border-radius: 4px;
 }
 
-::-webkit-scrollbar-thumb:hover {
-    background: #475569;
+::placeholder {
+    color: #64748b;
+}
+
+/* Global Browser Autofill Reset to Dark UI */
+input:-webkit-autofill,
+input:-webkit-autofill:hover, 
+input:-webkit-autofill:focus, 
+input:-webkit-autofill:active,
+input:-internal-autofill-selected,
+input:-internal-autofill-previewed,
+textarea:-webkit-autofill,
+select:-webkit-autofill {
+    -webkit-box-shadow: 0 0 0 1000px #091024 inset !important;
+    box-shadow: 0 0 0 1000px #091024 inset !important;
+    -webkit-text-fill-color: #ffffff !important;
+    color: #ffffff !important;
+    caret-color: #ffffff !important;
+    background-color: #091024 !important;
+    transition: background-color 500000s ease-in-out 0s, color 500000s ease-in-out 0s !important;
 }
 
 

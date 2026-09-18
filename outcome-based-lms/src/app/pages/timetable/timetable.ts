@@ -124,22 +124,28 @@ interface ScheduleEntry {
                     <h2 style="margin: 0; font-size: 1.25rem; color: #ffffff; font-weight: 800;">📅 Weekly Timetable Matrix</h2>
                     <p style="color: #94a3b8; font-size: 0.88rem; margin: 4px 0 0 0;">2–3 classes per day with alternating leisure & self-study slots. Live-synced with faculty substitutions & extra classes.</p>
                 </div>
-                <div class="matrix-legend" style="display: flex; gap: 14px; font-size: 12px; font-weight: 600; flex-wrap: wrap;">
-                    <span style="display: inline-flex; align-items: center; gap: 5px; color: #fde68a;">
-                        <span style="width: 10px; height: 10px; border-radius: 3px; background: rgba(212, 175, 55, 0.2); border: 1px solid #d4af37;"></span> Theory Lecture
-                    </span>
-                    <span style="display: inline-flex; align-items: center; gap: 5px; color: #34d399;">
-                        <span style="width: 10px; height: 10px; border-radius: 3px; background: rgba(16, 185, 129, 0.2); border: 1px solid #10b981;"></span> Lab / Practical
-                    </span>
-                    <span style="display: inline-flex; align-items: center; gap: 5px; color: #a5b4fc;">
-                        <span style="width: 10px; height: 10px; border-radius: 3px; background: rgba(99, 102, 241, 0.2); border: 1px solid #6366f1;"></span> Leisure / Library
-                    </span>
-                    <span style="display: inline-flex; align-items: center; gap: 5px; color: #38bdf8;">
-                        <span style="width: 10px; height: 10px; border-radius: 3px; background: rgba(56, 189, 248, 0.25); border: 1px solid #38bdf8;"></span> 🔄 Substitute Adjustment
-                    </span>
-                    <span style="display: inline-flex; align-items: center; gap: 5px; color: #c084fc;">
-                        <span style="width: 10px; height: 10px; border-radius: 3px; background: rgba(192, 132, 252, 0.25); border: 1px solid #c084fc;"></span> ⭐ Extra Class
-                    </span>
+                <div class="matrix-legend">
+                    <button type="button" class="legend-btn" [class.active-legend]="matrixFilter === 'all'" (click)="setMatrixFilter('all')">
+                        <span class="legend-dot dot-all"></span> All Slots
+                    </button>
+                    <button type="button" class="legend-btn" [class.active-legend]="matrixFilter === 'theory'" (click)="setMatrixFilter('theory')">
+                        <span class="legend-dot dot-theory"></span> Theory Lecture
+                    </button>
+                    <button type="button" class="legend-btn" [class.active-legend]="matrixFilter === 'lab'" (click)="setMatrixFilter('lab')">
+                        <span class="legend-dot dot-lab"></span> Lab / Practical
+                    </button>
+                    <button type="button" class="legend-btn" [class.active-legend]="matrixFilter === 'leisure'" (click)="setMatrixFilter('leisure')">
+                        <span class="legend-dot dot-leisure"></span> Leisure / Library
+                    </button>
+                    <button type="button" class="legend-btn" [class.active-legend]="matrixFilter === 'adjusted'" (click)="setMatrixFilter('adjusted')">
+                        <span class="legend-dot dot-adjusted"></span> 🔄 Substitute Adjustment
+                    </button>
+                    <button type="button" class="legend-btn" [class.active-legend]="matrixFilter === 'extra'" (click)="setMatrixFilter('extra')">
+                        <span class="legend-dot dot-extra"></span> ⭐ Extra Class
+                    </button>
+                    <button *ngIf="role === 'faculty'" type="button" class="legend-btn" [class.active-legend]="matrixFilter === 'myteaching'" (click)="setMatrixFilter('myteaching')">
+                        <span class="legend-dot dot-teaching"></span> 👨‍🏫 My Classes
+                    </button>
                 </div>
             </div>
             
@@ -169,7 +175,10 @@ interface ScheduleEntry {
                                      [class.leisure-card]="isLeisure(slot)"
                                      [class.adjusted-card]="slot.isAdjusted"
                                      [class.extra-card]="slot.isExtraClass"
-                                     [title]="slot.isAdjusted ? ('Substituted by ' + slot.substituteName + ' (Covering for ' + slot.requesterName + ')') : (slot.isExtraClass ? 'Extra Remedial Lecture by ' + slot.facultyName : '')">
+                                     [class.my-teaching-card]="isMyTeachingSlot(slot)"
+                                     [class.dimmed-slot]="isSlotDimmed(slot)"
+                                     [class.active-filter-match]="isSlotActiveHighlight(slot)"
+                                     [title]="slot.isAdjusted ? ('Substituted by ' + slot.substituteName + ' (Covering for ' + slot.requesterName + ')') : (slot.isExtraClass ? 'Extra Remedial Lecture by ' + slot.facultyName : (slot.facultyName ? 'Faculty: ' + slot.facultyName : ''))">
                                     
                                     <!-- Substitute Tag -->
                                     <div *ngIf="slot.isAdjusted" class="substitute-pill">
@@ -177,10 +186,17 @@ interface ScheduleEntry {
                                     </div>
                                     <!-- Extra Class Tag -->
                                     <div *ngIf="slot.isExtraClass" class="extra-pill">
-                                        ⭐ Extra Class: {{ slot.facultyName }}
+                                        ⭐ Extra: {{ slot.facultyName }}
+                                    </div>
+                                    <!-- My Teaching Tag for Faculty -->
+                                    <div *ngIf="isMyTeachingSlot(slot)" class="my-teaching-pill">
+                                        👨‍🏫 My Class (Teaching)
                                     </div>
 
                                     <div class="slot-subject">{{ slot.subject }}</div>
+                                    <div *ngIf="slot.facultyName && !isLeisure(slot) && !slot.isAdjusted" class="slot-faculty">
+                                        👨‍🏫 {{ slot.facultyName }}
+                                    </div>
                                     <div class="slot-room">
                                         {{ isLeisure(slot) ? '📍' : (isLab(slot) ? '🔬' : '🚪') }} {{ slot.room }}
                                     </div>
@@ -216,12 +232,14 @@ interface ScheduleEntry {
                 </label>
                 <label>
                     Type Filter:
-                    <select [(ngModel)]="typeFilter" (change)="applyFilters()">
+                    <select [(ngModel)]="typeFilter" (change)="onDropdownTypeFilterChange()">
                         <option value="">All Slots</option>
+                        <option value="myteaching" *ngIf="role === 'faculty'">👨‍🏫 My Teaching Classes Only</option>
+                        <option value="theory">📖 Theory Lectures Only</option>
+                        <option value="lab">🔬 Lab / Practical Sessions</option>
+                        <option value="leisure">☕ Leisure & Self-Study</option>
                         <option value="adjusted">🔄 Only Adjusted Slots</option>
                         <option value="extra">⭐ Only Extra Classes</option>
-                        <option value="classes">📚 Regular Classes Only</option>
-                        <option value="leisure">☕ Leisure & Self-Study</option>
                     </select>
                 </label>
                 <label>
@@ -237,7 +255,7 @@ interface ScheduleEntry {
                         <th>Period</th>
                         <th>Subject / Activity</th>
                         <th>Location</th>
-                        <th>Faculty / Substitution</th>
+                        <th>Faculty / Instructor</th>
                         <th *ngIf="role === 'admin' || role === 'faculty'">Actions</th>
                     </tr>
                 </thead>
@@ -258,10 +276,14 @@ interface ScheduleEntry {
                                 <small class="sub-for">Covering for: {{ entry.requesterName }}</small>
                             </div>
                             <div *ngIf="entry.isExtraClass" class="extra-info-box">
-                                <span style="color: #c084fc; font-weight: 700;">👨‍🏫 {{ entry.facultyName || 'Faculty' }}</span>
+                                <span style="color: #c084fc; font-weight: 700;">⭐ {{ entry.facultyName || 'Faculty' }}</span>
                             </div>
-                            <span *ngIf="!entry.isAdjusted && !entry.isExtraClass" style="color: #94a3b8; font-size: 12px;">
-                                Regular Department Faculty
+                            <div *ngIf="!entry.isAdjusted && !entry.isExtraClass && entry.facultyName && !isLeisure(entry)" class="faculty-info-box">
+                                <span style="color: #fde68a; font-weight: 700; font-size: 13px;">👨‍🏫 {{ entry.facultyName }}</span>
+                                <small *ngIf="isMyTeachingSlot(entry)" style="color: #34d399; font-weight: 800; display: block;">(Your Teaching Lecture)</small>
+                            </div>
+                            <span *ngIf="isLeisure(entry)" style="color: #a5b4fc; font-size: 12px;">
+                                Self-Study / Activity Hour
                             </span>
                         </td>
                         <td *ngIf="role === 'admin' || role === 'faculty'" class="actions-cell">
@@ -417,6 +439,60 @@ interface ScheduleEntry {
       padding: 20px;
     }
 
+    .matrix-legend {
+      display: flex;
+      gap: 8px;
+      font-size: 12px;
+      font-weight: 600;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    .legend-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 12px;
+      background: #0d1730;
+      color: #cbd5e1;
+      border: 1px solid #1f2f54;
+      border-radius: 8px;
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+      user-select: none;
+    }
+
+    .legend-btn:hover {
+      background: #16244a;
+      border-color: #3b82f6;
+      color: #ffffff;
+      transform: translateY(-1px);
+    }
+
+    .legend-btn.active-legend {
+      background: #1e3a8a;
+      color: #ffffff;
+      border-color: #60a5fa;
+      box-shadow: 0 0 12px rgba(96, 165, 250, 0.35);
+    }
+
+    .legend-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 3px;
+      display: inline-block;
+    }
+
+    .dot-all { background: #94a3b8; border: 1px solid #cbd5e1; }
+    .dot-theory { background: rgba(212, 175, 55, 0.3); border: 1px solid #d4af37; }
+    .dot-lab { background: rgba(16, 185, 129, 0.3); border: 1px solid #10b981; }
+    .dot-leisure { background: rgba(99, 102, 241, 0.3); border: 1px solid #6366f1; }
+    .dot-adjusted { background: rgba(56, 189, 248, 0.3); border: 1px solid #38bdf8; }
+    .dot-extra { background: rgba(192, 132, 252, 0.3); border: 1px solid #c084fc; }
+    .dot-teaching { background: rgba(212, 175, 55, 0.8); border: 1px solid #fde68a; }
+
     .table-scroll-wrapper {
       overflow-x: auto;
       border-radius: 10px;
@@ -519,13 +595,25 @@ interface ScheduleEntry {
       align-items: center;
       text-align: center;
       gap: 4px;
-      transition: transform 0.15s ease, box-shadow 0.15s ease;
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
     }
 
     .matrix-slot-card:hover {
       transform: translateY(-2px);
       box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
       border-color: #d4af37;
+    }
+
+    .matrix-slot-card.dimmed-slot {
+      opacity: 0.22;
+      filter: grayscale(70%);
+      transform: scale(0.96);
+      box-shadow: none;
+    }
+
+    .matrix-slot-card.active-filter-match {
+      transform: scale(1.02);
+      box-shadow: 0 0 14px rgba(59, 130, 246, 0.4);
     }
 
     .matrix-slot-card.lab-card {
@@ -568,6 +656,38 @@ interface ScheduleEntry {
       background: linear-gradient(135deg, rgba(192, 132, 252, 0.15) 0%, rgba(16, 27, 56, 0.9) 100%);
       border: 1px solid #c084fc;
       box-shadow: 0 0 12px rgba(192, 132, 252, 0.2);
+    }
+
+    .matrix-slot-card.my-teaching-card {
+      border: 2px solid #d4af37 !important;
+      background: linear-gradient(135deg, rgba(212, 175, 55, 0.22) 0%, rgba(16, 27, 56, 0.95) 100%) !important;
+      box-shadow: 0 0 14px rgba(212, 175, 55, 0.35) !important;
+    }
+
+    .slot-faculty {
+      font-size: 9.5px;
+      font-weight: 700;
+      color: #fde68a;
+      background: rgba(212, 175, 55, 0.14);
+      border: 1px solid rgba(212, 175, 55, 0.3);
+      padding: 1px 5px;
+      border-radius: 4px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 100%;
+    }
+
+    .my-teaching-pill {
+      background: linear-gradient(135deg, #d4af37 0%, #b8860b 100%);
+      color: #0a1128;
+      font-size: 9px;
+      font-weight: 800;
+      padding: 2px 6px;
+      border-radius: 4px;
+      letter-spacing: 0.3px;
+      white-space: nowrap;
+      margin-bottom: 2px;
     }
 
     .substitute-pill {
@@ -733,6 +853,7 @@ export class Timetable implements OnInit {
   filteredSchedule: ScheduleEntry[] = [];
   userAssignedCourses: string[] = [];
   userDept: string = 'Computer Science & Engineering';
+  matrixFilter: string = 'all';
 
   // Visual grid variables
   days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
@@ -761,10 +882,10 @@ export class Timetable implements OnInit {
     if (!slot || !slot.subject) return false;
     const s = slot.subject.toLowerCase();
     const r = (slot.room || '').toLowerCase();
-    return s.includes('leisure') || s.includes('free') || s.includes('self-study') || 
+    return s.includes('leisure') || s.includes('laser') || s.includes('free') || s.includes('self-study') || 
            s.includes('library') || s.includes('sports') || s.includes('lounge') ||
            s.includes('recess') || s.includes('break') || s.includes('hobbies') ||
-           s.includes('journal') || s.includes('mentoring') ||
+           s.includes('journal') || s.includes('mentoring') || s.includes('reading') ||
            r.includes('library') || r.includes('ground') || r.includes('lounge') || r.includes('zone') || r.includes('reading hall');
   }
 
@@ -788,213 +909,231 @@ export class Timetable implements OnInit {
     return this.todayClasses.filter(s => !this.isLeisure(s)).length;
   }
 
-  // Generate strictly 2 or 3 classes per day with strictly alternating leisure slots (no continuous leisure)
+  // Generate strictly 2 or 3 classes per day with strictly alternating leisure slots (no continuous classes)
   getBranchSchedule(dept: string): ScheduleEntry[] {
     const d = (dept || '').toLowerCase();
 
     if (d.includes('civil') || d === 'ce') {
       return [
         // Monday: 3 classes, 2 leisure (Alternating: Class -> Leisure -> Class -> Library -> Class)
-        { id: 1, day: 'Monday', period: '09:00 AM - 10:00 AM', subject: 'Fluid Mechanics & Hydraulic Machinery (FMHM)', room: 'CE-LH-101' },
+        { id: 1, day: 'Monday', period: '09:00 AM - 10:00 AM', subject: 'Fluid Mechanics & Hydraulic Machinery (FMHM)', room: 'CE-LH-101', facultyName: 'Prof. Ramesh Babu' },
         { id: 2, day: 'Monday', period: '10:15 AM - 11:15 AM', subject: '☕ Leisure & Self-Study', room: 'Reading Hall' },
-        { id: 3, day: 'Monday', period: '11:30 AM - 12:30 PM', subject: 'Structural Mechanics & Materials (SMSE)', room: 'CE-LH-102' },
+        { id: 3, day: 'Monday', period: '11:30 AM - 12:30 PM', subject: 'Structural Mechanics & Materials (SMSE)', room: 'CE-LH-102', facultyName: 'Prof. Priya Sharma' },
         { id: 4, day: 'Monday', period: '02:00 PM - 03:00 PM', subject: '📚 Library & Digital Research', room: 'Central Library' },
-        { id: 5, day: 'Monday', period: '03:15 PM - 04:15 PM', subject: 'Principles of Management (HS300)', room: 'CE-LH-204' },
+        { id: 5, day: 'Monday', period: '03:15 PM - 04:15 PM', subject: 'Principles of Management (HS300)', room: 'CE-LH-204', facultyName: 'Dr. Ananya Ray' },
 
         // Tuesday: 3 classes, 2 leisure (Alternating: Class -> Leisure -> Class -> Lab -> Leisure)
-        { id: 6, day: 'Tuesday', period: '09:00 AM - 10:00 AM', subject: 'Engineering Mathematics II (EMII)', room: 'CE-LH-101' },
+        { id: 6, day: 'Tuesday', period: '09:00 AM - 10:00 AM', subject: 'Engineering Mathematics II (EMII)', room: 'CE-LH-101', facultyName: 'Dr. Ananya Ray' },
         { id: 7, day: 'Tuesday', period: '10:15 AM - 11:15 AM', subject: '☕ Leisure & Innovation Cell', room: 'Campus Zone' },
-        { id: 8, day: 'Tuesday', period: '11:30 AM - 12:30 PM', subject: 'Concrete Technology & Construction', room: 'CE-LH-204' },
-        { id: 9, day: 'Tuesday', period: '02:00 PM - 03:00 PM', subject: 'Surveying Field Practice Lab', room: 'Survey Field' },
+        { id: 8, day: 'Tuesday', period: '11:30 AM - 12:30 PM', subject: 'Concrete Technology & Construction', room: 'CE-LH-204', facultyName: 'Prof. Ramesh Babu' },
+        { id: 9, day: 'Tuesday', period: '02:00 PM - 03:00 PM', subject: 'Surveying Field Practice Lab', room: 'Survey Field', facultyName: 'Prof. Ramesh Babu' },
         { id: 10, day: 'Tuesday', period: '03:15 PM - 04:15 PM', subject: '☕ Leisure & Peer Mentoring', room: 'Student Lounge' },
 
         // Wednesday: 2 classes, 3 leisure (Alternating: Class -> Leisure -> Class -> Library -> Sports)
-        { id: 11, day: 'Wednesday', period: '09:00 AM - 10:00 AM', subject: 'Geotechnical & Soil Mechanics', room: 'CE-LH-102' },
+        { id: 11, day: 'Wednesday', period: '09:00 AM - 10:00 AM', subject: 'Geotechnical & Soil Mechanics', room: 'CE-LH-102', facultyName: 'Dr. Rajesh Sen' },
         { id: 12, day: 'Wednesday', period: '10:15 AM - 11:15 AM', subject: '☕ Leisure & Recess / Hobbies', room: 'Campus Zone' },
-        { id: 13, day: 'Wednesday', period: '11:30 AM - 12:30 PM', subject: 'Fluid Mechanics & Hydraulic Machinery (FMHM)', room: 'CE-LH-101' },
+        { id: 13, day: 'Wednesday', period: '11:30 AM - 12:30 PM', subject: 'Fluid Mechanics & Hydraulic Machinery (FMHM)', room: 'CE-LH-101', facultyName: 'Prof. Ramesh Babu' },
         { id: 14, day: 'Wednesday', period: '02:00 PM - 03:00 PM', subject: '📚 Library & Research Hour', room: 'Central Library' },
-        { id: 15, day: 'Wednesday', period: '03:15 PM - 04:15 PM', subject: 'Fluid Mechanics & Hydraulics Lab (CE234)', room: 'Fluid Lab' },
+        { id: 15, day: 'Wednesday', period: '03:15 PM - 04:15 PM', subject: 'Fluid Mechanics & Hydraulics Lab (CE234)', room: 'Fluid Lab', facultyName: 'Prof. Ramesh Babu' },
 
         // Thursday: 3 classes, 2 leisure (Alternating: Class -> Leisure -> Class -> Lab -> Library)
-        { id: 16, day: 'Thursday', period: '09:00 AM - 10:00 AM', subject: 'Transportation & Highway Engineering', room: 'CE-LH-101' },
+        { id: 16, day: 'Thursday', period: '09:00 AM - 10:00 AM', subject: 'Transportation & Highway Engineering', room: 'CE-LH-101', facultyName: 'Dr. Biswaranjan' },
         { id: 17, day: 'Thursday', period: '10:15 AM - 11:15 AM', subject: '☕ Leisure & Self-Study', room: 'Reading Hall' },
-        { id: 18, day: 'Thursday', period: '11:30 AM - 12:30 PM', subject: 'Structural Analysis & Design (SMSE)', room: 'CE-LH-102' },
-        { id: 19, day: 'Thursday', period: '02:00 PM - 03:00 PM', subject: 'Building Planning & CAD Laboratory', room: 'CE-CAD Lab' },
+        { id: 18, day: 'Thursday', period: '11:30 AM - 12:30 PM', subject: 'Structural Analysis & Design (SMSE)', room: 'CE-LH-102', facultyName: 'Prof. Priya Sharma' },
+        { id: 19, day: 'Thursday', period: '02:00 PM - 03:00 PM', subject: 'Building Planning & CAD Laboratory', room: 'CE-CAD Lab', facultyName: 'Dr. Rajesh Sen' },
         { id: 20, day: 'Thursday', period: '03:15 PM - 04:15 PM', subject: '📚 Library & Case Studies', room: 'Central Library' },
 
         // Friday: 3 classes, 2 leisure (Alternating: Class -> Leisure -> Class -> Sports -> Lab)
-        { id: 21, day: 'Friday', period: '09:00 AM - 10:00 AM', subject: 'Hydrology & Water Resources Engineering', room: 'CE-LH-101' },
+        { id: 21, day: 'Friday', period: '09:00 AM - 10:00 AM', subject: 'Hydrology & Water Resources Engineering', room: 'CE-LH-101', facultyName: 'Prof. Ramesh Babu' },
         { id: 22, day: 'Friday', period: '10:15 AM - 11:15 AM', subject: '☕ Leisure & Faculty Consultation', room: 'Faculty Lounge' },
-        { id: 23, day: 'Friday', period: '11:30 AM - 12:30 PM', subject: 'Geotechnical & Soil Mechanics', room: 'CE-LH-102' },
+        { id: 23, day: 'Friday', period: '11:30 AM - 12:30 PM', subject: 'Geotechnical & Soil Mechanics', room: 'CE-LH-102', facultyName: 'Dr. Rajesh Sen' },
         { id: 24, day: 'Friday', period: '02:00 PM - 03:00 PM', subject: '⚽ Sports & Physical Fitness', room: 'Sports Ground' },
-        { id: 25, day: 'Friday', period: '03:15 PM - 04:15 PM', subject: 'Geotechnical Material Testing Lab', room: 'Geo Lab' },
+        { id: 25, day: 'Friday', period: '03:15 PM - 04:15 PM', subject: 'Geotechnical Material Testing Lab', room: 'Geo Lab', facultyName: 'Dr. Rajesh Sen' },
 
         // Saturday: 2 classes, 3 leisure (Alternating: Class -> Leisure -> Class -> Library -> Leisure)
-        { id: 26, day: 'Saturday', period: '09:00 AM - 10:00 AM', subject: 'Structural Mechanics & Materials (SMSE)', room: 'CE-LH-102' },
+        { id: 26, day: 'Saturday', period: '09:00 AM - 10:00 AM', subject: 'Structural Mechanics & Materials (SMSE)', room: 'CE-LH-102', facultyName: 'Prof. Priya Sharma' },
         { id: 27, day: 'Saturday', period: '10:15 AM - 11:15 AM', subject: '☕ Leisure & Project Brainstorming', room: 'Activity Center' },
-        { id: 28, day: 'Saturday', period: '11:30 AM - 12:30 PM', subject: 'Technical Seminar & Capstone Mentoring', room: 'Seminar Hall' },
+        { id: 28, day: 'Saturday', period: '11:30 AM - 12:30 PM', subject: 'Technical Seminar & Capstone Mentoring', room: 'Seminar Hall', facultyName: 'Dr. Biswaranjan' },
         { id: 29, day: 'Saturday', period: '02:00 PM - 03:00 PM', subject: '📚 Library & Competitive Exam Prep', room: 'Central Library' },
         { id: 30, day: 'Saturday', period: '03:15 PM - 04:15 PM', subject: '☕ Leisure & Weekend Review', room: 'Student Lounge' }
       ];
     } else if (d.includes('mech') || d.includes('me')) {
       return [
         // Monday: 3 classes, 2 leisure
-        { id: 1, day: 'Monday', period: '09:00 AM - 10:00 AM', subject: 'Metallurgy & Materials Engineering (ME210)', room: 'ME-LH-101' },
+        { id: 1, day: 'Monday', period: '09:00 AM - 10:00 AM', subject: 'Metallurgy & Materials Engineering (ME210)', room: 'ME-LH-101', facultyName: 'Dr. Rajesh Sen' },
         { id: 2, day: 'Monday', period: '10:15 AM - 11:15 AM', subject: '☕ Leisure & Self-Study', room: 'Reading Hall' },
-        { id: 3, day: 'Monday', period: '11:30 AM - 12:30 PM', subject: 'Kinematics of Machinery (KM)', room: 'ME-LH-102' },
+        { id: 3, day: 'Monday', period: '11:30 AM - 12:30 PM', subject: 'Kinematics of Machinery (KM)', room: 'ME-LH-102', facultyName: 'Dr. Ramesh' },
         { id: 4, day: 'Monday', period: '02:00 PM - 03:00 PM', subject: '📚 Library & Research Hours', room: 'Central Library' },
-        { id: 5, day: 'Monday', period: '03:15 PM - 04:15 PM', subject: 'I C Engines and Combustion (IC)', room: 'ME-LH-204' },
+        { id: 5, day: 'Monday', period: '03:15 PM - 04:15 PM', subject: 'I C Engines and Combustion (IC)', room: 'ME-LH-204', facultyName: 'Dr. Biswaranjan' },
 
         // Tuesday: 3 classes, 2 leisure
-        { id: 6, day: 'Tuesday', period: '09:00 AM - 10:00 AM', subject: 'Strength of Materials & Mechanics (SMSE)', room: 'ME-LH-101' },
+        { id: 6, day: 'Tuesday', period: '09:00 AM - 10:00 AM', subject: 'Strength of Materials & Mechanics (SMSE)', room: 'ME-LH-101', facultyName: 'Prof. Priya Sharma' },
         { id: 7, day: 'Tuesday', period: '10:15 AM - 11:15 AM', subject: '☕ Leisure & Innovation Club', room: 'Activity Center' },
-        { id: 8, day: 'Tuesday', period: '11:30 AM - 12:30 PM', subject: 'Auto Chassis & Dynamics (AU203)', room: 'ME-LH-204' },
-        { id: 9, day: 'Tuesday', period: '02:00 PM - 03:00 PM', subject: 'CAD/CAM Simulation & Modeling (04ME6512)', room: 'CAD Lab' },
+        { id: 8, day: 'Tuesday', period: '11:30 AM - 12:30 PM', subject: 'Auto Chassis & Dynamics (AU203)', room: 'ME-LH-204', facultyName: 'Dr. Biswaranjan' },
+        { id: 9, day: 'Tuesday', period: '02:00 PM - 03:00 PM', subject: 'CAD/CAM Simulation & Modeling (04ME6512)', room: 'CAD Lab', facultyName: 'Dr. Rajesh Sen' },
         { id: 10, day: 'Tuesday', period: '03:15 PM - 04:15 PM', subject: '☕ Leisure & Peer Mentoring', room: 'Student Lounge' },
 
         // Wednesday: 2 classes, 3 leisure
-        { id: 11, day: 'Wednesday', period: '09:00 AM - 10:00 AM', subject: 'Kinematics of Machinery (KM)', room: 'ME-LH-102' },
+        { id: 11, day: 'Wednesday', period: '09:00 AM - 10:00 AM', subject: 'Kinematics of Machinery (KM)', room: 'ME-LH-102', facultyName: 'Dr. Ramesh' },
         { id: 12, day: 'Wednesday', period: '10:15 AM - 11:15 AM', subject: '☕ Leisure & Recess', room: 'Campus Zone' },
-        { id: 13, day: 'Wednesday', period: '11:30 AM - 12:30 PM', subject: 'Metallurgy & Materials Engineering (ME210)', room: 'ME-LH-101' },
+        { id: 13, day: 'Wednesday', period: '11:30 AM - 12:30 PM', subject: 'Metallurgy & Materials Engineering (ME210)', room: 'ME-LH-101', facultyName: 'Dr. Rajesh Sen' },
         { id: 14, day: 'Wednesday', period: '02:00 PM - 03:00 PM', subject: '📚 Library & Journal Reading', room: 'Central Library' },
-        { id: 15, day: 'Wednesday', period: '03:15 PM - 04:15 PM', subject: 'Strength of Materials Lab / Testing', room: 'Mechanics Lab' },
+        { id: 15, day: 'Wednesday', period: '03:15 PM - 04:15 PM', subject: 'Strength of Materials Lab / Testing', room: 'Mechanics Lab', facultyName: 'Prof. Priya Sharma' },
 
         // Thursday: 3 classes, 2 leisure
-        { id: 16, day: 'Thursday', period: '09:00 AM - 10:00 AM', subject: 'I C Engines and Combustion (IC)', room: 'ME-LH-204' },
+        { id: 16, day: 'Thursday', period: '09:00 AM - 10:00 AM', subject: 'I C Engines and Combustion (IC)', room: 'ME-LH-204', facultyName: 'Dr. Biswaranjan' },
         { id: 17, day: 'Thursday', period: '10:15 AM - 11:15 AM', subject: '☕ Leisure & Self-Study', room: 'Reading Hall' },
-        { id: 18, day: 'Thursday', period: '11:30 AM - 12:30 PM', subject: 'Strength of Materials & Mechanics (SMSE)', room: 'ME-LH-101' },
-        { id: 19, day: 'Thursday', period: '02:00 PM - 03:00 PM', subject: 'IC Engines & Automobile Lab', room: 'Auto Lab' },
+        { id: 18, day: 'Thursday', period: '11:30 AM - 12:30 PM', subject: 'Strength of Materials & Mechanics (SMSE)', room: 'ME-LH-101', facultyName: 'Prof. Priya Sharma' },
+        { id: 19, day: 'Thursday', period: '02:00 PM - 03:00 PM', subject: 'IC Engines & Automobile Lab', room: 'Auto Lab', facultyName: 'Dr. Biswaranjan' },
         { id: 20, day: 'Thursday', period: '03:15 PM - 04:15 PM', subject: '📚 Library & Design Cases', room: 'Central Library' },
 
         // Friday: 3 classes, 2 leisure
-        { id: 21, day: 'Friday', period: '09:00 AM - 10:00 AM', subject: 'Auto Chassis & Dynamics (AU203)', room: 'ME-LH-204' },
+        { id: 21, day: 'Friday', period: '09:00 AM - 10:00 AM', subject: 'Auto Chassis & Dynamics (AU203)', room: 'ME-LH-204', facultyName: 'Dr. Biswaranjan' },
         { id: 22, day: 'Friday', period: '10:15 AM - 11:15 AM', subject: '☕ Leisure & Faculty Consultation', room: 'Faculty Lounge' },
-        { id: 23, day: 'Friday', period: '11:30 AM - 12:30 PM', subject: 'Engineering Mathematics IV (EM IV)', room: 'ME-LH-102' },
+        { id: 23, day: 'Friday', period: '11:30 AM - 12:30 PM', subject: 'Engineering Mathematics IV (EM IV)', room: 'ME-LH-102', facultyName: 'Dr. Ananya Ray' },
         { id: 24, day: 'Friday', period: '02:00 PM - 03:00 PM', subject: '⚽ Sports & Physical Fitness', room: 'Sports Ground' },
-        { id: 25, day: 'Friday', period: '03:15 PM - 04:15 PM', subject: 'Mechatronics & Robotics Workshop', room: 'ME-LH-204' },
+        { id: 25, day: 'Friday', period: '03:15 PM - 04:15 PM', subject: 'Mechatronics & Robotics Workshop', room: 'ME-LH-204', facultyName: 'Dr. Ramesh' },
 
         // Saturday: 2 classes, 3 leisure
-        { id: 26, day: 'Saturday', period: '09:00 AM - 10:00 AM', subject: 'Industrial Engineering & Operations', room: 'ME-LH-101' },
+        { id: 26, day: 'Saturday', period: '09:00 AM - 10:00 AM', subject: 'Industrial Engineering & Operations', room: 'ME-LH-101', facultyName: 'Dr. Rajesh Sen' },
         { id: 27, day: 'Saturday', period: '10:15 AM - 11:15 AM', subject: '☕ Leisure & Project Brainstorming', room: 'Activity Center' },
-        { id: 28, day: 'Saturday', period: '11:30 AM - 12:30 PM', subject: 'Mini-Project Review & Technical Viva', room: 'CAD Lab' },
+        { id: 28, day: 'Saturday', period: '11:30 AM - 12:30 PM', subject: 'Mini-Project Review & Technical Viva', room: 'CAD Lab', facultyName: 'Dr. Biswaranjan' },
         { id: 29, day: 'Saturday', period: '02:00 PM - 03:00 PM', subject: '📚 Library & CAD Modeling', room: 'Central Library' },
         { id: 30, day: 'Saturday', period: '03:15 PM - 04:15 PM', subject: '☕ Leisure & Weekend Review', room: 'Student Lounge' }
       ];
     } else if (d.includes('elect') || d.includes('ece')) {
       return [
-        { id: 1, day: 'Monday', period: '09:00 AM - 10:00 AM', subject: 'Microprocessors & Embedded Systems (MES)', room: 'EC-LH-101' },
-        { id: 2, day: 'Monday', period: '10:15 AM - 11:15 AM', subject: 'Digital Systems & Logic Designs (DSLD)', room: 'EC-LH-102' },
-        { id: 3, day: 'Monday', period: '11:30 AM - 12:30 PM', subject: 'Computer Organization (EC206)', room: 'EC-LH-101' },
-        { id: 4, day: 'Monday', period: '02:00 PM - 03:00 PM', subject: 'Digital Signal Processing (EE407)', room: 'EC-LH-204' },
-        { id: 5, day: 'Monday', period: '03:15 PM - 04:15 PM', subject: 'Analog & Digital Communication (CS203)', room: 'EC-LH-204' },
+        // Monday: 3 classes, 2 leisure (Alternating: Class -> Leisure -> Class -> Library -> Class)
+        { id: 1, day: 'Monday', period: '09:00 AM - 10:00 AM', subject: 'Microprocessors & Embedded Systems (MES)', room: 'EC-LH-101', facultyName: 'Dr. Ramesh' },
+        { id: 2, day: 'Monday', period: '10:15 AM - 11:15 AM', subject: '☕ Leisure & Self-Study', room: 'Reading Hall' },
+        { id: 3, day: 'Monday', period: '11:30 AM - 12:30 PM', subject: 'Digital Systems & Logic Designs (DSLD)', room: 'EC-LH-102', facultyName: 'Dr. Ananya Ray' },
+        { id: 4, day: 'Monday', period: '02:00 PM - 03:00 PM', subject: '📚 Library & Hardware Documentation', room: 'Central Library' },
+        { id: 5, day: 'Monday', period: '03:15 PM - 04:15 PM', subject: 'Computer Organization (EC206)', room: 'EC-LH-101', facultyName: 'Prof. Priya Sharma' },
 
-        { id: 6, day: 'Tuesday', period: '09:00 AM - 10:00 AM', subject: 'Digital Systems & Logic Designs (DSLD)', room: 'EC-LH-102' },
-        { id: 7, day: 'Tuesday', period: '10:15 AM - 11:15 AM', subject: 'Microprocessors & Embedded Systems (MES)', room: 'EC-LH-101' },
-        { id: 8, day: 'Tuesday', period: '11:30 AM - 12:30 PM', subject: 'Digital Signal Processing (EE407)', room: 'EC-LH-204' },
-        { id: 9, day: 'Tuesday', period: '02:00 PM - 03:00 PM', subject: 'Microprocessors & Hardware Lab', room: 'Hardware Lab' },
-        { id: 10, day: 'Tuesday', period: '03:15 PM - 04:15 PM', subject: 'Microprocessors & Hardware Lab', room: 'Hardware Lab' },
+        // Tuesday: 3 classes, 2 leisure (Alternating: Class -> Leisure -> Class -> Lab -> Leisure)
+        { id: 6, day: 'Tuesday', period: '09:00 AM - 10:00 AM', subject: 'Digital Systems & Logic Designs (DSLD)', room: 'EC-LH-102', facultyName: 'Dr. Ananya Ray' },
+        { id: 7, day: 'Tuesday', period: '10:15 AM - 11:15 AM', subject: '☕ Leisure & Robotics Club', room: 'Activity Center' },
+        { id: 8, day: 'Tuesday', period: '11:30 AM - 12:30 PM', subject: 'Digital Signal Processing (EE407)', room: 'EC-LH-204', facultyName: 'Dr. Rajesh Sen' },
+        { id: 9, day: 'Tuesday', period: '02:00 PM - 03:00 PM', subject: 'Microprocessors & Hardware Lab', room: 'Hardware Lab', facultyName: 'Dr. Ramesh' },
+        { id: 10, day: 'Tuesday', period: '03:15 PM - 04:15 PM', subject: '☕ Leisure & Peer Mentoring', room: 'Student Lounge' },
 
-        { id: 11, day: 'Wednesday', period: '09:00 AM - 10:00 AM', subject: 'Computer Organization (EC206)', room: 'EC-LH-101' },
-        { id: 12, day: 'Wednesday', period: '10:15 AM - 11:15 AM', subject: 'Analog & Digital Communication (CS203)', room: 'EC-LH-204' },
-        { id: 13, day: 'Wednesday', period: '11:30 AM - 12:30 PM', subject: 'Microprocessors & Embedded Systems (MES)', room: 'EC-LH-101' },
-        { id: 14, day: 'Wednesday', period: '02:00 PM - 03:00 PM', subject: 'VLSI Circuit Design & Verilog Modeling', room: 'EC-LH-102' },
-        { id: 15, day: 'Wednesday', period: '03:15 PM - 04:15 PM', subject: 'Technical Seminar & Research Discussion', room: 'Seminar Hall' },
+        // Wednesday: 2 classes, 3 leisure (Alternating: Class -> Leisure -> Class -> Library -> Sports)
+        { id: 11, day: 'Wednesday', period: '09:00 AM - 10:00 AM', subject: 'Computer Organization (EC206)', room: 'EC-LH-101', facultyName: 'Prof. Priya Sharma' },
+        { id: 12, day: 'Wednesday', period: '10:15 AM - 11:15 AM', subject: '☕ Leisure & Recess / Hobbies', room: 'Campus Zone' },
+        { id: 13, day: 'Wednesday', period: '11:30 AM - 12:30 PM', subject: 'Microprocessors & Embedded Systems (MES)', room: 'EC-LH-101', facultyName: 'Dr. Ramesh' },
+        { id: 14, day: 'Wednesday', period: '02:00 PM - 03:00 PM', subject: '📚 Library & Research Journal', room: 'Central Library' },
+        { id: 15, day: 'Wednesday', period: '03:15 PM - 04:15 PM', subject: '⚽ Sports & Physical Activity', room: 'Campus Ground' },
 
-        { id: 16, day: 'Thursday', period: '09:00 AM - 10:00 AM', subject: 'Digital Signal Processing (EE407)', room: 'EC-LH-204' },
-        { id: 17, day: 'Thursday', period: '10:15 AM - 11:15 AM', subject: 'Computer Organization (EC206)', room: 'EC-LH-101' },
-        { id: 18, day: 'Thursday', period: '11:30 AM - 12:30 PM', subject: 'Digital Systems & Logic Designs (DSLD)', room: 'EC-LH-102' },
-        { id: 19, day: 'Thursday', period: '02:00 PM - 03:00 PM', subject: 'Logic Design & Simulation Lab (LD LAB)', room: 'Logic Lab' },
-        { id: 20, day: 'Thursday', period: '03:15 PM - 04:15 PM', subject: 'Logic Design & Simulation Lab (LD LAB)', room: 'Logic Lab' },
+        // Thursday: 3 classes, 2 leisure (Alternating: Class -> Leisure -> Class -> Lab -> Library)
+        { id: 16, day: 'Thursday', period: '09:00 AM - 10:00 AM', subject: 'Digital Signal Processing (EE407)', room: 'EC-LH-204', facultyName: 'Dr. Rajesh Sen' },
+        { id: 17, day: 'Thursday', period: '10:15 AM - 11:15 AM', subject: '☕ Leisure & Self-Study', room: 'Reading Hall' },
+        { id: 18, day: 'Thursday', period: '11:30 AM - 12:30 PM', subject: 'Analog & Digital Communication (CS203)', room: 'EC-LH-204', facultyName: 'Dr. Ananya Ray' },
+        { id: 19, day: 'Thursday', period: '02:00 PM - 03:00 PM', subject: 'Logic Design & Simulation Lab (LD LAB)', room: 'Logic Lab', facultyName: 'Dr. Ananya Ray' },
+        { id: 20, day: 'Thursday', period: '03:15 PM - 04:15 PM', subject: '📚 Library & Circuit Design Cases', room: 'Central Library' },
 
-        { id: 21, day: 'Friday', period: '09:00 AM - 10:00 AM', subject: 'Analog & Digital Communication (CS203)', room: 'EC-LH-204' },
-        { id: 22, day: 'Friday', period: '10:15 AM - 11:15 AM', subject: 'Microprocessors & Embedded Systems (MES)', room: 'EC-LH-101' },
-        { id: 23, day: 'Friday', period: '11:30 AM - 12:30 PM', subject: 'Digital Systems & Logic Designs (DSLD)', room: 'EC-LH-102' },
-        { id: 24, day: 'Friday', period: '02:00 PM - 03:00 PM', subject: 'Embedded IoT & Robotics Workshop', room: 'IoT Lab' },
-        { id: 25, day: 'Friday', period: '03:15 PM - 04:15 PM', subject: 'Outcome-Based Remedial & Mentoring', room: 'EC-LH-101' },
+        // Friday: 3 classes, 2 leisure (Alternating: Class -> Leisure -> Class -> Sports -> Lab)
+        { id: 21, day: 'Friday', period: '09:00 AM - 10:00 AM', subject: 'Analog & Digital Communication (CS203)', room: 'EC-LH-204', facultyName: 'Dr. Ananya Ray' },
+        { id: 22, day: 'Friday', period: '10:15 AM - 11:15 AM', subject: '☕ Leisure & Faculty Consultation', room: 'Faculty Lounge' },
+        { id: 23, day: 'Friday', period: '11:30 AM - 12:30 PM', subject: 'VLSI Circuit Design & Verilog Modeling', room: 'EC-LH-102', facultyName: 'Dr. Ramesh' },
+        { id: 24, day: 'Friday', period: '02:00 PM - 03:00 PM', subject: '⚽ Sports & Fitness Hours', room: 'Campus Ground' },
+        { id: 25, day: 'Friday', period: '03:15 PM - 04:15 PM', subject: 'Embedded IoT & Robotics Workshop', room: 'IoT Lab', facultyName: 'Dr. Rajesh Sen' },
 
-        { id: 26, day: 'Saturday', period: '09:00 AM - 10:00 AM', subject: 'Wireless & Optical Communications', room: 'EC-LH-101' },
-        { id: 27, day: 'Saturday', period: '10:15 AM - 11:15 AM', subject: 'Hardware Mini-Project Evaluation', room: 'Hardware Lab' },
-        { id: 28, day: 'Saturday', period: '11:30 AM - 12:30 PM', subject: 'Expert Guest Lecture / Webinar', room: 'Seminar Hall' },
-        { id: 29, day: 'Saturday', period: '02:00 PM - 03:00 PM', subject: 'Library & Reading Session', room: 'Central Library' },
-        { id: 30, day: 'Saturday', period: '03:15 PM - 04:15 PM', subject: 'Sports & Student Clubs', room: 'Campus Ground' }
+        // Saturday: 2 classes, 3 leisure (Alternating: Class -> Leisure -> Class -> Library -> Leisure)
+        { id: 26, day: 'Saturday', period: '09:00 AM - 10:00 AM', subject: 'Wireless & Optical Communications', room: 'EC-LH-101', facultyName: 'Dr. Ananya Ray' },
+        { id: 27, day: 'Saturday', period: '10:15 AM - 11:15 AM', subject: '☕ Leisure & Project Brainstorming', room: 'Activity Center' },
+        { id: 28, day: 'Saturday', period: '11:30 AM - 12:30 PM', subject: 'Expert Guest Lecture / Webinar', room: 'Seminar Hall', facultyName: 'Dr. Biswaranjan' },
+        { id: 29, day: 'Saturday', period: '02:00 PM - 03:00 PM', subject: '📚 Library & Gate Prep Session', room: 'Central Library' },
+        { id: 30, day: 'Saturday', period: '03:15 PM - 04:15 PM', subject: '☕ Leisure & Weekend Review', room: 'Student Lounge' }
       ];
     } else if (d.includes('info') || d.includes('it')) {
       return [
-        { id: 1, day: 'Monday', period: '09:00 AM - 10:00 AM', subject: 'Operating Systems & Systems Programming (IT305)', room: 'IT-LH-101' },
-        { id: 2, day: 'Monday', period: '10:15 AM - 11:15 AM', subject: 'Linux & Shell Programming (Linux)', room: 'IT-LH-102' },
-        { id: 3, day: 'Monday', period: '11:30 AM - 12:30 PM', subject: 'Web Technologies & Frameworks (WT)', room: 'IT-LH-101' },
-        { id: 4, day: 'Monday', period: '02:00 PM - 03:00 PM', subject: 'Soft Computing (CS361)', room: 'IT-LH-204' },
-        { id: 5, day: 'Monday', period: '03:15 PM - 04:15 PM', subject: 'Database Systems & SQL (CS303)', room: 'IT-LH-204' },
+        // Monday: 3 classes, 2 leisure (Alternating: Class -> Leisure -> Class -> Library -> Class)
+        { id: 1, day: 'Monday', period: '09:00 AM - 10:00 AM', subject: 'Operating Systems & Systems Programming (IT305)', room: 'IT-LH-101', facultyName: 'Prof. Priya Sharma' },
+        { id: 2, day: 'Monday', period: '10:15 AM - 11:15 AM', subject: '☕ Leisure & Self-Study', room: 'Reading Hall' },
+        { id: 3, day: 'Monday', period: '11:30 AM - 12:30 PM', subject: 'Linux & Shell Programming (Linux)', room: 'IT-LH-102', facultyName: 'Dr. Rajesh Sen' },
+        { id: 4, day: 'Monday', period: '02:00 PM - 03:00 PM', subject: '📚 Library & Open Source Research', room: 'Central Library' },
+        { id: 5, day: 'Monday', period: '03:15 PM - 04:15 PM', subject: 'Database Systems & SQL (CS303)', room: 'IT-LH-204', facultyName: 'Dr. Biswaranjan' },
 
-        { id: 6, day: 'Tuesday', period: '09:00 AM - 10:00 AM', subject: 'Linux & Shell Programming (Linux)', room: 'IT-LH-102' },
-        { id: 7, day: 'Tuesday', period: '10:15 AM - 11:15 AM', subject: 'Web Technologies & Frameworks (WT)', room: 'IT-LH-101' },
-        { id: 8, day: 'Tuesday', period: '11:30 AM - 12:30 PM', subject: 'Operating Systems & Systems Programming (IT305)', room: 'IT-LH-101' },
-        { id: 9, day: 'Tuesday', period: '02:00 PM - 03:00 PM', subject: 'Linux & Open Source Lab', room: 'Linux Lab' },
-        { id: 10, day: 'Tuesday', period: '03:15 PM - 04:15 PM', subject: 'Linux & Open Source Lab', room: 'Linux Lab' },
+        // Tuesday: 3 classes, 2 leisure (Alternating: Class -> Leisure -> Class -> Lab -> Leisure)
+        { id: 6, day: 'Tuesday', period: '09:00 AM - 10:00 AM', subject: 'Web Technologies & Frameworks (WT)', room: 'IT-LH-101', facultyName: 'Prof. Priya Sharma' },
+        { id: 7, day: 'Tuesday', period: '10:15 AM - 11:15 AM', subject: '☕ Leisure & Web Dev Club', room: 'Innovation Hub' },
+        { id: 8, day: 'Tuesday', period: '11:30 AM - 12:30 PM', subject: 'Soft Computing & AI (CS361)', room: 'IT-LH-204', facultyName: 'Dr. Ananya Ray' },
+        { id: 9, day: 'Tuesday', period: '02:00 PM - 03:00 PM', subject: 'Linux & Open Source Practical Lab', room: 'Linux Lab', facultyName: 'Dr. Rajesh Sen' },
+        { id: 10, day: 'Tuesday', period: '03:15 PM - 04:15 PM', subject: '☕ Leisure & Peer Mentoring', room: 'Student Lounge' },
 
-        { id: 11, day: 'Wednesday', period: '09:00 AM - 10:00 AM', subject: 'Database Systems & SQL (CS303)', room: 'IT-LH-204' },
-        { id: 12, day: 'Wednesday', period: '10:15 AM - 11:15 AM', subject: 'Soft Computing (CS361)', room: 'IT-LH-204' },
-        { id: 13, day: 'Wednesday', period: '11:30 AM - 12:30 PM', subject: 'Web Technologies & Frameworks (WT)', room: 'IT-LH-101' },
-        { id: 14, day: 'Wednesday', period: '02:00 PM - 03:00 PM', subject: 'Full-Stack Web Development Workshop', room: 'Web Lab' },
-        { id: 15, day: 'Wednesday', period: '03:15 PM - 04:15 PM', subject: 'Technical Seminar & Code Review', room: 'Seminar Hall' },
+        // Wednesday: 2 classes, 3 leisure (Alternating: Class -> Leisure -> Class -> Library -> Sports)
+        { id: 11, day: 'Wednesday', period: '09:00 AM - 10:00 AM', subject: 'Operating Systems & Systems Programming (IT305)', room: 'IT-LH-101', facultyName: 'Prof. Priya Sharma' },
+        { id: 12, day: 'Wednesday', period: '10:15 AM - 11:15 AM', subject: '☕ Leisure & Recess / Hobbies', room: 'Campus Zone' },
+        { id: 13, day: 'Wednesday', period: '11:30 AM - 12:30 PM', subject: 'Database Systems & SQL (CS303)', room: 'IT-LH-204', facultyName: 'Dr. Biswaranjan' },
+        { id: 14, day: 'Wednesday', period: '02:00 PM - 03:00 PM', subject: '📚 Library & Technical Research', room: 'Central Library' },
+        { id: 15, day: 'Wednesday', period: '03:15 PM - 04:15 PM', subject: '⚽ Sports & Physical Fitness', room: 'Campus Ground' },
 
-        { id: 16, day: 'Thursday', period: '09:00 AM - 10:00 AM', subject: 'Operating Systems & Systems Programming (IT305)', room: 'IT-LH-101' },
-        { id: 17, day: 'Thursday', period: '10:15 AM - 11:15 AM', subject: 'Database Systems & SQL (CS303)', room: 'IT-LH-204' },
-        { id: 18, day: 'Thursday', period: '11:30 AM - 12:30 PM', subject: 'Linux & Shell Programming (Linux)', room: 'IT-LH-102' },
-        { id: 19, day: 'Thursday', period: '02:00 PM - 03:00 PM', subject: 'Web Technologies Practical Lab', room: 'Web Lab' },
-        { id: 20, day: 'Thursday', period: '03:15 PM - 04:15 PM', subject: 'Web Technologies Practical Lab', room: 'Web Lab' },
+        // Thursday: 3 classes, 2 leisure (Alternating: Class -> Leisure -> Class -> Lab -> Library)
+        { id: 16, day: 'Thursday', period: '09:00 AM - 10:00 AM', subject: 'Linux & Shell Programming (Linux)', room: 'IT-LH-102', facultyName: 'Dr. Rajesh Sen' },
+        { id: 17, day: 'Thursday', period: '10:15 AM - 11:15 AM', subject: '☕ Leisure & Self-Study', room: 'Reading Hall' },
+        { id: 18, day: 'Thursday', period: '11:30 AM - 12:30 PM', subject: 'Web Technologies & Frameworks (WT)', room: 'IT-LH-101', facultyName: 'Prof. Priya Sharma' },
+        { id: 19, day: 'Thursday', period: '02:00 PM - 03:00 PM', subject: 'Web Technologies Practical Lab', room: 'Web Lab', facultyName: 'Prof. Priya Sharma' },
+        { id: 20, day: 'Thursday', period: '03:15 PM - 04:15 PM', subject: '📚 Library & Full-Stack Projects', room: 'Central Library' },
 
-        { id: 21, day: 'Friday', period: '09:00 AM - 10:00 AM', subject: 'Soft Computing (CS361)', room: 'IT-LH-204' },
-        { id: 22, day: 'Friday', period: '10:15 AM - 11:15 AM', subject: 'Operating Systems & Systems Programming (IT305)', room: 'IT-LH-101' },
-        { id: 23, day: 'Friday', period: '11:30 AM - 12:30 PM', subject: 'Web Technologies & Frameworks (WT)', room: 'IT-LH-101' },
-        { id: 24, day: 'Friday', period: '02:00 PM - 03:00 PM', subject: 'Cyber Security & Network Forensics', room: 'IT-LH-102' },
-        { id: 25, day: 'Friday', period: '03:15 PM - 04:15 PM', subject: 'Outcome-Based Remedial & Mentoring', room: 'IT-LH-101' },
+        // Friday: 3 classes, 2 leisure (Alternating: Class -> Leisure -> Class -> Sports -> Lab)
+        { id: 21, day: 'Friday', period: '09:00 AM - 10:00 AM', subject: 'Soft Computing (CS361)', room: 'IT-LH-204', facultyName: 'Dr. Ananya Ray' },
+        { id: 22, day: 'Friday', period: '10:15 AM - 11:15 AM', subject: '☕ Leisure & Faculty Consultation', room: 'Faculty Lounge' },
+        { id: 23, day: 'Friday', period: '11:30 AM - 12:30 PM', subject: 'Cyber Security & Network Forensics', room: 'IT-LH-102', facultyName: 'Dr. Ramesh' },
+        { id: 24, day: 'Friday', period: '02:00 PM - 03:00 PM', subject: '⚽ Sports & Recreation', room: 'Campus Ground' },
+        { id: 25, day: 'Friday', period: '03:15 PM - 04:15 PM', subject: 'Outcome-Based Remedial & Mentoring', room: 'IT-LH-101', facultyName: 'Dr. Rajesh Sen' },
 
-        { id: 26, day: 'Saturday', period: '09:00 AM - 10:00 AM', subject: 'Cloud Infrastructure & DevOps Practicum', room: 'IT-LH-101' },
-        { id: 27, day: 'Saturday', period: '10:15 AM - 11:15 AM', subject: 'Capstone Project Evaluation & Viva', room: 'Web Lab' },
-        { id: 28, day: 'Saturday', period: '11:30 AM - 12:30 PM', subject: 'Industry Expert Guest Lecture', room: 'Seminar Hall' },
-        { id: 29, day: 'Saturday', period: '02:00 PM - 03:00 PM', subject: 'Library & Reading Session', room: 'Central Library' },
-        { id: 30, day: 'Saturday', period: '03:15 PM - 04:15 PM', subject: 'Sports & Student Clubs', room: 'Campus Ground' }
+        // Saturday: 2 classes, 3 leisure (Alternating: Class -> Leisure -> Class -> Library -> Leisure)
+        { id: 26, day: 'Saturday', period: '09:00 AM - 10:00 AM', subject: 'Cloud Infrastructure & DevOps Practicum', room: 'IT-LH-101', facultyName: 'Dr. Biswaranjan' },
+        { id: 27, day: 'Saturday', period: '10:15 AM - 11:15 AM', subject: '☕ Leisure & Hackathon Brainstorming', room: 'Innovation Hub' },
+        { id: 28, day: 'Saturday', period: '11:30 AM - 12:30 PM', subject: 'Industry Expert Guest Lecture', room: 'Seminar Hall', facultyName: 'Dr. Biswaranjan' },
+        { id: 29, day: 'Saturday', period: '02:00 PM - 03:00 PM', subject: '📚 Library & Certification Prep', room: 'Central Library' },
+        { id: 30, day: 'Saturday', period: '03:15 PM - 04:15 PM', subject: '☕ Leisure & Weekend Review', room: 'Student Lounge' }
       ];
     }
     
-    // Default CSE Schedule (Monday to Saturday, 5 periods each day, completely balanced)
+    // Balanced CSE Schedule (Alternating 2–3 classes per day with rich Leisure, Library & Sports slots - NO continuous classes)
     return [
-      { id: 1, day: 'Monday', period: '09:00 AM - 10:00 AM', subject: 'Database Management Systems (CS101)', room: 'LH-101' },
-      { id: 2, day: 'Monday', period: '10:15 AM - 11:15 AM', subject: 'Data Structures & Algorithms (CS103)', room: 'LH-204' },
-      { id: 3, day: 'Monday', period: '11:30 AM - 12:30 PM', subject: 'Operating Systems (CS301)', room: 'LH-101' },
-      { id: 4, day: 'Monday', period: '02:00 PM - 03:00 PM', subject: 'Java & OOPs Programming (CS102)', room: 'LH-305' },
-      { id: 5, day: 'Monday', period: '03:15 PM - 04:15 PM', subject: 'Computer Networks (CS302)', room: 'Lab-2B' },
+      // Monday: 3 classes, 2 leisure (Alternating: Class -> Leisure -> Class -> Library -> Class)
+      { id: 1, day: 'Monday', period: '09:00 AM - 10:00 AM', subject: 'Database Management Systems (CS101)', room: 'LH-101', facultyName: 'Dr. Biswaranjan' },
+      { id: 2, day: 'Monday', period: '10:15 AM - 11:15 AM', subject: '☕ Leisure & Self-Study', room: 'Reading Hall' },
+      { id: 3, day: 'Monday', period: '11:30 AM - 12:30 PM', subject: 'Data Structures & Algorithms (CS103)', room: 'LH-204', facultyName: 'Dr. Rajesh Sen' },
+      { id: 4, day: 'Monday', period: '02:00 PM - 03:00 PM', subject: '📚 Library & Digital Research', room: 'Central Library' },
+      { id: 5, day: 'Monday', period: '03:15 PM - 04:15 PM', subject: 'Operating Systems (CS301)', room: 'LH-101', facultyName: 'Prof. Priya Sharma' },
 
-      { id: 6, day: 'Tuesday', period: '09:00 AM - 10:00 AM', subject: 'Java & OOPs Programming (CS102)', room: 'LH-204' },
-      { id: 7, day: 'Tuesday', period: '10:15 AM - 11:15 AM', subject: 'Computer Networks (CS302)', room: 'LH-101' },
-      { id: 8, day: 'Tuesday', period: '11:30 AM - 12:30 PM', subject: 'Database Management Systems (CS101)', room: 'LH-305' },
-      { id: 9, day: 'Tuesday', period: '02:00 PM - 03:00 PM', subject: 'Database & SQL Lab Session', room: 'Lab-4A' },
-      { id: 10, day: 'Tuesday', period: '03:15 PM - 04:15 PM', subject: 'Database & SQL Lab Session', room: 'Lab-4A' },
+      // Tuesday: 3 classes, 2 leisure (Alternating: Class -> Leisure -> Class -> Lab -> Leisure)
+      { id: 6, day: 'Tuesday', period: '09:00 AM - 10:00 AM', subject: 'Java & OOPs Programming (CS102)', room: 'LH-204', facultyName: 'Dr. Ramesh' },
+      { id: 7, day: 'Tuesday', period: '10:15 AM - 11:15 AM', subject: '☕ Leisure & Coding Club', room: 'Innovation Hub' },
+      { id: 8, day: 'Tuesday', period: '11:30 AM - 12:30 PM', subject: 'Computer Networks (CS302)', room: 'LH-101', facultyName: 'Dr. Ananya Ray' },
+      { id: 9, day: 'Tuesday', period: '02:00 PM - 03:00 PM', subject: 'Database & SQL Practical Lab', room: 'Lab-4A', facultyName: 'Dr. Biswaranjan' },
+      { id: 10, day: 'Tuesday', period: '03:15 PM - 04:15 PM', subject: '☕ Leisure & Peer Mentoring', room: 'Student Lounge' },
 
-      { id: 11, day: 'Wednesday', period: '09:00 AM - 10:00 AM', subject: 'Operating Systems (CS301)', room: 'LH-101' },
-      { id: 12, day: 'Wednesday', period: '10:15 AM - 11:15 AM', subject: 'Database Management Systems (CS101)', room: 'LH-305' },
-      { id: 13, day: 'Wednesday', period: '11:30 AM - 12:30 PM', subject: 'Data Structures & Algorithms (CS103)', room: 'LH-204' },
-      { id: 14, day: 'Wednesday', period: '02:00 PM - 03:00 PM', subject: 'Discrete Mathematics & Graph Theory', room: 'LH-101' },
-      { id: 15, day: 'Wednesday', period: '03:15 PM - 04:15 PM', subject: 'Technical Seminar & OBE Review', room: 'Seminar Hall' },
+      // Wednesday: 2 classes, 3 leisure (Alternating: Class -> Leisure -> Class -> Library -> Sports)
+      { id: 11, day: 'Wednesday', period: '09:00 AM - 10:00 AM', subject: 'Operating Systems (CS301)', room: 'LH-101', facultyName: 'Prof. Priya Sharma' },
+      { id: 12, day: 'Wednesday', period: '10:15 AM - 11:15 AM', subject: '☕ Leisure & Recess / Hobbies', room: 'Campus Zone' },
+      { id: 13, day: 'Wednesday', period: '11:30 AM - 12:30 PM', subject: 'Database Management Systems (CS101)', room: 'LH-305', facultyName: 'Dr. Biswaranjan' },
+      { id: 14, day: 'Wednesday', period: '02:00 PM - 03:00 PM', subject: '📚 Library & Technical Research', room: 'Central Library' },
+      { id: 15, day: 'Wednesday', period: '03:15 PM - 04:15 PM', subject: '⚽ Sports & Physical Fitness', room: 'Sports Ground' },
 
-      { id: 16, day: 'Thursday', period: '09:00 AM - 10:00 AM', subject: 'Data Structures & Algorithms (CS103)', room: 'LH-305' },
-      { id: 17, day: 'Thursday', period: '10:15 AM - 11:15 AM', subject: 'Operating Systems (CS301)', room: 'LH-101' },
-      { id: 18, day: 'Thursday', period: '11:30 AM - 12:30 PM', subject: 'Java & OOPs Programming (CS102)', room: 'LH-204' },
-      { id: 19, day: 'Thursday', period: '02:00 PM - 03:00 PM', subject: 'Java & OOPs Practical Lab', room: 'Lab-2B' },
-      { id: 20, day: 'Thursday', period: '03:15 PM - 04:15 PM', subject: 'Java & OOPs Practical Lab', room: 'Lab-2B' },
+      // Thursday: 3 classes, 2 leisure (Alternating: Class -> Leisure -> Class -> Lab -> Library)
+      { id: 16, day: 'Thursday', period: '09:00 AM - 10:00 AM', subject: 'Data Structures & Algorithms (CS103)', room: 'LH-305', facultyName: 'Dr. Rajesh Sen' },
+      { id: 17, day: 'Thursday', period: '10:15 AM - 11:15 AM', subject: '☕ Leisure & Self-Study', room: 'Reading Hall' },
+      { id: 18, day: 'Thursday', period: '11:30 AM - 12:30 PM', subject: 'Java & OOPs Programming (CS102)', room: 'LH-204', facultyName: 'Dr. Ramesh' },
+      { id: 19, day: 'Thursday', period: '02:00 PM - 03:00 PM', subject: 'Java & OOPs Practical Lab', room: 'Lab-2B', facultyName: 'Dr. Ramesh' },
+      { id: 20, day: 'Thursday', period: '03:15 PM - 04:15 PM', subject: '📚 Library & Project Discussion', room: 'Central Library' },
 
-      { id: 21, day: 'Friday', period: '09:00 AM - 10:00 AM', subject: 'Computer Networks (CS302)', room: 'LH-305' },
-      { id: 22, day: 'Friday', period: '10:15 AM - 11:15 AM', subject: 'Java & OOPs Programming (CS102)', room: 'LH-101' },
-      { id: 23, day: 'Friday', period: '11:30 AM - 12:30 PM', subject: 'Database Management Systems (CS101)', room: 'LH-204' },
-      { id: 24, day: 'Friday', period: '02:00 PM - 03:00 PM', subject: 'Cloud Computing & DevOps Workshop', room: 'LH-101' },
-      { id: 25, day: 'Friday', period: '03:15 PM - 04:15 PM', subject: 'Outcome-Based Assessment / Remedial', room: 'LH-204' },
+      // Friday: 3 classes, 2 leisure (Alternating: Class -> Leisure -> Class -> Sports -> Lab)
+      { id: 21, day: 'Friday', period: '09:00 AM - 10:00 AM', subject: 'Computer Networks (CS302)', room: 'LH-305', facultyName: 'Dr. Ananya Ray' },
+      { id: 22, day: 'Friday', period: '10:15 AM - 11:15 AM', subject: '☕ Leisure & Faculty Consultation', room: 'Faculty Lounge' },
+      { id: 23, day: 'Friday', period: '11:30 AM - 12:30 PM', subject: 'Cloud Computing & DevOps (CS303)', room: 'LH-101', facultyName: 'Dr. Biswaranjan' },
+      { id: 24, day: 'Friday', period: '02:00 PM - 03:00 PM', subject: '⚽ Sports & Student Activity Club', room: 'Campus Ground' },
+      { id: 25, day: 'Friday', period: '03:15 PM - 04:15 PM', subject: 'Outcome-Based Remedial & Mentoring', room: 'LH-204', facultyName: 'Prof. Priya Sharma' },
 
-      { id: 26, day: 'Saturday', period: '09:00 AM - 10:00 AM', subject: 'Software Engineering & Agile Methodologies', room: 'LH-204' },
-      { id: 27, day: 'Saturday', period: '10:15 AM - 11:15 AM', subject: 'Mini-Project Review & Coding Practice', room: 'Lab-4A' },
-      { id: 28, day: 'Saturday', period: '11:30 AM - 12:30 PM', subject: 'Industry Expert Guest Lecture / Webinar', room: 'Seminar Hall' },
-      { id: 29, day: 'Saturday', period: '02:00 PM - 03:00 PM', subject: 'Library & Reading Session', room: 'Central Library' },
-      { id: 30, day: 'Saturday', period: '03:15 PM - 04:15 PM', subject: 'Sports & Student Clubs', room: 'Campus Ground' }
+      // Saturday: 2 classes, 3 leisure (Alternating: Class -> Leisure -> Class -> Library -> Leisure)
+      { id: 26, day: 'Saturday', period: '09:00 AM - 10:00 AM', subject: 'Software Engineering & Agile (CS302)', room: 'LH-204', facultyName: 'Dr. Ramesh' },
+      { id: 27, day: 'Saturday', period: '10:15 AM - 11:15 AM', subject: '☕ Leisure & Hackathon Brainstorming', room: 'Innovation Hub' },
+      { id: 28, day: 'Saturday', period: '11:30 AM - 12:30 PM', subject: 'Industry Expert Webinar / Seminar', room: 'Seminar Hall', facultyName: 'Dr. Biswaranjan' },
+      { id: 29, day: 'Saturday', period: '02:00 PM - 03:00 PM', subject: '📚 Library & Competitive Coding', room: 'Central Library' },
+      { id: 30, day: 'Saturday', period: '03:15 PM - 04:15 PM', subject: '☕ Leisure & Weekend Review', room: 'Student Lounge' }
     ];
   }
 
@@ -1046,6 +1185,24 @@ export class Timetable implements OnInit {
     return { id: 0, day: 'Monday', period: '09:00 AM - 10:00 AM', subject: '', room: '' };
   }
 
+  isMyTeachingSlot(slot: ScheduleEntry): boolean {
+    if (!slot || !slot.facultyName || this.isLeisure(slot)) return false;
+    if (this.role !== 'faculty') return false;
+    const user = (this.userName || '').toLowerCase().trim();
+    const fName = (slot.facultyName || '').toLowerCase().trim();
+    if (user && (fName.includes(user) || user.includes(fName))) return true;
+
+    // Check if slot subject matches any assigned courses in userAssignedCourses
+    if (this.userAssignedCourses && this.userAssignedCourses.length > 0) {
+      const sSubj = (slot.subject || '').toLowerCase();
+      return this.userAssignedCourses.some(c => {
+        const cl = c.toLowerCase();
+        return sSubj.includes(cl) || cl.includes(sSubj);
+      });
+    }
+    return false;
+  }
+
   private loadTimetable(): void {
     const branchFallback = this.getBranchSchedule(this.userDept);
 
@@ -1058,11 +1215,53 @@ export class Timetable implements OnInit {
         } else {
           this.weeklySchedule = branchFallback;
         }
+        this.enrichWithCourseAllocations();
         this.loadAdjustmentsAndOverlay();
       },
       error: () => {
         this.weeklySchedule = branchFallback;
+        this.enrichWithCourseAllocations();
         this.loadAdjustmentsAndOverlay();
+      }
+    });
+  }
+
+  private enrichWithCourseAllocations(): void {
+    // 1. Check local storage faculty course allocations
+    try {
+      const localAllocations = localStorage.getItem('obslmsCourseAllocations');
+      if (localAllocations) {
+        const parsed = JSON.parse(localAllocations);
+        if (Array.isArray(parsed)) {
+          this.applyAllocationsToSchedule(parsed);
+        }
+      }
+    } catch {}
+
+    // 2. Fetch from backend /api/courses to keep in real-time sync with database
+    this.http.get<any[]>('http://localhost:8080/api/courses').subscribe({
+      next: (courses) => {
+        if (Array.isArray(courses) && courses.length > 0) {
+          this.applyAllocationsToSchedule(courses);
+          this.applyFilters();
+        }
+      },
+      error: () => {}
+    });
+  }
+
+  private applyAllocationsToSchedule(courses: any[]): void {
+    if (!courses || !courses.length) return;
+    this.weeklySchedule.forEach(slot => {
+      if (this.isLeisure(slot) || slot.isAdjusted) return;
+      const sName = (slot.subject || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+      const matched = courses.find(c => {
+        const cCode = (c.code || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+        const cTitle = (c.title || c.name || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+        return (cCode && sName.includes(cCode)) || (cTitle && (sName.includes(cTitle) || cTitle.includes(sName)));
+      });
+      if (matched && (matched.faculty || matched.facultyName)) {
+        slot.facultyName = matched.faculty || matched.facultyName;
       }
     });
   }
@@ -1210,6 +1409,55 @@ export class Timetable implements OnInit {
     return new Set(rooms).size;
   }
 
+  setMatrixFilter(type: string): void {
+    if (this.matrixFilter === type && type !== 'all') {
+      this.matrixFilter = 'all';
+      this.typeFilter = '';
+    } else {
+      this.matrixFilter = type;
+      this.typeFilter = type === 'all' ? '' : type;
+    }
+    this.applyFilters();
+  }
+
+  onDropdownTypeFilterChange(): void {
+    this.matrixFilter = this.typeFilter || 'all';
+    this.applyFilters();
+  }
+
+  isSlotMatch(slot: ScheduleEntry): boolean {
+    if (!slot || this.matrixFilter === 'all' || !this.matrixFilter) return true;
+    if (this.matrixFilter === 'theory' || this.matrixFilter === 'classes') {
+      return !this.isLeisure(slot) && !this.isLab(slot) && !slot.isAdjusted && !slot.isExtraClass;
+    }
+    if (this.matrixFilter === 'lab') {
+      return this.isLab(slot);
+    }
+    if (this.matrixFilter === 'leisure') {
+      return this.isLeisure(slot);
+    }
+    if (this.matrixFilter === 'adjusted') {
+      return !!slot.isAdjusted;
+    }
+    if (this.matrixFilter === 'extra') {
+      return !!slot.isExtraClass;
+    }
+    if (this.matrixFilter === 'myteaching') {
+      return this.isMyTeachingSlot(slot);
+    }
+    return true;
+  }
+
+  isSlotDimmed(slot: ScheduleEntry): boolean {
+    if (!slot || this.matrixFilter === 'all' || !this.matrixFilter) return false;
+    return !this.isSlotMatch(slot);
+  }
+
+  isSlotActiveHighlight(slot: ScheduleEntry): boolean {
+    if (!slot || this.matrixFilter === 'all' || !this.matrixFilter) return false;
+    return this.isSlotMatch(slot);
+  }
+
   applyFilters(): void {
     let result = this.weeklySchedule;
 
@@ -1218,12 +1466,16 @@ export class Timetable implements OnInit {
     }
 
     if (this.typeFilter) {
-      if (this.typeFilter === 'adjusted') {
+      if (this.typeFilter === 'myteaching') {
+        result = result.filter(e => this.isMyTeachingSlot(e));
+      } else if (this.typeFilter === 'adjusted') {
         result = result.filter(e => e.isAdjusted === true);
       } else if (this.typeFilter === 'extra') {
         result = result.filter(e => e.isExtraClass === true);
-      } else if (this.typeFilter === 'classes') {
-        result = result.filter(e => !this.isLeisure(e) && !e.isExtraClass);
+      } else if (this.typeFilter === 'theory' || this.typeFilter === 'classes') {
+        result = result.filter(e => !this.isLeisure(e) && !this.isLab(e) && !e.isExtraClass && !e.isAdjusted);
+      } else if (this.typeFilter === 'lab') {
+        result = result.filter(e => this.isLab(e));
       } else if (this.typeFilter === 'leisure') {
         result = result.filter(e => this.isLeisure(e));
       }
@@ -1261,7 +1513,8 @@ export class Timetable implements OnInit {
       day: this.currentEntry.day,
       period: this.currentEntry.period,
       subject: this.currentEntry.subject,
-      room: this.currentEntry.room
+      room: this.currentEntry.room,
+      facultyName: this.currentEntry.facultyName
     };
 
     this.http.post<ScheduleEntry>('http://localhost:8080/api/timetable', payload).subscribe({

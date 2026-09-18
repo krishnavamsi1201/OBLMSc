@@ -7,7 +7,7 @@ import { Footer } from '../../shared/footer/footer';
 import { MatButtonModule } from '@angular/material/button';
 import { HttpClient } from '@angular/common/http';
 import { ToastService } from '../../shared/services/toast.service';
-import { CourseService, AppCourse } from '../../shared/services/course.service';
+import { CourseService, AppCourse, DEFAULT_DATABASE_COURSES } from '../../shared/services/course.service';
 import { SyncService } from '../../shared/services/sync.service';
 import { Subscription } from 'rxjs';
 
@@ -47,18 +47,87 @@ export class Courses implements OnInit, OnDestroy {
     return Array.from(sems).sort();
   }
 
+  getStudentSemester(): string {
+    const sem = localStorage.getItem('userSemester') || localStorage.getItem('userSem');
+    if (sem && sem.trim()) return sem.trim();
+
+    try {
+      const storedStudents = localStorage.getItem('obslmsStudents');
+      if (storedStudents) {
+        const students = JSON.parse(storedStudents);
+        const currentName = (localStorage.getItem('userName') || '').toLowerCase();
+        const currentEmail = (localStorage.getItem('userEmail') || '').toLowerCase();
+        const currentId = (localStorage.getItem('userId') || '').toLowerCase();
+        const found = students.find((s: any) =>
+          (s.id && s.id.toLowerCase() === currentId) ||
+          (s.email && s.email.toLowerCase() === currentEmail) ||
+          (s.name && s.name.toLowerCase() === currentName)
+        );
+        if (found && found.semester) {
+          return found.semester.trim();
+        }
+      }
+    } catch {}
+
+    return 'Semester 6';
+  }
+
+  isCourseMatchingStudentSemester(course: Course): boolean {
+    const studentSem = this.getStudentSemester();
+    const courseSem = (course.semester || '').trim();
+
+    if (!courseSem) return true;
+
+    // Direct match (case-insensitive)
+    if (courseSem.toLowerCase() === studentSem.toLowerCase()) {
+      return true;
+    }
+
+    // Number extraction
+    const sNum = studentSem.replace(/[^0-9]/g, '');
+    const cNum = courseSem.replace(/[^0-9]/g, '');
+
+    if (sNum && cNum && sNum === cNum) {
+      return true;
+    }
+
+    // Semester 6 active mappings
+    if ((studentSem.includes('6') || studentSem.includes('2026')) && 
+        (courseSem.toLowerCase().includes('6') || courseSem.toLowerCase().includes('fall 2026') || courseSem.toLowerCase().includes('sem 6') || courseSem.toLowerCase().includes('semester 6'))) {
+      return true;
+    }
+
+    if (sNum && (courseSem.toLowerCase().includes(`sem ${sNum}`) || courseSem.toLowerCase().includes(`semester ${sNum}`) || courseSem.toLowerCase().includes(`sem-${sNum}`))) {
+      return true;
+    }
+
+    return false;
+  }
+
   get filteredCourses(): Course[] {
     return this.courses.filter(c => {
       const q = this.searchQuery.toLowerCase().trim();
       const matchesSearch = !q || c.code.toLowerCase().includes(q) || c.title.toLowerCase().includes(q) || (c.faculty && c.faculty.toLowerCase().includes(q));
-      const matchesSem = !this.selectedSemester || c.semester === this.selectedSemester;
 
-      // Student Role: ONLY show subjects belonging to their branch or already enrolled
+      // Student Role: ONLY show subjects belonging strictly to their branch AND their registered semester
       if (this.role === 'student') {
         const matchesBranch = this.isCourseMatchingStudentBranch(c);
-        if (!matchesBranch && !this.isEnrolled(c.code)) {
+        if (!matchesBranch) {
           return false;
         }
+
+        if (this.selectedSemester) {
+          if (c.semester !== this.selectedSemester) {
+            return false;
+          }
+        } else {
+          const matchesSem = this.isCourseMatchingStudentSemester(c);
+          if (!matchesSem) {
+            return false;
+          }
+        }
+
+        return matchesSearch;
       }
 
       // Faculty Role: ONLY show subjects registered/assigned to this specific faculty
@@ -69,6 +138,7 @@ export class Courses implements OnInit, OnDestroy {
         }
       }
 
+      const matchesSem = !this.selectedSemester || c.semester === this.selectedSemester;
       return matchesSearch && matchesSem;
     });
   }
@@ -132,7 +202,9 @@ export class Courses implements OnInit, OnDestroy {
     this.courseService.getCourses().subscribe({
       next: (data) => {
         if (data && data.length > 0) {
-          this.courses = data;
+          const existingCodes = new Set(data.map(d => (d.code || '').toUpperCase().trim()));
+          const cseDefaults = DEFAULT_DATABASE_COURSES.filter(dc => !existingCodes.has(dc.code.toUpperCase().trim()));
+          this.courses = [...data, ...cseDefaults];
           this.cdr.detectChanges();
         }
       },
@@ -574,7 +646,12 @@ export class Courses implements OnInit, OnDestroy {
     const currentStudentName = localStorage.getItem('userName') || 'Student';
     const currentStudentId = localStorage.getItem('userId') || localStorage.getItem('userEmail') || 'STUDENT';
     const currentStudentEmail = localStorage.getItem('userEmail') || '';
-    const currentStudentDept = localStorage.getItem('userDepartment') || localStorage.getItem('userDept') || 'Mechanical Engineering';
+    const currentStudentDept = localStorage.getItem('userDepartment') || localStorage.getItem('userDept') || 'Computer Science & Engineering';
+
+    const code = course.code.toUpperCase().trim();
+    if (!this.pendingRequests.includes(code)) {
+      this.pendingRequests.push(code);
+    }
 
     const payload = {
       studentId: currentStudentId,
@@ -585,18 +662,49 @@ export class Courses implements OnInit, OnDestroy {
       courseCode: course.code,
       courseTitle: course.title,
       semester: course.semester || 'Semester 6',
-      status: 'Pending'
+      status: 'Pending',
+      requestedAt: new Date().toISOString()
     };
 
+    try {
+      const stored = localStorage.getItem('obslmsCourseRequests');
+      const list = stored ? JSON.parse(stored) : [];
+      const exists = list.some((r: any) => 
+        (r.studentName || '').toLowerCase() === currentStudentName.toLowerCase() && 
+        (r.courseCode || '').toUpperCase().trim() === code && 
+        r.status === 'Pending'
+      );
+      if (!exists) {
+        list.push({ ...payload, id: Date.now() });
+        localStorage.setItem('obslmsCourseRequests', JSON.stringify(list));
+      }
+    } catch {}
+
+    this.syncService.emit('ENROLLMENTS_CHANGED', payload);
+    this.toast.success(`Enrollment request submitted for "${course.title}". Awaiting Admin approval ⏳`);
+    this.cdr.detectChanges();
+
     this.http.post('http://localhost:8080/api/courses/requests', payload).subscribe({
-      next: () => {
-        this.pendingRequests.push(course.code.toUpperCase().trim());
-        this.syncService.emit('ENROLLMENTS_CHANGED', payload);
-        this.toast.success(`Enrollment request sent for "${course.title}". ⏳`);
+      next: (res: any) => {
+        if (res && res.id) {
+          try {
+            const stored = localStorage.getItem('obslmsCourseRequests');
+            const list = stored ? JSON.parse(stored) : [];
+            const idx = list.findIndex((r: any) => 
+              (r.studentName || '').toLowerCase() === currentStudentName.toLowerCase() && 
+              (r.courseCode || '').toUpperCase().trim() === code && 
+              r.status === 'Pending'
+            );
+            if (idx >= 0) {
+              list[idx].id = res.id;
+              localStorage.setItem('obslmsCourseRequests', JSON.stringify(list));
+            }
+          } catch {}
+        }
         this.cdr.detectChanges();
       },
       error: () => {
-        this.toast.error('Failed to submit enrollment request to database.');
+        // Safe fallback - already saved to local storage & sync event emitted
       }
     });
   }

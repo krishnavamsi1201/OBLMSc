@@ -14,8 +14,30 @@
     />
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" />
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet" />
+    <style>
+      :root, html, body {
+        color-scheme: dark;
+      }
+      input, textarea, select {
+        color-scheme: dark !important;
+      }
+      input:-webkit-autofill,
+      input:-webkit-autofill:hover, 
+      input:-webkit-autofill:focus, 
+      input:-webkit-autofill:active,
+      input:-internal-autofill-selected,
+      input:-internal-autofill-previewed {
+        -webkit-box-shadow: 0 0 0 1000px #091024 inset !important;
+        box-shadow: 0 0 0 1000px #091024 inset !important;
+        -webkit-text-fill-color: #ffffff !important;
+        color: #ffffff !important;
+        caret-color: #ffffff !important;
+        background-color: #091024 !important;
+        transition: background-color 5000000s ease-in-out 0s, color 5000000s ease-in-out 0s !important;
+      }
+    </style>
   </head>
-  <body class="theme-light">
+  <body>
     <app-root></app-root>
   </body>
 </html>

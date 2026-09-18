@@ -42,7 +42,7 @@
       </div>
 
       <!-- Login Form -->
-      <form (ngSubmit)="login()" #loginForm="ngForm" novalidate>
+      <form (ngSubmit)="login()" #loginForm="ngForm" novalidate autocomplete="off">
         
         <!-- Email / User ID Input -->
         <div class="field">
@@ -53,6 +53,10 @@
             placeholder="Email Address or User ID (e.g. STU004)" 
             required 
             [(ngModel)]="identifier" 
+            autocomplete="off"
+            readonly
+            onfocus="this.removeAttribute('readonly');"
+            style="background: transparent !important; background-color: transparent !important; color: #ffffff !important; -webkit-text-fill-color: #ffffff !important; -webkit-box-shadow: 0 0 0 1000px #091024 inset !important; box-shadow: 0 0 0 1000px #091024 inset !important;"
           />
         </div>
 
@@ -65,6 +69,10 @@
             placeholder="Password" 
             required 
             [(ngModel)]="password" 
+            autocomplete="new-password"
+            readonly
+            onfocus="this.removeAttribute('readonly');"
+            style="background: transparent !important; background-color: transparent !important; color: #ffffff !important; -webkit-text-fill-color: #ffffff !important; -webkit-box-shadow: 0 0 0 1000px #091024 inset !important; box-shadow: 0 0 0 1000px #091024 inset !important;"
           />
           <button 
             type="button" 
