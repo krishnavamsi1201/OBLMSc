@@ -181,18 +181,57 @@ form {
 
 .field input {
   flex: 1;
-  background: transparent;
-  border: none;
-  outline: none;
-  color: #ffffff;
-  font-size: 0.92rem;
+  background: transparent !important;
+  background-color: transparent !important;
+  border: none !important;
+  outline: none !important;
+  color: #ffffff !important;
+  font-size: 0.94rem;
   font-family: inherit;
   height: 100%;
+  width: 100%;
+  box-shadow: none !important;
+  appearance: none;
+  -webkit-appearance: none;
+  color-scheme: dark !important;
+}
+
+.field input:focus,
+.field input:hover,
+.field input:active {
+  background: transparent !important;
+  background-color: transparent !important;
+  color: #ffffff !important;
+  outline: none !important;
+  box-shadow: none !important;
 }
 
 .field input::placeholder {
   color: #64748b;
   font-size: 0.88rem;
+}
+
+/* Chrome, Edge, Safari browser Autofill override to match navy UI */
+.field input:-webkit-autofill,
+.field input:-webkit-autofill:hover, 
+.field input:-webkit-autofill:focus, 
+.field input:-webkit-autofill:active,
+.field input:-internal-autofill-selected {
+  -webkit-box-shadow: 0 0 0 1000px #091024 inset !important;
+  box-shadow: 0 0 0 1000px #091024 inset !important;
+  -webkit-text-fill-color: #ffffff !important;
+  color: #ffffff !important;
+  caret-color: #ffffff !important;
+  transition: background-color 500000s ease-in-out 0s, color 500000s ease-in-out 0s !important;
+  border-radius: 6px;
+}
+
+/* Firefox Autofill override */
+.field input:-moz-autofill,
+.field input:-moz-autofill-preview {
+  filter: none !important;
+  background-color: #091024 !important;
+  color: #ffffff !important;
 }
 
 .password-toggle {
