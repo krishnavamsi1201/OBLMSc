@@ -124,22 +124,28 @@ interface ScheduleEntry {
                     <h2 style="margin: 0; font-size: 1.25rem; color: #ffffff; font-weight: 800;">📅 Weekly Timetable Matrix</h2>
                     <p style="color: #94a3b8; font-size: 0.88rem; margin: 4px 0 0 0;">2–3 classes per day with alternating leisure & self-study slots. Live-synced with faculty substitutions & extra classes.</p>
                 </div>
-                <div class="matrix-legend" style="display: flex; gap: 14px; font-size: 12px; font-weight: 600; flex-wrap: wrap;">
-                    <span style="display: inline-flex; align-items: center; gap: 5px; color: #fde68a;">
-                        <span style="width: 10px; height: 10px; border-radius: 3px; background: rgba(212, 175, 55, 0.2); border: 1px solid #d4af37;"></span> Theory Lecture
-                    </span>
-                    <span style="display: inline-flex; align-items: center; gap: 5px; color: #34d399;">
-                        <span style="width: 10px; height: 10px; border-radius: 3px; background: rgba(16, 185, 129, 0.2); border: 1px solid #10b981;"></span> Lab / Practical
-                    </span>
-                    <span style="display: inline-flex; align-items: center; gap: 5px; color: #a5b4fc;">
-                        <span style="width: 10px; height: 10px; border-radius: 3px; background: rgba(99, 102, 241, 0.2); border: 1px solid #6366f1;"></span> Leisure / Library
-                    </span>
-                    <span style="display: inline-flex; align-items: center; gap: 5px; color: #38bdf8;">
-                        <span style="width: 10px; height: 10px; border-radius: 3px; background: rgba(56, 189, 248, 0.25); border: 1px solid #38bdf8;"></span> 🔄 Substitute Adjustment
-                    </span>
-                    <span style="display: inline-flex; align-items: center; gap: 5px; color: #c084fc;">
-                        <span style="width: 10px; height: 10px; border-radius: 3px; background: rgba(192, 132, 252, 0.25); border: 1px solid #c084fc;"></span> ⭐ Extra Class
-                    </span>
+                <div class="matrix-legend">
+                    <button type="button" class="legend-btn" [class.active-legend]="matrixFilter === 'all'" (click)="setMatrixFilter('all')">
+                        <span class="legend-dot dot-all"></span> All Slots
+                    </button>
+                    <button type="button" class="legend-btn" [class.active-legend]="matrixFilter === 'theory'" (click)="setMatrixFilter('theory')">
+                        <span class="legend-dot dot-theory"></span> Theory Lecture
+                    </button>
+                    <button type="button" class="legend-btn" [class.active-legend]="matrixFilter === 'lab'" (click)="setMatrixFilter('lab')">
+                        <span class="legend-dot dot-lab"></span> Lab / Practical
+                    </button>
+                    <button type="button" class="legend-btn" [class.active-legend]="matrixFilter === 'leisure'" (click)="setMatrixFilter('leisure')">
+                        <span class="legend-dot dot-leisure"></span> Leisure / Library
+                    </button>
+                    <button type="button" class="legend-btn" [class.active-legend]="matrixFilter === 'adjusted'" (click)="setMatrixFilter('adjusted')">
+                        <span class="legend-dot dot-adjusted"></span> 🔄 Substitute Adjustment
+                    </button>
+                    <button type="button" class="legend-btn" [class.active-legend]="matrixFilter === 'extra'" (click)="setMatrixFilter('extra')">
+                        <span class="legend-dot dot-extra"></span> ⭐ Extra Class
+                    </button>
+                    <button *ngIf="role === 'faculty'" type="button" class="legend-btn" [class.active-legend]="matrixFilter === 'myteaching'" (click)="setMatrixFilter('myteaching')">
+                        <span class="legend-dot dot-teaching"></span> 👨‍🏫 My Classes
+                    </button>
                 </div>
             </div>
             
@@ -170,6 +176,8 @@ interface ScheduleEntry {
                                      [class.adjusted-card]="slot.isAdjusted"
                                      [class.extra-card]="slot.isExtraClass"
                                      [class.my-teaching-card]="isMyTeachingSlot(slot)"
+                                     [class.dimmed-slot]="isSlotDimmed(slot)"
+                                     [class.active-filter-match]="isSlotActiveHighlight(slot)"
                                      [title]="slot.isAdjusted ? ('Substituted by ' + slot.substituteName + ' (Covering for ' + slot.requesterName + ')') : (slot.isExtraClass ? 'Extra Remedial Lecture by ' + slot.facultyName : (slot.facultyName ? 'Faculty: ' + slot.facultyName : ''))">
                                     
                                     <!-- Substitute Tag -->
@@ -224,13 +232,14 @@ interface ScheduleEntry {
                 </label>
                 <label>
                     Type Filter:
-                    <select [(ngModel)]="typeFilter" (change)="applyFilters()">
+                    <select [(ngModel)]="typeFilter" (change)="onDropdownTypeFilterChange()">
                         <option value="">All Slots</option>
                         <option value="myteaching" *ngIf="role === 'faculty'">👨‍🏫 My Teaching Classes Only</option>
+                        <option value="theory">📖 Theory Lectures Only</option>
+                        <option value="lab">🔬 Lab / Practical Sessions</option>
+                        <option value="leisure">☕ Leisure & Self-Study</option>
                         <option value="adjusted">🔄 Only Adjusted Slots</option>
                         <option value="extra">⭐ Only Extra Classes</option>
-                        <option value="classes">📚 Regular Classes Only</option>
-                        <option value="leisure">☕ Leisure & Self-Study</option>
                     </select>
                 </label>
                 <label>
@@ -430,6 +439,60 @@ interface ScheduleEntry {
       padding: 20px;
     }
 
+    .matrix-legend {
+      display: flex;
+      gap: 8px;
+      font-size: 12px;
+      font-weight: 600;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    .legend-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 12px;
+      background: #0d1730;
+      color: #cbd5e1;
+      border: 1px solid #1f2f54;
+      border-radius: 8px;
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+      user-select: none;
+    }
+
+    .legend-btn:hover {
+      background: #16244a;
+      border-color: #3b82f6;
+      color: #ffffff;
+      transform: translateY(-1px);
+    }
+
+    .legend-btn.active-legend {
+      background: #1e3a8a;
+      color: #ffffff;
+      border-color: #60a5fa;
+      box-shadow: 0 0 12px rgba(96, 165, 250, 0.35);
+    }
+
+    .legend-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 3px;
+      display: inline-block;
+    }
+
+    .dot-all { background: #94a3b8; border: 1px solid #cbd5e1; }
+    .dot-theory { background: rgba(212, 175, 55, 0.3); border: 1px solid #d4af37; }
+    .dot-lab { background: rgba(16, 185, 129, 0.3); border: 1px solid #10b981; }
+    .dot-leisure { background: rgba(99, 102, 241, 0.3); border: 1px solid #6366f1; }
+    .dot-adjusted { background: rgba(56, 189, 248, 0.3); border: 1px solid #38bdf8; }
+    .dot-extra { background: rgba(192, 132, 252, 0.3); border: 1px solid #c084fc; }
+    .dot-teaching { background: rgba(212, 175, 55, 0.8); border: 1px solid #fde68a; }
+
     .table-scroll-wrapper {
       overflow-x: auto;
       border-radius: 10px;
@@ -532,13 +595,25 @@ interface ScheduleEntry {
       align-items: center;
       text-align: center;
       gap: 4px;
-      transition: transform 0.15s ease, box-shadow 0.15s ease;
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
     }
 
     .matrix-slot-card:hover {
       transform: translateY(-2px);
       box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
       border-color: #d4af37;
+    }
+
+    .matrix-slot-card.dimmed-slot {
+      opacity: 0.22;
+      filter: grayscale(70%);
+      transform: scale(0.96);
+      box-shadow: none;
+    }
+
+    .matrix-slot-card.active-filter-match {
+      transform: scale(1.02);
+      box-shadow: 0 0 14px rgba(59, 130, 246, 0.4);
     }
 
     .matrix-slot-card.lab-card {
@@ -778,6 +853,7 @@ export class Timetable implements OnInit {
   filteredSchedule: ScheduleEntry[] = [];
   userAssignedCourses: string[] = [];
   userDept: string = 'Computer Science & Engineering';
+  matrixFilter: string = 'all';
 
   // Visual grid variables
   days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
@@ -1333,6 +1409,55 @@ export class Timetable implements OnInit {
     return new Set(rooms).size;
   }
 
+  setMatrixFilter(type: string): void {
+    if (this.matrixFilter === type && type !== 'all') {
+      this.matrixFilter = 'all';
+      this.typeFilter = '';
+    } else {
+      this.matrixFilter = type;
+      this.typeFilter = type === 'all' ? '' : type;
+    }
+    this.applyFilters();
+  }
+
+  onDropdownTypeFilterChange(): void {
+    this.matrixFilter = this.typeFilter || 'all';
+    this.applyFilters();
+  }
+
+  isSlotMatch(slot: ScheduleEntry): boolean {
+    if (!slot || this.matrixFilter === 'all' || !this.matrixFilter) return true;
+    if (this.matrixFilter === 'theory' || this.matrixFilter === 'classes') {
+      return !this.isLeisure(slot) && !this.isLab(slot) && !slot.isAdjusted && !slot.isExtraClass;
+    }
+    if (this.matrixFilter === 'lab') {
+      return this.isLab(slot);
+    }
+    if (this.matrixFilter === 'leisure') {
+      return this.isLeisure(slot);
+    }
+    if (this.matrixFilter === 'adjusted') {
+      return !!slot.isAdjusted;
+    }
+    if (this.matrixFilter === 'extra') {
+      return !!slot.isExtraClass;
+    }
+    if (this.matrixFilter === 'myteaching') {
+      return this.isMyTeachingSlot(slot);
+    }
+    return true;
+  }
+
+  isSlotDimmed(slot: ScheduleEntry): boolean {
+    if (!slot || this.matrixFilter === 'all' || !this.matrixFilter) return false;
+    return !this.isSlotMatch(slot);
+  }
+
+  isSlotActiveHighlight(slot: ScheduleEntry): boolean {
+    if (!slot || this.matrixFilter === 'all' || !this.matrixFilter) return false;
+    return this.isSlotMatch(slot);
+  }
+
   applyFilters(): void {
     let result = this.weeklySchedule;
 
@@ -1347,8 +1472,10 @@ export class Timetable implements OnInit {
         result = result.filter(e => e.isAdjusted === true);
       } else if (this.typeFilter === 'extra') {
         result = result.filter(e => e.isExtraClass === true);
-      } else if (this.typeFilter === 'classes') {
-        result = result.filter(e => !this.isLeisure(e) && !e.isExtraClass);
+      } else if (this.typeFilter === 'theory' || this.typeFilter === 'classes') {
+        result = result.filter(e => !this.isLeisure(e) && !this.isLab(e) && !e.isExtraClass && !e.isAdjusted);
+      } else if (this.typeFilter === 'lab') {
+        result = result.filter(e => this.isLab(e));
       } else if (this.typeFilter === 'leisure') {
         result = result.filter(e => this.isLeisure(e));
       }
