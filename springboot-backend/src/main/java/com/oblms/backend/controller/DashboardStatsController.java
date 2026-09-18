@@ -849,54 +849,222 @@ public class DashboardStatsController {
     private List<Map<String, Object>> generateSemesterResults(User student, String dept, List<Course> currentCourses) {
         List<Map<String, Object>> list = new ArrayList<>();
         int seed = Math.abs((student.getName() + student.getId()).hashCode() % 10);
+        String dLow = (dept != null ? dept : "").toLowerCase();
 
-        // Define curriculums for Sem 1 through Sem 5
-        String[][] sem1Courses = {
-            {"MA101", "Engineering Mathematics I", "4"},
-            {"PH102", "Engineering Physics", "4"},
-            {"EE103", "Basic Electrical Engineering", "3"},
-            {"ME104", "Engineering Graphics & CAD", "3"},
-            {"CS105", "C Programming & Problem Solving", "4"},
-            {"EN106", "Technical English & Communication", "2"}
-        };
+        List<String[][]> pastSems;
 
-        String[][] sem2Courses = {
-            {"MA201", "Engineering Mathematics II", "4"},
-            {"CH202", "Engineering Chemistry", "4"},
-            {"CS203", "Data Structures & Algorithms", "4"},
-            {"EC204", "Basic Electronics Engineering", "3"},
-            {"HS205", "Environmental Science & Sustainability", "2"},
-            {"CS206", "Data Structures Laboratory in C", "2"}
-        };
-
-        String[][] sem3Courses = {
-            {"CS301", "Discrete Mathematical Structures", "4"},
-            {"EC302", "Digital Logic & Switching Theory", "4"},
-            {"CS303", "Object Oriented Programming (Java/C++)", "4"},
-            {"CS304", "Computer Organization & Architecture", "4"},
-            {"HS305", "Universal Human Values & Professional Ethics", "3"},
-            {"CS306", "Object Oriented Programming Laboratory", "2"}
-        };
-
-        String[][] sem4Courses = {
-            {"MA401", "Probability, Statistics & Queueing Theory", "4"},
-            {"CS402", "Operating Systems & System Programming", "4"},
-            {"CS403", "Database Management Systems", "4"},
-            {"CS404", "Theory of Computation & Automata", "4"},
-            {"CS405", "Design & Analysis of Algorithms", "4"},
-            {"CS406", "Database Systems & OS Laboratory", "2"}
-        };
-
-        String[][] sem5Courses = {
-            {"CS501", "Computer Networks & Protocol Security", "4"},
-            {"CS502", "Software Engineering & Agile Methodologies", "4"},
-            {"CS503", "Web Technologies & Full-Stack Development", "4"},
-            {"CS504", "Cloud Computing & DevOps Practices", "4"},
-            {"OE505", "Open Elective: AI & Pattern Recognition", "3"},
-            {"CS506", "Full-Stack Development Laboratory", "2"}
-        };
-
-        List<String[][]> pastSems = List.of(sem1Courses, sem2Courses, sem3Courses, sem4Courses, sem5Courses);
+        if (dLow.contains("civil") || dLow.equals("ce")) {
+            String[][] sem1 = {
+                {"MA101", "Engineering Mathematics I", "4"},
+                {"PH102", "Engineering Physics", "4"},
+                {"EE103", "Basic Electrical Engineering", "3"},
+                {"ME104", "Engineering Graphics & CAD", "3"},
+                {"CE105", "Engineering Mechanics", "4"},
+                {"EN106", "Technical English & Communication", "2"}
+            };
+            String[][] sem2 = {
+                {"MA201", "Engineering Mathematics II", "4"},
+                {"CH202", "Engineering Chemistry", "4"},
+                {"CE203", "Surveying & Geomatics I", "4"},
+                {"CE204", "Building Materials & Construction", "3"},
+                {"HS205", "Environmental Science & Sustainability", "2"},
+                {"CE206", "Surveying Field Practice Lab I", "2"}
+            };
+            String[][] sem3 = {
+                {"MA301", "Transform Calculus & Numerical Methods", "4"},
+                {"CE302", "Mechanics of Solids (SMSE)", "4"},
+                {"CE303", "Fluid Mechanics & Hydraulics (FMHM)", "4"},
+                {"CE304", "Civil Engineering Drawing & CAD", "4"},
+                {"HS305", "Universal Human Values & Professional Ethics", "3"},
+                {"CE306", "Solid Mechanics Laboratory", "2"}
+            };
+            String[][] sem4 = {
+                {"CE401", "Structural Analysis I", "4"},
+                {"CE402", "Hydraulic Engineering & Water Resources", "4"},
+                {"CE403", "Concrete Technology & Testing", "4"},
+                {"CE404", "Geotechnical & Soil Mechanics I", "4"},
+                {"CE405", "Advanced Surveying & GIS", "4"},
+                {"CE406", "Fluid Mechanics & Hydraulics Lab", "2"}
+            };
+            String[][] sem5 = {
+                {"CE501", "Design of Reinforced Concrete Structures", "4"},
+                {"CE502", "Structural Analysis & Matrix Methods", "4"},
+                {"CE503", "Geotechnical Engineering & Foundation Design", "4"},
+                {"CE504", "Transportation & Highway Engineering", "4"},
+                {"OE505", "Open Elective: Environmental Pollution & Control", "3"},
+                {"CE506", "Concrete & Material Testing Laboratory", "2"}
+            };
+            pastSems = List.of(sem1, sem2, sem3, sem4, sem5);
+        } else if (dLow.contains("mech") || dLow.contains("me")) {
+            String[][] sem1 = {
+                {"MA101", "Engineering Mathematics I", "4"},
+                {"PH102", "Engineering Physics", "4"},
+                {"EE103", "Basic Electrical Engineering", "3"},
+                {"ME104", "Engineering Graphics & Modeling", "3"},
+                {"ME105", "Manufacturing Practices & Workshop", "4"},
+                {"EN106", "Technical English & Communication", "2"}
+            };
+            String[][] sem2 = {
+                {"MA201", "Engineering Mathematics II", "4"},
+                {"CH202", "Engineering Chemistry", "4"},
+                {"ME203", "Engineering Mechanics & Statics", "4"},
+                {"ME204", "Metallurgy & Materials Engineering (ME210)", "3"},
+                {"HS205", "Environmental Science & Sustainability", "2"},
+                {"ME206", "Machine Drawing Laboratory", "2"}
+            };
+            String[][] sem3 = {
+                {"MA301", "Partial Differential Equations & Complex Analysis", "4"},
+                {"ME302", "Engineering Thermodynamics", "4"},
+                {"ME303", "Kinematics of Machinery (KM)", "4"},
+                {"ME304", "Manufacturing Processes & Machining", "4"},
+                {"HS305", "Universal Human Values & Ethics", "3"},
+                {"ME306", "Thermal Engineering Laboratory", "2"}
+            };
+            String[][] sem4 = {
+                {"ME401", "Fluid Mechanics & Hydraulic Machines", "4"},
+                {"ME402", "Strength of Materials & Mechanics (SMSE)", "4"},
+                {"ME403", "Dynamics of Machinery & Vibrations", "4"},
+                {"ME404", "Applied Thermodynamics & Power Plants", "4"},
+                {"ME405", "Mechanical Measurements & Metrology", "4"},
+                {"ME406", "Strength of Materials Testing Lab", "2"}
+            };
+            String[][] sem5 = {
+                {"ME501", "Design of Machine Elements & Gears", "4"},
+                {"ME502", "Heat & Mass Transfer Principles", "4"},
+                {"ME503", "I C Engines and Combustion (IC)", "4"},
+                {"ME504", "CAD/CAM Simulation & Modeling (04ME6512)", "4"},
+                {"OE505", "Open Elective: Industrial Engineering & Operations", "3"},
+                {"ME506", "Heat Transfer & CAD Modeling Lab", "2"}
+            };
+            pastSems = List.of(sem1, sem2, sem3, sem4, sem5);
+        } else if (dLow.contains("elect") || dLow.contains("ece") || dLow.contains("ee")) {
+            String[][] sem1 = {
+                {"MA101", "Engineering Mathematics I", "4"},
+                {"PH102", "Engineering Physics", "4"},
+                {"EE103", "Basic Electrical Engineering", "3"},
+                {"ME104", "Engineering Graphics & CAD", "3"},
+                {"EC105", "Basic Electronic Devices & Circuits", "4"},
+                {"EN106", "Technical English & Communication", "2"}
+            };
+            String[][] sem2 = {
+                {"MA201", "Engineering Mathematics II", "4"},
+                {"CH202", "Engineering Chemistry", "4"},
+                {"EC203", "Electronic Circuit Analysis & Design", "4"},
+                {"EC204", "Network Analysis & Synthesis", "3"},
+                {"HS205", "Environmental Science & Sustainability", "2"},
+                {"EC206", "Electronic Devices & Simulation Lab", "2"}
+            };
+            String[][] sem3 = {
+                {"MA301", "Linear Algebra & Numerical Techniques", "4"},
+                {"EC302", "Digital Systems & Logic Designs (DSLD)", "4"},
+                {"EC303", "Signals & Linear Systems", "4"},
+                {"EC304", "Electromagnetic Fields & Waves", "4"},
+                {"HS305", "Universal Human Values & Professional Ethics", "3"},
+                {"EC306", "Digital Logic & Simulation Lab", "2"}
+            };
+            String[][] sem4 = {
+                {"EC401", "Linear Integrated Circuits & Op-Amps", "4"},
+                {"EC402", "Microprocessors & Embedded Systems (MES)", "4"},
+                {"EC403", "Analog & Digital Communication (CS203)", "4"},
+                {"EC404", "Control Systems Engineering", "4"},
+                {"EC405", "Computer Organization (EC206)", "4"},
+                {"EC406", "Microprocessor & Hardware Lab", "2"}
+            };
+            String[][] sem5 = {
+                {"EC501", "Digital Signal Processing (EE407)", "4"},
+                {"EC502", "VLSI Circuit Design & Verilog Modeling", "4"},
+                {"EC503", "Antennas & Microwave Propagation", "4"},
+                {"EC504", "Embedded IoT & Robotics Workshop", "4"},
+                {"OE505", "Open Elective: Information Theory & Coding", "3"},
+                {"EC506", "DSP & VLSI Design Practicum", "2"}
+            };
+            pastSems = List.of(sem1, sem2, sem3, sem4, sem5);
+        } else if (dLow.contains("info") || dLow.contains("it")) {
+            String[][] sem1 = {
+                {"MA101", "Engineering Mathematics I", "4"},
+                {"PH102", "Engineering Physics", "4"},
+                {"EE103", "Basic Electrical Engineering", "3"},
+                {"ME104", "Engineering Graphics & CAD", "3"},
+                {"IT105", "Problem Solving & C Programming", "4"},
+                {"EN106", "Technical English & Communication", "2"}
+            };
+            String[][] sem2 = {
+                {"MA201", "Engineering Mathematics II", "4"},
+                {"CH202", "Engineering Chemistry", "4"},
+                {"IT203", "Data Structures & Algorithmic Analysis", "4"},
+                {"IT204", "Discrete Mathematical Structures", "3"},
+                {"HS205", "Environmental Science & Sustainability", "2"},
+                {"IT206", "Data Structures Laboratory in C", "2"}
+            };
+            String[][] sem3 = {
+                {"IT301", "Object-Oriented Programming using Java", "4"},
+                {"IT302", "Digital Logic & Computer Organization", "4"},
+                {"IT303", "Linux & Shell Programming (Linux)", "4"},
+                {"IT304", "Design & Analysis of Algorithms", "4"},
+                {"HS305", "Universal Human Values & Professional Ethics", "3"},
+                {"IT306", "Linux & Java Programming Lab", "2"}
+            };
+            String[][] sem4 = {
+                {"IT401", "Operating Systems & Systems Programming (IT305)", "4"},
+                {"IT402", "Database Systems & SQL (CS303)", "4"},
+                {"IT403", "Computer Networks & Internet Protocols", "4"},
+                {"IT404", "Automata & Formal Language Theory", "4"},
+                {"IT405", "Soft Computing & AI (CS361)", "4"},
+                {"IT406", "Database Systems & OS Lab", "2"}
+            };
+            String[][] sem5 = {
+                {"IT501", "Web Technologies & Frameworks (WT)", "4"},
+                {"IT502", "Software Engineering & Agile Methodologies", "4"},
+                {"IT503", "Cloud Computing & DevOps (CS303)", "4"},
+                {"IT504", "Cyber Security & Network Forensics", "4"},
+                {"OE505", "Open Elective: Data Analytics & Big Data", "3"},
+                {"IT506", "Web Technologies & Cloud DevOps Lab", "2"}
+            };
+            pastSems = List.of(sem1, sem2, sem3, sem4, sem5);
+        } else {
+            // Default CSE
+            String[][] sem1 = {
+                {"MA101", "Engineering Mathematics I", "4"},
+                {"PH102", "Engineering Physics", "4"},
+                {"EE103", "Basic Electrical Engineering", "3"},
+                {"ME104", "Engineering Graphics & CAD", "3"},
+                {"CS105", "C Programming & Problem Solving", "4"},
+                {"EN106", "Technical English & Communication", "2"}
+            };
+            String[][] sem2 = {
+                {"MA201", "Engineering Mathematics II", "4"},
+                {"CH202", "Engineering Chemistry", "4"},
+                {"CS203", "Data Structures & Algorithms", "4"},
+                {"EC204", "Basic Electronics Engineering", "3"},
+                {"HS205", "Environmental Science & Sustainability", "2"},
+                {"CS206", "Data Structures Laboratory in C", "2"}
+            };
+            String[][] sem3 = {
+                {"CS301", "Discrete Mathematical Structures", "4"},
+                {"EC302", "Digital Logic & Switching Theory", "4"},
+                {"CS303", "Object Oriented Programming (Java/C++)", "4"},
+                {"CS304", "Computer Organization & Architecture", "4"},
+                {"HS305", "Universal Human Values & Professional Ethics", "3"},
+                {"CS306", "Object Oriented Programming Laboratory", "2"}
+            };
+            String[][] sem4 = {
+                {"MA401", "Probability, Statistics & Queueing Theory", "4"},
+                {"CS402", "Operating Systems & System Programming (CS301)", "4"},
+                {"CS403", "Database Management Systems (CS101)", "4"},
+                {"CS404", "Theory of Computation & Automata", "4"},
+                {"CS405", "Design & Analysis of Algorithms (CS103)", "4"},
+                {"CS406", "Database Systems & OS Laboratory", "2"}
+            };
+            String[][] sem5 = {
+                {"CS501", "Computer Networks & Protocol Security (CS302)", "4"},
+                {"CS502", "Software Engineering & Agile Methodologies", "4"},
+                {"CS503", "Java & OOPs Programming (CS102)", "4"},
+                {"CS504", "Cloud Computing & DevOps Practices (CS303)", "4"},
+                {"OE505", "Open Elective: AI & Pattern Recognition", "3"},
+                {"CS506", "Full-Stack Development Laboratory", "2"}
+            };
+            pastSems = List.of(sem1, sem2, sem3, sem4, sem5);
+        }
         double[] baseSgpas = { 8.85, 8.92, 9.15, 9.08, 9.35 };
 
         for (int semNum = 1; semNum <= 5; semNum++) {
