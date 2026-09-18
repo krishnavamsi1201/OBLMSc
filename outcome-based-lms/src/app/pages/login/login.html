@@ -42,7 +42,7 @@
       </div>
 
       <!-- Login Form -->
-      <form (ngSubmit)="login()" #loginForm="ngForm" novalidate>
+      <form (ngSubmit)="login()" #loginForm="ngForm" novalidate autocomplete="off">
         
         <!-- Email / User ID Input -->
         <div class="field">
@@ -53,6 +53,7 @@
             placeholder="Email Address or User ID (e.g. STU004)" 
             required 
             [(ngModel)]="identifier" 
+            autocomplete="off"
           />
         </div>
 
@@ -65,6 +66,7 @@
             placeholder="Password" 
             required 
             [(ngModel)]="password" 
+            autocomplete="new-password"
           />
           <button 
             type="button" 
