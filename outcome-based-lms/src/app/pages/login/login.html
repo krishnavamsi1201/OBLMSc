@@ -54,7 +54,9 @@
             required 
             [(ngModel)]="identifier" 
             autocomplete="off"
-            style="background: transparent !important; color: #ffffff !important;"
+            readonly
+            onfocus="this.removeAttribute('readonly');"
+            style="background: transparent !important; background-color: transparent !important; color: #ffffff !important; -webkit-text-fill-color: #ffffff !important; -webkit-box-shadow: 0 0 0 1000px #091024 inset !important; box-shadow: 0 0 0 1000px #091024 inset !important;"
           />
         </div>
 
@@ -68,7 +70,9 @@
             required 
             [(ngModel)]="password" 
             autocomplete="new-password"
-            style="background: transparent !important; color: #ffffff !important;"
+            readonly
+            onfocus="this.removeAttribute('readonly');"
+            style="background: transparent !important; background-color: transparent !important; color: #ffffff !important; -webkit-text-fill-color: #ffffff !important; -webkit-box-shadow: 0 0 0 1000px #091024 inset !important; box-shadow: 0 0 0 1000px #091024 inset !important;"
           />
           <button 
             type="button" 
