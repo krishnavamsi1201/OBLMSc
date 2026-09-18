@@ -65,7 +65,7 @@
                 </div>
                 <div class="filter-controls" *ngIf="semesters.length > 0">
                     <select [(ngModel)]="selectedSemester" class="filter-select">
-                        <option value="">All Semesters</option>
+                        <option value="">{{ role === 'student' ? '🎓 My Semester (' + getStudentSemester() + ')' : 'All Semesters' }}</option>
                         <option *ngFor="let sem of semesters" [value]="sem">{{ sem }}</option>
                     </select>
                 </div>

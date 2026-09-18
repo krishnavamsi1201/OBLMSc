@@ -910,20 +910,74 @@ export class Subjects implements OnInit {
     return 'Computer Science & Engineering';
   }
 
+  getStudentSemester(): string {
+    const sem = localStorage.getItem('userSemester') || localStorage.getItem('userSem');
+    if (sem && sem.trim()) return sem.trim();
+
+    try {
+      const storedStudents = localStorage.getItem('obslmsStudents');
+      if (storedStudents) {
+        const students = JSON.parse(storedStudents);
+        const currentName = (localStorage.getItem('userName') || '').toLowerCase();
+        const currentEmail = (localStorage.getItem('userEmail') || '').toLowerCase();
+        const currentId = (localStorage.getItem('userId') || '').toLowerCase();
+        const found = students.find((s: any) =>
+          (s.id && s.id.toLowerCase() === currentId) ||
+          (s.email && s.email.toLowerCase() === currentEmail) ||
+          (s.name && s.name.toLowerCase() === currentName)
+        );
+        if (found && found.semester) {
+          return found.semester.trim();
+        }
+      }
+    } catch {}
+
+    return 'Semester 6';
+  }
+
+  isSubjectMatchingStudentSemester(subject: SubjectRecord): boolean {
+    const studentSem = this.getStudentSemester();
+    const subSem = (subject.semester || '').trim();
+
+    if (!subSem) return true;
+
+    if (subSem.toLowerCase() === studentSem.toLowerCase()) {
+      return true;
+    }
+
+    const sNum = studentSem.replace(/[^0-9]/g, '');
+    const cNum = subSem.replace(/[^0-9]/g, '');
+
+    if (sNum && cNum && sNum === cNum) {
+      return true;
+    }
+
+    if ((studentSem.includes('6') || studentSem.includes('2026')) && 
+        (subSem.toLowerCase().includes('6') || subSem.toLowerCase().includes('fall 2026') || subSem.toLowerCase().includes('sem 6') || subSem.toLowerCase().includes('semester 6'))) {
+      return true;
+    }
+
+    if (sNum && (subSem.toLowerCase().includes(`sem ${sNum}`) || subSem.toLowerCase().includes(`semester ${sNum}`) || subSem.toLowerCase().includes(`sem-${sNum}`))) {
+      return true;
+    }
+
+    return false;
+  }
+
   get filteredSubjects(): SubjectRecord[] {
     const q = this.searchQuery.toLowerCase().trim();
 
     return this.subjects.filter(s => {
       const sDept = (s.department || this.getDepartmentName(s.code, s.name)).toLowerCase();
 
-      // Student Role: strictly restricted to their department and registered courses
+      // Student Role: strictly restricted to their department and registered courses/semester
       if (this.userRole === 'student') {
         if (this.viewMode === 'registered') {
           if (!this.isCourseEnrolled(s.code, s.name)) {
             return false;
           }
         } else {
-          // Branch curriculum mode: only student's department subjects
+          // Branch curriculum mode: only student's department subjects for their registered semester
           const uDept = this.userDept.toLowerCase();
           let matchesStudentDept = false;
           if (uDept.includes('comp') || uDept.includes('cse') || uDept.includes('cs')) {
@@ -940,6 +994,11 @@ export class Subjects implements OnInit {
             matchesStudentDept = sDept.includes('comp') || sDept.includes('cse');
           }
           if (!matchesStudentDept && !this.isCourseEnrolled(s.code, s.name)) {
+            return false;
+          }
+
+          // Strict semester match for student
+          if (!this.isSubjectMatchingStudentSemester(s) && !this.isCourseEnrolled(s.code, s.name)) {
             return false;
           }
         }

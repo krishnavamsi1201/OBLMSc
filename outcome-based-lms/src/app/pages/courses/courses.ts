@@ -47,18 +47,87 @@ export class Courses implements OnInit, OnDestroy {
     return Array.from(sems).sort();
   }
 
+  getStudentSemester(): string {
+    const sem = localStorage.getItem('userSemester') || localStorage.getItem('userSem');
+    if (sem && sem.trim()) return sem.trim();
+
+    try {
+      const storedStudents = localStorage.getItem('obslmsStudents');
+      if (storedStudents) {
+        const students = JSON.parse(storedStudents);
+        const currentName = (localStorage.getItem('userName') || '').toLowerCase();
+        const currentEmail = (localStorage.getItem('userEmail') || '').toLowerCase();
+        const currentId = (localStorage.getItem('userId') || '').toLowerCase();
+        const found = students.find((s: any) =>
+          (s.id && s.id.toLowerCase() === currentId) ||
+          (s.email && s.email.toLowerCase() === currentEmail) ||
+          (s.name && s.name.toLowerCase() === currentName)
+        );
+        if (found && found.semester) {
+          return found.semester.trim();
+        }
+      }
+    } catch {}
+
+    return 'Semester 6';
+  }
+
+  isCourseMatchingStudentSemester(course: Course): boolean {
+    const studentSem = this.getStudentSemester();
+    const courseSem = (course.semester || '').trim();
+
+    if (!courseSem) return true;
+
+    // Direct match (case-insensitive)
+    if (courseSem.toLowerCase() === studentSem.toLowerCase()) {
+      return true;
+    }
+
+    // Number extraction
+    const sNum = studentSem.replace(/[^0-9]/g, '');
+    const cNum = courseSem.replace(/[^0-9]/g, '');
+
+    if (sNum && cNum && sNum === cNum) {
+      return true;
+    }
+
+    // Semester 6 active mappings
+    if ((studentSem.includes('6') || studentSem.includes('2026')) && 
+        (courseSem.toLowerCase().includes('6') || courseSem.toLowerCase().includes('fall 2026') || courseSem.toLowerCase().includes('sem 6') || courseSem.toLowerCase().includes('semester 6'))) {
+      return true;
+    }
+
+    if (sNum && (courseSem.toLowerCase().includes(`sem ${sNum}`) || courseSem.toLowerCase().includes(`semester ${sNum}`) || courseSem.toLowerCase().includes(`sem-${sNum}`))) {
+      return true;
+    }
+
+    return false;
+  }
+
   get filteredCourses(): Course[] {
     return this.courses.filter(c => {
       const q = this.searchQuery.toLowerCase().trim();
       const matchesSearch = !q || c.code.toLowerCase().includes(q) || c.title.toLowerCase().includes(q) || (c.faculty && c.faculty.toLowerCase().includes(q));
-      const matchesSem = !this.selectedSemester || c.semester === this.selectedSemester;
 
-      // Student Role: ONLY show subjects belonging strictly to their branch
+      // Student Role: ONLY show subjects belonging strictly to their branch AND their registered semester
       if (this.role === 'student') {
         const matchesBranch = this.isCourseMatchingStudentBranch(c);
         if (!matchesBranch) {
           return false;
         }
+
+        if (this.selectedSemester) {
+          if (c.semester !== this.selectedSemester) {
+            return false;
+          }
+        } else {
+          const matchesSem = this.isCourseMatchingStudentSemester(c);
+          if (!matchesSem) {
+            return false;
+          }
+        }
+
+        return matchesSearch;
       }
 
       // Faculty Role: ONLY show subjects registered/assigned to this specific faculty
@@ -69,6 +138,7 @@ export class Courses implements OnInit, OnDestroy {
         }
       }
 
+      const matchesSem = !this.selectedSemester || c.semester === this.selectedSemester;
       return matchesSearch && matchesSem;
     });
   }
