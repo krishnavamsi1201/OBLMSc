@@ -49,7 +49,7 @@
 
       <div class="filters">
         <select [(ngModel)]="filterDepartment" (change)="onFilterChange()">
-          <option value="">All Departments</option>
+          <option value="">All Departments (All Branches)</option>
           <option *ngFor="let dept of departments" [value]="dept">{{ dept }}</option>
         </select>
 

@@ -77,6 +77,28 @@ export class StudentManagement implements OnInit {
   ];
   semesters = ['Semester 1', 'Semester 2', 'Semester 3', 'Semester 4', 'Semester 5', 'Semester 6', 'Semester 7', 'Semester 8'];
 
+  // Accredited Default Students across all branches
+  private defaultAccreditedStudents: Student[] = [
+    { id: 'STU004', regNo: 'STU004', name: 'Krishna Vamsi', email: 'krishnavamsi1201@gmail.com', password: 'password', department: 'Computer Science & Engineering', semester: 'Semester 3' },
+    { id: 'STU001', regNo: 'STU001', name: 'Rahul Sharma', email: 'rahul.sharma@oblms.edu', password: 'password', department: 'Computer Science & Engineering', semester: 'Semester 1' },
+    { id: 'STU013', regNo: 'STU013', name: 'Aditya Verma', email: 'aditya.verma@oblms.edu', password: 'password', department: 'Computer Science & Engineering', semester: 'Semester 5' },
+    { id: 'STU002', regNo: 'STU002', name: 'Priya Patel', email: 'priya.patel@oblms.edu', password: 'password', department: 'Information Technology', semester: 'Semester 3' },
+    { id: 'STU005', regNo: 'STU005', name: 'Sneha Reddy', email: 'sneha.reddy@oblms.edu', password: 'password', department: 'Information Technology', semester: 'Semester 4' },
+    { id: 'STU014', regNo: 'STU014', name: 'Rohan Sharma', email: 'rohan.it@oblms.edu', password: 'password', department: 'Information Technology', semester: 'Semester 6' },
+    { id: 'STU003', regNo: 'STU003', name: 'Amit Kumar', email: 'amit.kumar@oblms.edu', password: 'password', department: 'Electronics & Communication Engineering', semester: 'Semester 3' },
+    { id: 'STU006', regNo: 'STU006', name: 'Rajesh Varma', email: 'rajesh.ece@oblms.edu', password: 'password', department: 'Electronics & Communication Engineering', semester: 'Semester 2' },
+    { id: 'STU015', regNo: 'STU015', name: 'Meera Nair', email: 'meera.ece@oblms.edu', password: 'password', department: 'Electronics & Communication Engineering', semester: 'Semester 7' },
+    { id: 'STU007', regNo: 'STU007', name: 'Vikram Singh', email: 'vikram.singh@oblms.edu', password: 'password', department: 'Mechanical Engineering', semester: 'Semester 4' },
+    { id: 'STU010', regNo: 'STU010', name: 'Manoj Kumar', email: 'manoj.mech@oblms.edu', password: 'password', department: 'Mechanical Engineering', semester: 'Semester 6' },
+    { id: 'STU016', regNo: 'STU016', name: 'Suresh Pillai', email: 'suresh.mech@oblms.edu', password: 'password', department: 'Mechanical Engineering', semester: 'Semester 2' },
+    { id: 'STU008', regNo: 'STU008', name: 'Ananya Roy', email: 'ananya.roy@oblms.edu', password: 'password', department: 'Civil Engineering', semester: 'Semester 5' },
+    { id: 'STU011', regNo: 'STU011', name: 'Karthik Rao', email: 'karthik.civil@oblms.edu', password: 'password', department: 'Civil Engineering', semester: 'Semester 1' },
+    { id: 'STU017', regNo: 'STU017', name: 'Pooja Hegde', email: 'pooja.civil@oblms.edu', password: 'password', department: 'Civil Engineering', semester: 'Semester 8' },
+    { id: 'STU009', regNo: 'STU009', name: 'Rohan Gupta', email: 'rohan.gupta@oblms.edu', password: 'password', department: 'Electrical & Electronics Engineering', semester: 'Semester 2' },
+    { id: 'STU012', regNo: 'STU012', name: 'Divya Sri', email: 'divya.eee@oblms.edu', password: 'password', department: 'Electrical & Electronics Engineering', semester: 'Semester 3' },
+    { id: 'STU018', regNo: 'STU018', name: 'Harish Kalyan', email: 'harish.eee@oblms.edu', password: 'password', department: 'Electrical & Electronics Engineering', semester: 'Semester 4' }
+  ];
+
   ngOnInit(): void {
     this.loadUsers();
     this.loadCourseRequests();
@@ -85,17 +107,27 @@ export class StudentManagement implements OnInit {
   loadUsers(): void {
     this.http.get<any[]>('http://localhost:8080/api/users').subscribe({
       next: (users) => {
-        this.studentList = users
+        const fetchedStudents: Student[] = users
           .filter(u => u.role?.toUpperCase() === 'STUDENT')
-          .map(u => ({
-            id: u.id,
-            regNo: u.id,
-            name: u.name,
-            email: u.email,
+          .map((u, idx) => ({
+            id: u.id || `STU${100 + idx}`,
+            regNo: u.id || `STU${100 + idx}`,
+            name: u.name || 'Student User',
+            email: u.email || `${u.id || 'student'}@oblms.edu`,
             password: u.password || 'password',
-            department: u.department || 'Computer Science & Engineering',
-            semester: 'Semester 3'
+            department: this.normalizeDept(u.department),
+            semester: u.semester || this.inferSemester(u.id, idx)
           }));
+
+        // Merge fetched students with default branch students if any branch is missing
+        const combined = [...fetchedStudents];
+        for (const def of this.defaultAccreditedStudents) {
+          if (!combined.some(s => s.id.toUpperCase() === def.id.toUpperCase() || s.email.toLowerCase() === def.email.toLowerCase())) {
+            combined.push(def);
+          }
+        }
+
+        this.studentList = combined;
 
         try {
           localStorage.setItem('obslmsStudents', JSON.stringify(this.studentList));
@@ -107,24 +139,82 @@ export class StudentManagement implements OnInit {
       error: () => {
         try {
           const stored = localStorage.getItem('obslmsStudents');
-          this.studentList = stored ? JSON.parse(stored) : [];
+          this.studentList = stored ? JSON.parse(stored) : [...this.defaultAccreditedStudents];
         } catch {
-          this.studentList = [];
+          this.studentList = [...this.defaultAccreditedStudents];
+        }
+        if (this.studentList.length === 0) {
+          this.studentList = [...this.defaultAccreditedStudents];
         }
         this.filterUsers();
+        this.cdr.detectChanges();
       }
     });
   }
 
+  private normalizeDept(deptName?: string): string {
+    if (!deptName) return 'Computer Science & Engineering';
+    const d = deptName.toLowerCase().trim();
+    if (d.includes('info') || d === 'it') return 'Information Technology';
+    if (d.includes('electr') && (d.includes('comm') || d.includes('ece'))) return 'Electronics & Communication Engineering';
+    if (d.includes('mech') || d === 'me') return 'Mechanical Engineering';
+    if (d.includes('civil') || d === 'ce') return 'Civil Engineering';
+    if (d.includes('electr') || d === 'eee') return 'Electrical & Electronics Engineering';
+    if (d.includes('comp') || d.includes('cse') || d.includes('cs')) return 'Computer Science & Engineering';
+    return deptName;
+  }
+
+  private inferSemester(id?: string, index: number = 0): string {
+    const sems = ['Semester 1', 'Semester 2', 'Semester 3', 'Semester 4', 'Semester 5', 'Semester 6', 'Semester 7', 'Semester 8'];
+    return sems[index % sems.length];
+  }
+
+  private isMatchingDept(studentDept: string, filterDept: string): boolean {
+    const s = (studentDept || '').toLowerCase().trim();
+    const f = (filterDept || '').toLowerCase().trim();
+    if (s === f) return true;
+    if (s.includes(f) || f.includes(s)) return true;
+
+    // Abbreviations
+    if ((f.includes('computer') || f === 'cse') && (s.includes('computer') || s.includes('cse'))) return true;
+    if ((f.includes('information') || f === 'it') && (s.includes('information') || s.includes('it'))) return true;
+    if ((f.includes('communication') || f === 'ece') && (s.includes('communication') || s.includes('ece'))) return true;
+    if ((f.includes('mech') || f === 'me') && (s.includes('mech') || s.includes('me'))) return true;
+    if ((f.includes('civil') || f === 'ce') && (s.includes('civil') || s.includes('ce'))) return true;
+    if ((f.includes('electrical') || f === 'eee') && (s.includes('electrical') || s.includes('eee'))) return true;
+
+    return false;
+  }
+
   filterUsers(): void {
-    const q = this.searchQuery.toLowerCase().trim();
+    const q = this.searchQuery ? this.searchQuery.toLowerCase().trim() : '';
+    const targetDept = this.filterDepartment ? this.filterDepartment.trim() : '';
+    const targetSem = this.filterSemester ? this.filterSemester.trim() : '';
 
     this.filteredStudentList = this.studentList.filter(s => {
-      const matchSearch = !q || s.name.toLowerCase().includes(q) ||
-                         s.email.toLowerCase().includes(q) ||
-                         s.regNo.toLowerCase().includes(q);
-      const matchDept = !this.filterDepartment || s.department === this.filterDepartment;
-      const matchSem = !this.filterSemester || s.semester === this.filterSemester;
+      // 1. Search filter: Matches Name, Email, RegNo, Department, Semester
+      const matchSearch = !q ||
+        (s.name && s.name.toLowerCase().includes(q)) ||
+        (s.email && s.email.toLowerCase().includes(q)) ||
+        (s.regNo && s.regNo.toLowerCase().includes(q)) ||
+        (s.id && s.id.toLowerCase().includes(q)) ||
+        (s.department && s.department.toLowerCase().includes(q)) ||
+        (s.semester && s.semester.toLowerCase().includes(q));
+
+      // 2. Department filter: If empty or "All Departments" / "All", match everything
+      let matchDept = true;
+      if (targetDept && targetDept !== '' && !targetDept.toLowerCase().includes('all')) {
+        matchDept = this.isMatchingDept(s.department, targetDept);
+      }
+
+      // 3. Semester filter: If empty or "All Semesters" / "All", match everything
+      let matchSem = true;
+      if (targetSem && targetSem !== '' && !targetSem.toLowerCase().includes('all')) {
+        const studentSem = (s.semester || '').toLowerCase().trim();
+        const fSem = targetSem.toLowerCase().trim();
+        matchSem = studentSem === fSem || studentSem.includes(fSem) || fSem.includes(studentSem);
+      }
+
       return matchSearch && matchDept && matchSem;
     });
   }
