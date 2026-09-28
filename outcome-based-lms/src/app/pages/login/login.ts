@@ -1,4 +1,4 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, inject, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
@@ -16,6 +16,7 @@ export class Login implements OnInit {
   private router = inject(Router);
   public toast = inject(ToastService);
   private http = inject(HttpClient);
+  private cdr = inject(ChangeDetectorRef);
 
   identifier = '';
   password = '';
@@ -178,14 +179,18 @@ export class Login implements OnInit {
     this.role = role;
     if (role === 'admin') {
       this.identifier = 'admin@oblms.edu';
-      this.password = 'root';
+      this.password = 'admin123';
     } else if (role === 'faculty') {
       this.identifier = 'ramesh.babu@oblms.edu';
-      this.password = 'password';
+      this.password = 'faculty123';
     } else if (role === 'student') {
       this.identifier = 'krishnavamsi@gmail.com';
       this.password = 'password';
     }
+    this.cdr.detectChanges();
+    setTimeout(() => {
+      this.login();
+    }, 50);
   }
 
   togglePasswordVisibility(): void {
@@ -248,7 +253,7 @@ export class Login implements OnInit {
           const dLow = dept.toLowerCase();
           const shortDept = (dLow.includes('computer') || dLow.includes('cse') || dLow.includes('cs')) ? 'CSE' :
                             (dLow.includes('information') || dLow.includes('it')) ? 'IT' :
-                            (dLow.includes('electronic') || dLow.includes('ece') || dLow.includes('ee')) ? 'ECE' :
+                            (dLow.includes('electronic') || dLow.includes('ece') || dLow.includes('electrical') || dLow.includes('eee') || dLow === 'ee') ? 'ECE' :
                             (dLow.includes('mechanical') || dLow.includes('mech')) ? 'ME' :
                             (dLow.includes('civil') || dLow === 'ce') ? 'Civil' : 'CSE';
           const numStr = (response.id || '').replace(/[^0-9]/g, '');

@@ -8,6 +8,7 @@ import { HttpClient } from '@angular/common/http';
 import { SyncService } from '../../shared/services/sync.service';
 import { ToastService } from '../../shared/services/toast.service';
 import { Subscription } from 'rxjs';
+import { DEFAULT_DATABASE_COURSES } from '../../shared/services/course.service';
 
 export interface SemesterCourseRecord {
   courseCode: string;
@@ -879,6 +880,59 @@ export class Results implements OnInit, OnDestroy {
     ]
   };
 
+  getShortDept(dept: string): 'CSE' | 'IT' | 'ECE' | 'ME' | 'CE' {
+    const d = (dept || '').toLowerCase();
+    if (d.includes('civil') || d === 'ce') return 'CE';
+    if (d.includes('mechanical') || d.includes('mech') || d === 'me') return 'ME';
+    if (d.includes('electronic') || d.includes('ece') || d.includes('electrical') || d.includes('eee') || d === 'ee') return 'ECE';
+    if (d.includes('information') || d.includes('it')) return 'IT';
+    return 'CSE';
+  }
+
+  buildCurriculumForDepartment(dept: string): { [sem: string]: SemesterCourseRecord[] } {
+    const shortDept = this.getShortDept(dept);
+    const prefix = shortDept === 'CSE' ? 'CS' : shortDept;
+    const deptCourses = DEFAULT_DATABASE_COURSES.filter(c => c.code.toUpperCase().startsWith(prefix));
+
+    if (deptCourses.length === 0) {
+      return this.semesterCurriculumData;
+    }
+
+    const sems = ['Semester 1', 'Semester 2', 'Semester 3', 'Semester 4', 'Semester 5', 'Semester 6', 'Semester 7', 'Semester 8'];
+    const result: { [sem: string]: SemesterCourseRecord[] } = {};
+
+    for (const sem of sems) {
+      const semCourses = deptCourses.filter(c => c.semester === sem);
+      result[sem] = semCourses.map((c) => {
+        const isLab = c.code.endsWith('L') || c.title.toLowerCase().includes('lab');
+        const isProject = c.code.includes('498') || c.title.toLowerCase().includes('project');
+        const isViva = c.code.includes('499') || c.title.toLowerCase().includes('viva');
+        const credits = isProject ? 8 : (isLab || isViva) ? 2 : (c.code.includes('115') || c.code.includes('125')) ? 3 : 4;
+
+        const seed = Math.abs(((this.studentName || 'student') + c.code).split('').reduce((acc, ch) => acc + ch.charCodeAt(0), 0));
+        const internalMarks = 34 + (seed % 7);
+        const externalMarks = 50 + ((seed * 3) % 10);
+        const totalMarks = internalMarks + externalMarks;
+        const grade = totalMarks >= 90 ? 'O' : totalMarks >= 80 ? 'A+' : totalMarks >= 70 ? 'A' : 'B+';
+        const gradePoints = grade === 'O' ? 10 : grade === 'A+' ? 9 : grade === 'A' ? 8 : 7;
+
+        return {
+          courseCode: c.code,
+          courseTitle: c.title,
+          credits,
+          internalMarks,
+          externalMarks,
+          totalMarks,
+          grade,
+          gradePoints,
+          status: 'Pass'
+        };
+      });
+    }
+
+    return result;
+  }
+
   constructor() {
     try {
       this.role = localStorage.getItem('userRole')?.toLowerCase() || null;
@@ -895,6 +949,7 @@ export class Results implements OnInit, OnDestroy {
         this.studentDept = 'Computer Science & Engineering';
         this.viewMode = 'class';
       }
+      this.semesterCurriculumData = this.buildCurriculumForDepartment(this.studentDept);
     } catch {
       this.role = null;
     }
@@ -926,6 +981,7 @@ export class Results implements OnInit, OnDestroy {
     if (match) {
       this.studentRoll = match.roll || 'CUTM2026CSE042';
       this.studentDept = match.dept || 'Computer Science & Engineering';
+      this.semesterCurriculumData = this.buildCurriculumForDepartment(this.studentDept);
     }
     this.viewMode = 'student';
     this.cdr.detectChanges();
@@ -937,6 +993,7 @@ export class Results implements OnInit, OnDestroy {
     if (match) {
       this.studentRoll = match.roll || 'CUTM2026CSE042';
       this.studentDept = match.dept || 'Computer Science & Engineering';
+      this.semesterCurriculumData = this.buildCurriculumForDepartment(this.studentDept);
     }
     this.cdr.detectChanges();
   }
@@ -959,6 +1016,7 @@ export class Results implements OnInit, OnDestroy {
               this.studentName = studentUsers[0].name;
               this.studentRoll = studentUsers[0].roll;
               this.studentDept = studentUsers[0].dept;
+              this.semesterCurriculumData = this.buildCurriculumForDepartment(this.studentDept);
             }
             this.cdr.detectChanges();
           }
@@ -974,16 +1032,19 @@ export class Results implements OnInit, OnDestroy {
   }
 
   get displayedCourses(): SemesterCourseRecord[] {
+    const cur = (this.semesterCurriculumData && Object.keys(this.semesterCurriculumData).length > 0)
+      ? this.semesterCurriculumData
+      : this.buildCurriculumForDepartment(this.studentDept);
     if (this.selectedSemester === 'All Semesters') {
       const all: SemesterCourseRecord[] = [];
       for (const sem of ['Semester 1', 'Semester 2', 'Semester 3', 'Semester 4', 'Semester 5', 'Semester 6', 'Semester 7', 'Semester 8']) {
-        if (this.semesterCurriculumData[sem]) {
-          all.push(...this.semesterCurriculumData[sem]);
+        if (cur[sem]) {
+          all.push(...cur[sem]);
         }
       }
       return all;
     }
-    return this.semesterCurriculumData[this.selectedSemester] || [];
+    return cur[this.selectedSemester] || [];
   }
 
   get semesterSgpa(): number {
@@ -997,8 +1058,11 @@ export class Results implements OnInit, OnDestroy {
   get cumulativeCgpa(): number {
     let totalCredits = 0;
     let weightedPoints = 0;
+    const cur = (this.semesterCurriculumData && Object.keys(this.semesterCurriculumData).length > 0)
+      ? this.semesterCurriculumData
+      : this.buildCurriculumForDepartment(this.studentDept);
     for (const sem of ['Semester 1', 'Semester 2', 'Semester 3', 'Semester 4', 'Semester 5', 'Semester 6', 'Semester 7', 'Semester 8']) {
-      const list = this.semesterCurriculumData[sem] || [];
+      const list = cur[sem] || [];
       list.forEach(c => {
         totalCredits += c.credits;
         weightedPoints += (c.credits * c.gradePoints);

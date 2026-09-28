@@ -256,10 +256,10 @@ export class FacultyDataService {
       } catch {}
 
       let matchingCourses = allCourses.filter(c => {
-        if (c.faculty && c.faculty !== 'Faculty Board' && c.faculty !== 'Unassigned') {
-          if (facultyName && (c.faculty.toLowerCase().includes(facultyName.toLowerCase()) || facultyName.toLowerCase().includes(c.faculty.toLowerCase()))) {
-            return true;
-          }
+        const cFac = (c.faculty || '').trim();
+        const isGeneric = !cFac || cFac.toLowerCase() === 'faculty board' || cFac.toLowerCase() === 'unassigned' || cFac.toLowerCase() === 'tbd';
+        if (!isGeneric) {
+          return !!facultyName && (cFac.toLowerCase().includes(facultyName.toLowerCase()) || facultyName.toLowerCase().includes(cFac.toLowerCase()));
         }
         if (assigned && assigned.length > 0) {
           return assigned.includes(c.title) || assigned.includes(c.code);

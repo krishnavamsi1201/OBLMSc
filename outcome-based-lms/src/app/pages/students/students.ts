@@ -380,7 +380,7 @@ export class Students implements OnInit, OnDestroy {
       const d = this.studentDept.toLowerCase();
       const shortDept = (d.includes('computer') || d.includes('cse') || d.includes('cs')) ? 'CSE' :
                         (d.includes('information') || d.includes('it')) ? 'IT' :
-                        (d.includes('electronic') || d.includes('ece') || d.includes('ee')) ? 'ECE' :
+                        (d.includes('electronic') || d.includes('ece') || d.includes('electrical') || d.includes('eee') || d === 'ee') ? 'ECE' :
                         (d.includes('mechanical') || d.includes('mech')) ? 'ME' :
                         (d.includes('civil') || d === 'ce') ? 'Civil' : 'CSE';
 
@@ -440,7 +440,7 @@ export class Students implements OnInit, OnDestroy {
             const d = (this.studentDept || '').toLowerCase();
             const sDept = (d.includes('computer') || d.includes('cse') || d.includes('cs')) ? 'CSE' :
                           (d.includes('information') || d.includes('it')) ? 'IT' :
-                          (d.includes('electronic') || d.includes('ece') || d.includes('ee')) ? 'ECE' :
+                          (d.includes('electronic') || d.includes('ece') || d.includes('electrical') || d.includes('eee') || d === 'ee') ? 'ECE' :
                           (d.includes('mechanical') || d.includes('mech')) ? 'ME' :
                           (d.includes('civil') || d === 'ce') ? 'Civil' : 'CSE';
 
@@ -472,7 +472,7 @@ export class Students implements OnInit, OnDestroy {
                 { code: 'Linux', title: 'Linux & Shell Programming', faculty: 'Dr. Rajesh Sen', credits: 4, currentAvg: 84, attendancePct: 89 },
                 { code: 'WT', title: 'Web Technologies & Frameworks', faculty: 'Prof. Priya Sharma', credits: 4, currentAvg: 89, attendancePct: 94 }
               ];
-            } else if (d.includes('elect') || d.includes('ece') || d.includes('ee')) {
+            } else if (d.includes('elect') || d.includes('ece') || d.includes('electrical') || d.includes('eee') || d === 'ee') {
               this.enrolledCourseCards = [
                 { code: 'MES', title: 'Microprocessors & Embedded Systems', faculty: 'Dr. Ramesh', credits: 4, currentAvg: 85, attendancePct: 90 },
                 { code: 'DSLD', title: 'Digital Systems & Logic Designs', faculty: 'Dr. Ananya Ray', credits: 4, currentAvg: 88, attendancePct: 92 },

@@ -203,14 +203,22 @@ public class DashboardStatsController {
         List<Course> allCourses = courseRepository.findAll();
         List<Course> allottedCourses = new ArrayList<>();
         for (Course c : allCourses) {
-            boolean codeOrTitleMatch = allottedKeys.contains(c.getCode().toLowerCase()) || allottedKeys.contains(c.getTitle().toLowerCase());
-            boolean facultyNameMatch = c.getFaculty() != null && !c.getFaculty().trim().isEmpty() && !"Faculty Board".equalsIgnoreCase(c.getFaculty().trim()) && !"Unassigned".equalsIgnoreCase(c.getFaculty().trim()) && (
-                c.getFaculty().trim().equalsIgnoreCase(facultyName.trim()) ||
-                c.getFaculty().toLowerCase().contains(facultyName.toLowerCase()) ||
-                facultyName.toLowerCase().contains(c.getFaculty().toLowerCase())
+            String cFac = c.getFaculty() != null ? c.getFaculty().trim() : "";
+            boolean isGeneric = cFac.isEmpty() || "Faculty Board".equalsIgnoreCase(cFac) || "Unassigned".equalsIgnoreCase(cFac) || "TBD".equalsIgnoreCase(cFac);
+            
+            boolean facultyNameMatch = !isGeneric && (
+                cFac.equalsIgnoreCase(facultyName.trim()) ||
+                cFac.toLowerCase().contains(facultyName.toLowerCase()) ||
+                facultyName.toLowerCase().contains(cFac.toLowerCase())
             );
-            if (codeOrTitleMatch || facultyNameMatch) {
+            
+            if (facultyNameMatch) {
                 allottedCourses.add(c);
+            } else if (isGeneric) {
+                boolean codeOrTitleMatch = allottedKeys.contains(c.getCode().toLowerCase()) || allottedKeys.contains(c.getTitle().toLowerCase());
+                if (codeOrTitleMatch) {
+                    allottedCourses.add(c);
+                }
             }
         }
 
@@ -937,7 +945,7 @@ public class DashboardStatsController {
                 {"ME506", "Heat Transfer & CAD Modeling Lab", "2"}
             };
             pastSems = List.of(sem1, sem2, sem3, sem4, sem5);
-        } else if (dLow.contains("elect") || dLow.contains("ece") || dLow.contains("ee")) {
+        } else if (dLow.contains("elect") || dLow.contains("ece") || dLow.contains("eee") || dLow.equals("ee")) {
             String[][] sem1 = {
                 {"MA101", "Engineering Mathematics I", "4"},
                 {"PH102", "Engineering Physics", "4"},

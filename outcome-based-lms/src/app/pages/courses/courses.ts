@@ -557,37 +557,44 @@ export class Courses implements OnInit, OnDestroy {
     const title = (course.title || '').toLowerCase().trim();
     const dept = (localStorage.getItem('userDepartment') || localStorage.getItem('userDept') || '').toLowerCase();
 
+    // Prevent cross-branch contamination: strictly identify codes belonging to other engineering branches
+    const isCSECode = code.startsWith('CS') || code === 'DS' || code === 'OOP' || code === 'CC' || code === 'OOMD' || code === 'HPC' || code === 'DS LAB' || code === 'C++ LAB' || code.startsWith('RLMCA');
+    const isITCode = code.startsWith('IT') || code === 'LINUX' || code === 'WT' || code === 'CS361' || code === 'RLMCA108' || code === 'LINUX LAB' || code === 'OPEN LAB';
+    const isECECode = code.startsWith('EC') || code.startsWith('EE') || code === 'MES' || code === 'DSLD' || code === 'AMP' || code === 'HARDWARE LAB' || code === 'LD LAB';
+    const isMECode = code.startsWith('ME') || code.startsWith('AU') || code === 'KM' || code === 'IC' || code === '04ME6512';
+    const isCivilCode = code.startsWith('CE') || code === 'FMHM' || code === 'SMSE' || code === 'EMII' || code === 'HS300';
+
     // 1. Computer Science & Engineering (CSE)
     if (dept.includes('comp') || dept.includes('cse') || dept.includes('cs')) {
-      return code.startsWith('CS') || code === 'DS' || code === 'OOP' || code === 'CC' || code === 'OOMD' || code === 'HPC' || code === 'DS LAB' || code === 'C++ LAB' || code === 'RLMCA101' || code === 'RLMCA201' || code === 'RLMCA205' || code === 'RLMCA231' ||
-             title.includes('data structure') || title.includes('database') || title.includes('algorithm') || title.includes('compiler') || title.includes('networks') || title.includes('computer') || title.includes('machine learning') || title.includes('artificial intelligence') || title.includes('software engineering');
+      if (isITCode || isECECode || isMECode || isCivilCode) return false;
+      return isCSECode || title.includes('data structure') || title.includes('database') || title.includes('algorithm') || title.includes('compiler') || title.includes('networks') || title.includes('computer') || title.includes('machine learning') || title.includes('artificial intelligence') || title.includes('software engineering');
     }
 
     // 2. Information Technology (IT)
     if (dept.includes('info') || dept.includes('it')) {
-      return code.startsWith('IT') || code === 'LINUX' || code === 'WT' || code === 'CS361' || code === 'RLMCA108' || code === 'LINUX LAB' || code === 'OPEN LAB' ||
-             title.includes('linux') || title.includes('shell') || title.includes('web tech') || title.includes('cloud') || title.includes('devops') || title.includes('soft computing') || title.includes('operations research');
+      if (isCSECode || isECECode || isMECode || isCivilCode) return false;
+      return isITCode || title.includes('linux') || title.includes('shell') || title.includes('web tech') || title.includes('cloud') || title.includes('devops') || title.includes('soft computing') || title.includes('operations research');
     }
 
     // 3. Electronics & Communication Engineering (ECE)
     if (dept.includes('elect') || dept.includes('ece') || dept.includes('eee')) {
-      return code.startsWith('EC') || code.startsWith('EE') || code === 'MES' || code === 'DSLD' || code === 'CS203' || code === 'CS207' || code === 'AMP' || code === 'HARDWARE LAB' || code === 'LD LAB' || code === 'EE233' || code === 'EE407' ||
-             title.includes('microprocessor') || title.includes('logic design') || title.includes('signal') || title.includes('electronics') || title.includes('embedded') || title.includes('switching theory');
+      if (isCSECode || isITCode || isMECode || isCivilCode) return false;
+      return isECECode || title.includes('microprocessor') || title.includes('logic design') || title.includes('signal') || title.includes('electronics') || title.includes('embedded') || title.includes('switching theory');
     }
 
-    // 4. Mechanical Engineering
+    // 4. Mechanical Engineering (ME)
     if (dept.includes('mech') || dept.includes('me')) {
-      return code.startsWith('ME') || code.startsWith('AU') || code === 'KM' || code === 'IC' || code === '04ME6512' || code === 'SMSE' || code === 'EM IV' ||
-             title.includes('metallurgy') || title.includes('kinematics') || title.includes('combustion') || title.includes('engine') || title.includes('cad') || title.includes('chassis') || title.includes('mechanical') || title.includes('automobile');
+      if (isCSECode || isITCode || isECECode || isCivilCode) return false;
+      return isMECode || title.includes('metallurgy') || title.includes('kinematics') || title.includes('combustion') || title.includes('engine') || title.includes('cad') || title.includes('chassis') || title.includes('mechanical') || title.includes('automobile');
     }
 
-    // 5. Civil Engineering
+    // 5. Civil Engineering (CE)
     if (dept.includes('civil') || dept === 'ce') {
-      return code.startsWith('CE') || code === 'FMHM' || code === 'SMSE' || code === 'EMII' || code === 'HS300' || code === 'ECS' ||
-             title.includes('fluid') || title.includes('survey') || title.includes('structural') || title.includes('civil') || title.includes('hydraulic') || title.includes('concrete');
+      if (isCSECode || isITCode || isECECode || isMECode) return false;
+      return isCivilCode || title.includes('fluid') || title.includes('survey') || title.includes('structural') || title.includes('civil') || title.includes('hydraulic') || title.includes('concrete');
     }
 
-    return code.startsWith('CS') || title.includes('computer');
+    return isCSECode;
   }
 
   isEnrolled(courseCode: string): boolean {
@@ -732,29 +739,66 @@ export class Courses implements OnInit, OnDestroy {
     });
   }
 
+  private normalizeFacultyTokens(name: string): string[] {
+    if (!name) return [];
+    return name
+      .toLowerCase()
+      .replace(/\b(dr|prof|professor|mr|mrs|ms|er|shri|smt)\b\.?/gi, '')
+      .replace(/[^a-z0-9\s]/g, ' ')
+      .trim()
+      .split(/\s+/)
+      .filter(token => token.length > 1);
+  }
+
+  private isFacultyNameMatch(nameA: string, nameB: string): boolean {
+    if (!nameA || !nameB) return false;
+    const a = nameA.trim().toLowerCase();
+    const b = nameB.trim().toLowerCase();
+    if (a === b) return true;
+
+    const tokensA = this.normalizeFacultyTokens(a);
+    const tokensB = this.normalizeFacultyTokens(b);
+    if (tokensA.length === 0 || tokensB.length === 0) return false;
+
+    // Check if every token in the shorter name exists in the longer name
+    const [shorter, longer] = tokensA.length <= tokensB.length ? [tokensA, tokensB] : [tokensB, tokensA];
+    return shorter.every(tok => longer.includes(tok));
+  }
+
   isCourseAssignedToCurrentFaculty(course: Course): boolean {
-    const currentFacName = (localStorage.getItem('userName') || '').trim().toLowerCase();
+    const currentFacName = (localStorage.getItem('userName') || '').trim();
     const currentFacEmail = (localStorage.getItem('userEmail') || '').trim().toLowerCase();
-    const courseFaculty = (course.faculty || '').trim().toLowerCase();
+    const courseFaculty = (course.faculty || '').trim();
     const code = (course.code || '').trim().toUpperCase();
     const title = (course.title || '').trim().toLowerCase();
 
-    // 1. Match assigned faculty name
-    if (currentFacName && courseFaculty && (courseFaculty.includes(currentFacName) || currentFacName.includes(courseFaculty))) {
+    // 1. If course has an explicitly assigned faculty member
+    if (courseFaculty) {
+      if (currentFacEmail && courseFaculty.toLowerCase() === currentFacEmail) {
+        return true;
+      }
+      if (currentFacName && this.isFacultyNameMatch(courseFaculty, currentFacName)) {
+        return true;
+      }
+
+      // Check if course has a specific instructor named who is NOT the current logged-in faculty
+      const isGeneric = courseFaculty.toLowerCase() === 'faculty board' || 
+                        courseFaculty.toLowerCase() === 'unassigned' || 
+                        courseFaculty.toLowerCase() === 'tbd' ||
+                        courseFaculty.toLowerCase() === 'n/a';
+      
+      if (!isGeneric) {
+        // STRICT ISOLATION: The course is explicitly assigned to another faculty member.
+        // It must NOT be shown to this logged-in faculty under any circumstance!
+        return false;
+      }
+    }
+
+    // 2. For unassigned / generic faculty courses, check if assigned via backend or local allocation
+    if (this.facultyAssignedCodes.includes(code) || this.facultyAssignedCodes.some(ac => title === ac.toLowerCase())) {
       return true;
     }
 
-    // 2. Match email
-    if (currentFacEmail && courseFaculty && courseFaculty.includes(currentFacEmail)) {
-      return true;
-    }
-
-    // 3. Match from backend enrolled courses
-    if (this.facultyAssignedCodes.includes(code) || this.facultyAssignedCodes.some(ac => title.includes(ac.toLowerCase()))) {
-      return true;
-    }
-
-    // 4. Match local assigned list
     try {
       const assigned = JSON.parse(localStorage.getItem('userAssignedCourses') || '[]');
       if (Array.isArray(assigned)) {

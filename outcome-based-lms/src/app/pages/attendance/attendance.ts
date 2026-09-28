@@ -1011,10 +1011,15 @@ export class AttendancePage implements OnInit, OnDestroy {
             if (stored) assigned = JSON.parse(stored);
           } catch {}
 
-          const facultyCourses = all.filter(c => 
-            assigned.some(a => a.toLowerCase() === (c.title || '').toLowerCase() || a.toLowerCase() === (c.code || '').toLowerCase()) ||
-            (c.faculty && (c.faculty.toLowerCase().includes(uName) || uName.includes(c.faculty.toLowerCase()) || c.faculty.toLowerCase().includes(uEmail)))
-          );
+          const facultyCourses = all.filter(c => {
+            const cFac = (c.faculty || '').trim();
+            const isGeneric = !cFac || cFac.toLowerCase() === 'faculty board' || cFac.toLowerCase() === 'unassigned' || cFac.toLowerCase() === 'senior faculty';
+            if (!isGeneric) {
+              return (uName && (cFac.toLowerCase().includes(uName) || uName.includes(cFac.toLowerCase()))) ||
+                     (uEmail && cFac.toLowerCase() === uEmail);
+            }
+            return assigned.some(a => a.toLowerCase() === (c.title || '').toLowerCase() || a.toLowerCase() === (c.code || '').toLowerCase());
+          });
 
           this.coursesList = facultyCourses;
         } else {
@@ -1064,10 +1069,23 @@ export class AttendancePage implements OnInit, OnDestroy {
         .filter((sc: any) => sc.studentName.toLowerCase() === sName.toLowerCase())
         .map((sc: any) => sc.courseCode.toLowerCase());
 
-      return all.filter(c => 
-        myCourseCodes.includes(c.code.toLowerCase()) || 
-        myCourseCodes.includes(c.title?.toLowerCase())
-      );
+      if (myCourseCodes.length > 0) {
+        return all.filter(c => 
+          myCourseCodes.includes(c.code?.toLowerCase()) || 
+          myCourseCodes.includes(c.title?.toLowerCase())
+        );
+      }
+
+      // Department-aware fallback
+      const userDept = (localStorage.getItem('userDept') || localStorage.getItem('userDepartment') || 'Computer Science').toLowerCase();
+      let prefix = 'CS';
+      if (userDept.includes('civil') || userDept === 'ce') prefix = 'CE';
+      else if (userDept.includes('mechanical') || userDept.includes('mech') || userDept === 'me') prefix = 'ME';
+      else if (userDept.includes('electronic') || userDept.includes('ece') || userDept.includes('electrical') || userDept.includes('eee') || userDept === 'ee') prefix = 'EC';
+      else if (userDept.includes('information') || userDept.includes('it')) prefix = 'IT';
+
+      const deptCourses = all.filter(c => c.code && c.code.toUpperCase().startsWith(prefix));
+      return deptCourses.length > 0 ? deptCourses : all;
     } catch {
       return all;
     }

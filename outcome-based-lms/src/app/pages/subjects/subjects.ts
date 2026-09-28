@@ -605,7 +605,7 @@ export class Subjects implements OnInit {
     const d = this.userDept.toLowerCase();
     if (d.includes('computer') || d.includes('cse') || d.includes('cs')) return 'CSE';
     if (d.includes('information') || d.includes('it')) return 'IT';
-    if (d.includes('electronic') || d.includes('ece') || d.includes('ee')) return 'ECE';
+    if (d.includes('electronic') || d.includes('ece') || d.includes('electrical') || d.includes('eee') || d === 'ee') return 'ECE';
     if (d.includes('mechanical') || d.includes('mech')) return 'ME';
     if (d.includes('civil') || d === 'ce') return 'Civil';
     return 'CSE';
@@ -957,8 +957,8 @@ export class Subjects implements OnInit {
             matchesStudentDept = sDept.includes('comp') || sDept.includes('cse') || sDept.includes('cs');
           } else if (uDept.includes('info') || uDept.includes('it')) {
             matchesStudentDept = sDept.includes('info') || sDept.includes('it');
-          } else if (uDept.includes('elect') || uDept.includes('ece') || uDept.includes('ee')) {
-            matchesStudentDept = sDept.includes('elect') || sDept.includes('ece') || sDept.includes('ee');
+          } else if (uDept.includes('elect') || uDept.includes('ece') || uDept.includes('electrical') || uDept.includes('eee') || uDept === 'ee') {
+            matchesStudentDept = sDept.includes('elect') || sDept.includes('ece') || sDept.includes('electrical') || sDept.includes('eee') || sDept === 'ee';
           } else if (uDept.includes('mech') || uDept.includes('me')) {
             matchesStudentDept = sDept.includes('mech') || sDept.includes('me') || sDept.includes('auto');
           } else if (uDept.includes('civil') || uDept === 'ce') {

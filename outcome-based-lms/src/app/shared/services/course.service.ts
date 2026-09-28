@@ -412,8 +412,14 @@ export class CourseService {
       if (stored) {
         const parsed = JSON.parse(stored);
         if (Array.isArray(parsed) && parsed.length > 0) {
-          this.syncCourseSubjects(parsed);
-          return parsed;
+          const sanitized = parsed.map(c => {
+            if (c.faculty === 'Dr. Ramesh Kumar') {
+              return { ...c, faculty: 'Dr. Ramesh Babu' };
+            }
+            return c;
+          });
+          this.syncCourseSubjects(sanitized);
+          return sanitized;
         }
       }
     } catch {}

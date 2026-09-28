@@ -423,6 +423,23 @@ public class CourseController {
         return courseRepository.count();
     }
 
+    private boolean isFacultyMatch(String name1, String name2) {
+        if (name1 == null || name2 == null) return false;
+        if (name1.equalsIgnoreCase(name2)) return true;
+        String clean1 = name1.replaceAll("(?i)\\b(dr|prof|professor|mr|mrs|ms|er)\\b\\.?", "").replaceAll("[^a-zA-Z0-9 ]", "").trim().toLowerCase();
+        String clean2 = name2.replaceAll("(?i)\\b(dr|prof|professor|mr|mrs|ms|er)\\b\\.?", "").replaceAll("[^a-zA-Z0-9 ]", "").trim().toLowerCase();
+        if (clean1.equalsIgnoreCase(clean2)) return true;
+        if (clean1.isEmpty() || clean2.isEmpty()) return false;
+        
+        List<String> tokens1 = Arrays.stream(clean1.split("\\s+")).filter(s -> s.length() > 1).toList();
+        List<String> tokens2 = Arrays.stream(clean2.split("\\s+")).filter(s -> s.length() > 1).toList();
+        if (tokens1.isEmpty() || tokens2.isEmpty()) return false;
+        
+        List<String> shorter = tokens1.size() <= tokens2.size() ? tokens1 : tokens2;
+        List<String> longer = tokens1.size() <= tokens2.size() ? tokens2 : tokens1;
+        return longer.containsAll(shorter);
+    }
+
     @GetMapping
     public List<Course> getAllCourses(@RequestParam(required = false) String faculty) {
         if (faculty != null && !faculty.trim().isEmpty()) {
@@ -437,16 +454,21 @@ public class CourseController {
                     .findFirst();
             }
 
-            if (uOpt.isPresent() && uOpt.get().getEnrolledCourses() != null && !uOpt.get().getEnrolledCourses().isEmpty()) {
-                List<String> codes = Arrays.stream(uOpt.get().getEnrolledCourses().split(","))
-                    .map(String::trim)
-                    .map(String::toLowerCase)
-                    .toList();
-                return courseRepository.findAll().stream()
-                    .filter(c -> codes.contains(c.getCode().toLowerCase()) || codes.contains(c.getTitle().toLowerCase()))
-                    .toList();
-            }
-            return courseRepository.findByFacultyContainingIgnoreCase(q);
+            final String searchName = uOpt.isPresent() ? uOpt.get().getName() : q;
+            final List<String> codes = (uOpt.isPresent() && uOpt.get().getEnrolledCourses() != null && !uOpt.get().getEnrolledCourses().isEmpty())
+                ? Arrays.stream(uOpt.get().getEnrolledCourses().split(",")).map(String::trim).map(String::toLowerCase).toList()
+                : Collections.emptyList();
+
+            return courseRepository.findAll().stream()
+                .filter(c -> {
+                    String cFac = c.getFaculty() != null ? c.getFaculty().trim() : "";
+                    boolean isGeneric = cFac.isEmpty() || "Faculty Board".equalsIgnoreCase(cFac) || "Unassigned".equalsIgnoreCase(cFac) || "TBD".equalsIgnoreCase(cFac);
+                    if (!isGeneric) {
+                        return isFacultyMatch(cFac, searchName);
+                    }
+                    return codes.contains(c.getCode().toLowerCase()) || codes.contains(c.getTitle().toLowerCase());
+                })
+                .toList();
         }
         return courseRepository.findAll();
     }
