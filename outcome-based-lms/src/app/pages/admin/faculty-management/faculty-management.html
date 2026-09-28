@@ -104,7 +104,7 @@
               <small style="color: #fde68a; font-weight: 600;">Selected: {{ formData.selectedCourses.length }} subjects</small>
             </label>
             <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 8px; max-height: 180px; overflow-y: auto; padding: 12px; border: 1px solid #1f2f54; border-radius: 8px; background: #091024;">
-              <label *ngFor="let course of allAvailableCourses" style="display: flex; align-items: center; gap: 8px; font-size: 0.88rem; font-weight: normal; cursor: pointer; background: #101b38; color: #ffffff; padding: 6px 10px; border-radius: 6px; border: 1px solid #1f2f54;">
+              <label *ngFor="let course of getAvailableCoursesForDept(formData.department)" style="display: flex; align-items: center; gap: 8px; font-size: 0.88rem; font-weight: normal; cursor: pointer; background: #101b38; color: #ffffff; padding: 6px 10px; border-radius: 6px; border: 1px solid #1f2f54;">
                 <input 
                   type="checkbox" 
                   [checked]="isCourseSelected(course)" 

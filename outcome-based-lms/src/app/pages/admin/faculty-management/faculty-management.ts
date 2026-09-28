@@ -80,14 +80,79 @@ export class FacultyManagement implements OnInit {
   allotSearchQuery = '';
   allotSemesterFilter = '';
 
+  isCourseInDept(course: any, dept: string): boolean {
+    if (!dept) return true;
+    const d = dept.toLowerCase().trim();
+    const code = (course?.code || '').toUpperCase().trim();
+    const title = (course?.title || '').toLowerCase().trim();
+    const courseDept = (course?.department || '').toLowerCase().trim();
+
+    if (courseDept) {
+      if (courseDept.includes('comp') || courseDept.includes('cse') || courseDept.includes('cs')) {
+        if (d.includes('comp') || d.includes('cse') || d.includes('cs')) return true;
+      }
+      if (courseDept.includes('info') || courseDept.includes('it')) {
+        if (d.includes('info') || d.includes('it')) return true;
+      }
+      if (courseDept.includes('electr') && (courseDept.includes('comm') || courseDept.includes('ece'))) {
+        if (d.includes('electr') && (d.includes('comm') || d.includes('ece'))) return true;
+      }
+      if (courseDept.includes('mech') || courseDept.includes('me')) {
+        if (d.includes('mech') || d.includes('me')) return true;
+      }
+      if (courseDept.includes('civil') || courseDept.includes('ce')) {
+        if (d.includes('civil') || d.includes('ce')) return true;
+      }
+      if (courseDept.includes('electr') || courseDept.includes('eee')) {
+        if (d.includes('electr') || d.includes('eee')) return true;
+      }
+    }
+
+    // Check by standard course code prefix
+    if (d.includes('comp') || d.includes('cse') || d.includes('computer')) {
+      return (code.startsWith('CS') && !code.startsWith('CE')) || title.includes('computer') || title.includes('database') || title.includes('java') || title.includes('python') || title.includes('operating systems') || title.includes('machine learning');
+    }
+    if (d.includes('info') || d.includes('it')) {
+      return code.startsWith('IT') || code.startsWith('INF');
+    }
+    if (d.includes('electr') && (d.includes('comm') || d.includes('ece'))) {
+      return code.startsWith('EC') || code.startsWith('ECE');
+    }
+    if (d.includes('mech') || d.includes('me')) {
+      return (code.startsWith('ME') || code.startsWith('MEC')) && !code.startsWith('MES');
+    }
+    if (d.includes('civil') || d.includes('ce')) {
+      return code.startsWith('CE') || code.startsWith('CIV');
+    }
+    if (d.includes('electr') || d.includes('eee')) {
+      return code.startsWith('EE') || code.startsWith('EEE');
+    }
+
+    return true;
+  }
+
   get filteredAllotCourses(): any[] {
     const q = this.allotSearchQuery.toLowerCase().trim();
     const sem = this.allotSemesterFilter;
+    const targetDept = this.allottingFaculty ? this.allottingFaculty.department : '';
+
     return this.allAvailableCourses.filter(c => {
+      // 1. Must strictly match faculty's department
+      const matchDept = !targetDept || this.isCourseInDept(c, targetDept);
+
+      // 2. Search query matching code or title
       const matchSearch = !q || (c.title && c.title.toLowerCase().includes(q)) || (c.code && c.code.toLowerCase().includes(q));
+
+      // 3. Semester matching
       const matchSem = !sem || c.semester === sem;
-      return matchSearch && matchSem;
+
+      return matchDept && matchSearch && matchSem;
     });
+  }
+
+  getAvailableCoursesForDept(dept: string): any[] {
+    if (!dept) return this.allAvailableCourses;
+    return this.allAvailableCourses.filter(c => this.isCourseInDept(c, dept));
   }
 
   ngOnInit(): void {
@@ -206,18 +271,28 @@ export class FacultyManagement implements OnInit {
   }
 
   private loadCourses(): void {
+    const defaultCourses = this.courseService.ensureCoursesInitialized();
     this.http.get<any[]>('http://localhost:8080/api/courses').subscribe({
       next: (data) => {
         if (Array.isArray(data) && data.length > 0) {
-          this.allAvailableCourses = data;
+          const courseMap = new Map<string, any>();
+          for (const c of defaultCourses) {
+            courseMap.set(c.code.toUpperCase(), c);
+          }
+          for (const c of data) {
+            if (c.code) {
+              courseMap.set(c.code.toUpperCase(), c);
+            }
+          }
+          this.allAvailableCourses = Array.from(courseMap.values());
           this.cdr.detectChanges();
         } else {
-          this.allAvailableCourses = this.courseService.ensureCoursesInitialized();
+          this.allAvailableCourses = defaultCourses;
           this.cdr.detectChanges();
         }
       },
       error: () => {
-        this.allAvailableCourses = this.courseService.ensureCoursesInitialized();
+        this.allAvailableCourses = defaultCourses;
         this.cdr.detectChanges();
       }
     });
