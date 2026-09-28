@@ -112,26 +112,26 @@ export class FacultyCourseAllocation implements OnInit {
 
   private inferProgram(code: string, title: string): string {
     const c = (code || '').toUpperCase().trim();
-    if (c.startsWith('IT')) return 'B.Tech - Information Technology';
-    if (c.startsWith('EC')) return 'B.Tech - Electronics & Communication Engineering';
-    if (c.startsWith('ME')) return 'B.Tech - Mechanical Engineering';
-    if (c.startsWith('CE')) return 'B.Tech - Civil Engineering';
-    if (c.startsWith('EE')) return 'B.Tech - Electrical & Electronics Engineering';
-    if (c.startsWith('INMCA') || c.startsWith('RLMCA') || c.startsWith('MCA')) return 'Master of Computer Applications (MCA)';
-    return 'B.Tech - Computer Science & Engineering';
+    if (c.startsWith('IT')) return 'Information Technology';
+    if (c.startsWith('EC')) return 'Electronics & Communication Engineering';
+    if (c.startsWith('ME')) return 'Mechanical Engineering';
+    if (c.startsWith('CE')) return 'Civil Engineering';
+    if (c.startsWith('EE')) return 'Electrical & Electronics Engineering';
+    if (c.startsWith('INMCA') || c.startsWith('RLMCA') || c.startsWith('MCA')) return 'Computer Applications (MCA)';
+    return 'Computer Science & Engineering';
   }
 
   private loadCourses(): void {
     this.http.get<any[]>('http://localhost:8080/api/courses').subscribe({
       next: (data) => {
         this.courseList = [
-          { id: 'PRG_CSE', name: 'B.Tech - Computer Science & Engineering', code: 'CSE' },
-          { id: 'PRG_IT', name: 'B.Tech - Information Technology', code: 'IT' },
-          { id: 'PRG_ECE', name: 'B.Tech - Electronics & Communication Engineering', code: 'ECE' },
-          { id: 'PRG_ME', name: 'B.Tech - Mechanical Engineering', code: 'ME' },
-          { id: 'PRG_CE', name: 'B.Tech - Civil Engineering', code: 'CE' },
-          { id: 'PRG_EEE', name: 'B.Tech - Electrical & Electronics Engineering', code: 'EEE' },
-          { id: 'PRG_MCA', name: 'Master of Computer Applications', code: 'MCA' }
+          { id: 'PRG_CSE', name: 'Computer Science & Engineering', code: 'CSE' },
+          { id: 'PRG_IT', name: 'Information Technology', code: 'IT' },
+          { id: 'PRG_ECE', name: 'Electronics & Communication Engineering', code: 'ECE' },
+          { id: 'PRG_ME', name: 'Mechanical Engineering', code: 'ME' },
+          { id: 'PRG_CE', name: 'Civil Engineering', code: 'CE' },
+          { id: 'PRG_EEE', name: 'Electrical & Electronics Engineering', code: 'EEE' },
+          { id: 'PRG_MCA', name: 'Computer Applications (MCA)', code: 'MCA' }
         ];
 
         this.courseSubjectList = data.map((c: any) => ({

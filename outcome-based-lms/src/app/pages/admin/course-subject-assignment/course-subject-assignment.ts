@@ -47,16 +47,16 @@ export class CourseSubjectAssignment implements OnInit {
   courseSubjectList: CourseSubject[] = [];
   filteredCourseSubjectList: CourseSubject[] = [];
   
-  // Academic Degree Programs
+  // Department / Branch Names
   courseList: AcademicProgram[] = [
-    { id: 'PRG_CSE', name: 'B.Tech - Computer Science & Engineering', code: 'CSE', department: 'Computer Science & Engineering' },
-    { id: 'PRG_IT', name: 'B.Tech - Information Technology', code: 'IT', department: 'Information Technology' },
-    { id: 'PRG_ECE', name: 'B.Tech - Electronics & Communication Engineering', code: 'ECE', department: 'Electronics & Communication Engineering' },
-    { id: 'PRG_ME', name: 'B.Tech - Mechanical Engineering', code: 'ME', department: 'Mechanical Engineering' },
-    { id: 'PRG_CE', name: 'B.Tech - Civil Engineering', code: 'CE', department: 'Civil Engineering' },
-    { id: 'PRG_EEE', name: 'B.Tech - Electrical & Electronics Engineering', code: 'EEE', department: 'Electrical & Electronics Engineering' },
-    { id: 'PRG_MCA', name: 'Master of Computer Applications', code: 'MCA', department: 'Computer Science & Applications' },
-    { id: 'PRG_MTECH', name: 'M.Tech - Advanced Computing & Data Science', code: 'M.Tech', department: 'Computer Science & Engineering' }
+    { id: 'PRG_CSE', name: 'Computer Science & Engineering', code: 'CSE', department: 'Computer Science & Engineering' },
+    { id: 'PRG_IT', name: 'Information Technology', code: 'IT', department: 'Information Technology' },
+    { id: 'PRG_ECE', name: 'Electronics & Communication Engineering', code: 'ECE', department: 'Electronics & Communication Engineering' },
+    { id: 'PRG_ME', name: 'Mechanical Engineering', code: 'ME', department: 'Mechanical Engineering' },
+    { id: 'PRG_CE', name: 'Civil Engineering', code: 'CE', department: 'Civil Engineering' },
+    { id: 'PRG_EEE', name: 'Electrical & Electronics Engineering', code: 'EEE', department: 'Electrical & Electronics Engineering' },
+    { id: 'PRG_MCA', name: 'Computer Applications (MCA)', code: 'MCA', department: 'Computer Science & Applications' },
+    { id: 'PRG_MTECH', name: 'Data Science & AI', code: 'M.Tech', department: 'Computer Science & Engineering' }
   ];
 
   subjectList: Subject[] = [];
@@ -156,11 +156,9 @@ export class CourseSubjectAssignment implements OnInit {
 
   private sanitizeCourseSubjects(): void {
     for (const item of this.courseSubjectList) {
-      if (!item.courseName || item.courseName.trim() === item.subjectName.trim() || (!item.courseName.includes('B.Tech') && !item.courseName.includes('Master') && !item.courseName.includes('M.Tech'))) {
-        const prog = this.inferProgramForSubject(item.subjectId, item.subjectName);
-        item.courseName = prog.name;
-        item.courseId = prog.id;
-      }
+      const prog = this.inferProgramForSubject(item.subjectId, item.subjectName);
+      item.courseName = prog.name;
+      item.courseId = prog.id;
     }
   }
 
