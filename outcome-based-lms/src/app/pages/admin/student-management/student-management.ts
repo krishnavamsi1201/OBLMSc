@@ -182,27 +182,31 @@ export class StudentManagement implements OnInit {
 
     this.http.get<any[]>('http://localhost:8080/api/users').subscribe({
       next: (users) => {
-        const fetchedStudents: Student[] = (users || [])
-          .filter(u => u.role?.toUpperCase() === 'STUDENT')
-          .map((u, idx) => ({
-            id: u.id || `STU${100 + idx}`,
-            regNo: u.id || `STU${100 + idx}`,
-            name: u.name || 'Student User',
-            email: u.email || `${u.id || 'student'}@oblms.edu`,
-            password: u.password || 'password',
-            department: this.normalizeDept(u.department),
-            semester: u.semester || this.inferSemester(u.id, idx)
-          }));
-
-        // Merge fetched students with default branch students so all 240+ students are always available
-        const combined = [...fetchedStudents];
+        const studentMap = new Map<string, Student>();
+        // 1. First seed with all 240 accredited students (5 per sem x 8 sems x 6 depts)
         for (const def of defaultStudents) {
-          if (!combined.some(s => s.id.toUpperCase() === def.id.toUpperCase() || s.email.toLowerCase() === def.email.toLowerCase())) {
-            combined.push(def);
+          studentMap.set(def.id.toUpperCase(), { ...def });
+        }
+
+        // 2. Merge/update with any backend records
+        if (Array.isArray(users)) {
+          const fetched = users.filter(u => u.role?.toUpperCase() === 'STUDENT');
+          for (let idx = 0; idx < fetched.length; idx++) {
+            const u = fetched[idx];
+            const id = (u.id || `STU${100 + idx}`).toUpperCase();
+            studentMap.set(id, {
+              id: u.id || id,
+              regNo: u.id || id,
+              name: u.name || 'Student User',
+              email: u.email || `${id.toLowerCase()}@oblms.edu`,
+              password: u.password || 'password',
+              department: this.normalizeDept(u.department),
+              semester: this.parseStudentSemester(u)
+            });
           }
         }
 
-        this.studentList = combined;
+        this.studentList = Array.from(studentMap.values());
 
         try {
           localStorage.setItem('obslmsStudents', JSON.stringify(this.studentList));
@@ -212,19 +216,74 @@ export class StudentManagement implements OnInit {
         this.cdr.detectChanges();
       },
       error: () => {
+        const studentMap = new Map<string, Student>();
+        for (const def of defaultStudents) {
+          studentMap.set(def.id.toUpperCase(), { ...def });
+        }
+
         try {
           const stored = localStorage.getItem('obslmsStudents');
-          this.studentList = stored ? JSON.parse(stored) : defaultStudents;
-        } catch {
-          this.studentList = defaultStudents;
-        }
-        if (!this.studentList || this.studentList.length === 0) {
-          this.studentList = defaultStudents;
-        }
+          const parsed = stored ? JSON.parse(stored) : null;
+          if (Array.isArray(parsed) && parsed.length >= 240) {
+            for (const s of parsed) {
+              const id = (s.id || s.regNo || '').toUpperCase();
+              if (id) {
+                studentMap.set(id, {
+                  ...s,
+                  semester: this.parseStudentSemester(s),
+                  department: this.normalizeDept(s.department)
+                });
+              }
+            }
+          }
+        } catch {}
+
+        this.studentList = Array.from(studentMap.values());
+
+        try {
+          localStorage.setItem('obslmsStudents', JSON.stringify(this.studentList));
+        } catch {}
+
         this.filterUsers();
         this.cdr.detectChanges();
       }
     });
+  }
+
+  private parseStudentSemester(u: any): string {
+    if (u && u.semester && typeof u.semester === 'string' && u.semester.trim().toLowerCase().startsWith('semester')) {
+      return u.semester.trim();
+    }
+    const id = ((u?.id || u?.regNo || '') + '').toUpperCase();
+    const match = id.match(/_S([1-8])_/);
+    if (match) {
+      return `Semester ${match[1]}`;
+    }
+    if (id === 'STU004') return 'Semester 3';
+    if (id === 'STU001') return 'Semester 1';
+    if (id === 'STU002') return 'Semester 3';
+    if (id === 'STU003') return 'Semester 3';
+    if (id === 'STU005') return 'Semester 4';
+    if (id === 'STU006') return 'Semester 2';
+    if (id === 'STU007') return 'Semester 4';
+    if (id === 'STU008') return 'Semester 5';
+    if (id === 'STU009') return 'Semester 2';
+    if (id === 'STU010') return 'Semester 6';
+    if (id === 'STU011') return 'Semester 1';
+    if (id === 'STU012') return 'Semester 3';
+
+    // Check enrolled courses
+    const courses = ((u?.enrolledCourses || '') + '').toUpperCase();
+    if (courses.includes('111') || courses.includes('112') || courses.includes('113')) return 'Semester 1';
+    if (courses.includes('121') || courses.includes('122') || courses.includes('123')) return 'Semester 2';
+    if (courses.includes('101') || courses.includes('102') || courses.includes('203')) return 'Semester 3';
+    if (courses.includes('201') || courses.includes('205') || courses.includes('211')) return 'Semester 4';
+    if (courses.includes('301') || courses.includes('202') || courses.includes('304')) return 'Semester 5';
+    if (courses.includes('302') || courses.includes('303') || courses.includes('311')) return 'Semester 6';
+    if (courses.includes('401') || courses.includes('402')) return 'Semester 7';
+    if (courses.includes('411') || courses.includes('498') || courses.includes('412')) return 'Semester 8';
+
+    return 'Semester 1';
   }
 
   private normalizeDept(deptName?: string): string {
