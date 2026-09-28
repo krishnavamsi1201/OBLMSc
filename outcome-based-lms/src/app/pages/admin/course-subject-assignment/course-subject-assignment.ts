@@ -153,6 +153,16 @@ export class CourseSubjectAssignment implements OnInit {
     });
   }
 
+  private sanitizeCourseSubjects(): void {
+    for (const item of this.courseSubjectList) {
+      if (!item.courseName || item.courseName.trim() === item.subjectName.trim() || (!item.courseName.includes('B.Tech') && !item.courseName.includes('Master') && !item.courseName.includes('M.Tech'))) {
+        const prog = this.inferProgramForSubject(item.subjectId, item.subjectName);
+        item.courseName = prog.name;
+        item.courseId = prog.id;
+      }
+    }
+  }
+
   private buildAssignmentsFromCourses(courses: any[]): void {
     this.subjectList = courses.map((c, idx) => ({
       id: c.code || `SUB${idx}`,
@@ -176,6 +186,8 @@ export class CourseSubjectAssignment implements OnInit {
       };
     });
 
+    this.sanitizeCourseSubjects();
+
     try {
       localStorage.setItem('obslmsCourseSubjects', JSON.stringify(this.courseSubjectList));
     } catch {}
@@ -189,6 +201,7 @@ export class CourseSubjectAssignment implements OnInit {
       const stored = localStorage.getItem('obslmsCourseSubjects');
       if (stored) {
         this.courseSubjectList = JSON.parse(stored);
+        this.sanitizeCourseSubjects();
       }
     } catch {}
 
@@ -222,6 +235,12 @@ export class CourseSubjectAssignment implements OnInit {
         };
       });
     }
+
+    this.sanitizeCourseSubjects();
+
+    try {
+      localStorage.setItem('obslmsCourseSubjects', JSON.stringify(this.courseSubjectList));
+    } catch {}
 
     this.filterCourseSubjects();
     this.cdr.detectChanges();
