@@ -7,7 +7,7 @@
     <div class="page-header">
       <div class="header-title">
         <h1>👨‍🏫 Faculty Course Allocation</h1>
-        <p>Assign faculty to courses and subjects</p>
+        <p>Assign faculty to departments, programs, and curriculum subjects</p>
       </div>
       <button class="btn btn-primary" (click)="openAddForm()">+ Allocate Faculty</button>
     </div>
@@ -17,7 +17,7 @@
       <div class="search-box">
         <input 
           type="text" 
-          placeholder="🔍 Search by faculty, course or subject..." 
+          placeholder="🔍 Search by faculty, course, or subject..." 
           [(ngModel)]="searchQuery"
           (input)="onSearchChange()"
           class="search-input"
@@ -28,15 +28,15 @@
         (change)="onFilterChange()"
         class="filter-select"
       >
-        <option value="">All Courses</option>
-        <option *ngFor="let course of courseList" [value]="course.id">{{ course.name }}</option>
+        <option value="">All Departments / Branches</option>
+        <option *ngFor="let course of courseList" [value]="course.id">{{ course.name }} ({{ course.code }})</option>
       </select>
       <select 
         [(ngModel)]="filterFaculty"
         (change)="onFilterChange()"
         class="filter-select"
       >
-        <option value="">All Faculty</option>
+        <option value="">All Faculty Members</option>
         <option *ngFor="let faculty of facultyList" [value]="faculty.id">{{ faculty.name }}</option>
       </select>
     </div>
@@ -45,30 +45,30 @@
     <div class="modal" *ngIf="showForm">
       <div class="modal-content">
         <div class="modal-header">
-          <h2>{{ isEditMode ? 'Edit Allocation' : 'Allocate Faculty to Course' }}</h2>
+          <h2>{{ isEditMode ? 'Edit Faculty Allocation' : 'Allocate Faculty to Subject' }}</h2>
           <button class="close-btn" (click)="closeForm()">✕</button>
         </div>
 
         <form (ngSubmit)="saveAllocation()" class="allocation-form">
           <div class="form-group">
-            <label>Faculty *</label>
+            <label>Select Faculty *</label>
             <select [(ngModel)]="formData.facultyId" name="facultyId" required>
               <option value="">Select Faculty</option>
               <option *ngFor="let faculty of facultyList" [value]="faculty.id">
-                {{ faculty.name }}
+                {{ faculty.name }} ({{ faculty.department || 'Academic Faculty' }})
               </option>
             </select>
           </div>
 
           <div class="form-group">
-            <label>Course *</label>
+            <label>Department / Branch (Course) *</label>
             <select 
               [(ngModel)]="formData.courseId" 
               name="courseId"
               (change)="onCourseChange()"
               required
             >
-              <option value="">Select Course</option>
+              <option value="">Select Course/Branch</option>
               <option *ngFor="let course of courseList" [value]="course.id">
                 {{ course.name }} ({{ course.code }})
               </option>
@@ -83,13 +83,13 @@
                 {{ subject.subjectName }} ({{ subject.subjectId }})
               </option>
             </select>
-            <small *ngIf="availableSubjects.length === 0" style="color: #e74c3c;">
-              Please select a course first to see available subjects
+            <small *ngIf="availableSubjects.length === 0" style="color: #f59e0b; font-size: 0.82rem; margin-top: 4px; display: block;">
+              ⚠️ Please select a Department/Branch above to load curriculum subjects.
             </small>
           </div>
 
           <div class="form-group">
-            <label>Semester</label>
+            <label>Academic Semester</label>
             <select [(ngModel)]="formData.semester" name="semester">
               <option *ngFor="let sem of semesters" [value]="sem">{{ sem }}</option>
             </select>
@@ -97,7 +97,7 @@
 
           <div class="form-actions">
             <button type="button" class="btn btn-secondary" (click)="closeForm()">Cancel</button>
-            <button type="submit" class="btn btn-primary">{{ isEditMode ? 'Update' : 'Allocate' }}</button>
+            <button type="submit" class="btn btn-primary">{{ isEditMode ? 'Update' : 'Allocate' }} Faculty</button>
           </div>
         </form>
       </div>
@@ -106,11 +106,18 @@
     <!-- Table Section -->
     <div class="table-section">
       <div class="table-header">
-        <h3>Faculty Allocations ({{ filteredAllocationList.length }})</h3>
+        <h3>Assigned Faculty Allocations ({{ filteredAllocationList.length }})</h3>
+
+        <div class="page-size-selector" *ngIf="filteredAllocationList.length > 0">
+          <label style="font-size: 0.85rem; color: #94a3b8; margin-right: 8px;">Show:</label>
+          <select [(ngModel)]="pageSize" (change)="onPageSizeChange()" style="padding: 4px 10px; background: #0a1128; border: 1px solid #1f2f54; color: #f8fafc; border-radius: 6px; font-size: 0.85rem;">
+            <option *ngFor="let opt of pageSizeOptions" [value]="opt">{{ opt }} per page</option>
+          </select>
+        </div>
       </div>
 
       <div *ngIf="filteredAllocationList.length === 0" class="empty-state">
-        <p>📭 No allocations found. Start by allocating faculty to courses and subjects.</p>
+        <p>📭 No faculty allocations found. Start by allocating faculty to courses and subjects.</p>
         <button class="btn btn-primary" (click)="openAddForm()">+ Allocate Faculty</button>
       </div>
 
@@ -118,26 +125,72 @@
         <table class="data-table">
           <thead>
             <tr>
-              <th>Faculty</th>
-              <th>Course</th>
-              <th>Subject</th>
-              <th>Semester</th>
-              <th>Actions</th>
+              <th style="min-width: 220px;">Faculty Member</th>
+              <th style="min-width: 260px;">Department / Branch (Course)</th>
+              <th style="min-width: 240px;">Subject Title</th>
+              <th style="width: 130px;">Subject Code</th>
+              <th style="width: 140px;">Semester</th>
+              <th style="width: 100px; text-align: center;">Actions</th>
             </tr>
           </thead>
           <tbody>
-            <tr *ngFor="let allocation of filteredAllocationList">
-              <td class="faculty-name">{{ allocation.facultyName }}</td>
-              <td class="course-name">{{ allocation.courseName }}</td>
-              <td class="subject-name">{{ allocation.subjectName }}</td>
-              <td class="semester"><span class="badge badge-semester">{{ allocation.semester }}</span></td>
-              <td class="actions-cell">
+            <tr *ngFor="let allocation of pagedAllocationList">
+              <td class="faculty-name">
+                <strong style="color: #f8fafc; font-size: 0.95rem; display: flex; align-items: center; gap: 6px;">
+                  👨‍🏫 {{ allocation.facultyName }}
+                </strong>
+              </td>
+              <td class="course-name">
+                <span class="badge" style="background: rgba(212, 175, 55, 0.12); color: #fde68a; border: 1px solid rgba(212, 175, 55, 0.3); font-weight: 700; padding: 4px 8px; border-radius: 6px;">
+                  🏛️ {{ allocation.courseName }}
+                </span>
+              </td>
+              <td class="subject-name">
+                <span style="color: #e2e8f0; font-weight: 600;">{{ allocation.subjectName }}</span>
+              </td>
+              <td class="subject-code">
+                <code style="background: #091024; color: #38bdf8; padding: 2px 6px; border-radius: 4px; font-weight: 700; border: 1px solid #1f2f54;">
+                  {{ allocation.subjectId }}
+                </code>
+              </td>
+              <td class="semester">
+                <span class="badge badge-semester" style="background: rgba(56, 189, 248, 0.12); color: #7dd3fc; border: 1px solid rgba(56, 189, 248, 0.3); padding: 4px 8px; border-radius: 6px; font-weight: 600;">
+                  📅 {{ allocation.semester }}
+                </span>
+              </td>
+              <td class="actions-cell" style="text-align: center;">
                 <button class="btn-icon btn-edit" (click)="openEditForm(allocation)" title="Edit">✎</button>
                 <button class="btn-icon btn-delete" (click)="deleteAllocation(allocation.id)" title="Delete">🗑️</button>
               </td>
             </tr>
           </tbody>
         </table>
+
+        <!-- Pagination Controls -->
+        <div class="pagination-bar" *ngIf="filteredAllocationList.length > pageSize" style="display: flex; justify-content: space-between; align-items: center; padding: 14px 20px; background: #0c1530; border-top: 1px solid #1f2f54; border-radius: 0 0 12px 12px;">
+          <div class="pagination-info" style="font-size: 0.88rem; color: #94a3b8;">
+            Showing <strong style="color: #d4af37;">{{ startIndex }}</strong> - <strong style="color: #d4af37;">{{ endIndex }}</strong> of <strong style="color: #f8fafc;">{{ filteredAllocationList.length }}</strong> allocations
+          </div>
+          <div class="pagination-btns" style="display: flex; gap: 8px; align-items: center;">
+            <button 
+              type="button" 
+              class="btn-action-pill" 
+              [disabled]="currentPage === 1" 
+              (click)="goToPage(currentPage - 1)" 
+              style="padding: 6px 14px; cursor: pointer; opacity: currentPage === 1 ? 0.5 : 1; background: #101b38; border: 1px solid #1f2f54; color: #f8fafc; border-radius: 6px;">
+              ◀ Previous
+            </button>
+            <span style="font-size: 0.88rem; color: #cbd5e1; font-weight: 600;">Page {{ currentPage }} of {{ totalPages }}</span>
+            <button 
+              type="button" 
+              class="btn-action-pill" 
+              [disabled]="currentPage === totalPages" 
+              (click)="goToPage(currentPage + 1)" 
+              style="padding: 6px 14px; cursor: pointer; opacity: currentPage === totalPages ? 0.5 : 1; background: #101b38; border: 1px solid #1f2f54; color: #f8fafc; border-radius: 6px;">
+              Next ▶
+            </button>
+          </div>
+        </div>
       </div>
     </div>
 
