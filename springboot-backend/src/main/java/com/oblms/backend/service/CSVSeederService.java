@@ -79,7 +79,7 @@ public class CSVSeederService {
     }
 
     public void seedUsersFromDatasetCSV() {
-        // Ensure default Admin user exists so Admin can always log in
+        // 1. Ensure default Admin user exists
         Optional<User> adminOpt = userRepository.findAll().stream()
                 .filter(u -> "ADMIN".equalsIgnoreCase(u.getRole()))
                 .findFirst();
@@ -87,11 +87,183 @@ public class CSVSeederService {
         if (adminOpt.isEmpty()) {
             User admin = new User("ADM001", "System Administrator", "admin@gmail.com", "admin123", "ADMIN", "Computer Science & Engineering");
             admin.setEnrolledCourses("CS101,CS102,CS103,CS301,CS302");
+            admin.setSemester("All Semesters");
             userRepository.save(admin);
             System.out.println("[INFO] Seeded default Administrator account (admin@gmail.com / admin123).");
-        } else {
-            System.out.println("[INFO] Admin account already present in MySQL database.");
         }
+
+        // 2. Ensure Faculty members exist across departments
+        List<User> defaultFaculty = List.of(
+            new User("FAC001", "Dr. Ramesh Babu", "ramesh.babu@oblms.edu", "password", "FACULTY", "Computer Science & Engineering", "All", "CS101,CS103,CS113,CS304,CS307,CS401"),
+            new User("FAC002", "Prof. Sunita Sharma", "sunita.sharma@oblms.edu", "password", "FACULTY", "Computer Science & Engineering", "All", "CS102,CS123,CS202,CS205,CS308,CS405"),
+            new User("FAC003", "Dr. Amit Patel", "amit.patel@oblms.edu", "password", "FACULTY", "Information Technology", "All", "IT113,IT211,IT302,IT311,IT401,CS201,CS303"),
+            new User("FAC004", "Dr. Priya Nair", "priya.nair@oblms.edu", "password", "FACULTY", "Electronics & Communication Engineering", "All", "EC114,EC124,EC202,EC212,EC301,EC312,EC402,EC411"),
+            new User("FAC005", "Dr. V. C. Reddy", "vc.reddy@oblms.edu", "password", "FACULTY", "Electronics & Communication Engineering", "All", "EC201,EC211,EC302,EC311,EC403,EC412"),
+            new User("FAC006", "Dr. K. Srinivas", "k.srinivas@oblms.edu", "password", "FACULTY", "Mechanical Engineering", "All", "ME113,ME122,ME201,ME204,ME211,ME301,ME401"),
+            new User("FAC007", "Prof. Manoj Kumar", "manoj.kumar@oblms.edu", "password", "FACULTY", "Mechanical Engineering", "All", "ME203,ME205,ME212,ME302,ME311,ME402"),
+            new User("FAC008", "Dr. Suresh Varma", "suresh.civil@oblms.edu", "password", "FACULTY", "Civil Engineering", "All", "CE113,CE122,CE201,CE204,CE211,CE301,CE401"),
+            new User("FAC009", "Prof. Ananya Sen", "ananya.sen@oblms.edu", "password", "FACULTY", "Civil Engineering", "All", "CE202,CE203,CE212,CE302,CE311,CE402"),
+            new User("FAC010", "Dr. Satish Sharma", "satish.eee@oblms.edu", "password", "FACULTY", "Electrical & Electronics Engineering", "All", "EE113,EE123,EE201,EE204,EE211,EE301,EE401"),
+            new User("FAC011", "Prof. Rajesh Verma", "rajesh.verma@oblms.edu", "password", "FACULTY", "Electrical & Electronics Engineering", "All", "EE202,EE203,EE212,EE302,EE311,EE402")
+        );
+
+        for (User f : defaultFaculty) {
+            if (userRepository.findById(f.getId()).isEmpty() && userRepository.findByEmailIgnoreCase(f.getEmail()).isEmpty()) {
+                userRepository.save(f);
+            }
+        }
+
+        // 3. Seed 5 Students per Semester (Sem 1 to Sem 8) across all 6 departments
+        seedStudentsAllBranchesAndSemesters();
+    }
+
+    private void seedStudentsAllBranchesAndSemesters() {
+        String[][] branches = {
+            {"CSE", "Computer Science & Engineering"},
+            {"IT", "Information Technology"},
+            {"ECE", "Electronics & Communication Engineering"},
+            {"ME", "Mechanical Engineering"},
+            {"CE", "Civil Engineering"},
+            {"EEE", "Electrical & Electronics Engineering"}
+        };
+
+        // Course code matrices per department & semester (7 subjects each)
+        Map<String, Map<Integer, String>> deptCourses = Map.of(
+            "CSE", Map.of(
+                1, "CS111,CS112,CS113,CS114,CS115,CS111L,CS112L",
+                2, "CS121,CS122,CS123,CS124,CS125,CS121L,CS122L",
+                3, "CS101,CS102,CS103,CS203,CS204,CS101L,CS102L",
+                4, "CS201,CS205,CS206,CS207,CS208,CS201L,CS205L",
+                5, "CS301,CS202,CS304,CS305,CS306,CS301L,CS202L",
+                6, "CS302,CS303,CS307,CS308,CS309,CS302L,CS303L",
+                7, "CS401,CS402,CS403,CS404,CS405,CS401L,CS402L",
+                8, "CS411,CS412,CS413,CS414,CS415,CS498,CS499"
+            ),
+            "IT", Map.of(
+                1, "IT111,IT112,IT113,IT114,IT115,IT111L,IT112L",
+                2, "IT121,IT122,IT123,IT124,IT125,IT121L,IT122L",
+                3, "IT201,IT202,IT203,IT204,IT205,IT201L,IT202L",
+                4, "IT211,IT212,IT213,IT214,IT215,IT211L,IT212L",
+                5, "IT301,IT302,IT303,IT304,IT305,IT301L,IT303L",
+                6, "IT311,IT312,IT313,IT314,IT315,IT311L,IT315L",
+                7, "IT401,IT402,IT403,IT404,IT405,IT401L,IT402L",
+                8, "IT411,IT412,IT413,IT414,IT415,IT498,IT499"
+            ),
+            "ECE", Map.of(
+                1, "EC111,EC112,EC113,EC114,EC115,EC111L,EC112L",
+                2, "EC121,EC122,EC123,EC124,EC125,EC121L,EC122L",
+                3, "EC201,EC202,EC203,EC204,EC205,EC201L,EC202L",
+                4, "EC211,EC212,EC213,EC214,EC215,EC211L,EC212L",
+                5, "EC301,EC302,EC303,EC304,EC305,EC301L,EC303L",
+                6, "EC311,EC312,EC313,EC314,EC315,EC311L,EC314L",
+                7, "EC401,EC402,EC403,EC404,EC405,EC401L,EC403L",
+                8, "EC411,EC412,EC413,EC414,EC415,EC498,EC499"
+            ),
+            "ME", Map.of(
+                1, "ME111,ME112,ME113,ME114,ME115,ME111L,ME112L",
+                2, "ME121,ME122,ME123,ME124,ME125,ME121L,ME122L",
+                3, "ME201,ME202,ME203,ME204,ME205,ME202L,ME204L",
+                4, "ME211,ME212,ME213,ME214,ME215,ME211L,ME212L",
+                5, "ME301,ME302,ME303,ME304,ME305,ME301L,ME302L",
+                6, "ME311,ME312,ME313,ME314,ME315,ME311L,ME312L",
+                7, "ME401,ME402,ME403,ME404,ME405,ME401L,ME402L",
+                8, "ME411,ME412,ME413,ME414,ME415,ME498,ME499"
+            ),
+            "CE", Map.of(
+                1, "CE111,CE112,CE113,CE114,CE115,CE111L,CE112L",
+                2, "CE121,CE122,CE123,CE124,CE125,CE121L,CE122L",
+                3, "CE201,CE202,CE203,CE204,CE205,CE201L,CE202L",
+                4, "CE211,CE212,CE213,CE214,CE215,CE211L,CE212L",
+                5, "CE301,CE302,CE303,CE304,CE305,CE301L,CE302L",
+                6, "CE311,CE312,CE313,CE314,CE315,CE311L,CE312L",
+                7, "CE401,CE402,CE403,CE404,CE405,CE401L,CE402L",
+                8, "CE411,CE412,CE413,CE414,CE415,CE498,CE499"
+            ),
+            "EEE", Map.of(
+                1, "EE111,EE112,EE113,EE114,EE115,EE111L,EE112L",
+                2, "EE121,EE122,EE123,EE124,EE125,EE121L,EE122L",
+                3, "EE201,EE202,EE203,EE204,EE205,EE201L,EE202L",
+                4, "EE211,EE212,EE213,EE214,EE215,EE211L,EE212L",
+                5, "EE301,EE302,EE303,EE304,EE305,EE301L,EE302L",
+                6, "EE311,EE312,EE313,EE314,EE315,EE311L,EE312L",
+                7, "EE401,EE402,EE403,EE404,EE405,EE401L,EE402L",
+                8, "EE411,EE412,EE413,EE414,EE415,EE498,EE499"
+            )
+        );
+
+        String[] firstNames = {
+            "Rahul", "Priya", "Amit", "Sneha", "Vikram", "Ananya", "Rohan", "Divya", 
+            "Aditya", "Meera", "Karthik", "Pooja", "Suresh", "Harish", "Aarav", "Bhavya", 
+            "Chaitanya", "Deepak", "Gautam", "Ishaan", "Kalyan", "Kavya", "Keerthi", "Madhuri", 
+            "Manoj", "Naveen", "Neha", "Nikhil", "Pranav", "Prashanth", "Rajesh", "Rakesh", 
+            "Riya", "Rohit", "Sai", "Sameer", "Sanjay", "Santosh", "Shreya", "Sowmya", 
+            "Srikanth", "Surya", "Swathi", "Tarun", "Varun", "Venkatesh", "Vikas", "Vinay"
+        };
+
+        String[] lastNames = {
+            "Sharma", "Patel", "Reddy", "Nair", "Singh", "Roy", "Gupta", "Sri",
+            "Verma", "Hegde", "Rao", "Kalyan", "Pillai", "Mishra", "Joshi", "Bhat",
+            "Choudhury", "Das", "Menon", "Prasad", "Naidu", "Babu", "Sundaram", "Sen"
+        };
+
+        int nameIndex = 0;
+        int savedCount = 0;
+
+        for (String[] b : branches) {
+            String deptCode = b[0];
+            String deptName = b[1];
+
+            for (int sem = 1; sem <= 8; sem++) {
+                String semName = "Semester " + sem;
+                String enrolled = deptCourses.getOrDefault(deptCode, Map.of()).getOrDefault(sem, "");
+
+                for (int stuNum = 1; stuNum <= 5; stuNum++) {
+                    String stuId = String.format("STU_%s_S%d_%02d", deptCode, sem, stuNum);
+
+                    // Special case for Krishna Vamsi in CSE Sem 3
+                    if ("CSE".equals(deptCode) && sem == 3 && stuNum == 1) {
+                        stuId = "STU004";
+                        String fullName = "Krishna Vamsi";
+                        String email = "krishnavamsi1201@gmail.com";
+                        Optional<User> existing = userRepository.findById(stuId);
+                        if (existing.isEmpty()) {
+                            User u = new User(stuId, fullName, email, "password", "STUDENT", deptName, semName, enrolled);
+                            userRepository.save(u);
+                            savedCount++;
+                        } else {
+                            User u = existing.get();
+                            u.setEnrolledCourses(enrolled);
+                            u.setSemester(semName);
+                            u.setDepartment(deptName);
+                            userRepository.save(u);
+                        }
+                        continue;
+                    }
+
+                    String fName = firstNames[nameIndex % firstNames.length];
+                    String lName = lastNames[(nameIndex / firstNames.length) % lastNames.length];
+                    nameIndex++;
+
+                    String fullName = fName + " " + lName;
+                    String email = String.format("%s.%s.%s.s%d@oblms.edu", fName.toLowerCase(), lName.toLowerCase(), deptCode.toLowerCase(), sem);
+
+                    Optional<User> existing = userRepository.findById(stuId);
+                    if (existing.isEmpty()) {
+                        User u = new User(stuId, fullName, email, "password", "STUDENT", deptName, semName, enrolled);
+                        userRepository.save(u);
+                        savedCount++;
+                    } else {
+                        User u = existing.get();
+                        u.setEnrolledCourses(enrolled);
+                        u.setSemester(semName);
+                        u.setDepartment(deptName);
+                        userRepository.save(u);
+                    }
+                }
+            }
+        }
+
+        System.out.println("[INFO] Successfully seeded " + savedCount + " branch students (5 students per semester for all 6 departments) in MySQL database.");
     }
 
     public void seedCoursesFromDatasetCSV() {

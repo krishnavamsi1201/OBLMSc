@@ -23,9 +23,18 @@ public class UserController {
     @Autowired
     private CourseRepository courseRepository;
 
+    @Autowired
+    private com.oblms.backend.service.CSVSeederService csvSeederService;
+
     @GetMapping
     public List<User> getAllUsers() {
         return userRepository.findAll();
+    }
+
+    @PostMapping("/seed-all-branch-students")
+    public ResponseEntity<?> seedAllBranchStudents() {
+        csvSeederService.seedUsersFromDatasetCSV();
+        return ResponseEntity.ok(Map.of("message", "Seeded 5 students per semester across all 6 departments (240 students total) in database."));
     }
 
     @PostMapping

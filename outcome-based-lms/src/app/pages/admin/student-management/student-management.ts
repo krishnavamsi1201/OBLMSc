@@ -77,27 +77,100 @@ export class StudentManagement implements OnInit {
   ];
   semesters = ['Semester 1', 'Semester 2', 'Semester 3', 'Semester 4', 'Semester 5', 'Semester 6', 'Semester 7', 'Semester 8'];
 
-  // Accredited Default Students across all branches
-  private defaultAccreditedStudents: Student[] = [
-    { id: 'STU004', regNo: 'STU004', name: 'Krishna Vamsi', email: 'krishnavamsi1201@gmail.com', password: 'password', department: 'Computer Science & Engineering', semester: 'Semester 3' },
-    { id: 'STU001', regNo: 'STU001', name: 'Rahul Sharma', email: 'rahul.sharma@oblms.edu', password: 'password', department: 'Computer Science & Engineering', semester: 'Semester 1' },
-    { id: 'STU013', regNo: 'STU013', name: 'Aditya Verma', email: 'aditya.verma@oblms.edu', password: 'password', department: 'Computer Science & Engineering', semester: 'Semester 5' },
-    { id: 'STU002', regNo: 'STU002', name: 'Priya Patel', email: 'priya.patel@oblms.edu', password: 'password', department: 'Information Technology', semester: 'Semester 3' },
-    { id: 'STU005', regNo: 'STU005', name: 'Sneha Reddy', email: 'sneha.reddy@oblms.edu', password: 'password', department: 'Information Technology', semester: 'Semester 4' },
-    { id: 'STU014', regNo: 'STU014', name: 'Rohan Sharma', email: 'rohan.it@oblms.edu', password: 'password', department: 'Information Technology', semester: 'Semester 6' },
-    { id: 'STU003', regNo: 'STU003', name: 'Amit Kumar', email: 'amit.kumar@oblms.edu', password: 'password', department: 'Electronics & Communication Engineering', semester: 'Semester 3' },
-    { id: 'STU006', regNo: 'STU006', name: 'Rajesh Varma', email: 'rajesh.ece@oblms.edu', password: 'password', department: 'Electronics & Communication Engineering', semester: 'Semester 2' },
-    { id: 'STU015', regNo: 'STU015', name: 'Meera Nair', email: 'meera.ece@oblms.edu', password: 'password', department: 'Electronics & Communication Engineering', semester: 'Semester 7' },
-    { id: 'STU007', regNo: 'STU007', name: 'Vikram Singh', email: 'vikram.singh@oblms.edu', password: 'password', department: 'Mechanical Engineering', semester: 'Semester 4' },
-    { id: 'STU010', regNo: 'STU010', name: 'Manoj Kumar', email: 'manoj.mech@oblms.edu', password: 'password', department: 'Mechanical Engineering', semester: 'Semester 6' },
-    { id: 'STU016', regNo: 'STU016', name: 'Suresh Pillai', email: 'suresh.mech@oblms.edu', password: 'password', department: 'Mechanical Engineering', semester: 'Semester 2' },
-    { id: 'STU008', regNo: 'STU008', name: 'Ananya Roy', email: 'ananya.roy@oblms.edu', password: 'password', department: 'Civil Engineering', semester: 'Semester 5' },
-    { id: 'STU011', regNo: 'STU011', name: 'Karthik Rao', email: 'karthik.civil@oblms.edu', password: 'password', department: 'Civil Engineering', semester: 'Semester 1' },
-    { id: 'STU017', regNo: 'STU017', name: 'Pooja Hegde', email: 'pooja.civil@oblms.edu', password: 'password', department: 'Civil Engineering', semester: 'Semester 8' },
-    { id: 'STU009', regNo: 'STU009', name: 'Rohan Gupta', email: 'rohan.gupta@oblms.edu', password: 'password', department: 'Electrical & Electronics Engineering', semester: 'Semester 2' },
-    { id: 'STU012', regNo: 'STU012', name: 'Divya Sri', email: 'divya.eee@oblms.edu', password: 'password', department: 'Electrical & Electronics Engineering', semester: 'Semester 3' },
-    { id: 'STU018', regNo: 'STU018', name: 'Harish Kalyan', email: 'harish.eee@oblms.edu', password: 'password', department: 'Electrical & Electronics Engineering', semester: 'Semester 4' }
-  ];
+  // Pagination
+  currentPage = 1;
+  pageSize = 25;
+  pageSizeOptions = [10, 25, 50, 100, 250];
+
+  get totalPages(): number {
+    return Math.ceil(this.filteredStudentList.length / this.pageSize) || 1;
+  }
+
+  get pagedStudentList(): Student[] {
+    const start = (this.currentPage - 1) * this.pageSize;
+    return this.filteredStudentList.slice(start, start + this.pageSize);
+  }
+
+  get startIndex(): number {
+    return this.filteredStudentList.length === 0 ? 0 : (this.currentPage - 1) * this.pageSize + 1;
+  }
+
+  get endIndex(): number {
+    return Math.min(this.currentPage * this.pageSize, this.filteredStudentList.length);
+  }
+
+  goToPage(page: number): void {
+    if (page >= 1 && page <= this.totalPages) {
+      this.currentPage = page;
+    }
+  }
+
+  onPageSizeChange(): void {
+    this.currentPage = 1;
+  }
+
+  private generateAllDefaultStudents(): Student[] {
+    const list: Student[] = [];
+    const branches = [
+      { code: 'CSE', name: 'Computer Science & Engineering' },
+      { code: 'IT', name: 'Information Technology' },
+      { code: 'ECE', name: 'Electronics & Communication Engineering' },
+      { code: 'ME', name: 'Mechanical Engineering' },
+      { code: 'CE', name: 'Civil Engineering' },
+      { code: 'EEE', name: 'Electrical & Electronics Engineering' }
+    ];
+
+    const firstNames = [
+      'Rahul', 'Priya', 'Amit', 'Sneha', 'Vikram', 'Ananya', 'Rohan', 'Divya', 
+      'Aditya', 'Meera', 'Karthik', 'Pooja', 'Suresh', 'Harish', 'Aarav', 'Bhavya', 
+      'Chaitanya', 'Deepak', 'Gautam', 'Ishaan', 'Kalyan', 'Kavya', 'Keerthi', 'Madhuri', 
+      'Manoj', 'Naveen', 'Neha', 'Nikhil', 'Pranav', 'Prashanth', 'Rajesh', 'Rakesh', 
+      'Riya', 'Rohit', 'Sai', 'Sameer', 'Sanjay', 'Santosh', 'Shreya', 'Sowmya', 
+      'Srikanth', 'Surya', 'Swathi', 'Tarun', 'Varun', 'Venkatesh', 'Vikas', 'Vinay'
+    ];
+
+    const lastNames = [
+      'Sharma', 'Patel', 'Reddy', 'Nair', 'Singh', 'Roy', 'Gupta', 'Sri',
+      'Verma', 'Hegde', 'Rao', 'Kalyan', 'Pillai', 'Mishra', 'Joshi', 'Bhat',
+      'Choudhury', 'Das', 'Menon', 'Prasad', 'Naidu', 'Babu', 'Sundaram', 'Sen'
+    ];
+
+    let nameIndex = 0;
+
+    for (const b of branches) {
+      for (let sem = 1; sem <= 8; sem++) {
+        const semName = `Semester ${sem}`;
+        for (let stuNum = 1; stuNum <= 5; stuNum++) {
+          let stuId = `STU_${b.code}_S${sem}_0${stuNum}`;
+          let fullName = '';
+          let email = '';
+
+          if (b.code === 'CSE' && sem === 3 && stuNum === 1) {
+            stuId = 'STU004';
+            fullName = 'Krishna Vamsi';
+            email = 'krishnavamsi1201@gmail.com';
+          } else {
+            const f = firstNames[nameIndex % firstNames.length];
+            const l = lastNames[Math.floor(nameIndex / firstNames.length) % lastNames.length];
+            nameIndex++;
+            fullName = `${f} ${l}`;
+            email = `${f.toLowerCase()}.${l.toLowerCase()}.${b.code.toLowerCase()}.s${sem}@oblms.edu`;
+          }
+
+          list.push({
+            id: stuId,
+            regNo: stuId,
+            name: fullName,
+            email: email,
+            password: 'password',
+            department: b.name,
+            semester: semName
+          });
+        }
+      }
+    }
+    return list;
+  }
 
   ngOnInit(): void {
     this.loadUsers();
@@ -105,9 +178,11 @@ export class StudentManagement implements OnInit {
   }
 
   loadUsers(): void {
+    const defaultStudents = this.generateAllDefaultStudents();
+
     this.http.get<any[]>('http://localhost:8080/api/users').subscribe({
       next: (users) => {
-        const fetchedStudents: Student[] = users
+        const fetchedStudents: Student[] = (users || [])
           .filter(u => u.role?.toUpperCase() === 'STUDENT')
           .map((u, idx) => ({
             id: u.id || `STU${100 + idx}`,
@@ -119,9 +194,9 @@ export class StudentManagement implements OnInit {
             semester: u.semester || this.inferSemester(u.id, idx)
           }));
 
-        // Merge fetched students with default branch students if any branch is missing
+        // Merge fetched students with default branch students so all 240+ students are always available
         const combined = [...fetchedStudents];
-        for (const def of this.defaultAccreditedStudents) {
+        for (const def of defaultStudents) {
           if (!combined.some(s => s.id.toUpperCase() === def.id.toUpperCase() || s.email.toLowerCase() === def.email.toLowerCase())) {
             combined.push(def);
           }
@@ -139,12 +214,12 @@ export class StudentManagement implements OnInit {
       error: () => {
         try {
           const stored = localStorage.getItem('obslmsStudents');
-          this.studentList = stored ? JSON.parse(stored) : [...this.defaultAccreditedStudents];
+          this.studentList = stored ? JSON.parse(stored) : defaultStudents;
         } catch {
-          this.studentList = [...this.defaultAccreditedStudents];
+          this.studentList = defaultStudents;
         }
-        if (this.studentList.length === 0) {
-          this.studentList = [...this.defaultAccreditedStudents];
+        if (!this.studentList || this.studentList.length === 0) {
+          this.studentList = defaultStudents;
         }
         this.filterUsers();
         this.cdr.detectChanges();

@@ -145,6 +145,13 @@
     <div class="table-section" *ngIf="activeTab === 'students'">
       <div class="table-header">
         <h3>🎓 Enrolled Students & Login Credentials ({{ filteredStudentList.length }})</h3>
+        
+        <div class="page-size-selector" *ngIf="filteredStudentList.length > 0">
+          <label style="font-size: 0.85rem; color: #94a3b8; margin-right: 8px;">Show:</label>
+          <select [(ngModel)]="pageSize" (change)="onPageSizeChange()" style="padding: 4px 10px; background: #0a1128; border: 1px solid #1f2f54; color: #f8fafc; border-radius: 6px; font-size: 0.85rem;">
+            <option *ngFor="let opt of pageSizeOptions" [value]="opt">{{ opt }} per page</option>
+          </select>
+        </div>
       </div>
 
       <div *ngIf="filteredStudentList.length === 0" class="empty-state">
@@ -155,17 +162,17 @@
         <table class="data-table">
           <thead>
             <tr>
-              <th style="width: 110px;">Student ID</th>
+              <th style="width: 130px;">Student ID</th>
               <th>Student Name</th>
               <th style="width: 120px;">Semester</th>
               <th>Department</th>
               <th>Email Address</th>
-              <th style="width: 140px;">🔑 Password</th>
+              <th style="width: 130px;">🔑 Password</th>
               <th style="width: 180px; text-align: center;">Actions</th>
             </tr>
           </thead>
           <tbody>
-            <tr *ngFor="let student of filteredStudentList">
+            <tr *ngFor="let student of pagedStudentList">
               <td><span class="id-pill stu-id">{{ student.regNo }}</span></td>
               <td class="student-name"><strong>{{ student.name }}</strong></td>
               <td><span class="badge badge-semester">{{ student.semester }}</span></td>
@@ -190,6 +197,32 @@
             </tr>
           </tbody>
         </table>
+
+        <!-- Pagination Controls -->
+        <div class="pagination-bar" *ngIf="filteredStudentList.length > pageSize" style="display: flex; justify-content: space-between; align-items: center; padding: 14px 20px; background: #0c1530; border-top: 1px solid #1f2f54; border-radius: 0 0 12px 12px;">
+          <div class="pagination-info" style="font-size: 0.88rem; color: #94a3b8;">
+            Showing <strong style="color: #d4af37;">{{ startIndex }}</strong> - <strong style="color: #d4af37;">{{ endIndex }}</strong> of <strong style="color: #f8fafc;">{{ filteredStudentList.length }}</strong> students
+          </div>
+          <div class="pagination-btns" style="display: flex; gap: 8px; align-items: center;">
+            <button 
+              type="button" 
+              class="btn-action-pill" 
+              [disabled]="currentPage === 1" 
+              (click)="goToPage(currentPage - 1)" 
+              style="padding: 6px 14px; cursor: pointer; opacity: currentPage === 1 ? 0.5 : 1;">
+              ◀ Previous
+            </button>
+            <span style="font-size: 0.88rem; color: #cbd5e1; font-weight: 600;">Page {{ currentPage }} of {{ totalPages }}</span>
+            <button 
+              type="button" 
+              class="btn-action-pill" 
+              [disabled]="currentPage === totalPages" 
+              (click)="goToPage(currentPage + 1)" 
+              style="padding: 6px 14px; cursor: pointer; opacity: currentPage === totalPages ? 0.5 : 1;">
+              Next ▶
+            </button>
+          </div>
+        </div>
       </div>
     </div>
 
