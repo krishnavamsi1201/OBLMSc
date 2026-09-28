@@ -85,7 +85,14 @@
     <!-- Table Section -->
     <div class="table-section">
       <div class="table-header">
-        <h3>Assigned Subjects ({{ filteredCourseSubjectList.length }})</h3>
+        <h3>Assigned Curriculum Subjects ({{ filteredCourseSubjectList.length }})</h3>
+
+        <div class="page-size-selector" *ngIf="filteredCourseSubjectList.length > 0">
+          <label style="font-size: 0.85rem; color: #94a3b8; margin-right: 8px;">Show:</label>
+          <select [(ngModel)]="pageSize" (change)="onPageSizeChange()" style="padding: 4px 10px; background: #0a1128; border: 1px solid #1f2f54; color: #f8fafc; border-radius: 6px; font-size: 0.85rem;">
+            <option *ngFor="let opt of pageSizeOptions" [value]="opt">{{ opt }} per page</option>
+          </select>
+        </div>
       </div>
 
       <div *ngIf="filteredCourseSubjectList.length === 0" class="empty-state">
@@ -97,26 +104,62 @@
         <table class="data-table">
           <thead>
             <tr>
-              <th>Course</th>
-              <th>Subject</th>
-              <th>Code</th>
-              <th>Credits</th>
-              <th>Actions</th>
+              <th style="min-width: 280px;">Academic Degree / Program (Course)</th>
+              <th style="min-width: 250px;">Curriculum Subject Title</th>
+              <th style="width: 130px;">Subject Code</th>
+              <th style="width: 120px;">Credits</th>
+              <th style="width: 100px; text-align: center;">Actions</th>
             </tr>
           </thead>
           <tbody>
-            <tr *ngFor="let cs of filteredCourseSubjectList">
-              <td class="course-name">{{ cs.courseName }}</td>
-              <td class="subject-name">{{ cs.subjectName }}</td>
-              <td class="subject-code">{{ cs.subjectId }}</td>
-              <td class="credits"><span class="badge badge-credits">{{ cs.credits }} credits</span></td>
-              <td class="actions-cell">
+            <tr *ngFor="let cs of pagedCourseSubjectList">
+              <td class="course-name">
+                <span class="badge" style="background: rgba(212, 175, 55, 0.12); color: #fde68a; border: 1px solid rgba(212, 175, 55, 0.3); font-weight: 700; padding: 4px 8px; border-radius: 6px;">
+                  🎓 {{ cs.courseName }}
+                </span>
+              </td>
+              <td class="subject-name">
+                <strong style="color: #ffffff;">{{ cs.subjectName }}</strong>
+              </td>
+              <td class="subject-code">
+                <code style="background: #091024; color: #38bdf8; padding: 2px 6px; border-radius: 4px; font-weight: 700; border: 1px solid #1f2f54;">{{ cs.subjectId }}</code>
+              </td>
+              <td class="credits">
+                <span class="badge badge-credits">{{ cs.credits }} credits</span>
+              </td>
+              <td class="actions-cell" style="text-align: center;">
                 <button class="btn-icon btn-edit" (click)="openEditForm(cs)" title="Edit">✎</button>
                 <button class="btn-icon btn-delete" (click)="deleteAssignment(cs.id)" title="Delete">🗑️</button>
               </td>
             </tr>
           </tbody>
         </table>
+
+        <!-- Pagination Controls -->
+        <div class="pagination-bar" *ngIf="filteredCourseSubjectList.length > pageSize" style="display: flex; justify-content: space-between; align-items: center; padding: 14px 20px; background: #0c1530; border-top: 1px solid #1f2f54; border-radius: 0 0 12px 12px;">
+          <div class="pagination-info" style="font-size: 0.88rem; color: #94a3b8;">
+            Showing <strong style="color: #d4af37;">{{ startIndex }}</strong> - <strong style="color: #d4af37;">{{ endIndex }}</strong> of <strong style="color: #f8fafc;">{{ filteredCourseSubjectList.length }}</strong> subjects
+          </div>
+          <div class="pagination-btns" style="display: flex; gap: 8px; align-items: center;">
+            <button 
+              type="button" 
+              class="btn-action-pill" 
+              [disabled]="currentPage === 1" 
+              (click)="goToPage(currentPage - 1)" 
+              style="padding: 6px 14px; cursor: pointer; opacity: currentPage === 1 ? 0.5 : 1; background: #101b38; border: 1px solid #1f2f54; color: #f8fafc; border-radius: 6px;">
+              ◀ Previous
+            </button>
+            <span style="font-size: 0.88rem; color: #cbd5e1; font-weight: 600;">Page {{ currentPage }} of {{ totalPages }}</span>
+            <button 
+              type="button" 
+              class="btn-action-pill" 
+              [disabled]="currentPage === totalPages" 
+              (click)="goToPage(currentPage + 1)" 
+              style="padding: 6px 14px; cursor: pointer; opacity: currentPage === totalPages ? 0.5 : 1; background: #101b38; border: 1px solid #1f2f54; color: #f8fafc; border-radius: 6px;">
+              Next ▶
+            </button>
+          </div>
+        </div>
       </div>
     </div>
 

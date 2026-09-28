@@ -110,20 +110,36 @@ export class FacultyCourseAllocation implements OnInit {
     });
   }
 
+  private inferProgram(code: string, title: string): string {
+    const c = (code || '').toUpperCase().trim();
+    if (c.startsWith('IT')) return 'B.Tech - Information Technology';
+    if (c.startsWith('EC')) return 'B.Tech - Electronics & Communication Engineering';
+    if (c.startsWith('ME')) return 'B.Tech - Mechanical Engineering';
+    if (c.startsWith('CE')) return 'B.Tech - Civil Engineering';
+    if (c.startsWith('EE')) return 'B.Tech - Electrical & Electronics Engineering';
+    if (c.startsWith('INMCA') || c.startsWith('RLMCA') || c.startsWith('MCA')) return 'Master of Computer Applications (MCA)';
+    return 'B.Tech - Computer Science & Engineering';
+  }
+
   private loadCourses(): void {
     this.http.get<any[]>('http://localhost:8080/api/courses').subscribe({
       next: (data) => {
-        this.courseList = data.map((c: any) => ({
-          id: (c.id || '').toString(),
-          name: c.title || c.name || c.code || 'Course',
-          code: c.code || ''
-        }));
+        this.courseList = [
+          { id: 'PRG_CSE', name: 'B.Tech - Computer Science & Engineering', code: 'CSE' },
+          { id: 'PRG_IT', name: 'B.Tech - Information Technology', code: 'IT' },
+          { id: 'PRG_ECE', name: 'B.Tech - Electronics & Communication Engineering', code: 'ECE' },
+          { id: 'PRG_ME', name: 'B.Tech - Mechanical Engineering', code: 'ME' },
+          { id: 'PRG_CE', name: 'B.Tech - Civil Engineering', code: 'CE' },
+          { id: 'PRG_EEE', name: 'B.Tech - Electrical & Electronics Engineering', code: 'EEE' },
+          { id: 'PRG_MCA', name: 'Master of Computer Applications', code: 'MCA' }
+        ];
+
         this.courseSubjectList = data.map((c: any) => ({
           id: (c.id || '').toString(),
-          courseId: (c.id || '').toString(),
-          courseName: c.title || c.name || c.code || 'Course',
-          subjectId: (c.id || '').toString(),
-          subjectName: c.code || ''
+          courseId: this.inferProgram(c.code, c.title),
+          courseName: this.inferProgram(c.code, c.title),
+          subjectId: c.code || '',
+          subjectName: c.title || ''
         }));
         this.cdr.detectChanges();
       },
@@ -145,10 +161,10 @@ export class FacultyCourseAllocation implements OnInit {
             id: (c.id || idx).toString(),
             facultyId: c.faculty,
             facultyName: c.faculty,
-            courseId: (c.id || idx).toString(),
-            courseName: c.title,
-            subjectId: (c.id || idx).toString(),
-            subjectName: c.code,
+            courseId: this.inferProgram(c.code, c.title),
+            courseName: this.inferProgram(c.code, c.title),
+            subjectId: c.code,
+            subjectName: `${c.title} (${c.code})`,
             semester: c.semester || 'Semester 1'
           }));
         this.filterAllocations();
