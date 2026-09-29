@@ -91,12 +91,6 @@ export class Courses implements OnInit, OnDestroy {
       return true;
     }
 
-    // Semester 6 active mappings
-    if ((studentSem.includes('6') || studentSem.includes('2026')) && 
-        (courseSem.toLowerCase().includes('6') || courseSem.toLowerCase().includes('fall 2026') || courseSem.toLowerCase().includes('sem 6') || courseSem.toLowerCase().includes('semester 6'))) {
-      return true;
-    }
-
     if (sNum && (courseSem.toLowerCase().includes(`sem ${sNum}`) || courseSem.toLowerCase().includes(`semester ${sNum}`) || courseSem.toLowerCase().includes(`sem-${sNum}`))) {
       return true;
     }

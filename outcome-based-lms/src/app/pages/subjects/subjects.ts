@@ -925,11 +925,6 @@ export class Subjects implements OnInit {
       return true;
     }
 
-    if ((studentSem.includes('6') || studentSem.includes('2026')) && 
-        (subSem.toLowerCase().includes('6') || subSem.toLowerCase().includes('fall 2026') || subSem.toLowerCase().includes('sem 6') || subSem.toLowerCase().includes('semester 6'))) {
-      return true;
-    }
-
     if (sNum && (subSem.toLowerCase().includes(`sem ${sNum}`) || subSem.toLowerCase().includes(`semester ${sNum}`) || subSem.toLowerCase().includes(`sem-${sNum}`))) {
       return true;
     }

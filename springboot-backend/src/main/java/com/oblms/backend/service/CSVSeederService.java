@@ -207,6 +207,7 @@ public class CSVSeederService {
         };
 
         int nameIndex = 0;
+        int globalCounter = 1;
         int savedCount = 0;
 
         for (String[] b : branches) {
@@ -218,34 +219,29 @@ public class CSVSeederService {
                 String enrolled = deptCourses.getOrDefault(deptCode, Map.of()).getOrDefault(sem, "");
 
                 for (int stuNum = 1; stuNum <= 5; stuNum++) {
-                    String stuId = String.format("STU_%s_S%d_%02d", deptCode, sem, stuNum);
+                    String stuId;
+                    String fullName;
+                    String email;
 
                     // Special case for Krishna Vamsi in CSE Sem 3
                     if ("CSE".equals(deptCode) && sem == 3 && stuNum == 1) {
                         stuId = "STU004";
-                        String fullName = "Krishna Vamsi";
-                        String email = "krishnavamsi1201@gmail.com";
-                        Optional<User> existing = userRepository.findById(stuId);
-                        if (existing.isEmpty()) {
-                            User u = new User(stuId, fullName, email, "password", "STUDENT", deptName, semName, enrolled);
-                            userRepository.save(u);
-                            savedCount++;
-                        } else {
-                            User u = existing.get();
-                            u.setEnrolledCourses(enrolled);
-                            u.setSemester(semName);
-                            u.setDepartment(deptName);
-                            userRepository.save(u);
+                        fullName = "Krishna Vamsi";
+                        email = "krishnavamsi1201@gmail.com";
+                    } else {
+                        if (globalCounter == 4) {
+                            globalCounter++; // Reserve STU004 for Krishna Vamsi
                         }
-                        continue;
+                        stuId = String.format("STU%03d", globalCounter);
+                        globalCounter++;
+
+                        String fName = firstNames[nameIndex % firstNames.length];
+                        String lName = lastNames[(nameIndex / firstNames.length) % lastNames.length];
+                        nameIndex++;
+
+                        fullName = fName + " " + lName;
+                        email = String.format("%s.%s.%s.s%d@oblms.edu", fName.toLowerCase(), lName.toLowerCase(), deptCode.toLowerCase(), sem);
                     }
-
-                    String fName = firstNames[nameIndex % firstNames.length];
-                    String lName = lastNames[(nameIndex / firstNames.length) % lastNames.length];
-                    nameIndex++;
-
-                    String fullName = fName + " " + lName;
-                    String email = String.format("%s.%s.%s.s%d@oblms.edu", fName.toLowerCase(), lName.toLowerCase(), deptCode.toLowerCase(), sem);
 
                     Optional<User> existing = userRepository.findById(stuId);
                     if (existing.isEmpty()) {
@@ -254,6 +250,8 @@ public class CSVSeederService {
                         savedCount++;
                     } else {
                         User u = existing.get();
+                        u.setName(fullName);
+                        u.setEmail(email);
                         u.setEnrolledCourses(enrolled);
                         u.setSemester(semName);
                         u.setDepartment(deptName);
@@ -550,7 +548,7 @@ public class CSVSeederService {
                             String lowerCode = subCode.toLowerCase();
                             if (!uniqueCourseCodes.contains(lowerCode) && coursesToSave.size() < 100) {
                                 uniqueCourseCodes.add(lowerCode);
-                                Course course = new Course(null, subCode, subjectName, "Faculty Board", "Fall 2026");
+                                Course course = new Course(null, subCode, subjectName, "Faculty Board", "Semester 3");
                                 coursesToSave.add(course);
                             }
                         } catch (Exception e) {}

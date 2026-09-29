@@ -171,12 +171,13 @@ export class Admin implements OnInit, OnDestroy {
 
     const list: DirectoryUser[] = [];
     let nameIndex = 0;
+    let globalCounter = 1;
 
     for (const b of branches) {
       for (let sem = 1; sem <= 8; sem++) {
         const semName = `Semester ${sem}`;
         for (let stuNum = 1; stuNum <= 5; stuNum++) {
-          let stuId = `STU_${b.code}_S${sem}_0${stuNum}`;
+          let stuId = '';
           let fullName = '';
           let email = '';
 
@@ -185,6 +186,12 @@ export class Admin implements OnInit, OnDestroy {
             fullName = 'Krishna Vamsi';
             email = 'krishnavamsi1201@gmail.com';
           } else {
+            if (globalCounter === 4) {
+              globalCounter++; // Reserve STU004 for Krishna Vamsi
+            }
+            stuId = `STU${String(globalCounter).padStart(3, '0')}`;
+            globalCounter++;
+
             const f = firstNames[nameIndex % firstNames.length];
             const l = lastNames[Math.floor(nameIndex / firstNames.length) % lastNames.length];
             nameIndex++;
