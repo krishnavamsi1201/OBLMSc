@@ -61,7 +61,7 @@
 					<a routerLink="/admin/student-management" class="kpi-link">Manage →</a>
 				</div>
 				<div class="kpi-num">{{ counts.students }}</div>
-				<div class="kpi-label">Registered Students (STU001 - STU030)</div>
+				<div class="kpi-label">Registered Students</div>
 			</div>
 
 			<div class="kpi-card">
@@ -70,7 +70,7 @@
 					<a routerLink="/admin/faculty-management" class="kpi-link">Manage →</a>
 				</div>
 				<div class="kpi-num">{{ counts.faculty }}</div>
-				<div class="kpi-label">Faculty Members (FAC001 - FAC015)</div>
+				<div class="kpi-label">Faculty Members</div>
 			</div>
 
 			<div class="kpi-card">
@@ -115,7 +115,7 @@
 			<div class="directory-header">
 				<div>
 					<h2>Institutional User Directory & Role-Lock Vault</h2>
-					<p>Standardized master directory of 1 Admin, 15 Faculty, and 30 Students with strict role-locked authentication.</p>
+					<p>Standardized master directory of Institutional Admin, Academic Faculty, and Enrolled Students with strict role-locked authentication.</p>
 				</div>
 				<div class="directory-tab-controls">
 					<button class="dir-tab-btn" [class.active]="activeDirectoryTab === 'faculty'" (click)="setDirectoryTab('faculty')">
