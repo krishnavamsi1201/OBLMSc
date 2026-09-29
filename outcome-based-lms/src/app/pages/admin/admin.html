@@ -124,14 +124,11 @@
 					<button class="dir-tab-btn" [class.active]="activeDirectoryTab === 'students'" (click)="setDirectoryTab('students')">
 						Student Roster ({{ studentList.length }})
 					</button>
-					<button class="dir-tab-btn" [class.active]="activeDirectoryTab === 'security'" (click)="setDirectoryTab('security')">
-						Role Security Matrix
-					</button>
 				</div>
 			</div>
 
 			<!-- Search & Filter Bar for Directory -->
-			<div class="directory-toolbar" *ngIf="activeDirectoryTab !== 'security'">
+			<div class="directory-toolbar">
 				<div class="dir-search-wrap">
 					<span class="material-icons search-inner-icon">search</span>
 					<input 
@@ -213,47 +210,6 @@
 						</tr>
 					</tbody>
 				</table>
-			</div>
-
-			<!-- TAB 3: ROLE-LOCK SECURITY SPECIFICATIONS -->
-			<div *ngIf="activeDirectoryTab === 'security'" class="security-matrix-box">
-				<div class="security-grid">
-					<div class="sec-card admin-sec">
-						<div class="sec-header">
-							<span class="sec-icon"><span class="material-icons">admin_panel_settings</span></span>
-							<h3>Admin Role Specification</h3>
-						</div>
-						<ul>
-							<li><strong>Account:</strong> <code>ADM001</code> / <code>admin@oblms.edu</code></li>
-							<li><strong>Access Scope:</strong> System Governance, All Approvals, Curriculum Mappings, Audit Reports.</li>
-							<li><strong>Enforcement:</strong> Cannot log in as Faculty or Student. Restricted strictly to Admin Portal.</li>
-						</ul>
-					</div>
-
-					<div class="sec-card fac-sec">
-						<div class="sec-header">
-							<span class="sec-icon"><span class="material-icons">supervisor_account</span></span>
-							<h3>Faculty Role Specification</h3>
-						</div>
-						<ul>
-							<li><strong>Accounts:</strong> 15 Pre-Seeded Faculty (<code>FAC001</code> to <code>FAC015</code>) + Admin-added faculty.</li>
-							<li><strong>Access Scope:</strong> Course syllabi, Question Bank, CO-PO proposal submissions, Attendance marking.</li>
-							<li><strong>Enforcement:</strong> Cannot log in as Student or Admin. Role mismatch is blocked with HTTP 403.</li>
-						</ul>
-					</div>
-
-					<div class="sec-card stu-sec">
-						<div class="sec-header">
-							<span class="sec-icon"><span class="material-icons">school</span></span>
-							<h3>Student Role Specification</h3>
-						</div>
-						<ul>
-							<li><strong>Accounts:</strong> 30 Pre-Seeded Students (<code>STU001</code> to <code>STU030</code>) + Admin-added students.</li>
-							<li><strong>Access Scope:</strong> Enrolled course view, Bunk calculator, Exam tickets, Grievance desk.</li>
-							<li><strong>Enforcement:</strong> Cannot access Faculty or Admin endpoints. Strictly role-locked.</li>
-						</ul>
-					</div>
-				</div>
 			</div>
 		</div>
 

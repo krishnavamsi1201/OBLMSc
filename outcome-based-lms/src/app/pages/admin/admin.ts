@@ -97,7 +97,7 @@ export class Admin implements OnInit, OnDestroy {
   recentActivities: ActivityItem[] = [];
 
   // Master Directory Tabs & State
-  activeDirectoryTab: 'faculty' | 'students' | 'security' = 'faculty';
+  activeDirectoryTab: 'faculty' | 'students' = 'faculty';
   directorySearchQuery = '';
   facultyList: DirectoryUser[] = [];
   studentList: DirectoryUser[] = [];
