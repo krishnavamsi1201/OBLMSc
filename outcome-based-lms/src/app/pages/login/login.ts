@@ -347,6 +347,35 @@ export class Login implements OnInit {
             localStorage.setItem('userName', matchedUser.name);
             localStorage.setItem('userId', matchedUser.id);
             localStorage.setItem('userDept', matchedUser.department || 'Computer Science');
+
+            let assigned: string[] = [];
+            if (Array.isArray(matchedUser.assignedCourses) && matchedUser.assignedCourses.length > 0) {
+              assigned = matchedUser.assignedCourses;
+            } else if (typeof matchedUser.enrolledCourses === 'string' && matchedUser.enrolledCourses) {
+              assigned = matchedUser.enrolledCourses.split(',').map((s: string) => s.trim()).filter(Boolean);
+            }
+            if (assigned.length === 0 && (matchedUser.role?.toUpperCase() === 'FACULTY' || this.role === 'faculty')) {
+              const uName = (matchedUser.name || '').toLowerCase();
+              const uEmail = (matchedUser.email || '').toLowerCase();
+              if (uName.includes('ramesh') || uEmail.includes('ramesh')) {
+                assigned = ['CS101', 'CS102', 'CS103'];
+              } else if (uName.includes('sunita') || uEmail.includes('sunita')) {
+                assigned = ['CS201', 'CS202', 'CS205'];
+              } else if (uName.includes('amit') || uEmail.includes('amit')) {
+                assigned = ['EC201', 'EC202', 'EC203'];
+              } else if (uName.includes('priya') || uEmail.includes('priya')) {
+                assigned = ['IT201', 'IT202', 'IT301'];
+              } else if (uName.includes('rajesh') || uEmail.includes('rajesh')) {
+                assigned = ['CS301', 'CS302', 'CS303'];
+              } else if (uName.includes('suresh') || uEmail.includes('suresh')) {
+                assigned = ['CE201', 'CE202', 'CE203'];
+              } else if (uName.includes('ananya') || uEmail.includes('ananya')) {
+                assigned = ['ME201', 'ME202', 'ME203'];
+              } else {
+                assigned = ['CS101', 'CS102', 'CS103'];
+              }
+            }
+            localStorage.setItem('userAssignedCourses', JSON.stringify(assigned));
           } catch (e) {}
 
           this.toast.success(`Welcome back, ${matchedUser.name}! 🎉`);

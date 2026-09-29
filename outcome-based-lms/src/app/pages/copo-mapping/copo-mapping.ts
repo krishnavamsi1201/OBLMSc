@@ -144,6 +144,28 @@ export class CopoMapping implements OnInit {
       return list;
     }
 
+    if (this.role === 'faculty') {
+      const assigned: string[] = [];
+      try {
+        const storedAssigned = JSON.parse(localStorage.getItem('userAssignedCourses') || '[]');
+        if (Array.isArray(storedAssigned) && storedAssigned.length > 0) {
+          storedAssigned.forEach(a => assigned.push(a));
+        }
+      } catch {}
+      if (assigned.length > 0) {
+        return assigned;
+      }
+      const uName = (this.studentName || '').toLowerCase();
+      if (uName.includes('ramesh')) return ['CS101', 'CS102', 'CS103'];
+      if (uName.includes('sunita')) return ['CS201', 'CS202', 'CS205'];
+      if (uName.includes('amit')) return ['EC201', 'EC202', 'EC203'];
+      if (uName.includes('priya')) return ['IT201', 'IT202', 'IT301'];
+      if (uName.includes('rajesh')) return ['CS301', 'CS302', 'CS303'];
+      if (uName.includes('suresh')) return ['CE201', 'CE202', 'CE203'];
+      if (uName.includes('ananya')) return ['ME201', 'ME202', 'ME203'];
+      return ['CS101', 'CS102', 'CS103'];
+    }
+
     const list: string[] = [...(this.branchCoursesMap[this.currentActiveBranch] || [])];
     try {
       const assigned = JSON.parse(localStorage.getItem('userAssignedCourses') || '[]');

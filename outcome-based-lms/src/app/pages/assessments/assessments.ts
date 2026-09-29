@@ -68,8 +68,34 @@ export class Assessments implements OnInit {
     return this.assessments.filter(a => this.normalizeType(a.type) === type).length;
   }
 
+  getFacultyAssignedCourses(): string[] {
+    let assigned: string[] = [];
+    try {
+      const stored = localStorage.getItem('userAssignedCourses');
+      if (stored) assigned = JSON.parse(stored);
+    } catch {}
+    if (assigned.length === 0 && this.role === 'faculty') {
+      const uName = (this.userName || '').toLowerCase();
+      if (uName.includes('ramesh')) assigned = ['CS101', 'CS102', 'CS103'];
+      else if (uName.includes('sunita')) assigned = ['CS201', 'CS202', 'CS205'];
+      else if (uName.includes('amit')) assigned = ['EC201', 'EC202', 'EC203'];
+      else if (uName.includes('priya')) assigned = ['IT201', 'IT202', 'IT301'];
+      else if (uName.includes('rajesh')) assigned = ['CS301', 'CS302', 'CS303'];
+      else if (uName.includes('suresh')) assigned = ['CE201', 'CE202', 'CE203'];
+      else if (uName.includes('ananya')) assigned = ['ME201', 'ME202', 'ME203'];
+      else assigned = ['CS101', 'CS102', 'CS103'];
+    }
+    return assigned;
+  }
+
   get filteredAssessments(): Assessment[] {
     let list = this.assessments;
+    if (this.role === 'faculty') {
+      const myCourses = this.getFacultyAssignedCourses();
+      list = list.filter(a =>
+        myCourses.some(mc => (a.course || '').toLowerCase().includes(mc.toLowerCase()) || mc.toLowerCase().includes((a.course || '').toLowerCase()))
+      );
+    }
     if (this.typeFilter) {
       list = list.filter(a => this.normalizeType(a.type) === this.typeFilter);
     }
@@ -86,6 +112,12 @@ export class Assessments implements OnInit {
 
   get filteredMarkEntries(): MarkEntry[] {
     let list = this.markEntries;
+    if (this.role === 'faculty') {
+      const myCourses = this.getFacultyAssignedCourses();
+      list = list.filter(m =>
+        myCourses.some(mc => (m.assessment || '').toLowerCase().includes(mc.toLowerCase()) || mc.toLowerCase().includes((m.assessment || '').toLowerCase()))
+      );
+    }
     if (this.role === 'student') {
       const uname = (this.userName || localStorage.getItem('userName') || 'Student').toLowerCase();
       const specific = list.filter(m => 
@@ -126,7 +158,14 @@ export class Assessments implements OnInit {
 
   loadCourses(): void {
     // 1. First get sync from local cache
-    this.coursesList = this.courseService.getCoursesSync();
+    let local = this.courseService.getCoursesSync();
+    if (this.role === 'faculty') {
+      const myCourses = this.getFacultyAssignedCourses();
+      local = local.filter(c => 
+        myCourses.some(mc => mc.toLowerCase() === (c.code || '').toLowerCase() || mc.toLowerCase() === (c.title || '').toLowerCase() || (c.title && c.title.toLowerCase().includes(mc.toLowerCase())))
+      );
+    }
+    this.coursesList = local;
     if (!this.currentAssessment.course && this.coursesList.length > 0) {
       this.currentAssessment.course = this.coursesList[0].title;
     }
@@ -136,9 +175,16 @@ export class Assessments implements OnInit {
     this.http.get<any[]>('http://localhost:8080/api/courses').subscribe({
       next: (courses) => {
         if (Array.isArray(courses) && courses.length > 0) {
-          this.coursesList = courses;
-          if (!this.currentAssessment.course) {
-            this.currentAssessment.course = courses[0].title;
+          let list = courses;
+          if (this.role === 'faculty') {
+            const myCourses = this.getFacultyAssignedCourses();
+            list = list.filter(c => 
+              myCourses.some(mc => mc.toLowerCase() === (c.code || '').toLowerCase() || mc.toLowerCase() === (c.title || '').toLowerCase() || (c.title && c.title.toLowerCase().includes(mc.toLowerCase())))
+            );
+          }
+          this.coursesList = list;
+          if (!this.currentAssessment.course && this.coursesList.length > 0) {
+            this.currentAssessment.course = this.coursesList[0].title;
           }
           this.cdr.detectChanges();
         }

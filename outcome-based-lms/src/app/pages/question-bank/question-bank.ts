@@ -161,12 +161,20 @@ export class QuestionBank implements OnInit {
             const stored = localStorage.getItem('userAssignedCourses');
             if (stored) assigned = JSON.parse(stored);
           } catch {}
-          if (assigned.length > 0) {
-            list = data.filter(q => 
-              assigned.includes(q.subject) || 
-              assigned.some(a => q.subject && q.subject.toLowerCase().includes(a.toLowerCase()))
-            );
+          if (assigned.length === 0) {
+            const uName = (localStorage.getItem('userName') || '').toLowerCase();
+            if (uName.includes('ramesh')) assigned = ['CS101', 'CS102', 'CS103', 'Database', 'Data Structures', 'Java'];
+            else if (uName.includes('sunita')) assigned = ['CS201', 'CS202', 'CS205', 'Operating Systems', 'Machine Learning'];
+            else if (uName.includes('amit')) assigned = ['EC201', 'EC202', 'EC203', 'Electronic Devices', 'Digital Electronics'];
+            else if (uName.includes('priya')) assigned = ['IT201', 'IT202', 'IT301', 'Networks', 'C++'];
+            else if (uName.includes('rajesh')) assigned = ['CS301', 'CS302', 'CS303', 'Software Engineering', 'Cloud'];
+            else if (uName.includes('suresh')) assigned = ['CE201', 'CE202', 'CE203', 'Strength of Materials', 'Surveying'];
+            else if (uName.includes('ananya')) assigned = ['ME201', 'ME202', 'ME203', 'Thermodynamics'];
+            else assigned = ['CS101', 'CS102', 'CS103', 'Database', 'Data Structures'];
           }
+          list = data.filter(q => 
+            assigned.some(a => (q.subject || '').toLowerCase().includes(a.toLowerCase()) || a.toLowerCase().includes((q.subject || '').toLowerCase()))
+          );
         }
         this.questions = list;
         const subjects = list.map(q => q.subject);
@@ -176,8 +184,10 @@ export class QuestionBank implements OnInit {
         this.cdr.detectChanges();
       },
       error: () => {
-        this.toast.error('Failed to load questions from database.');
+        this.questions = [];
+        this.subjectsList = [];
         this.isLoading = false;
+        this.cdr.detectChanges();
       }
     });
   }
