@@ -357,8 +357,8 @@ export class Admin implements OnInit, OnDestroy {
 
       return {
         name: dept,
-        studentCount: sCount || 40,
-        facultyCount: fCount || 3
+        studentCount: sCount,
+        facultyCount: fCount
       };
     });
   }

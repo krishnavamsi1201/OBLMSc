@@ -118,17 +118,18 @@ export class CopoMapping implements OnInit {
   selectedBranch: string = 'MY_BRANCH';
 
   branchCoursesMap: { [key: string]: string[] } = {
-    'CSE': ['CS101', 'CS102', 'CS103', 'CS301', 'CS302', 'CS102L', 'DS Lab', 'DS', 'RLMCA205', 'CC', 'OOP', 'Database', 'Data Structures', 'Operating Systems', 'Computer Networks', 'Software Engineering'],
-    'IT': ['IT305', 'CS303', 'Linux', 'WT', 'CS361', 'Linux Lab', 'Open Lab'],
-    'ECE': ['MES', 'DSLD', 'EC206', 'EE407', 'CS203', 'CS207', 'AMP', 'LD LAB'],
-    'ME': ['ME210', 'KM', 'SMSE', '04ME6512', 'IC', 'AU203', 'EM IV'],
-    'Civil': ['FMHM', 'SMSE', 'HS300', 'CE234', 'EMII', 'ECS']
+    'CSE': ['CS101', 'CS102', 'CS103', 'CS201', 'CS202', 'CS301', 'CS302', 'CS303', 'CS401', 'CS402'],
+    'IT': ['IT111', 'IT121', 'IT201', 'IT211', 'IT301', 'IT311', 'IT401', 'IT411'],
+    'ECE': ['EC111', 'EC121', 'EC201', 'EC211', 'EC301', 'EC311', 'EC401', 'EC411'],
+    'EEE': ['EE111', 'EE121', 'EE201', 'EE211', 'EE301', 'EE311', 'EE401', 'EE411'],
+    'ME': ['ME111', 'ME121', 'ME201', 'ME211', 'ME301', 'ME311', 'ME401', 'ME411'],
+    'Civil': ['CE111', 'CE121', 'CE201', 'CE211', 'CE301', 'CE311', 'CE401', 'CE411']
   };
 
   get studentAllowedCourses(): string[] {
     if (this.role === 'student') {
       const branch = this.currentActiveBranch;
-      const cseEnrolled = ['CS101', 'CS102', 'CS103', 'CS301', 'CS302', 'CS102L', 'DS Lab', 'DS', 'RLMCA205', 'CC', 'OOP', 'Database', 'Data Structures', 'Operating Systems', 'Computer Networks', 'Software Engineering'];
+      const cseEnrolled = ['CS101', 'CS102', 'CS103', 'CS201', 'CS202', 'CS301', 'CS302', 'CS303', 'CS401', 'CS402'];
       const list: string[] = branch === 'CSE' ? [...cseEnrolled] : [...(this.branchCoursesMap[branch] || cseEnrolled)];
       
       try {
@@ -609,23 +610,24 @@ export class CopoMapping implements OnInit {
     'CS101': 'CS101 - Database Management Systems',
     'CS102': 'CS102 - Data Structures & Algorithms',
     'CS103': 'CS103 - Object-Oriented Programming with Java',
+    'CS201': 'CS201 - Operating Systems',
+    'CS202': 'CS202 - Machine Learning & Data Science',
     'CS301': 'CS301 - Computer Networks & Protocols',
     'CS302': 'CS302 - Software Engineering & Agile Methodology',
-    'DS Lab': 'DS Lab - Data Structures & Algorithms Laboratory in C',
-    'EMII': 'EM II - Engineering Mathematics II',
-    'IT305': 'IT305 - Operating Systems & Systems Programming',
-    'CS303': 'CS303 - Design and Analysis of Algorithms',
-    'WT': 'WT - Web Technologies & Full-Stack Development',
-    'Linux': 'Linux - Linux Administration & Shell Scripting',
-    'MES': 'MES - Microprocessors and Embedded Systems',
-    'DSLD': 'DSLD - Digital System and Logic Design',
-    'FMHM': 'FMHM - Fluid Mechanics and Hydraulic Machinery',
-    'ME210': 'ME210 - Kinematics & Dynamics of Machinery',
-    'KM': 'KM - Kinematics of Machinery',
-    'IC': 'IC - Internal Combustion Engines',
-    'SMSE': 'SMSE - Solid Mechanics & Structural Engineering',
-    'CE234': 'CE234 - Surveying & Geomatics',
-    'HS300': 'HS300 - Professional Ethics & Human Values'
+    'CS303': 'CS303 - Cloud Computing & DevOps',
+    'CS401': 'CS401 - Artificial Intelligence',
+    'CS402': 'CS402 - Cyber Security & Cryptography',
+    'IT111': 'IT111 - Calculus & Linear Algebra',
+    'IT201': 'IT201 - Data Structures & Algorithms',
+    'IT301': 'IT301 - Database Management Systems',
+    'EC111': 'EC111 - Linear Algebra & Transform Calculus',
+    'EC201': 'EC201 - Electronic Devices and Circuit Theory',
+    'EE111': 'EE111 - Calculus & Differential Equations',
+    'EE201': 'EE201 - Electric Circuit Analysis',
+    'ME111': 'ME111 - Calculus & Linear Algebra',
+    'ME201': 'ME201 - Engineering Thermodynamics',
+    'CE111': 'CE111 - Calculus & Linear Algebra',
+    'CE201': 'CE201 - Strength of Materials I'
   };
 
   getFullCourseName(courseStr: string): string {

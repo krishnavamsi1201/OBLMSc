@@ -552,11 +552,12 @@ export class Courses implements OnInit, OnDestroy {
     const dept = (localStorage.getItem('userDepartment') || localStorage.getItem('userDept') || '').toLowerCase();
 
     // Prevent cross-branch contamination: strictly identify codes belonging to other engineering branches
-    const isCSECode = code.startsWith('CS') || code === 'DS' || code === 'OOP' || code === 'CC' || code === 'OOMD' || code === 'HPC' || code === 'DS LAB' || code === 'C++ LAB' || code.startsWith('RLMCA');
-    const isITCode = code.startsWith('IT') || code === 'LINUX' || code === 'WT' || code === 'CS361' || code === 'RLMCA108' || code === 'LINUX LAB' || code === 'OPEN LAB';
-    const isECECode = code.startsWith('EC') || code.startsWith('EE') || code === 'MES' || code === 'DSLD' || code === 'AMP' || code === 'HARDWARE LAB' || code === 'LD LAB';
-    const isMECode = code.startsWith('ME') || code.startsWith('AU') || code === 'KM' || code === 'IC' || code === '04ME6512';
-    const isCivilCode = code.startsWith('CE') || code === 'FMHM' || code === 'SMSE' || code === 'EMII' || code === 'HS300';
+    const isCSECode = code.startsWith('CS');
+    const isITCode = code.startsWith('IT');
+    const isECECode = code.startsWith('EC');
+    const isEEECode = code.startsWith('EE');
+    const isMECode = code.startsWith('ME');
+    const isCivilCode = code.startsWith('CE');
 
     // 1. Computer Science & Engineering (CSE)
     if (dept.includes('comp') || dept.includes('cse') || dept.includes('cs')) {

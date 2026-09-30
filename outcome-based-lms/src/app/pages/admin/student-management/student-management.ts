@@ -185,44 +185,37 @@ export class StudentManagement implements OnInit {
   }
 
   loadUsers(): void {
-    const defaultStudents = this.generateAllDefaultStudents();
-
     this.http.get<any[]>('http://localhost:8080/api/users').subscribe({
       next: (users) => {
-        const studentMap = new Map<string, Student>();
-        // 1. First seed with all 240 accredited students (5 per sem x 8 sems x 6 depts)
-        for (const def of defaultStudents) {
-          studentMap.set(def.id.toUpperCase(), { ...def });
-        }
-
-        // 2. Merge/update with any backend records
         if (Array.isArray(users)) {
           const fetched = users.filter(u => u.role?.toUpperCase() === 'STUDENT');
-          for (let idx = 0; idx < fetched.length; idx++) {
-            const u = fetched[idx];
-            const id = (u.id || `STU${100 + idx}`).toUpperCase();
-            studentMap.set(id, {
-              id: u.id || id,
-              regNo: u.id || id,
-              name: u.name || 'Student User',
-              email: u.email || `${id.toLowerCase()}@oblms.edu`,
-              password: u.password || 'password',
-              department: this.normalizeDept(u.department),
-              semester: this.parseStudentSemester(u)
+          if (fetched.length > 0) {
+            this.studentList = fetched.map((u, idx) => {
+              const id = (u.id || `STU${100 + idx}`).toUpperCase();
+              return {
+                id: u.id || id,
+                regNo: u.id || id,
+                name: u.name || 'Student User',
+                email: u.email || `${id.toLowerCase()}@oblms.edu`,
+                password: u.password || 'password',
+                department: this.normalizeDept(u.department),
+                semester: this.parseStudentSemester(u)
+              };
             });
+            try {
+              localStorage.setItem('obslmsStudents', JSON.stringify(this.studentList));
+            } catch {}
+            this.filterUsers();
+            this.cdr.detectChanges();
+            return;
           }
         }
-
-        this.studentList = Array.from(studentMap.values());
-
-        try {
-          localStorage.setItem('obslmsStudents', JSON.stringify(this.studentList));
-        } catch {}
-
+        this.studentList = this.generateAllDefaultStudents();
         this.filterUsers();
         this.cdr.detectChanges();
       },
       error: () => {
+        const defaultStudents = this.generateAllDefaultStudents();
         const studentMap = new Map<string, Student>();
         for (const def of defaultStudents) {
           studentMap.set(def.id.toUpperCase(), { ...def });

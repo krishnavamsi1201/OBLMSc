@@ -143,23 +143,24 @@ export class CourseOutcomes {
     'CS101': 'CS101 - Database Management Systems',
     'CS102': 'CS102 - Data Structures & Algorithms',
     'CS103': 'CS103 - Object-Oriented Programming with Java',
+    'CS201': 'CS201 - Operating Systems',
+    'CS202': 'CS202 - Machine Learning & Data Science',
     'CS301': 'CS301 - Computer Networks & Protocols',
     'CS302': 'CS302 - Software Engineering & Agile Methodology',
-    'DS Lab': 'DS Lab - Data Structures & Algorithms Laboratory in C',
-    'EMII': 'EM II - Engineering Mathematics II',
-    'IT305': 'IT305 - Operating Systems & Systems Programming',
-    'CS303': 'CS303 - Design and Analysis of Algorithms',
-    'WT': 'WT - Web Technologies & Full-Stack Development',
-    'Linux': 'Linux - Linux Administration & Shell Scripting',
-    'MES': 'MES - Microprocessors and Embedded Systems',
-    'DSLD': 'DSLD - Digital System and Logic Design',
-    'FMHM': 'FMHM - Fluid Mechanics and Hydraulic Machinery',
-    'ME210': 'ME210 - Kinematics & Dynamics of Machinery',
-    'KM': 'KM - Kinematics of Machinery',
-    'IC': 'IC - Internal Combustion Engines',
-    'SMSE': 'SMSE - Solid Mechanics & Structural Engineering',
-    'CE234': 'CE234 - Surveying & Geomatics',
-    'HS300': 'HS300 - Professional Ethics & Human Values'
+    'CS303': 'CS303 - Cloud Computing & DevOps',
+    'CS401': 'CS401 - Artificial Intelligence',
+    'CS402': 'CS402 - Cyber Security & Cryptography',
+    'IT111': 'IT111 - Calculus & Linear Algebra',
+    'IT201': 'IT201 - Data Structures & Algorithms',
+    'IT301': 'IT301 - Database Management Systems',
+    'EC111': 'EC111 - Linear Algebra & Transform Calculus',
+    'EC201': 'EC201 - Electronic Devices and Circuit Theory',
+    'EE111': 'EE111 - Calculus & Differential Equations',
+    'EE201': 'EE201 - Electric Circuit Analysis',
+    'ME111': 'ME111 - Calculus & Linear Algebra',
+    'ME201': 'ME201 - Engineering Thermodynamics',
+    'CE111': 'CE111 - Calculus & Linear Algebra',
+    'CE201': 'CE201 - Strength of Materials I'
   };
 
   getFullCourseName(courseStr: string): string {
@@ -201,15 +202,17 @@ export class CourseOutcomes {
       if (assigned.length === 0) {
         const dept = (localStorage.getItem('userDept') || localStorage.getItem('userDepartment') || 'CSE').toLowerCase();
         if (dept.includes('computer') || dept.includes('cse')) {
-          assigned = ['CS101', 'CS102', 'CS103', 'CS301', 'CS302', 'DS Lab', 'Database Management Systems', 'Data Structures & Algorithms', 'Object-Oriented Programming', 'Computer Networks', 'Operating Systems', 'Software Engineering'];
+          assigned = ['CS101', 'CS102', 'CS103', 'CS201', 'CS202', 'CS301', 'CS302', 'CS401', 'CS402'];
         } else if (dept.includes('information') || dept.includes('it')) {
-          assigned = ['IT305', 'CS303', 'Linux', 'WT', 'Web Technologies'];
+          assigned = ['IT111', 'IT121', 'IT201', 'IT211', 'IT301', 'IT311', 'IT401', 'IT411'];
         } else if (dept.includes('electronic') || dept.includes('ece')) {
-          assigned = ['MES', 'DSLD', 'EC206', 'EE407', 'CS203'];
+          assigned = ['EC111', 'EC121', 'EC201', 'EC211', 'EC301', 'EC311', 'EC401', 'EC411'];
+        } else if (dept.includes('electrical') || dept.includes('eee')) {
+          assigned = ['EE111', 'EE121', 'EE201', 'EE211', 'EE301', 'EE311', 'EE401', 'EE411'];
         } else if (dept.includes('mechanical') || dept.includes('me')) {
-          assigned = ['ME210', 'KM', 'IC', '04ME6512', 'AU203'];
+          assigned = ['ME111', 'ME121', 'ME201', 'ME211', 'ME301', 'ME311', 'ME401', 'ME411'];
         } else if (dept.includes('civil') || dept === 'ce') {
-          assigned = ['FMHM', 'SMSE', 'CE234', 'EMII'];
+          assigned = ['CE111', 'CE121', 'CE201', 'CE211', 'CE301', 'CE311', 'CE401', 'CE411'];
         }
       }
     }
@@ -269,10 +272,6 @@ export class CourseOutcomes {
             )
           );
         }
-        if (this.role === 'student') {
-          const civilKeywords = ['fmhm', 'civil', 'survey', 'hydraul', 'ce234', 'solid mechanics', 'smse'];
-          list = list.filter(co => !civilKeywords.some(ck => (co.course || '').toLowerCase().includes(ck)));
-        }
         this.courseOutcomes = list;
         try {
           localStorage.setItem('obslmsCourseOutcomes', JSON.stringify(this.courseOutcomes));
@@ -291,10 +290,6 @@ export class CourseOutcomes {
                 (co.course && (co.course.toLowerCase().includes(a.toLowerCase()) || a.toLowerCase().includes(co.course.toLowerCase())))
               )
             );
-          }
-          if (this.role === 'student') {
-            const civilKeywords = ['fmhm', 'civil', 'survey', 'hydraul', 'ce234', 'solid mechanics', 'smse'];
-            list = list.filter(co => !civilKeywords.some(ck => (co.course || '').toLowerCase().includes(ck)));
           }
           this.courseOutcomes = list;
         } catch {

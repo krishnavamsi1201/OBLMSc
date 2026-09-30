@@ -850,19 +850,22 @@ export class Subjects implements OnInit {
     const n = (name || '').toLowerCase().trim();
 
     // 1. Prefix checks (High Priority)
-    if (c.startsWith('CS') || c === 'DS' || c === 'DS LAB' || c === 'OOP' || c === 'C++ LAB' || c === 'OOMD' || c === 'CC' || c === 'C' || c === 'COMPUTER LAB' || c === 'HPC' || c.startsWith('RLMCA')) {
+    if (c.startsWith('CS')) {
       return 'Computer Science & Engineering';
     }
-    if (c.startsWith('IT') || c === 'LINUX' || c === 'LINUX LAB' || c === 'OPEN LAB' || c === 'WT') {
+    if (c.startsWith('IT')) {
       return 'Information Technology';
     }
-    if (c.startsWith('EC') || c.startsWith('EE') || c === 'MES' || c === 'DSLD' || c === 'AMP' || c === 'HARDWARE LAB' || c === 'LD LAB') {
+    if (c.startsWith('EC')) {
       return 'Electronics & Communication Engineering';
     }
-    if (c.startsWith('ME') || c.startsWith('AU') || c === 'KM' || c === 'IC' || c === '04ME6512') {
+    if (c.startsWith('EE')) {
+      return 'Electrical & Electronics Engineering';
+    }
+    if (c.startsWith('ME')) {
       return 'Mechanical Engineering';
     }
-    if (c.startsWith('CE') || c === 'FMHM' || c === 'SMSE') {
+    if (c.startsWith('CE')) {
       return 'Civil Engineering';
     }
 
