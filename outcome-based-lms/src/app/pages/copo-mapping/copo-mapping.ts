@@ -7,6 +7,7 @@ import { Footer } from '../../shared/footer/footer';
 import { ToastService } from '../../shared/services/toast.service';
 import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
+import { DEFAULT_DATABASE_COURSES } from '../../shared/services/course.service';
 
 interface ProgramOutcome {
   id: number;
@@ -30,6 +31,39 @@ interface CoMapping {
   mappingLevel: number;
   status: 'Pending' | 'Approved';
 }
+
+const DEFAULT_PROGRAM_OUTCOMES: ProgramOutcome[] = [
+  { id: 1, poNumber: 'PO1', description: 'Engineering Knowledge: Apply mathematics, science, and core engineering fundamentals.' },
+  { id: 2, poNumber: 'PO2', description: 'Problem Analysis: Identify, formulate, review research literature, and analyze complex problems.' },
+  { id: 3, poNumber: 'PO3', description: 'Design & Development of Solutions: Design system components and processes meeting specified technical needs.' },
+  { id: 4, poNumber: 'PO4', description: 'Conduct Investigations of Complex Problems: Use research-based methods and experimental analysis.' },
+  { id: 5, poNumber: 'PO5', description: 'Modern Tool Usage: Select and apply appropriate techniques, modern tools, and simulation software.' },
+  { id: 6, poNumber: 'PO6', description: 'The Engineer and Society: Apply contextual knowledge to assess societal, health, safety, and legal issues.' },
+  { id: 7, poNumber: 'PO7', description: 'Environment and Sustainability: Understand the impact of professional engineering solutions in societal contexts.' },
+  { id: 8, poNumber: 'PO8', description: 'Ethics: Apply ethical principles and commit to professional ethics and responsibilities.' },
+  { id: 9, poNumber: 'PO9', description: 'Individual and Team Work: Function effectively as an individual, member or leader in diverse teams.' },
+  { id: 10, poNumber: 'PO10', description: 'Communication: Communicate effectively on complex engineering activities with the engineering community.' },
+  { id: 11, poNumber: 'PO11', description: 'Project Management and Finance: Demonstrate knowledge and understanding of management principles.' },
+  { id: 12, poNumber: 'PO12', description: 'Life-long Learning: Recognize the need for, and have the preparation and ability to engage in independent learning.' }
+];
+
+const DEFAULT_INITIAL_COS: CourseOutcome[] = [
+  { id: 1, course: 'CS101', co: 'CO1', description: 'Explain database architecture, schema design, and entity-relationship models.' },
+  { id: 2, course: 'CS101', co: 'CO2', description: 'Formulate relational algebra queries and complex SQL queries.' },
+  { id: 3, course: 'CS101', co: 'CO3', description: 'Apply normalization techniques (1NF to BCNF) to eliminate database redundancies.' },
+  { id: 4, course: 'CS101', co: 'CO4', description: 'Implement transaction management and concurrency control protocols.' },
+  { id: 5, course: 'CS101', co: 'CO5', description: 'Demonstrate indexing, hashing, and database tuning strategies.' },
+  { id: 6, course: 'CS102', co: 'CO1', description: 'Analyze asymptotic time and space complexity of algorithms.' },
+  { id: 7, course: 'CS102', co: 'CO2', description: 'Design linear data structures including linked lists, stacks, and queues.' },
+  { id: 8, course: 'CS102', co: 'CO3', description: 'Implement non-linear data structures including binary trees, AVL trees, and heaps.' },
+  { id: 9, course: 'CS102', co: 'CO4', description: 'Apply graph traversal algorithms (BFS, DFS) and shortest path algorithms.' },
+  { id: 10, course: 'CS102', co: 'CO5', description: 'Evaluate searching, sorting, and hashing techniques for problem solving.' },
+  { id: 11, course: 'CS103', co: 'CO1', description: 'Understand OOP concepts: encapsulation, inheritance, and polymorphism in Java.' },
+  { id: 12, course: 'CS103', co: 'CO2', description: 'Design robust applications using Java Exception Handling and Multithreading.' },
+  { id: 13, course: 'CS201', co: 'CO1', description: 'Explain operating system architecture, kernel services, and process management.' },
+  { id: 14, course: 'CS201', co: 'CO2', description: 'Analyze CPU scheduling algorithms and process synchronization mechanisms.' },
+  { id: 15, course: 'CS301', co: 'CO1', description: 'Understand OSI and TCP/IP protocol architectures and layered networking.' }
+];
 
 @Component({
   selector: 'app-copo-mapping',
@@ -104,9 +138,9 @@ export class CopoMapping implements OnInit {
     }
   ];
 
-  programOutcomes: ProgramOutcome[] = [];
-  courseOutcomes: CourseOutcome[] = [];
-  courses: string[] = [];
+  programOutcomes: ProgramOutcome[] = [...DEFAULT_PROGRAM_OUTCOMES];
+  courseOutcomes: CourseOutcome[] = [...DEFAULT_INITIAL_COS];
+  courses: string[] = DEFAULT_DATABASE_COURSES.map(c => c.code);
   selectedCourseOutcomeKey = '';
 
   newPoNumber = '';
@@ -115,34 +149,11 @@ export class CopoMapping implements OnInit {
   newCoCode = '';
   newCoDescription = '';
 
-  selectedBranch: string = 'MY_BRANCH';
-
-  branchCoursesMap: { [key: string]: string[] } = {
-    'CSE': ['CS101', 'CS102', 'CS103', 'CS201', 'CS202', 'CS301', 'CS302', 'CS303', 'CS401', 'CS402'],
-    'IT': ['IT111', 'IT121', 'IT201', 'IT211', 'IT301', 'IT311', 'IT401', 'IT411'],
-    'ECE': ['EC111', 'EC121', 'EC201', 'EC211', 'EC301', 'EC311', 'EC401', 'EC411'],
-    'EEE': ['EE111', 'EE121', 'EE201', 'EE211', 'EE301', 'EE311', 'EE401', 'EE411'],
-    'ME': ['ME111', 'ME121', 'ME201', 'ME211', 'ME301', 'ME311', 'ME401', 'ME411'],
-    'Civil': ['CE111', 'CE121', 'CE201', 'CE211', 'CE301', 'CE311', 'CE401', 'CE411']
-  };
+  selectedBranch: string = 'ALL';
 
   get studentAllowedCourses(): string[] {
-    if (this.role === 'student') {
-      const branch = this.currentActiveBranch;
-      const cseEnrolled = ['CS101', 'CS102', 'CS103', 'CS201', 'CS202', 'CS301', 'CS302', 'CS303', 'CS401', 'CS402'];
-      const list: string[] = branch === 'CSE' ? [...cseEnrolled] : [...(this.branchCoursesMap[branch] || cseEnrolled)];
-      
-      try {
-        const studentCourses = JSON.parse(localStorage.getItem('obslmsStudentCourses') || '[]');
-        const name = (this.studentName || '').toLowerCase();
-        studentCourses.forEach((sc: any) => {
-          if ((sc.studentName || '').toLowerCase().includes(name)) {
-            if (sc.courseCode && !list.includes(sc.courseCode)) list.push(sc.courseCode);
-            if (sc.courseTitle && !list.includes(sc.courseTitle)) list.push(sc.courseTitle);
-          }
-        });
-      } catch {}
-      return list;
+    if (this.role === 'admin' || this.selectedBranch === 'ALL') {
+      return [];
     }
 
     if (this.role === 'faculty') {
@@ -153,9 +164,8 @@ export class CopoMapping implements OnInit {
           storedAssigned.forEach(a => assigned.push(a));
         }
       } catch {}
-      if (assigned.length > 0) {
-        return assigned;
-      }
+      if (assigned.length > 0) return assigned;
+
       const uName = (this.studentName || '').toLowerCase();
       if (uName.includes('ramesh')) return ['CS101', 'CS102', 'CS103'];
       if (uName.includes('sunita')) return ['CS201', 'CS202', 'CS205'];
@@ -167,60 +177,57 @@ export class CopoMapping implements OnInit {
       return ['CS101', 'CS102', 'CS103'];
     }
 
-    const list: string[] = [...(this.branchCoursesMap[this.currentActiveBranch] || [])];
-    try {
-      const assigned = JSON.parse(localStorage.getItem('userAssignedCourses') || '[]');
-      assigned.forEach((a: string) => { if (!list.includes(a)) list.push(a); });
-    } catch {}
-    return list;
+    if (this.role === 'student') {
+      return ['CS101', 'CS102', 'CS103', 'CS201', 'CS202', 'CS301', 'CS302', 'CS303', 'CS401', 'CS402'];
+    }
+
+    return [];
   }
 
   get currentActiveBranch(): string {
-    if (this.selectedBranch === 'MY_BRANCH' || this.role === 'student') {
-      const d = (this.studentDept || '').toLowerCase();
-      if (d.includes('computer') || d.includes('cse') || d.includes('cs')) return 'CSE';
-      if (d.includes('information') || d.includes('it')) return 'IT';
-      if (d.includes('electronic') || d.includes('ece') || d.includes('electrical') || d.includes('eee') || d === 'ee') return 'ECE';
-      if (d.includes('mechanical') || d.includes('mech')) return 'ME';
-      if (d.includes('civil') || d === 'ce') return 'Civil';
-      return 'CSE';
-    }
-    return this.selectedBranch;
+    if (this.role === 'admin') return 'ALL';
+    const d = (this.studentDept || '').toLowerCase();
+    if (d.includes('computer') || d.includes('cse') || d.includes('cs')) return 'CSE';
+    if (d.includes('information') || d.includes('it')) return 'IT';
+    if (d.includes('electronic') || d.includes('ece') || d.includes('electrical') || d.includes('eee') || d === 'ee') return 'ECE';
+    if (d.includes('mechanical') || d.includes('mech')) return 'ME';
+    if (d.includes('civil') || d === 'ce') return 'Civil';
+    return 'CSE';
   }
 
   get filteredGroupedMappings() {
-    if (this.role === 'admin' && this.selectedBranch === 'ALL') return this.groupedMappings;
-    const allowed = this.studentAllowedCourses;
+    if (this.selectedBranch === 'ALL') {
+      return this.groupedMappings;
+    }
+
+    const branch = (this.selectedBranch === 'MY_BRANCH' ? this.currentActiveBranch : this.selectedBranch).toUpperCase();
+    
     return this.groupedMappings.filter(g => {
-      const gName = g.courseName.toLowerCase();
-      if (this.currentActiveBranch === 'CSE' || this.role === 'student') {
-        const civilKeywords = ['fmhm', 'civil', 'survey', 'hydraul', 'ce234', 'solid mechanics', 'smse'];
-        if (civilKeywords.some(ck => gName.includes(ck))) return false;
-      }
-      if (!allowed || allowed.length === 0) return true;
-      return allowed.some(ac => 
-        gName === ac.toLowerCase() ||
-        gName.includes(ac.toLowerCase()) || 
-        ac.toLowerCase().includes(gName)
-      );
+      const gName = g.courseName.toUpperCase();
+      if (branch === 'CSE') return gName.includes('CS') || gName.includes('COMPUTER') || gName.includes('DATA');
+      if (branch === 'IT') return gName.includes('IT') || gName.includes('INFORMATION');
+      if (branch === 'ECE') return gName.includes('EC') || gName.includes('EE') || gName.includes('ELECTRONIC');
+      if (branch === 'MECHANICAL' || branch === 'ME') return gName.includes('ME') || gName.includes('MECHANICAL') || gName.includes('THERMAL');
+      if (branch === 'CIVIL' || branch === 'CE') return gName.includes('CE') || gName.includes('CIVIL') || gName.includes('SURVEY');
+      return true;
     });
   }
 
   get filteredCourseOutcomes() {
-    if (this.role === 'admin' && this.selectedBranch === 'ALL') return this.courseOutcomes;
-    const allowed = this.studentAllowedCourses;
+    if (this.selectedBranch === 'ALL') {
+      return this.courseOutcomes;
+    }
+
+    const branch = (this.selectedBranch === 'MY_BRANCH' ? this.currentActiveBranch : this.selectedBranch).toUpperCase();
+
     return this.courseOutcomes.filter(co => {
-      const c = (co.course || '').toLowerCase();
-      if (this.currentActiveBranch === 'CSE' || this.role === 'student') {
-        const civilKeywords = ['fmhm', 'civil', 'survey', 'hydraul', 'ce234', 'solid mechanics', 'smse'];
-        if (civilKeywords.some(ck => c.includes(ck))) return false;
-      }
-      if (!allowed || allowed.length === 0) return true;
-      return allowed.some(ac => 
-        c === ac.toLowerCase() ||
-        c.includes(ac.toLowerCase()) || 
-        ac.toLowerCase().includes(c)
-      );
+      const c = (co.course || '').toUpperCase();
+      if (branch === 'CSE') return c.startsWith('CS') || c.includes('COMPUTER') || c.includes('DATA');
+      if (branch === 'IT') return c.startsWith('IT') || c.includes('INFORMATION');
+      if (branch === 'ECE') return c.startsWith('EC') || c.startsWith('EE') || c.includes('ELECTRONIC');
+      if (branch === 'MECHANICAL' || branch === 'ME') return c.startsWith('ME') || c.includes('MECHANICAL');
+      if (branch === 'CIVIL' || branch === 'CE') return c.startsWith('CE') || c.includes('CIVIL');
+      return true;
     });
   }
 
@@ -285,11 +292,19 @@ export class CopoMapping implements OnInit {
   constructor() {
     try {
       this.role = localStorage.getItem('userRole')?.toLowerCase() || null;
-      this.studentName = localStorage.getItem('userName') || 'Student';
-      this.studentEmail = localStorage.getItem('userEmail') || 'student@centurionuniv.edu.in';
+      this.studentName = localStorage.getItem('userName') || 'Admin';
+      this.studentEmail = localStorage.getItem('userEmail') || 'admin@centurionuniv.edu.in';
       this.studentPhoto = localStorage.getItem('userProfilePicture') || null;
-      this.studentDept = localStorage.getItem('userDepartment') || 'Computer Science & Engineering';
-      this.studentRoll = localStorage.getItem('userRoll') || 'CUTM2026CSE042';
+      this.studentDept = localStorage.getItem('userDepartment') || 'Administration';
+      this.studentRoll = localStorage.getItem('userRoll') || 'ADMIN001';
+
+      if (this.role === 'admin') {
+        this.selectedBranch = 'ALL';
+      } else if (this.role === 'faculty') {
+        this.selectedBranch = 'MY_BRANCH';
+      } else {
+        this.selectedBranch = 'CSE';
+      }
     } catch {
       this.role = null;
     }
@@ -314,9 +329,12 @@ export class CopoMapping implements OnInit {
 
     this.http.get<ProgramOutcome[]>(url).subscribe({
       next: (data) => {
-        this.programOutcomes = data;
+        if (Array.isArray(data) && data.length > 0) {
+          this.programOutcomes = data;
+        }
         this.cdr.detectChanges();
-      }
+      },
+      error: () => {}
     });
   }
 
@@ -326,23 +344,26 @@ export class CopoMapping implements OnInit {
 
     this.http.get<CourseOutcome[]>(url).subscribe({
       next: (data) => {
-        let list = data;
-        if (this.role === 'faculty') {
-          let assigned: string[] = [];
-          try {
-            const stored = localStorage.getItem('userAssignedCourses');
-            if (stored) assigned = JSON.parse(stored);
-          } catch {}
-          if (assigned.length > 0) {
-            list = data.filter(item => 
-              assigned.includes(item.course) || 
-              assigned.some(a => item.course && item.course.toLowerCase().includes(a.toLowerCase()))
-            );
+        if (Array.isArray(data) && data.length > 0) {
+          let list = data;
+          if (this.role === 'faculty') {
+            let assigned: string[] = [];
+            try {
+              const stored = localStorage.getItem('userAssignedCourses');
+              if (stored) assigned = JSON.parse(stored);
+            } catch {}
+            if (assigned.length > 0) {
+              list = data.filter(item => 
+                assigned.includes(item.course) || 
+                assigned.some(a => item.course && item.course.toLowerCase().includes(a.toLowerCase()))
+              );
+            }
           }
+          this.courseOutcomes = list;
+          this.cdr.detectChanges();
         }
-        this.courseOutcomes = list;
-        this.cdr.detectChanges();
-      }
+      },
+      error: () => {}
     });
   }
 
@@ -352,24 +373,27 @@ export class CopoMapping implements OnInit {
 
     this.http.get<CoMapping[]>(url).subscribe({
       next: (data) => {
-        let list = data;
-        if (this.role === 'faculty') {
-          let assigned: string[] = [];
-          try {
-            const stored = localStorage.getItem('userAssignedCourses');
-            if (stored) assigned = JSON.parse(stored);
-          } catch {}
-          if (assigned.length > 0) {
-            list = data.filter(item => 
-              assigned.includes(item.course) || 
-              assigned.some(a => item.course && item.course.toLowerCase().includes(a.toLowerCase()))
-            );
+        if (Array.isArray(data) && data.length > 0) {
+          let list = data;
+          if (this.role === 'faculty') {
+            let assigned: string[] = [];
+            try {
+              const stored = localStorage.getItem('userAssignedCourses');
+              if (stored) assigned = JSON.parse(stored);
+            } catch {}
+            if (assigned.length > 0) {
+              list = data.filter(item => 
+                assigned.includes(item.course) || 
+                assigned.some(a => item.course && item.course.toLowerCase().includes(a.toLowerCase()))
+              );
+            }
           }
+          this.mappings = list;
+          this.groupMappings();
+          this.cdr.detectChanges();
         }
-        this.mappings = list;
-        this.groupMappings();
-        this.cdr.detectChanges();
-      }
+      },
+      error: () => {}
     });
   }
 

@@ -39,11 +39,17 @@
 
         <!-- Branch Filter Navigation Bar -->
         <div class="branch-filter-toolbar" *ngIf="role !== 'student'">
-            <button type="button" 
+            <button *ngIf="role === 'faculty'" type="button" 
                 class="filter-pill-btn" 
                 [class.active]="selectedBranch === 'MY_BRANCH'"
                 (click)="selectedBranch = 'MY_BRANCH'">
                 🌟 My Branch ({{ currentActiveBranch }})
+            </button>
+            <button type="button" 
+                class="filter-pill-btn" 
+                [class.active]="selectedBranch === 'ALL'"
+                (click)="selectedBranch = 'ALL'">
+                🌐 All Branches ({{ mappings.length || 768 }})
             </button>
             <button type="button" 
                 class="filter-pill-btn" 
@@ -74,12 +80,6 @@
                 [class.active]="selectedBranch === 'Civil'"
                 (click)="selectedBranch = 'Civil'">
                 🏗️ Civil
-            </button>
-            <button type="button" 
-                class="filter-pill-btn" 
-                [class.active]="selectedBranch === 'ALL'"
-                (click)="selectedBranch = 'ALL'">
-                🌐 All Branches
             </button>
         </div>
         <div class="branch-filter-toolbar" *ngIf="role === 'student'">
