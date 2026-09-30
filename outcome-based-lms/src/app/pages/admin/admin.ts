@@ -405,7 +405,7 @@ export class Admin implements OnInit, OnDestroy {
     };
   }
 
-  setDirectoryTab(tab: 'faculty' | 'students' | 'security'): void {
+  setDirectoryTab(tab: 'faculty' | 'students'): void {
     this.activeDirectoryTab = tab;
   }
 
