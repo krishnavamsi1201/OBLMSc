@@ -61,10 +61,16 @@ interface AuditLog {
           <div style="display: grid; gap: 6px;">
             <label style="font-weight: 600; font-size: 0.9rem; color: #cbd5e1;">Current Semester</label>
             <select name="semester" [(ngModel)]="system.semester" required style="padding: 10px; background: #091024; color: #ffffff; border: 1px solid #1f2f54; border-radius: 8px;">
-              <option value="Spring">Spring</option>
-              <option value="Summer">Summer</option>
-              <option value="Fall">Fall</option>
-              <option value="Winter">Winter</option>
+              <option value="Odd Semester (Semesters 1, 3, 5, 7)">Odd Semester (Semesters 1, 3, 5, 7)</option>
+              <option value="Even Semester (Semesters 2, 4, 6, 8)">Even Semester (Semesters 2, 4, 6, 8)</option>
+              <option value="Semester 1">Semester 1</option>
+              <option value="Semester 2">Semester 2</option>
+              <option value="Semester 3">Semester 3</option>
+              <option value="Semester 4">Semester 4</option>
+              <option value="Semester 5">Semester 5</option>
+              <option value="Semester 6">Semester 6</option>
+              <option value="Semester 7">Semester 7</option>
+              <option value="Semester 8">Semester 8</option>
             </select>
           </div>
 
@@ -146,8 +152,8 @@ interface AuditLog {
 })
 export class SettingsSystem implements OnInit {
   system = {
-    academicYear: '2025-2026',
-    semester: 'Fall',
+    academicYear: '2026-2027',
+    semester: 'Odd Semester (Semesters 1, 3, 5, 7)',
     mode: 'live',
     disableNewRegistrations: false,
     maintenanceWindow: 'Saturday, 02:00 - 04:00 AM',
@@ -173,9 +179,16 @@ export class SettingsSystem implements OnInit {
     if (saved) {
       try {
         const parsed = JSON.parse(saved);
+        let currentSem = parsed.semester || 'Odd Semester (Semesters 1, 3, 5, 7)';
+        if (/fall|summer/i.test(currentSem)) {
+          currentSem = 'Odd Semester (Semesters 1, 3, 5, 7)';
+        } else if (/spring|winter/i.test(currentSem)) {
+          currentSem = 'Even Semester (Semesters 2, 4, 6, 8)';
+        }
+
         this.system = {
-          academicYear: parsed.academicYear || '2025-2026',
-          semester: parsed.semester || 'Fall',
+          academicYear: parsed.academicYear || '2026-2027',
+          semester: currentSem,
           mode: parsed.mode || 'live',
           disableNewRegistrations: !!parsed.disableNewRegistrations,
           maintenanceWindow: parsed.maintenanceWindow || 'Saturday, 02:00 - 04:00 AM',

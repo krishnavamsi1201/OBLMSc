@@ -292,6 +292,25 @@ export class FacultyCourseAllocation implements OnInit {
     this.facultyList = [...DEFAULT_FACULTY_ROSTER];
   }
 
+  private normalizeSemester(sem: string | undefined, subjectCode?: string): string {
+    if (!sem) {
+      if (subjectCode) {
+        const found = this.allRawCourses.find(c => c.code && c.code.toLowerCase() === subjectCode.toLowerCase());
+        if (found && found.semester) return found.semester;
+      }
+      return 'Semester 1';
+    }
+    const clean = sem.trim();
+    if (/fall|spring|summer|winter|2026|2025/i.test(clean)) {
+      if (subjectCode) {
+        const found = this.allRawCourses.find(c => c.code && c.code.toLowerCase() === subjectCode.toLowerCase());
+        if (found && found.semester) return found.semester;
+      }
+      return 'Semester 1';
+    }
+    return clean;
+  }
+
   private compileAllAllocations(): void {
     const allocationsMap = new Map<string, FacultyAllocation>();
 
@@ -311,7 +330,7 @@ export class FacultyCourseAllocation implements OnInit {
           courseName: prog.name,
           subjectId: c.code || '',
           subjectName: c.title || 'Course Subject',
-          semester: c.semester || 'Semester 1'
+          semester: this.normalizeSemester(c.semester, c.code)
         });
       }
     }
@@ -323,6 +342,11 @@ export class FacultyCourseAllocation implements OnInit {
           if (!courseRef) continue;
           const refClean = courseRef.trim().toLowerCase();
           
+          // Purge any MCA references
+          if (refClean.includes('mca') || refClean.startsWith('inmca') || refClean.startsWith('rlmca')) {
+            continue;
+          }
+
           // Find matching course in catalog
           const matchedCourse = this.allRawCourses.find(c => 
             (c.code && c.code.toLowerCase() === refClean) || 
@@ -344,14 +368,14 @@ export class FacultyCourseAllocation implements OnInit {
               courseName: prog.name,
               subjectId: subjectCode,
               subjectName: subjectTitle,
-              semester: semester || 'Semester 1'
+              semester: this.normalizeSemester(semester, subjectCode)
             });
           }
         }
       }
     }
 
-    // 3. Add any saved in localStorage
+    // 3. Add any saved in localStorage with strict sanitization
     try {
       const storedAllocations = localStorage.getItem('obslmsFacultyAllocations');
       if (storedAllocations) {
@@ -359,6 +383,14 @@ export class FacultyCourseAllocation implements OnInit {
         if (Array.isArray(parsed)) {
           for (const item of parsed) {
             if (item.facultyName && item.subjectId) {
+              const subCode = (item.subjectId || '').trim().toUpperCase();
+              const subTitle = (item.subjectName || '').trim().toUpperCase();
+
+              // Completely purge MCA allocations
+              if (subCode.includes('MCA') || subTitle.includes('MCA') || subCode.startsWith('INMCA') || subCode.startsWith('RLMCA')) {
+                continue;
+              }
+
               const prog = this.inferProgram(item.subjectId, item.subjectName);
               const key = `${item.facultyName.trim().toLowerCase()}__${item.subjectId.trim().toLowerCase()}`;
               if (!allocationsMap.has(key)) {
@@ -370,7 +402,7 @@ export class FacultyCourseAllocation implements OnInit {
                   courseName: prog.name,
                   subjectId: item.subjectId,
                   subjectName: item.subjectName || item.subjectId,
-                  semester: item.semester || 'Semester 1'
+                  semester: this.normalizeSemester(item.semester, item.subjectId)
                 });
               }
             }
@@ -440,7 +472,7 @@ export class FacultyCourseAllocation implements OnInit {
       facultyId: allocation.facultyId,
       courseId: allocation.courseId,
       subjectId: allocation.subjectId,
-      semester: allocation.semester
+      semester: this.normalizeSemester(allocation.semester, allocation.subjectId)
     };
     this.onCourseChange();
     this.formData.subjectId = allocation.subjectId;

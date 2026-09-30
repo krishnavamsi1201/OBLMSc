@@ -195,7 +195,14 @@ export class CourseSubjectAssignment implements OnInit {
     try {
       const stored = localStorage.getItem('obslmsCourseSubjects');
       if (stored) {
-        this.courseSubjectList = JSON.parse(stored);
+        const parsed = JSON.parse(stored);
+        if (Array.isArray(parsed)) {
+          this.courseSubjectList = parsed.filter(cs => {
+            const id = (cs.subjectId || '').toUpperCase();
+            const name = (cs.subjectName || '').toUpperCase();
+            return !id.includes('MCA') && !name.includes('MCA') && !id.startsWith('INMCA') && !id.startsWith('RLMCA');
+          });
+        }
         this.sanitizeCourseSubjects();
       }
     } catch {}
