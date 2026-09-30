@@ -33,11 +33,11 @@ public class CopoMappingController {
     // Defined branch course catalogs
     public static final Map<String, List<String>> BRANCH_COURSES = new LinkedHashMap<>();
     static {
-        BRANCH_COURSES.put("CSE", List.of("CS101", "CS102", "CS103", "CS301", "CS302", "CS102L", "RLMCA205", "CC", "OOP"));
-        BRANCH_COURSES.put("IT", List.of("IT305", "CS303", "Linux", "WT", "CS361", "Linux Lab", "Open Lab"));
-        BRANCH_COURSES.put("ECE", List.of("MES", "DSLD", "EC206", "EE407", "CS203", "CS207", "AMP", "LD LAB"));
-        BRANCH_COURSES.put("ME", List.of("ME210", "KM", "SMSE", "04ME6512", "IC", "AU203", "EM IV"));
-        BRANCH_COURSES.put("Civil", List.of("FMHM", "SMSE", "HS300", "CE234", "EMII", "ECS"));
+        BRANCH_COURSES.put("CSE", List.of("CS101", "CS102", "CS103", "CS201", "CS202", "CS301", "CS302", "CS303", "CS401", "CS402"));
+        BRANCH_COURSES.put("IT", List.of("IT111", "IT113", "IT201", "IT211", "IT301", "IT305", "IT401"));
+        BRANCH_COURSES.put("ECE", List.of("EC111", "EC114", "EC201", "EC202", "EC211", "EC301", "EC401"));
+        BRANCH_COURSES.put("ME", List.of("ME111", "ME113", "ME201", "ME202", "ME211", "ME301", "ME401"));
+        BRANCH_COURSES.put("Civil", List.of("CE111", "CE113", "CE201", "CE202", "CE203", "CE301", "CE401"));
     }
 
     public List<String> getFacultyCourseCodes(String facultyParam) {

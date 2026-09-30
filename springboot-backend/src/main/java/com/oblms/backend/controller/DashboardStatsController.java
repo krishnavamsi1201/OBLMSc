@@ -1182,7 +1182,7 @@ public class DashboardStatsController {
             if (s.equals(code) || s.equals(title)) return true;
 
             // Check mappings:
-            if (s.equals("inmca202") && (code.contains("cs101") || title.contains("database"))) return true;
+            if (s.equals("dbms") && (code.contains("cs101") || title.contains("database"))) return true;
             if (s.equals("ds") && (code.contains("cs102") || title.contains("structures") || title.contains("algorithms"))) return true;
             if (s.equals("oop") && (code.contains("cs103") || title.contains("programming") || title.contains("java"))) return true;
             if (s.equals("mes") && (code.contains("cs104") || title.contains("microprocessor") || title.contains("embedded"))) return true;

@@ -478,7 +478,7 @@ export class FacultyDataService {
 
         // 1. Check all students in localStorage who have this course code in their profile
         allStudents.forEach((st: any) => {
-          const enrolledCourses = st.course || ''; // e.g. "INMCA202,DS"
+          const enrolledCourses = st.course || ''; // e.g. "CS101,DS"
           const codes = enrolledCourses.split(',').map((c: string) => c.trim().toLowerCase());
           if (codes.includes(courseCode.toLowerCase()) || codes.some((c: string) => courseName.toLowerCase().includes(c))) {
             studentNames.add(st.name.trim());

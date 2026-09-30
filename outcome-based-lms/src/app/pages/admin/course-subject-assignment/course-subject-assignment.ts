@@ -11,7 +11,7 @@ interface CourseSubject {
   id: string;
   courseId: string;
   courseName: string; // Academic Program e.g. B.Tech - Computer Science & Engineering
-  subjectId: string;   // Subject Code e.g. CS101, INMCA202
+  subjectId: string;   // Subject Code e.g. CS101, IT111
   subjectName: string; // Subject Title e.g. Database Management Systems
   credits: number;
 }
@@ -55,7 +55,6 @@ export class CourseSubjectAssignment implements OnInit {
     { id: 'PRG_ME', name: 'Mechanical Engineering', code: 'ME', department: 'Mechanical Engineering' },
     { id: 'PRG_CE', name: 'Civil Engineering', code: 'CE', department: 'Civil Engineering' },
     { id: 'PRG_EEE', name: 'Electrical & Electronics Engineering', code: 'EEE', department: 'Electrical & Electronics Engineering' },
-    { id: 'PRG_MCA', name: 'Computer Applications (MCA)', code: 'MCA', department: 'Computer Science & Applications' },
     { id: 'PRG_MTECH', name: 'Data Science & AI', code: 'M.Tech', department: 'Computer Science & Engineering' }
   ];
 
@@ -131,9 +130,6 @@ export class CourseSubjectAssignment implements OnInit {
     }
     if (c.startsWith('EE') || c.startsWith('EEE') || t.includes('electrical machines') || t.includes('power systems')) {
       return this.courseList[5]; // EEE
-    }
-    if (c.startsWith('INMCA') || c.startsWith('RLMCA') || c.startsWith('MCA')) {
-      return this.courseList[6]; // MCA
     }
     // Default CSE
     return this.courseList[0]; // CSE
@@ -216,10 +212,7 @@ export class CourseSubjectAssignment implements OnInit {
         { code: 'IT201', title: 'Data Structures using C++', credits: 4 },
         { code: 'EC201', title: 'Electronic Devices & Circuits', credits: 4 },
         { code: 'ME201', title: 'Engineering Thermodynamics', credits: 4 },
-        { code: 'CE201', title: 'Strength of Materials & Mechanics', credits: 4 },
-        { code: 'INMCA202', title: 'Probability and Statistics', credits: 4 },
-        { code: 'RLMCA108', title: 'Operations Research', credits: 4 },
-        { code: 'RLMCA201', title: 'Computer Networks', credits: 4 }
+        { code: 'CE201', title: 'Strength of Materials & Mechanics', credits: 4 }
       ];
 
       this.courseSubjectList = defaultData.map((d, idx) => {

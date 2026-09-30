@@ -120,11 +120,11 @@ export class ApprovalManagement implements OnInit {
 
       if (!Array.isArray(rawAssessmentMappings) || rawAssessmentMappings.length === 0) {
         rawAssessmentMappings = [
-          { id: '1', assessmentName: 'INMCA202 - Midterm 1', assessmentType: 'Midterm', courseName: 'Probability and Statistics', courseOutcomes: ['CO1', 'CO2'], approvalStatus: 'Pending', facultyName: 'Dr. Ramesh Babu', facultyId: 'FAC001', department: 'Mathematics & Computer Science', email: 'Loukika310306@gmail.com' },
-          { id: '2', assessmentName: 'DS - Practical Lab Exam', assessmentType: 'Practical', courseName: 'Data Structures and Analysis of Computer Algorithms', courseOutcomes: ['CO1'], approvalStatus: 'Pending', facultyName: 'Prof. Sunita Sharma', facultyId: 'FAC002', department: 'Computer Science & Engineering', email: 'sunita.sharma@oblms.edu' },
-          { id: '3', assessmentName: 'MES - Quiz 1', assessmentType: 'Quiz', courseName: 'Microprocessors and Embedded Systems', courseOutcomes: ['CO1', 'CO2'], approvalStatus: 'Pending', facultyName: 'Dr. Amit Patel', facultyId: 'FAC003', department: 'Electronics & Communication', email: 'amit.patel@oblms.edu' },
-          { id: '4', assessmentName: 'IT305 - Assignment 1', assessmentType: 'Assignment', courseName: 'Operating Systems', courseOutcomes: ['CO1', 'CO2', 'CO3'], approvalStatus: 'Pending', facultyName: 'Dr. Ramesh Babu', facultyId: 'FAC001', department: 'Computer Science & Engineering', email: 'Loukika310306@gmail.com' },
-          { id: '5', assessmentName: 'OOP - Practical Exam', assessmentType: 'Practical', courseName: 'Object Oriented Programming with C++', courseOutcomes: ['CO1'], approvalStatus: 'Pending', facultyName: 'Prof. Sunita Sharma', facultyId: 'FAC002', department: 'Information Technology', email: 'sunita.sharma@oblms.edu' }
+          { id: '1', assessmentName: 'CS101 - Midterm 1', assessmentType: 'Midterm', courseName: 'Database Management Systems', courseOutcomes: ['CO1', 'CO2'], approvalStatus: 'Pending', facultyName: 'Dr. Ramesh Babu', facultyId: 'FAC001', department: 'Computer Science & Engineering', email: 'Loukika310306@gmail.com' },
+          { id: '2', assessmentName: 'CS102 - Practical Lab Exam', assessmentType: 'Practical', courseName: 'Data Structures & Algorithms', courseOutcomes: ['CO1'], approvalStatus: 'Pending', facultyName: 'Prof. Sunita Sharma', facultyId: 'FAC002', department: 'Computer Science & Engineering', email: 'sunita.sharma@oblms.edu' },
+          { id: '3', assessmentName: 'CS103 - Quiz 1', assessmentType: 'Quiz', courseName: 'Object-Oriented Programming with Java', courseOutcomes: ['CO1', 'CO2'], approvalStatus: 'Pending', facultyName: 'Dr. Ramesh Babu', facultyId: 'FAC001', department: 'Computer Science & Engineering', email: 'Loukika310306@gmail.com' },
+          { id: '4', assessmentName: 'CS201 - Assignment 1', assessmentType: 'Assignment', courseName: 'Operating Systems & Kernel Architecture', courseOutcomes: ['CO1', 'CO2', 'CO3'], approvalStatus: 'Pending', facultyName: 'Dr. Amit Patel', facultyId: 'FAC003', department: 'Computer Science & Engineering', email: 'amit.patel@oblms.edu' },
+          { id: '5', assessmentName: 'CS301 - Practical Exam', assessmentType: 'Practical', courseName: 'Computer Networks & Protocols', courseOutcomes: ['CO1'], approvalStatus: 'Pending', facultyName: 'Dr. Priya Nair', facultyId: 'FAC004', department: 'Computer Science & Engineering', email: 'priya.nair@oblms.edu' }
         ];
         try {
           localStorage.setItem('obslmsAssessmentCOMappings', JSON.stringify(rawAssessmentMappings));
@@ -133,11 +133,11 @@ export class ApprovalManagement implements OnInit {
 
       // Faculty mapping helper lookup
       const facultyMap: { [course: string]: { name: string; id: string; email: string; dept: string } } = {
-        'Probability and Statistics': { name: 'Dr. Ramesh Babu', id: 'FAC001', email: 'Loukika310306@gmail.com', dept: 'Mathematics & CSE' },
-        'Data Structures and Analysis of Computer Algorithms': { name: 'Prof. Sunita Sharma', id: 'FAC002', email: 'sunita.sharma@oblms.edu', dept: 'Computer Science & Engineering' },
-        'Microprocessors and Embedded Systems': { name: 'Dr. Amit Patel', id: 'FAC003', email: 'amit.patel@oblms.edu', dept: 'Electronics & Communication' },
-        'Operating Systems': { name: 'Dr. Ramesh Babu', id: 'FAC001', email: 'Loukika310306@gmail.com', dept: 'Computer Science & Engineering' },
-        'Object Oriented Programming with C++': { name: 'Prof. Sunita Sharma', id: 'FAC002', email: 'sunita.sharma@oblms.edu', dept: 'Information Technology' }
+        'Database Management Systems': { name: 'Dr. Ramesh Babu', id: 'FAC001', email: 'Loukika310306@gmail.com', dept: 'Computer Science & Engineering' },
+        'Data Structures & Algorithms': { name: 'Prof. Sunita Sharma', id: 'FAC002', email: 'sunita.sharma@oblms.edu', dept: 'Computer Science & Engineering' },
+        'Object-Oriented Programming with Java': { name: 'Dr. Ramesh Babu', id: 'FAC001', email: 'Loukika310306@gmail.com', dept: 'Computer Science & Engineering' },
+        'Operating Systems & Kernel Architecture': { name: 'Dr. Amit Patel', id: 'FAC003', email: 'amit.patel@oblms.edu', dept: 'Computer Science & Engineering' },
+        'Computer Networks & Protocols': { name: 'Dr. Priya Nair', id: 'FAC004', email: 'priya.nair@oblms.edu', dept: 'Computer Science & Engineering' }
       };
 
       rawAssessmentMappings.forEach((mapping: any) => {

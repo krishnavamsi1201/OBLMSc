@@ -91,8 +91,7 @@ export class FacultyCourseAllocation implements OnInit {
     { id: 'PRG_ECE', name: 'Electronics & Communication Engineering', code: 'ECE' },
     { id: 'PRG_ME', name: 'Mechanical Engineering', code: 'ME' },
     { id: 'PRG_CE', name: 'Civil Engineering', code: 'CE' },
-    { id: 'PRG_EEE', name: 'Electrical & Electronics Engineering', code: 'EEE' },
-    { id: 'PRG_MCA', name: 'Computer Applications (MCA)', code: 'MCA' }
+    { id: 'PRG_EEE', name: 'Electrical & Electronics Engineering', code: 'EEE' }
   ];
   courseSubjectList: CourseSubject[] = [];
   allRawCourses: AppCourse[] = [];
@@ -177,9 +176,6 @@ export class FacultyCourseAllocation implements OnInit {
     }
     if (c.startsWith('EE') || c.startsWith('EEE') || t.includes('electrical machines') || t.includes('power systems')) {
       return { id: 'PRG_EEE', name: 'Electrical & Electronics Engineering' };
-    }
-    if (c.startsWith('INMCA') || c.startsWith('RLMCA') || c.startsWith('MCA')) {
-      return { id: 'PRG_MCA', name: 'Computer Applications (MCA)' };
     }
     return { id: 'PRG_CSE', name: 'Computer Science & Engineering' };
   }

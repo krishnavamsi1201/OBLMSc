@@ -1261,7 +1261,7 @@ export class Faculty implements OnInit {
 
     // Check mapping abbreviations
     return enrolled.some(c => {
-      if (c === 'inmca202' && (target.includes('database') || target.includes('cs101'))) return true;
+      if (c === 'dbms' && (target.includes('database') || target.includes('cs101'))) return true;
       if (c === 'ds' && (target.includes('structures') || target.includes('algorithms') || target.includes('cs102'))) return true;
       if (c === 'oop' && (target.includes('programming') || target.includes('java') || target.includes('cs103'))) return true;
       if (c === 'mes' && (target.includes('microprocessors') || target.includes('cs104') || target.includes('embedded'))) return true;
