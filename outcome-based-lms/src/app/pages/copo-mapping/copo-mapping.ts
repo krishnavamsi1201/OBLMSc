@@ -48,21 +48,203 @@ const DEFAULT_PROGRAM_OUTCOMES: ProgramOutcome[] = [
 ];
 
 const DEFAULT_INITIAL_COS: CourseOutcome[] = [
+  // 1. CSE
   { id: 1, course: 'CS101', co: 'CO1', description: 'Explain database architecture, schema design, and entity-relationship models.' },
   { id: 2, course: 'CS101', co: 'CO2', description: 'Formulate relational algebra queries and complex SQL queries.' },
   { id: 3, course: 'CS101', co: 'CO3', description: 'Apply normalization techniques (1NF to BCNF) to eliminate database redundancies.' },
   { id: 4, course: 'CS101', co: 'CO4', description: 'Implement transaction management and concurrency control protocols.' },
   { id: 5, course: 'CS101', co: 'CO5', description: 'Demonstrate indexing, hashing, and database tuning strategies.' },
+  
   { id: 6, course: 'CS102', co: 'CO1', description: 'Analyze asymptotic time and space complexity of algorithms.' },
   { id: 7, course: 'CS102', co: 'CO2', description: 'Design linear data structures including linked lists, stacks, and queues.' },
   { id: 8, course: 'CS102', co: 'CO3', description: 'Implement non-linear data structures including binary trees, AVL trees, and heaps.' },
   { id: 9, course: 'CS102', co: 'CO4', description: 'Apply graph traversal algorithms (BFS, DFS) and shortest path algorithms.' },
   { id: 10, course: 'CS102', co: 'CO5', description: 'Evaluate searching, sorting, and hashing techniques for problem solving.' },
+
   { id: 11, course: 'CS103', co: 'CO1', description: 'Understand OOP concepts: encapsulation, inheritance, and polymorphism in Java.' },
   { id: 12, course: 'CS103', co: 'CO2', description: 'Design robust applications using Java Exception Handling and Multithreading.' },
-  { id: 13, course: 'CS201', co: 'CO1', description: 'Explain operating system architecture, kernel services, and process management.' },
-  { id: 14, course: 'CS201', co: 'CO2', description: 'Analyze CPU scheduling algorithms and process synchronization mechanisms.' },
-  { id: 15, course: 'CS301', co: 'CO1', description: 'Understand OSI and TCP/IP protocol architectures and layered networking.' }
+  { id: 13, course: 'CS103', co: 'CO3', description: 'Implement GUI components and event handling with Swing / JavaFX.' },
+
+  { id: 14, course: 'CS201', co: 'CO1', description: 'Explain operating system architecture, kernel services, and process management.' },
+  { id: 15, course: 'CS201', co: 'CO2', description: 'Analyze CPU scheduling algorithms and process synchronization mechanisms.' },
+  { id: 16, course: 'CS201', co: 'CO3', description: 'Resolve deadlocks using Banker\'s Algorithm and evaluate virtual memory paging.' },
+
+  { id: 17, course: 'CS301', co: 'CO1', description: 'Understand OSI and TCP/IP protocol architectures and layered networking.' },
+  { id: 18, course: 'CS301', co: 'CO2', description: 'Calculate IP addressing, subnet masks, and configure network routing protocols.' },
+  { id: 19, course: 'CS301', co: 'CO3', description: 'Analyze transport layer flow control (TCP sliding window) and congestion management.' },
+
+  { id: 20, course: 'CS302', co: 'CO1', description: 'Contrast traditional SDLC models with Agile Scrum sprint workflows.' },
+  { id: 21, course: 'CS302', co: 'CO2', description: 'Draft Software Requirement Specifications (SRS) and UML system architecture diagrams.' },
+  { id: 22, course: 'CS302', co: 'CO3', description: 'Execute automated unit testing, integration testing, and code coverage metrics.' },
+
+  // 2. IT (Information Technology)
+  { id: 23, course: 'IT113', co: 'CO1', description: 'Formulate algorithmic problem solutions and flowchart representations in C.' },
+  { id: 24, course: 'IT113', co: 'CO2', description: 'Implement modular programs using functions, pointers, and memory allocation.' },
+  { id: 25, course: 'IT113', co: 'CO3', description: 'Process structured records and file handling streams in C programming.' },
+
+  { id: 26, course: 'IT201', co: 'CO1', description: 'Implement object-oriented data structures using C++ templates and classes.' },
+  { id: 27, course: 'IT201', co: 'CO2', description: 'Construct linear and hierarchical data representation models.' },
+  { id: 28, course: 'IT201', co: 'CO3', description: 'Apply sorting, searching, and hashing algorithms for large datasets.' },
+
+  { id: 29, course: 'IT211', co: 'CO1', description: 'Explain Linux kernel architecture, shell scripting, and system administration.' },
+  { id: 30, course: 'IT211', co: 'CO2', description: 'Manage process scheduling, user permissions, and daemon configurations.' },
+  { id: 31, course: 'IT211', co: 'CO3', description: 'Configure network services, firewall rules, and virtualized container environments.' },
+
+  { id: 32, course: 'IT301', co: 'CO1', description: 'Design computer communication network topologies and packet switched routing.' },
+  { id: 33, course: 'IT301', co: 'CO2', description: 'Implement socket programming and application layer client-server protocols.' },
+
+  { id: 34, course: 'IT305', co: 'CO1', description: 'Develop dynamic responsive web applications using modern web frameworks.' },
+  { id: 35, course: 'IT305', co: 'CO2', description: 'Build RESTful API services connected to relational database persistence engines.' },
+
+  // 3. ECE (Electronics & Communication Engineering)
+  { id: 36, course: 'EC114', co: 'CO1', description: 'Analyze DC and AC electric circuits using Kirchhoff\'s Laws and network theorems.' },
+  { id: 37, course: 'EC114', co: 'CO2', description: 'Explain operational principles of semiconductor diodes, BJTs, and MOSFETs.' },
+  { id: 38, course: 'EC114', co: 'CO3', description: 'Understand basic digital logic gates, flip-flops, and binary number systems.' },
+
+  { id: 39, course: 'EC201', co: 'CO1', description: 'Analyze semiconductor band theory, carrier transport, and PN junction characteristics.' },
+  { id: 40, course: 'EC201', co: 'CO2', description: 'Model BJT and FET transistor small-signal amplifier configurations.' },
+  { id: 41, course: 'EC201', co: 'CO3', description: 'Evaluate frequency response and feedback amplifier stability criteria.' },
+
+  { id: 42, course: 'EC202', co: 'CO1', description: 'Design combinational logic circuits using Boolean minimization and K-maps.' },
+  { id: 43, course: 'EC202', co: 'CO2', description: 'Synthesize synchronous sequential circuits, finite state machines, and counters.' },
+  { id: 44, course: 'EC202', co: 'CO3', description: 'Implement digital hardware systems using Verilog HDL and FPGA targets.' },
+
+  { id: 45, course: 'EC211', co: 'CO1', description: 'Analyze operational amplifier circuits: differential amplifiers, filters, and oscillators.' },
+  { id: 46, course: 'EC211', co: 'CO2', description: 'Design linear and non-linear analog signal processing modules.' },
+
+  { id: 47, course: 'EC301', co: 'CO1', description: 'Evaluate continuous-time and discrete-time signals using Fourier and Z-transforms.' },
+  { id: 48, course: 'EC301', co: 'CO2', description: 'Characterize LTI system impulse response, stability, and convolution properties.' },
+
+  // 4. ME (Mechanical Engineering)
+  { id: 49, course: 'ME113', co: 'CO1', description: 'Apply principles of statics, free-body diagrams, and equilibrium conditions.' },
+  { id: 50, course: 'ME113', co: 'CO2', description: 'Calculate centroids, moments of inertia, and frictional forces in mechanisms.' },
+  { id: 51, course: 'ME113', co: 'CO3', description: 'Analyze internal forces in pin-jointed trusses and structural frames.' },
+
+  { id: 52, course: 'ME201', co: 'CO1', description: 'Apply First and Second Laws of Thermodynamics to closed and open engineering systems.' },
+  { id: 53, course: 'ME201', co: 'CO2', description: 'Evaluate entropy generation, exergy availability, and thermodynamic property relations.' },
+  { id: 54, course: 'ME201', co: 'CO3', description: 'Analyze ideal gas power cycles (Otto, Diesel, Dual, and Brayton cycles).' },
+
+  { id: 55, course: 'ME202', co: 'CO1', description: 'Evaluate axial, shearing, and torsional stresses in structural mechanical members.' },
+  { id: 56, course: 'ME202', co: 'CO2', description: 'Construct Shear Force and Bending Moment diagrams for loaded beam structures.' },
+  { id: 57, course: 'ME202', co: 'CO3', description: 'Calculate principal stresses, Mohr\'s Circle transformations, and failure theories.' },
+
+  { id: 58, course: 'ME211', co: 'CO1', description: 'Analyze vapor power cycles (Rankine cycle, reheat, and regenerative feed heating).' },
+  { id: 59, course: 'ME211', co: 'CO2', description: 'Evaluate steam generator boiler efficiencies, nozzles, and turbine expansions.' },
+
+  { id: 60, course: 'ME301', co: 'CO1', description: 'Apply Navier-Stokes and boundary layer equations to internal/external fluid flows.' },
+  { id: 61, course: 'ME301', co: 'CO2', description: 'Design centrifugal pumps, Pelton wheels, and Francis hydraulic turbo-machinery.' },
+
+  // 5. Civil (Civil Engineering)
+  { id: 62, course: 'CE113', co: 'CO1', description: 'Formulate 2D and 3D equilibrium equations for rigid bodies and spatial concurrent force systems.' },
+  { id: 63, course: 'CE113', co: 'CO2', description: 'Calculate center of gravity, area moment of inertia, and mass moment of inertia.' },
+  { id: 64, course: 'CE113', co: 'CO3', description: 'Determine internal axial forces in plane trusses using method of joints and sections.' },
+
+  { id: 65, course: 'CE201', co: 'CO1', description: 'Analyze stress, strain, elasticity moduli, and thermal deformation in engineering materials.' },
+  { id: 66, course: 'CE201', co: 'CO2', description: 'Construct SFD and BMD for determinate beams under concentrated and distributed loads.' },
+  { id: 67, course: 'CE201', co: 'CO3', description: 'Derive bending stress distributions, transverse shear stresses, and column buckling loads.' },
+
+  { id: 68, course: 'CE202', co: 'CO1', description: 'Execute distance and angular measurements using chain, compass, and theodolite surveying.' },
+  { id: 69, course: 'CE202', co: 'CO2', description: 'Perform leveling, contour plotting, profile computation, and earthwork volume calculation.' },
+  { id: 70, course: 'CE202', co: 'CO3', description: 'Apply Total Station, GPS, and GIS digital mapping technologies in field layout.' },
+
+  { id: 71, course: 'CE203', co: 'CO1', description: 'Calculate hydrostatic pressure distributions on submerged planar and curved surfaces.' },
+  { id: 72, course: 'CE203', co: 'CO2', description: 'Apply continuity, momentum, and Bernoulli energy equations to pipe flow systems.' },
+  { id: 73, course: 'CE203', co: 'CO3', description: 'Evaluate laminar and turbulent pipe friction losses, hydraulic grade lines, and open channels.' },
+
+  { id: 74, course: 'CE301', co: 'CO1', description: 'Analyze indeterminate trusses, beams, and rigid frames using slope-deflection & moment distribution methods.' },
+  { id: 75, course: 'CE301', co: 'CO2', description: 'Calculate influence line diagrams for moving live loads on bridge structures.' }
+];
+
+const DEFAULT_INITIAL_MAPPINGS: CoMapping[] = [
+  // CSE Mappings
+  { id: 1, course: 'CS101', co: 'CO1', po: 'PO1', contribution: 90, mappingLevel: 3, status: 'Approved' },
+  { id: 2, course: 'CS101', co: 'CO2', po: 'PO2', contribution: 90, mappingLevel: 3, status: 'Approved' },
+  { id: 3, course: 'CS101', co: 'CO3', po: 'PO3', contribution: 90, mappingLevel: 3, status: 'Approved' },
+  { id: 4, course: 'CS101', co: 'CO4', po: 'PO5', contribution: 60, mappingLevel: 2, status: 'Approved' },
+  { id: 5, course: 'CS101', co: 'CO5', po: 'PO12', contribution: 60, mappingLevel: 2, status: 'Approved' },
+  
+  { id: 6, course: 'CS102', co: 'CO1', po: 'PO1', contribution: 90, mappingLevel: 3, status: 'Approved' },
+  { id: 7, course: 'CS102', co: 'CO2', po: 'PO2', contribution: 90, mappingLevel: 3, status: 'Approved' },
+  { id: 8, course: 'CS102', co: 'CO3', po: 'PO3', contribution: 90, mappingLevel: 3, status: 'Approved' },
+  { id: 9, course: 'CS102', co: 'CO4', po: 'PO4', contribution: 90, mappingLevel: 3, status: 'Approved' },
+  { id: 10, course: 'CS102', co: 'CO5', po: 'PO5', contribution: 90, mappingLevel: 3, status: 'Approved' },
+
+  { id: 11, course: 'CS103', co: 'CO1', po: 'PO1', contribution: 90, mappingLevel: 3, status: 'Approved' },
+  { id: 12, course: 'CS103', co: 'CO2', po: 'PO3', contribution: 90, mappingLevel: 3, status: 'Approved' },
+  { id: 13, course: 'CS103', co: 'CO3', po: 'PO5', contribution: 90, mappingLevel: 3, status: 'Approved' },
+
+  { id: 14, course: 'CS201', co: 'CO1', po: 'PO1', contribution: 90, mappingLevel: 3, status: 'Approved' },
+  { id: 15, course: 'CS201', co: 'CO2', po: 'PO2', contribution: 90, mappingLevel: 3, status: 'Approved' },
+  { id: 16, course: 'CS201', co: 'CO3', po: 'PO4', contribution: 90, mappingLevel: 3, status: 'Approved' },
+
+  { id: 17, course: 'CS301', co: 'CO1', po: 'PO1', contribution: 90, mappingLevel: 3, status: 'Approved' },
+  { id: 18, course: 'CS301', co: 'CO2', po: 'PO3', contribution: 90, mappingLevel: 3, status: 'Approved' },
+  { id: 19, course: 'CS301', co: 'CO3', po: 'PO5', contribution: 90, mappingLevel: 3, status: 'Approved' },
+
+  // IT Mappings
+  { id: 20, course: 'IT113', co: 'CO1', po: 'PO1', contribution: 90, mappingLevel: 3, status: 'Approved' },
+  { id: 21, course: 'IT113', co: 'CO2', po: 'PO3', contribution: 90, mappingLevel: 3, status: 'Approved' },
+  { id: 22, course: 'IT113', co: 'CO3', po: 'PO5', contribution: 90, mappingLevel: 3, status: 'Approved' },
+
+  { id: 23, course: 'IT201', co: 'CO1', po: 'PO1', contribution: 90, mappingLevel: 3, status: 'Approved' },
+  { id: 24, course: 'IT201', co: 'CO2', po: 'PO2', contribution: 90, mappingLevel: 3, status: 'Approved' },
+  { id: 25, course: 'IT201', co: 'CO3', po: 'PO3', contribution: 90, mappingLevel: 3, status: 'Approved' },
+
+  { id: 26, course: 'IT211', co: 'CO1', po: 'PO1', contribution: 90, mappingLevel: 3, status: 'Approved' },
+  { id: 27, course: 'IT211', co: 'CO2', po: 'PO5', contribution: 90, mappingLevel: 3, status: 'Approved' },
+  { id: 28, course: 'IT211', co: 'CO3', po: 'PO12', contribution: 60, mappingLevel: 2, status: 'Approved' },
+
+  { id: 29, course: 'IT301', co: 'CO1', po: 'PO1', contribution: 90, mappingLevel: 3, status: 'Approved' },
+  { id: 30, course: 'IT301', co: 'CO2', po: 'PO3', contribution: 90, mappingLevel: 3, status: 'Approved' },
+
+  // ECE Mappings
+  { id: 31, course: 'EC114', co: 'CO1', po: 'PO1', contribution: 90, mappingLevel: 3, status: 'Approved' },
+  { id: 32, course: 'EC114', co: 'CO2', po: 'PO2', contribution: 90, mappingLevel: 3, status: 'Approved' },
+  { id: 33, course: 'EC114', co: 'CO3', po: 'PO3', contribution: 90, mappingLevel: 3, status: 'Approved' },
+
+  { id: 34, course: 'EC201', co: 'CO1', po: 'PO1', contribution: 90, mappingLevel: 3, status: 'Approved' },
+  { id: 35, course: 'EC201', co: 'CO2', po: 'PO3', contribution: 90, mappingLevel: 3, status: 'Approved' },
+  { id: 36, course: 'EC201', co: 'CO3', po: 'PO4', contribution: 90, mappingLevel: 3, status: 'Approved' },
+
+  { id: 37, course: 'EC202', co: 'CO1', po: 'PO1', contribution: 90, mappingLevel: 3, status: 'Approved' },
+  { id: 38, course: 'EC202', co: 'CO2', po: 'PO3', contribution: 90, mappingLevel: 3, status: 'Approved' },
+  { id: 39, course: 'EC202', co: 'CO3', po: 'PO5', contribution: 90, mappingLevel: 3, status: 'Approved' },
+
+  { id: 40, course: 'EC211', co: 'CO1', po: 'PO1', contribution: 90, mappingLevel: 3, status: 'Approved' },
+  { id: 41, course: 'EC211', co: 'CO2', po: 'PO3', contribution: 90, mappingLevel: 3, status: 'Approved' },
+
+  // ME Mappings
+  { id: 42, course: 'ME113', co: 'CO1', po: 'PO1', contribution: 90, mappingLevel: 3, status: 'Approved' },
+  { id: 43, course: 'ME113', co: 'CO2', po: 'PO2', contribution: 90, mappingLevel: 3, status: 'Approved' },
+  { id: 44, course: 'ME113', co: 'CO3', po: 'PO3', contribution: 90, mappingLevel: 3, status: 'Approved' },
+
+  { id: 45, course: 'ME201', co: 'CO1', po: 'PO1', contribution: 90, mappingLevel: 3, status: 'Approved' },
+  { id: 46, course: 'ME201', co: 'CO2', po: 'PO2', contribution: 90, mappingLevel: 3, status: 'Approved' },
+  { id: 47, course: 'ME201', co: 'CO3', po: 'PO7', contribution: 90, mappingLevel: 3, status: 'Approved' },
+
+  { id: 48, course: 'ME202', co: 'CO1', po: 'PO1', contribution: 90, mappingLevel: 3, status: 'Approved' },
+  { id: 49, course: 'ME202', co: 'CO2', po: 'PO2', contribution: 90, mappingLevel: 3, status: 'Approved' },
+  { id: 50, course: 'ME202', co: 'CO3', po: 'PO3', contribution: 90, mappingLevel: 3, status: 'Approved' },
+
+  { id: 51, course: 'ME211', co: 'CO1', po: 'PO1', contribution: 90, mappingLevel: 3, status: 'Approved' },
+  { id: 52, course: 'ME211', co: 'CO2', po: 'PO7', contribution: 90, mappingLevel: 3, status: 'Approved' },
+
+  // Civil Mappings
+  { id: 53, course: 'CE113', co: 'CO1', po: 'PO1', contribution: 90, mappingLevel: 3, status: 'Approved' },
+  { id: 54, course: 'CE113', co: 'CO2', po: 'PO2', contribution: 90, mappingLevel: 3, status: 'Approved' },
+  { id: 55, course: 'CE113', co: 'CO3', po: 'PO3', contribution: 90, mappingLevel: 3, status: 'Approved' },
+
+  { id: 56, course: 'CE201', co: 'CO1', po: 'PO1', contribution: 90, mappingLevel: 3, status: 'Approved' },
+  { id: 57, course: 'CE201', co: 'CO2', po: 'PO2', contribution: 90, mappingLevel: 3, status: 'Approved' },
+  { id: 58, course: 'CE201', co: 'CO3', po: 'PO3', contribution: 90, mappingLevel: 3, status: 'Approved' },
+
+  { id: 59, course: 'CE202', co: 'CO1', po: 'PO1', contribution: 90, mappingLevel: 3, status: 'Approved' },
+  { id: 60, course: 'CE202', co: 'CO2', po: 'PO5', contribution: 90, mappingLevel: 3, status: 'Approved' },
+  { id: 61, course: 'CE202', co: 'CO3', po: 'PO11', contribution: 60, mappingLevel: 2, status: 'Approved' },
+
+  { id: 62, course: 'CE203', co: 'CO1', po: 'PO1', contribution: 90, mappingLevel: 3, status: 'Approved' },
+  { id: 63, course: 'CE203', co: 'CO2', po: 'PO2', contribution: 90, mappingLevel: 3, status: 'Approved' },
+  { id: 64, course: 'CE203', co: 'CO3', po: 'PO3', contribution: 90, mappingLevel: 3, status: 'Approved' }
 ];
 
 @Component({
@@ -282,7 +464,7 @@ export class CopoMapping implements OnInit {
   ];
 
   showMatrix = true;
-  mappings: CoMapping[] = [];
+  mappings: CoMapping[] = [...DEFAULT_INITIAL_MAPPINGS];
   groupedMappings: Array<{ courseName: string; mappings: CoMapping[] }> = [];
   collapsedGroups: { [courseName: string]: boolean } = {};
 
@@ -308,6 +490,7 @@ export class CopoMapping implements OnInit {
     } catch {
       this.role = null;
     }
+    this.groupMappings();
     this.loadAppearance();
   }
 
