@@ -50,22 +50,22 @@ interface CourseSubject {
 }
 
 const DEFAULT_FACULTY_ROSTER: Faculty[] = [
-  { id: 'FAC001', name: 'Dr. Ramesh Babu', department: 'Computer Science & Engineering', courses: ['CS101', 'CS103', 'CS113', 'CS304', 'IT202', 'IT212'] },
-  { id: 'FAC002', name: 'Prof. Sunita Sharma', department: 'Computer Science & Engineering', courses: ['CS102', 'CS123', 'CS202', 'CS205', 'IT201', 'IT213'] },
-  { id: 'FAC003', name: 'Dr. Amit Patel', department: 'Electronics & Communication Engineering', courses: ['CS201', 'CS303', 'CS413', 'IT113', 'IT211', 'IT302', 'EC113', 'ME401'] },
-  { id: 'FAC004', name: 'Dr. Priya Nair', department: 'Information Technology', courses: ['CS114', 'CS204', 'CS301', 'CS411', 'IT115', 'IT124', 'IT301', 'EC202', 'EC301'] },
-  { id: 'FAC005', name: 'Prof. Rajesh Verma', department: 'Computer Science & Engineering', courses: ['CS115', 'CS206', 'CS302', 'CS402', 'IT114', 'IT214', 'IT303', 'CE403'] },
-  { id: 'FAC006', name: 'Dr. Suresh Kumar', department: 'Civil Engineering', courses: ['CE115', 'CE124', 'CE202', 'CE204', 'CE214', 'CE302'] },
-  { id: 'FAC007', name: 'Dr. Ananya Mishra', department: 'Mechanical Engineering', courses: ['ME112', 'ME201', 'ME204', 'ME301', 'ME314'] },
-  { id: 'FAC008', name: 'Prof. Deepa Reddy', department: 'Electronics & Communication Engineering', courses: ['EC123', 'EC201', 'EC211', 'EC311', 'EC315', 'EC403'] },
-  { id: 'FAC009', name: 'Dr. V. C. Reddy', department: 'Information Technology', courses: ['CS305', 'EC114', 'EC123', 'EC201', 'EC214', 'EC302', 'EC311', 'EC412'] },
-  { id: 'FAC010', name: 'Prof. Meenakshi Iyer', department: 'Computer Science & Engineering', courses: ['CS122', 'IT122', 'EC122', 'ME122', 'CE122', 'CE304', 'CE313'] },
-  { id: 'FAC011', name: 'Dr. Alok Nath', department: 'Civil Engineering', courses: ['CE113', 'CE201', 'CE211', 'CE213', 'CE301', 'CE303', 'CE311', 'CE402'] },
-  { id: 'FAC012', name: 'Prof. Snehalata Das', department: 'Electronics & Communication Engineering', courses: ['EC203', 'EC213', 'EC304', 'EC313', 'EC401'] },
-  { id: 'FAC013', name: 'Dr. Manoj Joshi', department: 'Computer Science & Engineering', courses: ['ME203', 'ME205', 'ME212', 'ME213', 'ME302', 'ME311', 'ME312', 'ME403'] },
-  { id: 'FAC014', name: 'Dr. Kavita Menon', department: 'Artificial Intelligence & Data Science', courses: ['CS308', 'CS405', 'CS414', 'IT404', 'EC405', 'INMCA202'] },
-  { id: 'FAC015', name: 'Prof. Arun Roy', department: 'Mechanical Engineering', courses: ['ME113', 'ME122', 'ME201', 'ME211', 'ME303', 'ME404', 'ME411'] },
-  { id: 'FAC-1788427317827-699', name: 'Dr.Prasanth Kumar', department: 'Computer Science & Engineering', courses: ['INMCA202', 'MES', 'DSLD'] }
+  { id: 'FAC001', name: 'Dr. Ramesh Babu', department: 'Computer Science & Engineering', courses: ['CS101', 'CS102', 'CS103'] },
+  { id: 'FAC002', name: 'Prof. Sunita Sharma', department: 'Computer Science & Engineering', courses: ['CS102', 'CS202'] },
+  { id: 'FAC003', name: 'Dr. Amit Patel', department: 'Electronics & Communication Engineering', courses: ['CS201', 'CS303', 'EC201'] },
+  { id: 'FAC004', name: 'Dr. Priya Nair', department: 'Information Technology', courses: ['CS301', 'IT201', 'IT301'] },
+  { id: 'FAC005', name: 'Prof. Rajesh Verma', department: 'Computer Science & Engineering', courses: ['CS302', 'CS402'] },
+  { id: 'FAC006', name: 'Dr. Suresh Kumar', department: 'Civil Engineering', courses: ['CE111', 'CE201', 'CE301'] },
+  { id: 'FAC007', name: 'Dr. Ananya Mishra', department: 'Mechanical Engineering', courses: ['ME111', 'ME201', 'ME301'] },
+  { id: 'FAC008', name: 'Prof. Deepa Reddy', department: 'Electronics & Communication Engineering', courses: ['EC111', 'EC201', 'EC301'] },
+  { id: 'FAC009', name: 'Dr. V. C. Reddy', department: 'Information Technology', courses: ['IT111', 'IT201', 'IT401'] },
+  { id: 'FAC010', name: 'Prof. Meenakshi Iyer', department: 'Computer Science & Engineering', courses: ['CS111', 'CS121'] },
+  { id: 'FAC011', name: 'Dr. Alok Nath', department: 'Civil Engineering', courses: ['CE201', 'CE301', 'CE401'] },
+  { id: 'FAC012', name: 'Prof. Snehalata Das', department: 'Electronics & Communication Engineering', courses: ['EC201', 'EC301', 'EC401'] },
+  { id: 'FAC013', name: 'Dr. Manoj Joshi', department: 'Computer Science & Engineering', courses: ['CS101', 'CS201'] },
+  { id: 'FAC014', name: 'Dr. Kavita Menon', department: 'Computer Science & Engineering', courses: ['CS401', 'CS402'] },
+  { id: 'FAC015', name: 'Prof. Arun Roy', department: 'Mechanical Engineering', courses: ['ME201', 'ME301', 'ME401'] },
+  { id: 'FAC-1788427317827-699', name: 'Dr.Prasanth Kumar', department: 'Computer Science & Engineering', courses: ['CS101', 'CS102', 'CS103'] }
 ];
 
 @Component({

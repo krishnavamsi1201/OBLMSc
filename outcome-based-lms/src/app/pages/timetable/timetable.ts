@@ -1296,19 +1296,7 @@ export class Timetable implements OnInit {
       }
     } catch {}
 
-    // Fallback sample approved adjustment for live display
-    this.approvedAdjustments = [
-      {
-        id: 1,
-        courseName: 'Fluid Mechanics & Hydraulic Machinery (FMHM)',
-        substituteName: 'Prof. Sunita Sharma',
-        requesterName: 'Prof. Ramesh Babu',
-        adjustmentDate: '2026-09-10',
-        period: '09:00 AM - 10:00 AM',
-        room: 'CE-LH-101',
-        status: 'APPROVED'
-      }
-    ];
+    this.approvedAdjustments = [];
   }
 
   private overlayAdjustmentsAndExtraClasses(): void {

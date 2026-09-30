@@ -117,15 +117,15 @@ export class CoAttainment implements OnInit {
       if (assigned.length === 0) {
         const dept = (localStorage.getItem('userDept') || localStorage.getItem('userDepartment') || 'CSE').toLowerCase();
         if (dept.includes('computer') || dept.includes('cse')) {
-          assigned = ['CS101', 'CS102', 'CS103', 'CS301', 'CS302', 'DS Lab', 'Database Management Systems', 'Data Structures & Algorithms', 'Object-Oriented Programming', 'Computer Networks', 'Operating Systems', 'Software Engineering'];
+          assigned = ['CS101', 'CS102', 'CS103', 'CS201', 'CS301', 'CS302'];
         } else if (dept.includes('information') || dept.includes('it')) {
-          assigned = ['IT305', 'CS303', 'Linux', 'WT'];
+          assigned = ['IT113', 'IT201', 'IT301'];
         } else if (dept.includes('electronic') || dept.includes('ece')) {
-          assigned = ['MES', 'DSLD', 'EC206', 'EE407', 'CS203'];
+          assigned = ['EC114', 'EC201', 'EC202'];
         } else if (dept.includes('mechanical') || dept.includes('me')) {
-          assigned = ['ME210', 'KM', 'IC', '04ME6512'];
+          assigned = ['ME113', 'ME201', 'ME202'];
         } else if (dept.includes('civil') || dept === 'ce') {
-          assigned = ['FMHM', 'SMSE', 'CE234', 'EMII'];
+          assigned = ['CE113', 'CE201', 'CE203'];
         }
       }
     }

@@ -1092,23 +1092,21 @@ export class ClassAdjustments implements OnInit {
   ];
 
   availableSubjects: string[] = [
-    'Fluid Mechanics & Hydraulic Machinery (FMHM)',
-    'Structural Mechanics & Materials (SMSE)',
-    'Surveying Field Practice Lab',
-    'Building Planning & CAD Laboratory',
-    'Engineering Mathematics II (EMII)',
-    'Principles of Management (HS300)',
-    'Database Management Systems (CS101)',
-    'Java & OOPs Programming (CS102)',
-    'Data Structures & Algorithms (CS103)',
-    'Operating Systems (CS301)',
-    'Computer Networks (CS302)'
+    'CS101 - Database Management Systems',
+    'CS102 - Data Structures & Algorithms',
+    'CS103 - Object-Oriented Programming with Java',
+    'CS201 - Operating Systems & Kernel Architecture',
+    'CS301 - Computer Networks & Protocols',
+    'CS302 - Software Engineering & Agile Methodologies',
+    'EC201 - Electronic Devices & Physics',
+    'ME201 - Engineering Thermodynamics',
+    'CE201 - Strength of Materials I'
   ];
 
   // Extra Class state
   extraClassDate: string = new Date().toISOString().split('T')[0];
   extraClassPeriod: string = '10:15 AM - 11:15 AM';
-  extraClassSubject: string = 'Fluid Mechanics & Hydraulic Machinery (FMHM)';
+  extraClassSubject: string = 'CS101 - Database Management Systems';
   extraClassRoom: string = 'CE-LH-101';
   extraClassTopic: string = '';
   isSubmittingExtra: boolean = false;
@@ -1284,11 +1282,11 @@ export class ClassAdjustments implements OnInit {
         requesterName: 'Prof. Sunita Sharma',
         substituteId: this.currentFacultyId,
         substituteName: this.currentFacultyName,
-        courseName: 'Fluid Mechanics & Hydraulic Machinery (FMHM)',
+        courseName: 'CS101 - Database Management Systems',
         adjustmentDate: this.todayDate,
         period: '09:00 AM - 10:00 AM',
-        room: 'CE-LH-101',
-        topicInstructions: 'Please cover Reynolds Number & Boundary Layer laminar equations with numerical problem #4.',
+        room: 'CS-LH-101',
+        topicInstructions: 'Please cover Relational Algebra & SQL JOINs with query execution plans.',
         status: 'PENDING'
       },
       {
@@ -1297,11 +1295,11 @@ export class ClassAdjustments implements OnInit {
         requesterName: this.currentFacultyName,
         substituteId: 'FAC003',
         substituteName: 'Prof. Amit Patel',
-        courseName: 'Structural Mechanics & Materials (SMSE)',
+        courseName: 'CS102 - Data Structures & Algorithms',
         adjustmentDate: this.todayDate,
         period: '11:30 AM - 12:30 PM',
-        room: 'CE-LH-102',
-        topicInstructions: 'Explain Mohr\'s Circle derivation and principal shear stress calculations.',
+        room: 'CS-LH-102',
+        topicInstructions: 'Explain AVL Tree Rotations and balance factor derivations.',
         status: 'PENDING'
       }
     ];

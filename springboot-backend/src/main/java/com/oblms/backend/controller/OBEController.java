@@ -33,28 +33,28 @@ public class OBEController {
     @PostConstruct
     public void seedOBEData() {
         if (assessmentMappingRepository.count() == 0) {
-            // 1. Seed Assessments mapped to CSV Course Codes
-            assessmentMappingRepository.save(new AssessmentCOMapping(null, "INMCA202 - Midterm 1", "Midterm", "INMCA202", "Probability and Statistics", "CO1,CO2", 50));
-            assessmentMappingRepository.save(new AssessmentCOMapping(null, "DS - Practical Lab", "Practical", "DS", "Data Structures and Analysys of Computer Algorithms", "CO1", 100));
-            assessmentMappingRepository.save(new AssessmentCOMapping(null, "MES - Quiz 1", "Quiz", "MES", "Microprocessors and Embedded Systems", "CO1", 20));
-            assessmentMappingRepository.save(new AssessmentCOMapping(null, "IT305 - Assignment 1", "Assignment", "IT305", "Operating Systems", "CO1,CO2,CO3", 25));
-            assessmentMappingRepository.save(new AssessmentCOMapping(null, "OOP - Practical Exam", "Practical", "OOP", "Object Oriented Programming with C++", "CO1", 100));
+            // 1. Seed Assessments mapped to accredited Course Codes
+            assessmentMappingRepository.save(new AssessmentCOMapping(null, "CS101 - Midterm 1", "Midterm", "CS101", "Database Management Systems", "CO1,CO2", 50));
+            assessmentMappingRepository.save(new AssessmentCOMapping(null, "CS102 - Practical Lab Exam", "Practical", "CS102", "Data Structures & Algorithms", "CO1,CO2", 100));
+            assessmentMappingRepository.save(new AssessmentCOMapping(null, "CS103 - Java & OOP Quiz 1", "Quiz", "CS103", "Object-Oriented Programming", "CO1", 20));
+            assessmentMappingRepository.save(new AssessmentCOMapping(null, "CS201 - Operating Systems Assignment 1", "Assignment", "CS201", "Operating Systems", "CO1,CO2,CO3", 25));
+            assessmentMappingRepository.save(new AssessmentCOMapping(null, "CS301 - Computer Networks Practical Exam", "Practical", "CS301", "Computer Networks", "CO1,CO2", 100));
         }
 
         if (marksRepository.count() == 0) {
-            // 2. Seed Marks for student "Krishnavamsi"
-            marksRepository.save(new StudentMark(null, "Krishnavamsi", "INMCA202 - Midterm 1", 42, 50));
-            marksRepository.save(new StudentMark(null, "Krishnavamsi", "DS - Practical Lab", 88, 100));
-            marksRepository.save(new StudentMark(null, "Krishnavamsi", "MES - Quiz 1", 17, 20));
-            marksRepository.save(new StudentMark(null, "Krishnavamsi", "IT305 - Assignment 1", 22, 25));
-            marksRepository.save(new StudentMark(null, "Krishnavamsi", "OOP - Practical Exam", 91, 100));
+            // 2. Seed Marks for student "Krishna Vamsi"
+            marksRepository.save(new StudentMark(null, "Krishna Vamsi", "CS101 - Midterm 1", 42, 50));
+            marksRepository.save(new StudentMark(null, "Krishna Vamsi", "CS102 - Practical Lab Exam", 88, 100));
+            marksRepository.save(new StudentMark(null, "Krishna Vamsi", "CS103 - Java & OOP Quiz 1", 17, 20));
+            marksRepository.save(new StudentMark(null, "Krishna Vamsi", "CS201 - Operating Systems Assignment 1", 22, 25));
+            marksRepository.save(new StudentMark(null, "Krishna Vamsi", "CS301 - Computer Networks Practical Exam", 91, 100));
 
-            // 3. Seed Marks for student "Raj Kumar"
-            marksRepository.save(new StudentMark(null, "Raj Kumar", "INMCA202 - Midterm 1", 38, 50));
-            marksRepository.save(new StudentMark(null, "Raj Kumar", "DS - Practical Lab", 75, 100));
-            marksRepository.save(new StudentMark(null, "Raj Kumar", "MES - Quiz 1", 14, 20));
-            marksRepository.save(new StudentMark(null, "Raj Kumar", "IT305 - Assignment 1", 19, 25));
-            marksRepository.save(new StudentMark(null, "Raj Kumar", "OOP - Practical Exam", 82, 100));
+            // 3. Seed Marks for student "Aditya Sharma"
+            marksRepository.save(new StudentMark(null, "Aditya Sharma", "CS101 - Midterm 1", 38, 50));
+            marksRepository.save(new StudentMark(null, "Aditya Sharma", "CS102 - Practical Lab Exam", 75, 100));
+            marksRepository.save(new StudentMark(null, "Aditya Sharma", "CS103 - Java & OOP Quiz 1", 14, 20));
+            marksRepository.save(new StudentMark(null, "Aditya Sharma", "CS201 - Operating Systems Assignment 1", 19, 25));
+            marksRepository.save(new StudentMark(null, "Aditya Sharma", "CS301 - Computer Networks Practical Exam", 82, 100));
         }
     }
 

@@ -373,16 +373,16 @@ Guidelines:
 
     if (lower.includes('substitut') || lower.includes('adjustment') || lower.includes('extra class')) {
       return {
-        rawSummary: `Active adjustment: Fluid Mechanics substituted by Prof. Sunita Sharma on 2026-09-10 in CE-LH-101.`,
-        text: `🔄 **Active Faculty Substitution & Class Adjustments**:\n\n• **Fluid Mechanics & Hydraulic Machinery (FMHM)**\n  📅 Date: **2026-09-10** (09:00 AM - 10:00 AM)\n  🏛️ Room: \`CE-LH-101\`\n  👨‍🏫 Substitute Faculty: **Prof. Sunita Sharma** (Covering for Prof. Ramesh Babu)\n  📝 Topics: *Reynolds Number & Boundary Layer laminar equations.*`,
+        rawSummary: `Active adjustment: Database Management Systems substituted by Prof. Sunita Sharma on 2026-09-10 in CS-LH-101.`,
+        text: `🔄 **Active Faculty Substitution & Class Adjustments**:\n\n• **CS101 - Database Management Systems**\n  📅 Date: **2026-09-10** (09:00 AM - 10:00 AM)\n  🏛️ Room: \`CS-LH-101\`\n  👨‍🏫 Substitute Faculty: **Prof. Sunita Sharma** (Covering for Dr. Ramesh Babu)\n  📝 Topics: *Relational Algebra & Normalization.*`,
         quickAction: { label: 'View Timetable Matrix 🗓️', route: '/timetable' }
       };
     }
 
     if (lower.includes('timetable') || lower.includes('schedule') || lower.includes('next class')) {
       return {
-        rawSummary: `Slots: 09:00 AM Data Structures in LH-101, 10:15 AM Leisure, 11:30 AM Fluid Mechanics in LH-204, 02:00 PM Library.`,
-        text: `🗓️ **Today's Lecture Schedule**:\n\n• **09:00 AM - 10:00 AM**: Data Structures & Algorithms in \`LH-101\`\n• **10:15 AM - 11:15 AM**: ☕ *Leisure & Self-Study* (Reading Hall)\n• **11:30 AM - 12:30 PM**: Fluid Mechanics & Machinery in \`LH-204\`\n• **02:00 PM - 03:00 PM**: 📚 *Library & Research Hours* (Central Library)\n• **03:15 PM - 04:15 PM**: Operating Systems in \`LH-305\``,
+        rawSummary: `Slots: 09:00 AM Data Structures in LH-101, 10:15 AM Leisure, 11:30 AM Database Management Systems in LH-204, 02:00 PM Library.`,
+        text: `🗓️ **Today's Lecture Schedule**:\n\n• **09:00 AM - 10:00 AM**: CS102 - Data Structures & Algorithms in \`LH-101\`\n• **10:15 AM - 11:15 AM**: ☕ *Leisure & Self-Study* (Reading Hall)\n• **11:30 AM - 12:30 PM**: CS101 - Database Management Systems in \`LH-204\`\n• **02:00 PM - 03:00 PM**: 📚 *Library & Research Hours* (Central Library)\n• **03:15 PM - 04:15 PM**: CS201 - Operating Systems in \`LH-305\``,
         quickAction: { label: 'Open Weekly Timetable 🗓️', route: '/timetable' }
       };
     }
