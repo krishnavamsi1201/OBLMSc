@@ -191,112 +191,52 @@ export class Chatbot implements OnInit, OnDestroy {
 
   private async generateGeminiResponse(userPrompt: string, localLmsContext: any): Promise<void> {
     const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-    let apiKey = this.geminiApiKey;
-    if (!apiKey || apiKey.trim() === '') {
-      try { apiKey = atob(ACTIVE_KEY_B64); } catch {}
-    }
+    const userName = localStorage.getItem('userName') || 'Krishna Vamsi';
+    const userRole = localStorage.getItem('userRole') || 'student';
+    const userDept = localStorage.getItem('userDepartment') || localStorage.getItem('userDept') || 'Computer Science & Engineering';
 
-    const systemPrompt = this.constructSystemPrompt(localLmsContext);
+    this.http.post<any>('http://localhost:8080/api/chatbot/query', {
+      message: userPrompt,
+      userName: userName,
+      userRole: userRole,
+      userDept: userDept
+    }).subscribe({
+      next: (backRes) => {
+        this.isThinking = false;
+        const botText = backRes?.text || localLmsContext?.text || 'I have processed your query.';
+        const modelLabel = backRes?.isAiGenerated ? '✨ OBLMS Generative AI' : '📚 OBLMS Knowledge Engine';
 
-    const payload = {
-      contents: [
-        {
-          role: 'user',
-          parts: [
-            { text: systemPrompt + '\n\nUser Question: ' + userPrompt }
-          ]
+        this.messages.push({
+          from: 'bot',
+          text: botText,
+          timestamp: time,
+          quickAction: backRes?.quickAction || localLmsContext?.quickAction,
+          modelUsed: modelLabel
+        });
+
+        if (backRes?.suggestions) {
+          this.suggestions = backRes.suggestions;
         }
-      ],
-      generationConfig: {
-        temperature: 0.7,
-        maxOutputTokens: 8192
+
+        this.saveChatHistory();
+        this.cdr.detectChanges();
+        this.scrollToBottom();
+      },
+      error: () => {
+        this.isThinking = false;
+        this.messages.push({
+          from: 'bot',
+          text: localLmsContext?.text || this.getGenericFallback(userPrompt),
+          timestamp: time,
+          quickAction: localLmsContext?.quickAction,
+          modelUsed: '📚 OBLMS Smart Engine'
+        });
+        this.suggestions = localLmsContext?.suggestions || [];
+        this.saveChatHistory();
+        this.cdr.detectChanges();
+        this.scrollToBottom();
       }
-    };
-
-    let model = this.selectedModel;
-    if (!model || model.includes('1.5') || model.includes('2.0')) {
-      model = 'gemini-3.5-flash';
-      this.selectedModel = 'gemini-3.5-flash';
-      localStorage.setItem('obslmsGeminiModel', 'gemini-3.5-flash');
-    }
-
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
-
-    try {
-      const response = await fetch(url, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(payload)
-      });
-
-      if (!response.ok) {
-        throw new Error(`Gemini HTTP error ${response.status}`);
-      }
-
-      const res = await response.json();
-      this.isThinking = false;
-      let botText = '';
-      if (res.candidates && res.candidates[0]?.content?.parts[0]?.text) {
-        botText = res.candidates[0].content.parts[0].text;
-      } else {
-        botText = localLmsContext?.text || 'I have processed your query.';
-      }
-
-      this.messages.push({
-        from: 'bot',
-        text: botText,
-        timestamp: time,
-        quickAction: localLmsContext?.quickAction,
-        modelUsed: model
-      });
-
-      if (localLmsContext?.suggestions) {
-        this.suggestions = localLmsContext.suggestions;
-      }
-
-      this.saveChatHistory();
-      this.cdr.detectChanges();
-      this.scrollToBottom();
-    } catch (err) {
-      console.warn('Direct Gemini call error, using backend fallback:', err);
-      // Fallback to Backend Spring Boot endpoint
-      this.http.post<any>('http://localhost:8080/api/chatbot/query', {
-        message: userPrompt,
-        userName: localStorage.getItem('userName') || 'vamsi',
-        userId: localStorage.getItem('userId') || '1'
-      }).subscribe({
-        next: (backRes) => {
-          this.isThinking = false;
-          this.messages.push({
-            from: 'bot',
-            text: backRes.text || localLmsContext?.text || 'Processed request via OBLMS Knowledge Base.',
-            timestamp: time,
-            quickAction: backRes.quickAction || localLmsContext?.quickAction,
-            modelUsed: 'OBLMS NLP Engine'
-          });
-          this.suggestions = backRes.suggestions || localLmsContext?.suggestions || [];
-          this.saveChatHistory();
-          this.cdr.detectChanges();
-          this.scrollToBottom();
-        },
-        error: () => {
-          this.isThinking = false;
-          this.messages.push({
-            from: 'bot',
-            text: localLmsContext?.text || this.getGenericFallback(userPrompt),
-            timestamp: time,
-            quickAction: localLmsContext?.quickAction,
-            modelUsed: 'OBLMS Rule Engine'
-          });
-          this.suggestions = localLmsContext?.suggestions || [];
-          this.saveChatHistory();
-          this.cdr.detectChanges();
-          this.scrollToBottom();
-        }
-      });
-    }
+    });
   }
 
   private constructSystemPrompt(lmsContext: any): string {
