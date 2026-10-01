@@ -109,15 +109,30 @@
         </div>
 
         <form (ngSubmit)="saveFaculty()" class="faculty-form">
-          <div class="form-group">
-            <label>Faculty Full Name *</label>
-            <input 
-              type="text" 
-              [(ngModel)]="formData.name" 
-              name="name"
-              placeholder="e.g. Dr. Ramesh Babu"
-              required
-            />
+          <div class="form-row">
+            <div class="form-group">
+              <label>Faculty ID *</label>
+              <input 
+                type="text" 
+                [(ngModel)]="formData.id" 
+                name="id"
+                placeholder="e.g. FAC001"
+                required
+                style="font-family: monospace; font-weight: 700; color: #fde68a;"
+              />
+              <small style="color: #94a3b8; font-size: 0.76rem;">You can edit or customize the Faculty ID</small>
+            </div>
+
+            <div class="form-group">
+              <label>Faculty Full Name *</label>
+              <input 
+                type="text" 
+                [(ngModel)]="formData.name" 
+                name="name"
+                placeholder="e.g. Dr. Ramesh Babu"
+                required
+              />
+            </div>
           </div>
 
           <div class="form-row">

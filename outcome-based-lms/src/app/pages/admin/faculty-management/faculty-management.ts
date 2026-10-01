@@ -198,8 +198,9 @@ export class FacultyManagement implements OnInit {
   isEditMode = false;
   currentId: string | null = null;
   
-  // Form data
+  // Form data (includes editable ID)
   formData = {
+    id: '',
     name: '',
     email: '',
     password: '',
@@ -450,7 +451,6 @@ export class FacultyManagement implements OnInit {
             });
           
           if (backendFaculty.length > 0) {
-            // Merge backend faculty with default roster to ensure no missing profiles
             const mergedMap = new Map<string, Faculty>();
             DEFAULT_FACULTY_ROSTER.forEach(f => mergedMap.set(f.id.toUpperCase(), { ...f }));
             backendFaculty.forEach(f => {
@@ -478,16 +478,16 @@ export class FacultyManagement implements OnInit {
 
   copyCredentials(faculty: Faculty): void {
     const pwd = faculty.password || 'password';
-    const text = `Institutional Faculty Account Details:\nID: ${faculty.id}\nName: ${faculty.name}\nDepartment: ${faculty.department}\nUsername/Email: ${faculty.email}\nPassword: ${pwd}`;
+    const text = `Institutional Faculty Account Details:\nFaculty ID: ${faculty.id}\nName: ${faculty.name}\nDepartment: ${faculty.department}\nUsername/Email: ${faculty.email}\nPassword: ${pwd}`;
     
     if (navigator?.clipboard) {
       navigator.clipboard.writeText(text).then(() => {
-        this.toast.success(`Copied login credentials for "${faculty.name}"! 📋`);
+        this.toast.success(`Copied login credentials for "${faculty.name}" (ID: ${faculty.id})! 📋`);
       }).catch(() => {
-        this.toast.info(`Email: ${faculty.email} | Password: ${pwd}`);
+        this.toast.info(`ID: ${faculty.id} | Email: ${faculty.email} | Password: ${pwd}`);
       });
     } else {
-      this.toast.info(`Email: ${faculty.email} | Password: ${pwd}`);
+      this.toast.info(`ID: ${faculty.id} | Email: ${faculty.email} | Password: ${pwd}`);
     }
   }
 
@@ -572,6 +572,7 @@ export class FacultyManagement implements OnInit {
     this.showForm = true;
     this.isEditMode = false;
     this.resetForm();
+    this.formData.id = this.generateId();
     this.formData.password = 'Welcome@123';
   }
 
@@ -580,6 +581,7 @@ export class FacultyManagement implements OnInit {
     this.isEditMode = true;
     this.currentId = faculty.id;
     this.formData = {
+      id: faculty.id,
       name: faculty.name,
       email: faculty.email,
       password: faculty.password || 'password',
@@ -596,6 +598,7 @@ export class FacultyManagement implements OnInit {
 
   private resetForm(): void {
     this.formData = {
+      id: '',
       name: '',
       email: '',
       password: '',
@@ -636,18 +639,28 @@ export class FacultyManagement implements OnInit {
 
   saveFaculty(): void {
     if (!this.validateForm()) {
-      this.toast.warning('Please fill all required fields (Name, Email, Department, Designation)');
+      this.toast.warning('Please fill all required fields (Faculty ID, Name, Email, Department, Designation)');
       return;
     }
 
-    const facultyId = this.currentId || this.generateId();
+    const originalId = this.currentId;
+    const newFacultyId = this.formData.id.trim().toUpperCase();
     const facultyName = this.formData.name.trim();
     const facultyEmail = this.formData.email.trim();
     const facultyPassword = this.formData.password.trim() || 'Welcome@123';
     const assignedCourses = [...this.formData.selectedCourses];
 
+    // Check if new ID already exists on a different faculty profile
+    if (!this.isEditMode || (originalId && originalId.toUpperCase() !== newFacultyId)) {
+      const exists = this.facultyList.some(f => f.id.toUpperCase() === newFacultyId && f.id !== originalId);
+      if (exists) {
+        this.toast.error(`Faculty ID "${newFacultyId}" is already assigned to another faculty member.`);
+        return;
+      }
+    }
+
     const facultyObj: Faculty = {
-      id: facultyId,
+      id: newFacultyId,
       name: facultyName,
       email: facultyEmail,
       password: facultyPassword,
@@ -657,10 +670,12 @@ export class FacultyManagement implements OnInit {
     };
 
     // 1. Update Faculty List in state & localStorage
-    if (this.isEditMode) {
-      const idx = this.facultyList.findIndex(f => f.id === facultyId);
+    if (this.isEditMode && originalId) {
+      const idx = this.facultyList.findIndex(f => f.id === originalId);
       if (idx !== -1) {
         this.facultyList[idx] = facultyObj;
+      } else {
+        this.facultyList.unshift(facultyObj);
       }
     } else {
       this.facultyList.unshift(facultyObj);
@@ -674,10 +689,13 @@ export class FacultyManagement implements OnInit {
     try {
       const storedUsers = localStorage.getItem('obslmsUsersDatabase');
       const usersList = storedUsers ? JSON.parse(storedUsers) : [];
-      const userIdx = usersList.findIndex((u: any) => u.email?.toLowerCase() === facultyEmail.toLowerCase());
+      
+      const filtered = usersList.filter((u: any) => 
+        (originalId ? u.id !== originalId : true) && u.email?.toLowerCase() !== facultyEmail.toLowerCase()
+      );
 
       const userRecord = {
-        id: facultyId,
+        id: newFacultyId,
         name: facultyName,
         email: facultyEmail,
         password: facultyPassword,
@@ -687,12 +705,8 @@ export class FacultyManagement implements OnInit {
         assignedCourses: assignedCourses
       };
 
-      if (userIdx !== -1) {
-        usersList[userIdx] = userRecord;
-      } else {
-        usersList.push(userRecord);
-      }
-      localStorage.setItem('obslmsUsersDatabase', JSON.stringify(usersList));
+      filtered.push(userRecord);
+      localStorage.setItem('obslmsUsersDatabase', JSON.stringify(filtered));
     } catch {}
 
     // 3. Update Course Allocations in `obslmsCourses` & `obslmsFacultyAllocations`
@@ -715,12 +729,12 @@ export class FacultyManagement implements OnInit {
       }
 
       const allocations = this.formData.selectedCourses.map((cTitle, idx) => ({
-        id: `${facultyId}-${idx}`,
-        facultyId: facultyId,
+        id: `${newFacultyId}-${idx}`,
+        facultyId: newFacultyId,
         facultyName: facultyName,
-        courseId: facultyId,
+        courseId: newFacultyId,
         courseName: cTitle,
-        subjectId: facultyId,
+        subjectId: newFacultyId,
         subjectName: cTitle,
         semester: 'Semester 3'
       }));
@@ -730,12 +744,20 @@ export class FacultyManagement implements OnInit {
 
     this.filterFaculty();
     this.closeForm();
-    this.toast.success(`Faculty account for "${facultyName}" saved with login credentials! 🎉`);
+    this.toast.success(`Faculty profile "${facultyName}" (ID: ${newFacultyId}) saved! 🎉`);
     this.cdr.detectChanges();
 
-    // 4. Background Sync to Spring Boot Backend
+    // 4. If ID changed in edit mode, delete old ID in backend first
+    if (this.isEditMode && originalId && originalId !== newFacultyId) {
+      this.http.delete('http://localhost:8080/api/users/' + originalId).subscribe({
+        next: () => {},
+        error: () => {}
+      });
+    }
+
+    // 5. Background Sync to Spring Boot Backend
     const payload = {
-      id: facultyId,
+      id: newFacultyId,
       name: facultyName,
       email: facultyEmail,
       password: facultyPassword,
@@ -828,6 +850,7 @@ export class FacultyManagement implements OnInit {
 
   private validateForm(): boolean {
     return !!(
+      this.formData.id.trim() &&
       this.formData.name.trim() &&
       this.formData.email.trim() &&
       this.formData.department &&
