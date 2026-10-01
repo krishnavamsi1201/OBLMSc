@@ -99,15 +99,15 @@
 
 			<!-- 1. Real-Time KPI Stats Bar -->
 			<div class="quick-stats">
-				<div class="stat-card stat-classes" (click)="goToCourses()">
+				<div class="stat-card stat-classes" (click)="goToCourses()" style="cursor: pointer;" title="View Assigned Classes & Courses">
 					<div class="stat-icon"><span class="material-icons">menu_book</span></div>
 					<div class="stat-content">
 						<span class="stat-label">Assigned Classes</span>
 						<h3 class="stat-value">{{ totalCourses }}</h3>
-						<small class="stat-hint">Active this semester</small>
+						<small class="stat-hint">Active this semester →</small>
 					</div>
 				</div>
-				<div class="stat-card stat-students" (click)="openEnrolledStudentsModal()" style="cursor: pointer;" title="Click to view all enrolled students">
+				<div class="stat-card stat-students" (click)="openEnrolledStudentsModal()" style="cursor: pointer;" title="Click to view all enrolled students directory">
 					<div class="stat-icon"><span class="material-icons">groups</span></div>
 					<div class="stat-content">
 						<span class="stat-label">Enrolled Students</span>
@@ -115,28 +115,28 @@
 						<small class="stat-hint">In your courses (Click to View) →</small>
 					</div>
 				</div>
-				<div class="stat-card stat-attainment" (click)="goToCOAttainment()">
+				<div class="stat-card stat-attainment" (click)="goToCOAttainment()" style="cursor: pointer;" title="Open Detailed CO-PO Attainment Matrix">
 					<div class="stat-icon"><span class="material-icons">track_changes</span></div>
 					<div class="stat-content">
 						<span class="stat-label">Avg CO Attainment</span>
 						<h3 class="stat-value">{{ overallAttainment }}%</h3>
-						<small class="stat-hint">Target threshold: 75%</small>
+						<small class="stat-hint">Target threshold: 75% →</small>
 					</div>
 				</div>
-				<div class="stat-card stat-attendance">
+				<div class="stat-card stat-attendance" (click)="goToAttendance()" style="cursor: pointer;" title="Open Attendance Management">
 					<div class="stat-icon"><span class="material-icons">fact_check</span></div>
 					<div class="stat-content">
 						<span class="stat-label">Avg Attendance</span>
 						<h3 class="stat-value">{{ averageAttendance }}%</h3>
-						<small class="stat-hint">Min threshold: 75%</small>
+						<small class="stat-hint">Min threshold: 75% →</small>
 					</div>
 				</div>
-				<div class="stat-card stat-atrisk" [class.has-risk]="atRiskCount > 0">
+				<div class="stat-card stat-atrisk" [class.has-risk]="atRiskCount > 0" (click)="goToAtRisk()" style="cursor: pointer;" title="View At-Risk Academic Diagnostic & Remedial Plans">
 					<div class="stat-icon"><span class="material-icons">warning_amber</span></div>
 					<div class="stat-content">
 						<span class="stat-label">At-Risk Students</span>
 						<h3 class="stat-value">{{ atRiskCount }}</h3>
-						<small class="stat-hint">{{ atRiskCount > 0 ? 'Intervention needed' : 'All students on track' }}</small>
+						<small class="stat-hint">{{ atRiskCount > 0 ? 'Intervention needed →' : 'All students on track →' }}</small>
 					</div>
 				</div>
 			</div>
@@ -1002,9 +1002,15 @@
 						</ul>
 					</div>
 				</div>
+				<div class="modal-footer" style="display: flex; justify-content: flex-end; padding: 14px 20px; border-top: 1px solid #1f2f54;">
+					<button class="btn primary" (click)="closeAtRiskModal()">Close</button>
+				</div>
+			</div>
+		</div>
+
 		<!-- MODAL 8: Enrolled Students Roster Modal -->
-		<div class="modal-overlay" *ngIf="showEnrolledStudentsModal">
-			<div class="modal-card" style="max-width: 900px; width: 95%; max-height: 90vh; display: flex; flex-direction: column;">
+		<div class="modal-backdrop" *ngIf="showEnrolledStudentsModal" (click)="closeEnrolledStudentsModal()">
+			<div class="modal-card" (click)="$event.stopPropagation()" style="max-width: 900px; width: 95%; max-height: 90vh; display: flex; flex-direction: column;">
 				<div class="modal-header">
 					<div style="display: flex; align-items: center; gap: 10px;">
 						<span class="material-icons" style="color: #d4af37; font-size: 24px;">groups</span>
