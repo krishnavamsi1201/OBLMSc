@@ -384,6 +384,7 @@
   flex-wrap: wrap;
   gap: 4px;
   max-width: 260px;
+  align-items: center;
 }
 
 .courses-badge {
@@ -395,6 +396,35 @@
   font-weight: 600;
   border: 1px solid #1f2f54;
   display: inline-block;
+}
+
+.allot-edit-tag {
+  font-size: 0.75rem;
+  opacity: 0.7;
+  padding: 2px 4px;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+}
+
+.courses-badges-wrap:hover .allot-edit-tag {
+  opacity: 1;
+  transform: scale(1.15);
+}
+
+.btn-action-pill.allot-btn {
+  background: rgba(212, 175, 55, 0.15);
+  color: #fde68a;
+  border-color: rgba(212, 175, 55, 0.35);
+  font-weight: 700;
+  padding: 5px 10px;
+  font-size: 0.78rem;
+}
+
+.btn-action-pill.allot-btn:hover {
+  background: #d4af37;
+  color: #0a1128;
+  font-weight: 800;
+  transform: translateY(-1px);
 }
 
 /* Actions Column & Pill Buttons */

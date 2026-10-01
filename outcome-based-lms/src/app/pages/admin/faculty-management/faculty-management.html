@@ -177,25 +177,6 @@
             </div>
           </div>
 
-          <div class="form-group">
-            <label style="display: flex; justify-content: space-between; align-items: center;">
-              <span>Assign Subjects / Courses</span>
-              <small style="color: #fde68a; font-weight: 600;">Selected: {{ formData.selectedCourses.length }} subjects</small>
-            </label>
-            <div class="course-picker-grid">
-              <label *ngFor="let course of getAvailableCoursesForDept(formData.department)" class="course-picker-item">
-                <input 
-                  type="checkbox" 
-                  [checked]="isCourseSelected(course)" 
-                  (change)="toggleCourseSelection(course)"
-                  style="width: 16px; height: 16px; accent-color: #d4af37;"
-                />
-                <span><strong style="color: #fde68a;">{{ course.code ? course.code + ' : ' : '' }}</strong>{{ course.title }}</span>
-              </label>
-            </div>
-            <small style="color: #94a3b8; margin-top: 6px; display: block;">Check or uncheck the subjects this faculty member teaches across all semesters.</small>
-          </div>
-
           <div class="form-actions">
             <button type="button" class="btn btn-secondary" (click)="closeForm()">Cancel</button>
             <button type="submit" class="btn btn-primary">{{ isEditMode ? 'Update' : 'Add' }} Faculty</button>
@@ -235,7 +216,7 @@
               <th>Official Email</th>
               <th style="width: 130px;">🔑 Password</th>
               <th>Allocated Subjects</th>
-              <th style="width: 250px; text-align: center;">Actions</th>
+              <th style="width: 180px; text-align: center;">Actions</th>
             </tr>
           </thead>
           <tbody>
@@ -260,20 +241,18 @@
                 <code class="cred-pass-badge">{{ faculty.password || 'password' }}</code>
               </td>
               <td class="courses-cell">
-                <div *ngIf="faculty.courses && faculty.courses.length > 0" class="courses-badges-wrap">
+                <div *ngIf="faculty.courses && faculty.courses.length > 0" class="courses-badges-wrap" (click)="openAllotModal(faculty)" title="Click to edit subject allotment" style="cursor: pointer;">
                   <span *ngFor="let c of faculty.courses" class="courses-badge">{{ c }}</span>
+                  <span class="allot-edit-tag" title="Edit Allotment">✏️</span>
                 </div>
-                <button *ngIf="!faculty.courses || faculty.courses.length === 0" (click)="openAllotModal(faculty)" class="btn-action-pill edit" style="padding: 2px 8px; font-size: 0.75rem;">
-                  + Allot Subjects
+                <button *ngIf="!faculty.courses || faculty.courses.length === 0" (click)="openAllotModal(faculty)" class="btn-action-pill allot-btn" title="Allot Subjects to this faculty">
+                  📚 + Allot Subjects
                 </button>
               </td>
               <td class="actions-cell">
                 <div class="actions-btn-wrap">
                   <button type="button" class="btn-action-pill copy" (click)="copyCredentials(faculty)" title="Copy login credentials to clipboard">
                     📋 Copy
-                  </button>
-                  <button type="button" class="btn-action-pill edit" (click)="openAllotModal(faculty)" title="Allot Subjects to this faculty">
-                    📚 Allot
                   </button>
                   <button type="button" class="btn-action-pill edit" (click)="openEditForm(faculty)" title="Edit Faculty Profile Details">
                     ✎ Edit

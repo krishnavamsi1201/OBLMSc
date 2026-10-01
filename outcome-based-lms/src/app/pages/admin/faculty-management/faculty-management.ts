@@ -648,7 +648,9 @@ export class FacultyManagement implements OnInit {
     const facultyName = this.formData.name.trim();
     const facultyEmail = this.formData.email.trim();
     const facultyPassword = this.formData.password.trim() || 'Welcome@123';
-    const assignedCourses = [...this.formData.selectedCourses];
+
+    const existingFaculty = originalId ? this.facultyList.find(f => f.id === originalId) : null;
+    const assignedCourses = existingFaculty?.courses ? [...existingFaculty.courses] : [];
 
     // Check if new ID already exists on a different faculty profile
     if (!this.isEditMode || (originalId && originalId.toUpperCase() !== newFacultyId)) {
