@@ -25,6 +25,12 @@ public class TimetableSlot {
     @Column(nullable = true)
     private String facultyName;
 
+    @Column(nullable = true)
+    private String department;
+
+    @Column(nullable = true)
+    private String batch;
+
     // Constructors
     public TimetableSlot() {}
 
@@ -45,6 +51,17 @@ public class TimetableSlot {
         this.facultyName = facultyName;
     }
 
+    public TimetableSlot(Long id, String day, String period, String subject, String room, String facultyName, String department, String batch) {
+        this.id = id;
+        this.day = day;
+        this.period = period;
+        this.subject = subject;
+        this.room = room;
+        this.facultyName = facultyName;
+        this.department = department;
+        this.batch = batch;
+    }
+
     // Getters and Setters
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
@@ -63,4 +80,10 @@ public class TimetableSlot {
 
     public String getFacultyName() { return facultyName; }
     public void setFacultyName(String facultyName) { this.facultyName = facultyName; }
+
+    public String getDepartment() { return department; }
+    public void setDepartment(String department) { this.department = department; }
+
+    public String getBatch() { return batch; }
+    public void setBatch(String batch) { this.batch = batch; }
 }
