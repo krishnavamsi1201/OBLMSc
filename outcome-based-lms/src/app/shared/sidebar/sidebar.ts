@@ -159,8 +159,6 @@ export class Sidebar implements AfterViewInit {
       items: [
         { icon: 'grade', label: 'Student Results & Transcripts', path: '/results', exact: true },
         { icon: 'trending_up', label: 'PO Institutional Attainment', path: '/po-attainment', exact: true },
-        { icon: 'quiz', label: 'Question Bank Governance', path: '/question-bank', exact: true },
-        { icon: 'assignment', label: 'Assessments Registry', path: '/assessments', exact: true },
         { icon: 'bar_chart', label: 'Accreditation Reports', path: '/reports', exact: true },
         { icon: 'support_agent', label: 'Student Grievance Desk', path: '/grievance', exact: true }
       ]
