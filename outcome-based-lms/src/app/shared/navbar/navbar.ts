@@ -62,15 +62,41 @@ export class Navbar {
     // 2. Fetch users
     this.http.get<any[]>('http://localhost:8080/api/users').subscribe({
       next: (users) => {
-        const faculty = users.filter(u => u.role?.toUpperCase() === 'FACULTY').map(u => ({
-          id: u.id,
-          name: u.name,
-          email: u.email,
-          department: u.department || 'Computer Science',
-          designation: 'Assistant Professor',
-          courses: []
-        }));
-        localStorage.setItem('obslmsFaculty', JSON.stringify(faculty));
+        let existingFacultyMap = new Map<string, any>();
+        try {
+          const stored = JSON.parse(localStorage.getItem('obslmsFaculty') || '[]');
+          if (Array.isArray(stored)) {
+            stored.forEach((f: any) => {
+              if (f.id) existingFacultyMap.set(f.id.toUpperCase(), f);
+              if (f.name) existingFacultyMap.set(f.name.toLowerCase().trim(), f);
+            });
+          }
+        } catch {}
+
+        const faculty = users.filter(u => u.role?.toUpperCase() === 'FACULTY').map(u => {
+          const existing = existingFacultyMap.get((u.id || '').toUpperCase()) || existingFacultyMap.get((u.name || '').toLowerCase().trim());
+          let courses: string[] = [];
+          if (Array.isArray(u.assignedCourses) && u.assignedCourses.length > 0) {
+            courses = u.assignedCourses;
+          } else if (u.enrolledCourses && typeof u.enrolledCourses === 'string') {
+            courses = u.enrolledCourses.split(',').map((s: string) => s.trim()).filter(Boolean);
+          } else if (existing && Array.isArray(existing.courses) && existing.courses.length > 0) {
+            courses = existing.courses;
+          }
+
+          return {
+            id: u.id,
+            name: u.name,
+            email: u.email,
+            department: u.department || existing?.department || 'Computer Science & Engineering',
+            designation: u.designation || existing?.designation || 'Assistant Professor',
+            courses: courses
+          };
+        });
+
+        if (faculty.length > 0) {
+          localStorage.setItem('obslmsFaculty', JSON.stringify(faculty));
+        }
 
         const students = users.filter(u => u.role?.toUpperCase() === 'STUDENT').map(u => ({
           id: u.id,

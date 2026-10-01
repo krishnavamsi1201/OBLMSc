@@ -376,14 +376,70 @@ export class FacultyManagement implements OnInit {
     const assigned = [...this.selectedAllotCourses];
     faculty.courses = assigned;
 
-    // Update in local facultyList
-    const idx = this.facultyList.findIndex(f => f.id === faculty.id);
+    // 1. Update in local facultyList
+    const idx = this.facultyList.findIndex(f => f.id === faculty.id || f.name.toLowerCase().trim() === faculty.name.toLowerCase().trim());
     if (idx !== -1) {
       this.facultyList[idx].courses = assigned;
     }
     try {
       localStorage.setItem('obslmsFaculty', JSON.stringify(this.facultyList));
     } catch {}
+
+    // 2. Update obslmsUsersDatabase
+    try {
+      const storedUsers = localStorage.getItem('obslmsUsersDatabase');
+      if (storedUsers) {
+        const usersList = JSON.parse(storedUsers);
+        if (Array.isArray(usersList)) {
+          const uIdx = usersList.findIndex((u: any) => u.id === faculty.id || u.email?.toLowerCase() === faculty.email?.toLowerCase());
+          if (uIdx !== -1) {
+            usersList[uIdx].assignedCourses = assigned;
+            localStorage.setItem('obslmsUsersDatabase', JSON.stringify(usersList));
+          }
+        }
+      }
+    } catch {}
+
+    // 3. Update obslmsFacultyAllocations
+    try {
+      const storedAlloc = localStorage.getItem('obslmsFacultyAllocations');
+      let allocList: any[] = storedAlloc ? JSON.parse(storedAlloc) : [];
+      if (!Array.isArray(allocList)) allocList = [];
+      
+      allocList = allocList.filter(a => a.facultyId !== faculty.id && a.facultyName?.toLowerCase().trim() !== faculty.name.toLowerCase().trim());
+      
+      assigned.forEach((subCode, i) => {
+        allocList.push({
+          id: `FAL-${faculty.id}-${i}-${Date.now()}`,
+          facultyId: faculty.id,
+          facultyName: faculty.name,
+          courseId: faculty.id,
+          courseName: faculty.department,
+          subjectId: subCode,
+          subjectName: subCode,
+          semester: 'Semester 3'
+        });
+      });
+      localStorage.setItem('obslmsFacultyAllocations', JSON.stringify(allocList));
+    } catch {}
+
+    // 4. Update obslmsCourses
+    try {
+      const courses = this.courseService.getCoursesSync();
+      let updatedCourses = false;
+      courses.forEach(c => {
+        if (assigned.includes(c.title) || assigned.includes(c.code)) {
+          c.faculty = faculty.name;
+          updatedCourses = true;
+        }
+      });
+      if (updatedCourses) {
+        localStorage.setItem('obslmsCourses', JSON.stringify(courses));
+      }
+    } catch {}
+
+    this.syncService.emit('FACULTY_CHANGED', faculty);
+    this.syncService.emit('COURSES_CHANGED');
 
     const payload = {
       id: faculty.id,
@@ -400,32 +456,100 @@ export class FacultyManagement implements OnInit {
         this.toast.success(`Subjects updated successfully for "${faculty.name}"! 🎉`);
         this.closeAllotModal();
         this.filterFaculty();
+        this.cdr.detectChanges();
       },
       error: () => {
         this.toast.info(`Updated local allotment for "${faculty.name}".`);
         this.closeAllotModal();
         this.filterFaculty();
+        this.cdr.detectChanges();
       }
     });
   }
 
   private loadFaculty(): void {
-    // 1. First initialize with default roster or local storage to guarantee immediate display
+    // 1. Build lookup map from DEFAULT_FACULTY_ROSTER
+    const defaultMap = new Map<string, Faculty>();
+    DEFAULT_FACULTY_ROSTER.forEach(f => {
+      defaultMap.set(f.id.toUpperCase(), f);
+      defaultMap.set(f.name.toLowerCase().trim(), f);
+    });
+
+    // 2. Read existing allocations from obslmsFacultyAllocations
+    const facultyAllocationsMap = new Map<string, string[]>();
+    try {
+      const storedAlloc = localStorage.getItem('obslmsFacultyAllocations');
+      if (storedAlloc) {
+        const parsed = JSON.parse(storedAlloc);
+        if (Array.isArray(parsed)) {
+          for (const item of parsed) {
+            if (item.facultyName && item.subjectId) {
+              const nameKey = item.facultyName.trim().toLowerCase();
+              const idKey = (item.facultyId || '').trim().toUpperCase();
+              const subCode = (item.subjectId || '').trim();
+              if (subCode) {
+                if (!facultyAllocationsMap.has(nameKey)) facultyAllocationsMap.set(nameKey, []);
+                const l1 = facultyAllocationsMap.get(nameKey)!;
+                if (!l1.includes(subCode)) l1.push(subCode);
+
+                if (idKey) {
+                  if (!facultyAllocationsMap.has(idKey)) facultyAllocationsMap.set(idKey, []);
+                  const l2 = facultyAllocationsMap.get(idKey)!;
+                  if (!l2.includes(subCode)) l2.push(subCode);
+                }
+              }
+            }
+          }
+        }
+      }
+    } catch {}
+
+    // 3. Read local storage
     const local = this.getSafeJson('obslmsFaculty');
     if (Array.isArray(local) && local.length > 0) {
-      this.facultyList = local.map((f: any) => ({
-        ...f,
-        password: f.password || 'password'
-      }));
+      this.facultyList = local.map((f: any) => {
+        const def = defaultMap.get((f.id || '').toUpperCase()) || defaultMap.get((f.name || '').toLowerCase().trim());
+        const allocCourses = facultyAllocationsMap.get((f.name || '').toLowerCase().trim()) || facultyAllocationsMap.get((f.id || '').toUpperCase());
+        
+        let courses: string[] = [];
+        if (Array.isArray(f.courses) && f.courses.length > 0) {
+          courses = f.courses;
+        } else if (allocCourses && allocCourses.length > 0) {
+          courses = allocCourses;
+        } else if (def && def.courses && def.courses.length > 0) {
+          courses = [...def.courses];
+        }
+
+        return {
+          id: f.id,
+          name: f.name,
+          email: f.email || def?.email || `${(f.name || 'faculty').toLowerCase().replace(/[^a-z0-9]/g, '.')}@oblms.edu`,
+          password: f.password || def?.password || 'password',
+          department: f.department || def?.department || 'Computer Science & Engineering',
+          designation: f.designation || def?.designation || 'Assistant Professor',
+          courses: courses
+        };
+      });
     } else {
-      this.facultyList = [...DEFAULT_FACULTY_ROSTER];
-      try {
-        localStorage.setItem('obslmsFaculty', JSON.stringify(this.facultyList));
-      } catch {}
+      this.facultyList = DEFAULT_FACULTY_ROSTER.map(f => ({ ...f }));
     }
+
+    // Ensure all default faculty are represented with valid courses
+    DEFAULT_FACULTY_ROSTER.forEach(df => {
+      const exists = this.facultyList.find(f => (f.id && f.id.toUpperCase() === df.id.toUpperCase()) || (f.name && f.name.toLowerCase().trim() === df.name.toLowerCase().trim()));
+      if (!exists) {
+        this.facultyList.push({ ...df });
+      } else if (!exists.courses || exists.courses.length === 0) {
+        exists.courses = [...df.courses];
+      }
+    });
+
+    try {
+      localStorage.setItem('obslmsFaculty', JSON.stringify(this.facultyList));
+    } catch {}
     this.filterFaculty();
 
-    // 2. Hydrate from backend API
+    // 4. Hydrate from backend API
     this.http.get<any[]>('http://localhost:8080/api/users').subscribe({
       next: (users) => {
         if (Array.isArray(users) && users.length > 0) {
@@ -435,7 +559,7 @@ export class FacultyManagement implements OnInit {
               let courseList: string[] = [];
               if (u.enrolledCourses && typeof u.enrolledCourses === 'string') {
                 courseList = u.enrolledCourses.split(',').map((s: string) => s.trim()).filter(Boolean);
-              } else if (Array.isArray(u.assignedCourses)) {
+              } else if (Array.isArray(u.assignedCourses) && u.assignedCourses.length > 0) {
                 courseList = u.assignedCourses;
               }
               const dept = (u.department === 'Computer Science' || !u.department) ? 'Computer Science & Engineering' : u.department;
@@ -452,13 +576,44 @@ export class FacultyManagement implements OnInit {
           
           if (backendFaculty.length > 0) {
             const mergedMap = new Map<string, Faculty>();
-            DEFAULT_FACULTY_ROSTER.forEach(f => mergedMap.set(f.id.toUpperCase(), { ...f }));
-            backendFaculty.forEach(f => {
-              const existing = mergedMap.get(f.id.toUpperCase());
-              mergedMap.set(f.id.toUpperCase(), {
-                ...f,
-                courses: f.courses && f.courses.length > 0 ? f.courses : (existing?.courses || [])
-              });
+            this.facultyList.forEach(f => {
+              if (f.id) mergedMap.set(f.id.toUpperCase(), { ...f });
+              if (f.name) mergedMap.set(f.name.toLowerCase().trim(), { ...f });
+            });
+
+            backendFaculty.forEach(bf => {
+              const existing = mergedMap.get((bf.id || '').toUpperCase()) || mergedMap.get((bf.name || '').toLowerCase().trim());
+              const def = defaultMap.get((bf.id || '').toUpperCase()) || defaultMap.get((bf.name || '').toLowerCase().trim());
+              const allocCourses = facultyAllocationsMap.get((bf.name || '').toLowerCase().trim()) || facultyAllocationsMap.get((bf.id || '').toUpperCase());
+
+              let finalCourses: string[] = [];
+              if (bf.courses && bf.courses.length > 0) {
+                finalCourses = bf.courses;
+              } else if (existing && existing.courses && existing.courses.length > 0) {
+                finalCourses = existing.courses;
+              } else if (allocCourses && allocCourses.length > 0) {
+                finalCourses = allocCourses;
+              } else if (def && def.courses && def.courses.length > 0) {
+                finalCourses = [...def.courses];
+              }
+
+              const mergedFaculty: Faculty = {
+                id: bf.id || existing?.id || def?.id || `FAC${Date.now()}`,
+                name: bf.name || existing?.name || def?.name || 'Faculty Member',
+                email: bf.email || existing?.email || def?.email || 'faculty@oblms.edu',
+                password: bf.password || existing?.password || def?.password || 'password',
+                department: bf.department || existing?.department || def?.department || 'Computer Science & Engineering',
+                designation: bf.designation || existing?.designation || def?.designation || 'Assistant Professor',
+                courses: finalCourses
+              };
+
+              mergedMap.set(mergedFaculty.id.toUpperCase(), mergedFaculty);
+            });
+
+            DEFAULT_FACULTY_ROSTER.forEach(df => {
+              if (!mergedMap.has(df.id.toUpperCase())) {
+                mergedMap.set(df.id.toUpperCase(), { ...df });
+              }
             });
 
             this.facultyList = Array.from(mergedMap.values());
@@ -730,17 +885,24 @@ export class FacultyManagement implements OnInit {
         localStorage.setItem('obslmsCourses', JSON.stringify(courses));
       }
 
-      const allocations = this.formData.selectedCourses.map((cTitle, idx) => ({
-        id: `${newFacultyId}-${idx}`,
-        facultyId: newFacultyId,
-        facultyName: facultyName,
-        courseId: newFacultyId,
-        courseName: cTitle,
-        subjectId: newFacultyId,
-        subjectName: cTitle,
-        semester: 'Semester 3'
-      }));
-      localStorage.setItem('obslmsFacultyAllocations', JSON.stringify(allocations));
+      const storedAlloc = localStorage.getItem('obslmsFacultyAllocations');
+      let allocList: any[] = storedAlloc ? JSON.parse(storedAlloc) : [];
+      if (!Array.isArray(allocList)) allocList = [];
+      allocList = allocList.filter(a => a.facultyId !== newFacultyId && a.facultyId !== originalId && a.facultyName?.toLowerCase().trim() !== facultyName.toLowerCase().trim());
+
+      this.formData.selectedCourses.forEach((cTitle, idx) => {
+        allocList.push({
+          id: `${newFacultyId}-${idx}-${Date.now()}`,
+          facultyId: newFacultyId,
+          facultyName: facultyName,
+          courseId: newFacultyId,
+          courseName: this.formData.department.trim(),
+          subjectId: cTitle,
+          subjectName: cTitle,
+          semester: 'Semester 3'
+        });
+      });
+      localStorage.setItem('obslmsFacultyAllocations', JSON.stringify(allocList));
       this.syncService.emit('COURSES_CHANGED');
     } catch {}
 
