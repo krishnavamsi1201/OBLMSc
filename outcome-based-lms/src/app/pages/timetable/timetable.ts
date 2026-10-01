@@ -46,7 +46,11 @@ export interface ScheduleEntry {
                 <p>Synchronized weekly theory lectures, lab practicums, faculty research duties, and balanced daily leisure rotations.</p>
             </div>
             
-            <div class="header-right-badges">
+            <div class="header-right-actions">
+                <a *ngIf="role === 'faculty' || role === 'admin'" href="/class-adjustments" class="btn btn-adjustments">
+                    🔄 Manage Class Adjustments
+                </a>
+
                 <!-- Faculty Header Badge -->
                 <div class="context-badge faculty-badge" *ngIf="role === 'faculty'">
                     <span class="badge-sub">👨‍🏫 Logged-in Faculty</span>
@@ -122,7 +126,7 @@ export interface ScheduleEntry {
             </div>
             <div class="section-card stat-info">
                 <div class="stat-header">
-                    <h3>Leisure & Self-Study</h3>
+                    <h3>Leisure & Recess</h3>
                     <span class="stat-icon">☕</span>
                 </div>
                 <strong>{{ weeklyLeisureSlotsCount }} Slots</strong>
@@ -143,7 +147,7 @@ export interface ScheduleEntry {
             <div class="matrix-header-bar">
                 <div class="matrix-header-title">
                     <h2>📅 {{ activeViewMode === 'faculty' && role === 'faculty' ? (userName || 'Faculty') + "'s Personal Timetable Matrix" : userDept + " Master Timetable Matrix" }}</h2>
-                    <p>Real-time schedule with dynamic daily leisure rotation and live substitution sync.</p>
+                    <p>Real-time visual schedule with dynamic daily leisure rotation and live substitution sync.</p>
                 </div>
                 <div class="matrix-legend">
                     <button type="button" class="legend-btn" [class.active-legend]="matrixFilter === 'all'" (click)="setMatrixFilter('all')">
@@ -245,144 +249,6 @@ export interface ScheduleEntry {
             </div>
         </div>
 
-        <!-- Add/Edit Form for Admin/Faculty Custom Modifications -->
-        <div class="form-card" *ngIf="role === 'admin'">
-            <h2>{{ editIndex >= 0 ? 'Edit Schedule Slot' : 'Add New Custom Schedule Slot' }}</h2>
-            <form (ngSubmit)="saveSchedule()">
-                <div class="grid-row">
-                    <label>
-                        Day of Week
-                        <select name="day" [(ngModel)]="currentEntry.day" required>
-                            <option *ngFor="let d of days" [value]="d">{{ d }}</option>
-                        </select>
-                    </label>
-                    <label>
-                        Time Period
-                        <select name="period" [(ngModel)]="currentEntry.period" required>
-                            <option *ngFor="let p of periods" [value]="p">{{ p }}</option>
-                        </select>
-                    </label>
-                </div>
-                <div class="grid-row">
-                    <label>
-                        Subject / Activity Name
-                        <input type="text" name="subject" [(ngModel)]="currentEntry.subject" placeholder="e.g. Database Management Systems (CS101) or ☕ Leisure" required />
-                    </label>
-                    <label>
-                        Room / Location
-                        <input type="text" name="room" [(ngModel)]="currentEntry.room" placeholder="e.g. LH-101, Lab-4A, or Reading Hall" required />
-                    </label>
-                    <label>
-                        Faculty Instructor
-                        <input type="text" name="facultyName" [(ngModel)]="currentEntry.facultyName" placeholder="e.g. Dr. Ramesh Babu" />
-                    </label>
-                </div>
-                <div class="form-actions">
-                    <button type="submit" class="btn btn-primary">{{ editIndex >= 0 ? 'Update Slot' : 'Add Slot' }}</button>
-                    <button type="button" class="btn btn-secondary" (click)="resetForm()">Clear</button>
-                </div>
-            </form>
-        </div>
-
-        <!-- List View Table -->
-        <div class="table-card">
-            <div class="list-header-row">
-                <div>
-                    <h2>Weekly Schedule Entries ({{ filteredSchedule.length }})</h2>
-                    <p class="sub-text">Filterable list view of all timetable allocations.</p>
-                </div>
-                <div *ngIf="role === 'faculty' || role === 'admin'">
-                    <a href="/class-adjustments" class="btn btn-secondary action-nav-btn">
-                        🔄 Class Adjustments & Substitutions
-                    </a>
-                </div>
-            </div>
-            
-            <!-- Search & Filters -->
-            <div class="filter-row">
-                <label>
-                    Filter by Day:
-                    <select [(ngModel)]="dayFilter" (change)="applyFilters()">
-                        <option value="">All Days (Mon - Sat)</option>
-                        <option *ngFor="let d of days" [value]="d">{{ d }}</option>
-                    </select>
-                </label>
-                <label>
-                    Category Filter:
-                    <select [(ngModel)]="typeFilter" (change)="onDropdownTypeFilterChange()">
-                        <option value="">All Slots</option>
-                        <option value="teaching" *ngIf="role === 'faculty'">👨‍🏫 My Teaching Lectures</option>
-                        <option value="theory">📖 Theory Lectures</option>
-                        <option value="lab">🔬 Lab / Practical Sessions</option>
-                        <option value="leisure">☕ Leisure & Recess</option>
-                        <option value="duty" *ngIf="role === 'faculty'">💼 Research & Faculty Duties</option>
-                        <option value="adjusted">🔄 Adjusted / Substituted Slots</option>
-                    </select>
-                </label>
-                <label>
-                    Search:
-                    <input type="text" [(ngModel)]="searchSubject" (input)="applyFilters()" placeholder="Search subject, room, or topic..." />
-                </label>
-            </div>
-
-            <div class="table-responsive">
-                <table class="list-table">
-                    <thead>
-                        <tr>
-                            <th>Day</th>
-                            <th>Period</th>
-                            <th>Subject / Duty</th>
-                            <th>Location</th>
-                            <th>Instructor / Allocation</th>
-                            <th *ngIf="role === 'admin'">Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr *ngFor="let entry of filteredSchedule">
-                            <td><strong class="day-text">{{ entry.day }}</strong></td>
-                            <td><span class="period-tag">{{ entry.period }}</span></td>
-                            <td>
-                                <div class="subject-cell">
-                                    <span class="subject-title" [style.color]="isLeisure(entry) ? '#a5b4fc' : (isLab(entry) ? '#34d399' : (isFacultyDuty(entry) ? '#cbd5e1' : '#fde68a'))">
-                                        {{ entry.subject }}
-                                    </span>
-                                    <span *ngIf="entry.batch" class="batch-pill">{{ entry.batch }}</span>
-                                    <span *ngIf="entry.isExtraClass" class="extra-badge-pill">⭐ Extra Lecture</span>
-                                </div>
-                            </td>
-                            <td><span class="room-badge">{{ entry.room }}</span></td>
-                            <td>
-                                <div *ngIf="entry.isAdjusted" class="substitute-info-box">
-                                    <span class="sub-name">🔄 <strong>{{ entry.substituteName }}</strong></span>
-                                    <small class="sub-for">Covering for: {{ entry.requesterName }}</small>
-                                </div>
-                                <div *ngIf="entry.isExtraClass" class="extra-info-box">
-                                    <span style="color: #c084fc; font-weight: 700;">⭐ {{ entry.facultyName || 'Faculty' }}</span>
-                                </div>
-                                <div *ngIf="!entry.isAdjusted && !entry.isExtraClass && entry.facultyName && !isLeisure(entry) && !isFacultyDuty(entry)" class="faculty-info-box">
-                                    <span style="color: #fde68a; font-weight: 700; font-size: 13px;">👨‍🏫 {{ entry.facultyName }}</span>
-                                    <small *ngIf="isMyTeachingSlot(entry)" style="color: #34d399; font-weight: 800; display: block;">(Your Teaching Lecture)</small>
-                                </div>
-                                <span *ngIf="isFacultyDuty(entry)" style="color: #94a3b8; font-size: 12px; font-weight: 600;">
-                                    💼 Faculty Academic Work
-                                </span>
-                                <span *ngIf="isLeisure(entry)" style="color: #a5b4fc; font-size: 12px;">
-                                    ☕ Leisure / Break Hour
-                                </span>
-                            </td>
-                            <td *ngIf="role === 'admin'" class="actions-cell">
-                                <button class="edit-btn" (click)="editEntry(entry)">Edit</button>
-                                <button class="danger" (click)="deleteEntry(entry)">Delete</button>
-                            </td>
-                        </tr>
-                        <tr *ngIf="filteredSchedule.length === 0">
-                            <td [attr.colspan]="role === 'admin' ? 6 : 5" class="empty-state">No schedule slots match your search.</td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-        </div>
-
         <app-footer></app-footer>
 
     </div>
@@ -438,9 +304,33 @@ export interface ScheduleEntry {
       line-height: 1.4;
     }
 
-    .header-right-badges {
+    .header-right-actions {
       display: flex;
+      align-items: center;
       gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .btn-adjustments {
+      background: #16244a;
+      color: #cbd5e1;
+      border: 1px solid #1f2f54;
+      padding: 10px 16px;
+      border-radius: 10px;
+      font-size: 13px;
+      font-weight: 700;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s ease;
+    }
+
+    .btn-adjustments:hover {
+      background: #1e3a8a;
+      color: #ffffff;
+      border-color: #3b82f6;
+      transform: translateY(-1px);
     }
 
     .context-badge {
@@ -1005,168 +895,6 @@ export interface ScheduleEntry {
       color: #64748b;
       font-size: 14px;
     }
-
-    /* List Table */
-    .list-header-row {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 14px;
-      flex-wrap: wrap;
-      gap: 10px;
-    }
-
-    .list-header-row h2 {
-      margin: 0;
-      font-size: 1.25rem;
-      color: #ffffff;
-    }
-
-    .sub-text {
-      color: #94a3b8;
-      font-size: 0.85rem;
-      margin: 2px 0 0 0;
-    }
-
-    .action-nav-btn {
-      font-size: 12px;
-      text-decoration: none;
-      padding: 7px 14px;
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-    }
-
-    .table-responsive {
-      overflow-x: auto;
-    }
-
-    table.list-table {
-      width: 100%;
-      border-collapse: collapse;
-      background: #091024;
-      border-radius: 8px;
-      overflow: hidden;
-    }
-
-    table.list-table th, table.list-table td {
-      padding: 12px 14px;
-      border-bottom: 1px solid #132247;
-      text-align: left;
-    }
-
-    table.list-table th {
-      font-weight: 700;
-      background: #0d1730;
-      color: #fde68a;
-      font-size: 13px;
-    }
-
-    table.list-table td {
-      color: #e2e8f0;
-      font-size: 13px;
-    }
-
-    .day-text {
-      color: #ffffff;
-      font-weight: 700;
-    }
-
-    .period-tag {
-      background: #101b38;
-      border: 1px solid #1f2f54;
-      color: #94a3b8;
-      padding: 3px 8px;
-      border-radius: 6px;
-      font-size: 12px;
-      font-weight: 600;
-    }
-
-    .subject-cell {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      flex-wrap: wrap;
-    }
-
-    .subject-title {
-      font-weight: 700;
-    }
-
-    .batch-pill {
-      background: rgba(59, 130, 246, 0.15);
-      color: #93c5fd;
-      border: 1px solid rgba(59, 130, 246, 0.35);
-      padding: 1px 6px;
-      border-radius: 4px;
-      font-size: 11px;
-      font-weight: 700;
-    }
-
-    .extra-badge-pill {
-      background: rgba(192, 132, 252, 0.2);
-      color: #c084fc;
-      border: 1px solid rgba(192, 132, 252, 0.4);
-      padding: 1px 6px;
-      border-radius: 4px;
-      font-size: 11px;
-      font-weight: 700;
-    }
-
-    .room-badge {
-      background: rgba(59, 130, 246, 0.15);
-      color: #93c5fd;
-      border: 1px solid rgba(59, 130, 246, 0.35);
-      padding: 3px 8px;
-      border-radius: 6px;
-      font-weight: 700;
-      font-size: 12px;
-    }
-
-    .substitute-info-box, .faculty-info-box {
-      display: flex;
-      flex-direction: column;
-      gap: 2px;
-    }
-
-    .sub-name { color: #38bdf8; font-size: 13px; }
-    .sub-for { color: #94a3b8; font-size: 11px; }
-
-    /* Form Card */
-    .form-card {
-      background: #101b38;
-      border: 1px solid #1f2f54;
-      border-radius: 14px;
-      padding: 20px;
-      margin-bottom: 24px;
-    }
-
-    .form-card h2 {
-      margin: 0 0 16px 0;
-      font-size: 1.25rem;
-      color: #ffffff;
-      font-weight: 800;
-    }
-
-    .form-card form { display: grid; gap: 16px; }
-    .grid-row { display: grid; gap: 16px; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); }
-    label { display: flex; flex-direction: column; font-weight: 600; color: #cbd5e1; font-size: 13px; }
-    input[type=text], select { margin-top: 6px; padding: 10px 12px; border: 1px solid #1f2f54; border-radius: 8px; font-size: 14px; outline: none; background: #091024; color: #ffffff; }
-    input[type=text]:focus, select:focus { border-color: #d4af37; box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.2); }
-    
-    .form-actions { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 8px; }
-    .btn { padding: 9px 18px; border: none; border-radius: 8px; cursor: pointer; font-weight: 700; font-size: 13px; }
-    .btn-primary { background: linear-gradient(135deg, #d4af37 0%, #b8860b 100%); color: #0a1128; font-weight: 800; }
-    .btn-secondary { background: #16244a; color: #cbd5e1; border: 1px solid #1f2f54; }
-    
-    .actions-cell { display: flex; gap: 8px; }
-    .edit-btn { background: #10b981; color: #0a1128; padding: 5px 10px; font-size: 12px; border: none; border-radius: 4px; cursor: pointer; font-weight: 700; }
-    button.danger { background: #ef4444; color: white; padding: 5px 10px; font-size: 12px; border: none; border-radius: 4px; cursor: pointer; font-weight: 700; }
-    
-    .filter-row { display: flex; gap: 16px; flex-wrap: wrap; margin-bottom: 16px; background: #0d1730; padding: 14px; border-radius: 10px; border: 1px solid #1f2f54; }
-    .filter-row label { flex: 1; min-width: 180px; }
-    .filter-row select, .filter-row input { margin-top: 4px; }
-    .empty-state { padding: 40px; text-align: center; color: #94a3b8; font-weight: 600; }
     `
   ]
 })
@@ -1175,7 +903,6 @@ export class Timetable implements OnInit {
   userName: string = '';
   currentDay = new Date().toLocaleDateString('en-US', { weekday: 'long' });
   weeklySchedule: ScheduleEntry[] = [];
-  filteredSchedule: ScheduleEntry[] = [];
   userAssignedCourses: string[] = [];
   userDept: string = 'Computer Science & Engineering';
   matrixFilter: string = 'all';
@@ -1587,15 +1314,6 @@ export class Timetable implements OnInit {
     return facultySchedule;
   }
 
-  // Form bindings
-  currentEntry: ScheduleEntry = this.createEmptyEntry();
-  editIndex = -1;
-
-  // Filters
-  dayFilter = '';
-  typeFilter = '';
-  searchSubject = '';
-
   approvedAdjustments: any[] = [];
   extraClasses: any[] = [];
 
@@ -1644,11 +1362,6 @@ export class Timetable implements OnInit {
     } else {
       this.weeklySchedule = this.getBranchSchedule(this.userDept);
     }
-    this.applyFilters();
-  }
-
-  createEmptyEntry(): ScheduleEntry {
-    return { id: 0, day: 'Monday', period: '09:00 AM - 10:00 AM', subject: '', room: '' };
   }
 
   isMyTeachingSlot(slot: ScheduleEntry): boolean {
@@ -1690,7 +1403,6 @@ export class Timetable implements OnInit {
       next: (courses) => {
         if (Array.isArray(courses) && courses.length > 0) {
           this.applyAllocationsToSchedule(courses);
-          this.applyFilters();
         }
       },
       error: () => {}
@@ -1815,8 +1527,6 @@ export class Timetable implements OnInit {
         }
       });
     }
-
-    this.applyFilters();
   }
 
   getSlot(day: string, period: string): ScheduleEntry | null {
@@ -1844,17 +1554,9 @@ export class Timetable implements OnInit {
   setMatrixFilter(type: string): void {
     if (this.matrixFilter === type && type !== 'all') {
       this.matrixFilter = 'all';
-      this.typeFilter = '';
     } else {
       this.matrixFilter = type;
-      this.typeFilter = type === 'all' ? '' : type;
     }
-    this.applyFilters();
-  }
-
-  onDropdownTypeFilterChange(): void {
-    this.matrixFilter = this.typeFilter || 'all';
-    this.applyFilters();
   }
 
   isSlotMatch(slot: ScheduleEntry): boolean {
@@ -1874,9 +1576,6 @@ export class Timetable implements OnInit {
     if (this.matrixFilter === 'adjusted') {
       return !!slot.isAdjusted;
     }
-    if (this.matrixFilter === 'teaching') {
-      return this.isMyTeachingSlot(slot);
-    }
     return true;
   }
 
@@ -1888,100 +1587,5 @@ export class Timetable implements OnInit {
   isSlotActiveHighlight(slot: ScheduleEntry): boolean {
     if (!slot || this.matrixFilter === 'all' || !this.matrixFilter) return false;
     return this.isSlotMatch(slot);
-  }
-
-  applyFilters(): void {
-    let result = this.weeklySchedule;
-
-    if (this.dayFilter) {
-      result = result.filter(e => e.day === this.dayFilter);
-    }
-
-    if (this.typeFilter) {
-      if (this.typeFilter === 'teaching') {
-        result = result.filter(e => this.isMyTeachingSlot(e));
-      } else if (this.typeFilter === 'adjusted') {
-        result = result.filter(e => e.isAdjusted === true);
-      } else if (this.typeFilter === 'theory' || this.typeFilter === 'classes') {
-        result = result.filter(e => !this.isLeisure(e) && !this.isLab(e) && !this.isFacultyDuty(e) && !e.isExtraClass && !e.isAdjusted);
-      } else if (this.typeFilter === 'lab') {
-        result = result.filter(e => this.isLab(e));
-      } else if (this.typeFilter === 'leisure') {
-        result = result.filter(e => this.isLeisure(e));
-      } else if (this.typeFilter === 'duty') {
-        result = result.filter(e => this.isFacultyDuty(e));
-      }
-    }
-
-    if (this.searchSubject.trim()) {
-      const q = this.searchSubject.toLowerCase();
-      result = result.filter(e => 
-        e.subject.toLowerCase().includes(q) || 
-        (e.room && e.room.toLowerCase().includes(q)) ||
-        (e.substituteName && e.substituteName.toLowerCase().includes(q)) ||
-        (e.facultyName && e.facultyName.toLowerCase().includes(q))
-      );
-    }
-
-    const dayOrder = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-    this.filteredSchedule = [...result].sort((a, b) => {
-      const dayDiff = dayOrder.indexOf(a.day) - dayOrder.indexOf(b.day);
-      if (dayDiff !== 0) return dayDiff;
-      return a.period.localeCompare(b.period);
-    });
-  }
-
-  private toastService = inject(ToastService);
-
-  saveSchedule(): void {
-    if (!this.currentEntry.period || !this.currentEntry.subject || !this.currentEntry.room) {
-      this.toastService.warning('Please fill in all required schedule details.');
-      return;
-    }
-
-    const payload = {
-      id: this.currentEntry.id > 0 ? this.currentEntry.id : null,
-      day: this.currentEntry.day,
-      period: this.currentEntry.period,
-      subject: this.currentEntry.subject,
-      room: this.currentEntry.room,
-      facultyName: this.currentEntry.facultyName
-    };
-
-    this.http.post<ScheduleEntry>('http://localhost:8080/api/timetable', payload).subscribe({
-      next: () => {
-        this.loadTimetable();
-        this.resetForm();
-        this.toastService.success('Timetable slot saved successfully! 🗓️');
-      },
-      error: () => {
-        this.toastService.error('Failed to save schedule slot.');
-      }
-    });
-  }
-
-  editEntry(entry: ScheduleEntry): void {
-    const idx = this.weeklySchedule.findIndex(e => e.id === entry.id);
-    if (idx >= 0) {
-      this.editIndex = idx;
-      this.currentEntry = { ...entry };
-    }
-  }
-
-  deleteEntry(entry: ScheduleEntry): void {
-    this.http.delete('http://localhost:8080/api/timetable/' + entry.id).subscribe({
-      next: () => {
-        this.loadTimetable();
-        this.toastService.info('Timetable slot removed.');
-      },
-      error: () => {
-        this.toastService.error('Failed to delete schedule slot.');
-      }
-    });
-  }
-
-  resetForm(): void {
-    this.currentEntry = this.createEmptyEntry();
-    this.editIndex = -1;
   }
 }
