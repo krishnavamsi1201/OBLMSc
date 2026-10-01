@@ -254,6 +254,34 @@ export interface StudentResult {
                 </div>
             </div>
 
+            <!-- Search Toolbar for Class Results -->
+            <div class="results-search-toolbar" *ngIf="role !== 'student' && viewMode === 'class'">
+                <div class="search-input-wrap">
+                    <span class="search-icon">🔍</span>
+                    <input 
+                        type="text" 
+                        [(ngModel)]="searchQuery" 
+                        (input)="onSearchChange()" 
+                        placeholder="Search by Student Name (e.g. Krishnavamsi), Student ID (e.g. CUTM2026CSE042, STU001), Course, or Grade..."
+                        class="results-search-input"
+                    />
+                    <button class="clear-search-btn" *ngIf="searchQuery" (click)="clearSearch()" title="Clear search">✕</button>
+                </div>
+                <div class="search-filter-wrap">
+                    <select [(ngModel)]="filterGrade" (change)="onSearchChange()" class="grade-filter-select">
+                        <option value="">All Final Grades</option>
+                        <option value="O">Grade O (Outstanding)</option>
+                        <option value="A+">Grade A+ (Excellent)</option>
+                        <option value="A">Grade A (Very Good)</option>
+                        <option value="B+">Grade B+ (Good)</option>
+                        <option value="B">Grade B (Above Average)</option>
+                    </select>
+                    <span class="match-count-badge">
+                        Showing <strong>{{ filteredResults.length }}</strong> of {{ studentResults.length }}
+                    </span>
+                </div>
+            </div>
+
             <!-- Faculty / Admin Class Overview Table -->
             <table *ngIf="role !== 'student' && viewMode === 'class' && filteredResults.length > 0">
                 <thead>
@@ -261,6 +289,7 @@ export interface StudentResult {
                         <th style="width: 40px; text-align: center;">
                             <input type="checkbox" (change)="selectAllStudents($event)" [checked]="isAllSelected()" />
                         </th>
+                        <th style="width: 140px;">Student ID</th>
                         <th>Student Name</th>
                         <th>Course / Assessment</th>
                         <th style="text-align: center;">Internal ({{ getObeWeights().internal }}%)</th>
@@ -274,6 +303,9 @@ export interface StudentResult {
                     <tr *ngFor="let result of filteredResults">
                         <td style="text-align: center;">
                             <input type="checkbox" [(ngModel)]="selectedStudentsForPrint[result.student]" />
+                        </td>
+                        <td>
+                            <span class="stu-id-badge">{{ getStudentRoll(result.student) }}</span>
                         </td>
                         <td>
                             <strong style="color: #ffffff;">{{ result.student }}</strong>
@@ -619,6 +651,97 @@ export interface StudentResult {
     .stat-badge strong { color: #ffffff; margin-left: 4px; }
     .stat-badge.status-pass { background: rgba(34, 197, 94, 0.15); border-color: rgba(74, 222, 128, 0.3); color: #4ade80; }
     .stat-badge.status-pass strong { color: #4ade80; }
+
+    /* Results Search Toolbar */
+    .results-search-toolbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 16px;
+      padding: 14px 18px;
+      background: #091024;
+      border: 1px solid #1f2f54;
+      border-radius: 12px;
+      flex-wrap: wrap;
+    }
+    .search-input-wrap {
+      flex: 1;
+      min-width: 280px;
+      display: flex;
+      align-items: center;
+      background: #101b38;
+      border: 1px solid #1f2f54;
+      border-radius: 8px;
+      padding: 0 12px;
+      transition: all 0.2s ease;
+    }
+    .search-input-wrap:focus-within {
+      border-color: #d4af37;
+      box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.2);
+    }
+    .search-icon {
+      font-size: 14px;
+      margin-right: 8px;
+      opacity: 0.8;
+    }
+    .results-search-input {
+      width: 100%;
+      padding: 10px 0;
+      background: transparent;
+      border: none;
+      color: #ffffff;
+      font-size: 13.5px;
+      outline: none;
+    }
+    .results-search-input::placeholder {
+      color: #64748b;
+    }
+    .clear-search-btn {
+      background: none;
+      border: none;
+      color: #94a3b8;
+      cursor: pointer;
+      font-size: 14px;
+      padding: 4px;
+    }
+    .clear-search-btn:hover {
+      color: #f87171;
+    }
+    .search-filter-wrap {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .grade-filter-select {
+      padding: 9px 14px;
+      background: #101b38;
+      border: 1px solid #1f2f54;
+      border-radius: 8px;
+      color: #fde68a;
+      font-size: 13px;
+      outline: none;
+      cursor: pointer;
+    }
+    .match-count-badge {
+      font-size: 12.5px;
+      color: #94a3b8;
+      white-space: nowrap;
+    }
+    .match-count-badge strong {
+      color: #d4af37;
+    }
+    .stu-id-badge {
+      background: rgba(212, 175, 55, 0.15);
+      color: #fde68a;
+      border: 1px solid rgba(212, 175, 55, 0.35);
+      font-family: monospace;
+      font-weight: 700;
+      padding: 3px 8px;
+      border-radius: 6px;
+      font-size: 12px;
+      display: inline-block;
+    }
 
     .table-card table { width: 100%; border-collapse: collapse; margin-top: 12px; }
     .table-card th, .table-card td { padding: 12px 14px; border-bottom: 1px solid #1f2f54; text-align: left; }
@@ -1107,6 +1230,58 @@ export class Results implements OnInit, OnDestroy {
     return { internal, external };
   }
 
+  searchQuery: string = '';
+  filterGrade: string = '';
+
+  getStudentRoll(name: string): string {
+    if (!name) return 'CUTM2026CSE001';
+    const match = this.availableStudentsList.find(s => s.name?.toLowerCase() === name.toLowerCase());
+    if (match && match.roll) return match.roll;
+    const num = (Math.abs(name.split('').reduce((acc, ch) => acc + ch.charCodeAt(0), 0)) % 80) + 1;
+    return 'CUTM2026CSE' + String(num).padStart(3, '0');
+  }
+
+  onSearchChange(): void {
+    this.applyResultsFilter();
+  }
+
+  clearSearch(): void {
+    this.searchQuery = '';
+    this.filterGrade = '';
+    this.applyResultsFilter();
+  }
+
+  applyResultsFilter(): void {
+    const q = this.searchQuery.toLowerCase().trim();
+    const grade = this.filterGrade;
+
+    if (this.role === 'student') {
+      this.filteredResults = this.studentResults.filter(
+        r => r.student.toLowerCase() === this.userName.toLowerCase()
+      );
+    } else {
+      this.filteredResults = this.studentResults.filter(r => {
+        const sRoll = this.getStudentRoll(r.student).toLowerCase();
+        const matchSearch = !q ||
+          r.student.toLowerCase().includes(q) ||
+          sRoll.includes(q) ||
+          r.course.toLowerCase().includes(q) ||
+          r.grade.toLowerCase() === q ||
+          r.status.toLowerCase() === q;
+        
+        const matchGrade = !grade || r.grade === grade;
+        return matchSearch && matchGrade;
+      });
+
+      this.filteredResults.forEach(r => {
+        if (this.selectedStudentsForPrint[r.student] === undefined) {
+          this.selectedStudentsForPrint[r.student] = false;
+        }
+      });
+    }
+    this.cdr.detectChanges();
+  }
+
   private processMarksIntoResults(marks: any[]): void {
     const weights = this.getObeWeights();
     const intRatio = weights.internal / 100;
@@ -1157,19 +1332,7 @@ export class Results implements OnInit, OnDestroy {
       };
     });
 
-    if (this.role === 'student') {
-      this.filteredResults = this.studentResults.filter(
-        r => r.student.toLowerCase() === this.userName.toLowerCase()
-      );
-    } else {
-      this.filteredResults = [...this.studentResults];
-      this.filteredResults.forEach(r => {
-        if (this.selectedStudentsForPrint[r.student] === undefined) {
-          this.selectedStudentsForPrint[r.student] = false;
-        }
-      });
-    }
-    this.cdr.detectChanges();
+    this.applyResultsFilter();
   }
 
   private loadResultsData(): void {
