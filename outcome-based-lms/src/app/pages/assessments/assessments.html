@@ -6,210 +6,822 @@
 
     <div class="content">
 
+        <!-- Page Header -->
         <div class="page-header">
-            <h1>{{ role === 'student' ? 'Upcoming & Active Assessments' : 'Assessments Management' }}</h1>
-            <p>{{ role === 'student' ? 'View scheduled examinations, assignment due dates, and your evaluation scorecards.' : 'Faculty tools for assignment, quiz, midterm, and lab exam creation, plus mark entry and tracking.' }}</p>
-        </div>
-
-        <div class="summary-grid">
-            <div class="section-card">
-                <h3>Assignments</h3>
-                <strong>{{ countByType('Assignment') }}</strong>
-                <p>Active assignments in current courses.</p>
+            <div class="header-titles">
+                <h1>{{ role === 'student' ? 'Online Assessments & Examination Portal' : 'Assessments & Online Examination Hub' }}</h1>
+                <p>{{ role === 'student' ? 'Take scheduled online quizzes, review instant auto-graded scorecards, and check semester assessment timelines.' : 'Design subject-targeted online exams with automated tallying, share secure student links, and monitor live submission rosters.' }}</p>
             </div>
-            <div class="section-card">
-                <h3>Quizzes</h3>
-                <strong>{{ countByType('Quiz') }}</strong>
-                <p>Quizzes scheduled for evaluation.</p>
-            </div>
-            <div class="section-card">
-                <h3>Mid Exams</h3>
-                <strong>{{ countByType('Mid Exam') }}</strong>
-                <p>Midterm examinations scheduled.</p>
-            </div>
-            <div class="section-card">
-                <h3>Final Exams</h3>
-                <strong>{{ countByType('Final Exam') }}</strong>
-                <p>End-semester examinations scheduled.</p>
+            <div class="header-actions" *ngIf="role === 'faculty' || role === 'admin'">
+                <button class="primary-btn pulse-glow" (click)="openCreateExamModal()">
+                    <span class="btn-icon">➕</span> Create Online Exam
+                </button>
             </div>
         </div>
 
-        <!-- Add/Edit Assessment (Faculty & Admin) -->
-        <div class="form-card" *ngIf="role === 'faculty' || role === 'admin'">
-            <h2>Add / Edit Assessment</h2>
-            <form (ngSubmit)="saveAssessment()">
-                <div class="grid-row">
-                    <label>
-                        Course *
-                        <select name="course" [(ngModel)]="currentAssessment.course" required>
-                            <option value="" disabled>-- Select Course --</option>
-                            <option *ngFor="let c of coursesList" [value]="c.title">{{ c.title }} ({{ c.code }})</option>
-                        </select>
-                    </label>
-                    <label>
-                        Assessment Type *
-                        <select name="type" [(ngModel)]="currentAssessment.type" required>
-                            <option *ngFor="let type of assessmentTypes" [value]="type">{{ type }}</option>
-                        </select>
-                    </label>
-                </div>
-                <div class="grid-row">
-                    <label>
-                        Questions
-                        <input type="number" name="questions" [(ngModel)]="currentAssessment.questions" min="1" required />
-                    </label>
-                    <label>
-                        Max Marks
-                        <input type="number" name="maxMarks" [(ngModel)]="currentAssessment.maxMarks" min="1" required />
-                    </label>
-                </div>
-                <div class="grid-row">
-                    <label>
-                        Due Date
-                        <input type="date" name="dueDate" [(ngModel)]="currentAssessment.dueDate" required />
-                    </label>
-                    <label>
-                        Status
-                        <select name="status" [(ngModel)]="currentAssessment.status">
-                            <option>Planned</option>
-                            <option>Pending</option>
-                            <option>Completed</option>
-                        </select>
-                    </label>
-                </div>
-                <div class="form-actions">
-                    <button type="submit">{{ editAssessmentIndex >= 0 ? 'Update Assessment' : 'Create Assessment' }}</button>
-                    <button type="button" class="secondary" (click)="resetAssessmentForm()">Clear</button>
-                </div>
-            </form>
+        <!-- Top Navigation Tabs -->
+        <div class="assessment-tabs">
+            <button class="tab-btn" [class.active]="activeTab === 'online-exams'" (click)="activeTab = 'online-exams'">
+                <span class="tab-icon">📝</span> Online Exams & Quizzes
+                <span class="tab-counter">{{ onlineExams.length }}</span>
+            </button>
+            <button class="tab-btn" [class.active]="activeTab === 'schedule-table'" (click)="activeTab = 'schedule-table'">
+                <span class="tab-icon">📋</span> Traditional Assessment Registry & Marks
+                <span class="tab-counter">{{ assessments.length }}</span>
+            </button>
+            <button class="tab-btn active-exam-tab" *ngIf="activeExamToTake || activeTab === 'take-exam'" [class.active]="activeTab === 'take-exam'" (click)="activeTab = 'take-exam'">
+                <span class="tab-icon">✍️</span> Live Exam Mode
+            </button>
         </div>
 
-        <!-- Enter / Update Marks (Faculty & Admin) -->
-        <div class="form-card" *ngIf="role === 'faculty' || role === 'admin'">
-            <h2>Enter / Update Student Marks</h2>
-            <form (ngSubmit)="saveMarks()">
-                <div class="grid-row">
-                    <label>
-                        Student Name *
-                        <select name="student" [(ngModel)]="currentMark.student" required>
-                            <option value="" disabled>-- Select Student --</option>
-                            <option *ngFor="let s of studentsList" [value]="s.name">{{ s.name }} ({{ s.id }})</option>
-                        </select>
-                    </label>
-                    <label>
-                        Assessment *
-                        <select name="assessment" [(ngModel)]="currentMark.assessment" required>
-                            <option *ngFor="let type of assessmentTypes" [value]="type">{{ type }}</option>
-                        </select>
-                    </label>
-                </div>
-                <div class="grid-row">
-                    <label>
-                        Obtained Marks
-                        <input type="number" name="obtained" [(ngModel)]="currentMark.obtained" min="0" required />
-                    </label>
-                    <label>
-                        Max Marks
-                        <input type="number" name="maxMarks" [(ngModel)]="currentMark.maxMarks" min="1" required />
-                    </label>
-                </div>
-                <div class="form-actions">
-                    <button type="submit">Enter Marks</button>
-                    <button type="button" class="secondary" (click)="resetMarksForm()">Reset</button>
-                </div>
-            </form>
-        </div>
+        <!-- ========================================================================= -->
+        <!-- TAB 1: ONLINE EXAMS & QUIZZES HUB -->
+        <!-- ========================================================================= -->
+        <div *ngIf="activeTab === 'online-exams'">
 
-        <div class="table-card">
-            <div class="table-header-row">
-                <h2>{{ role === 'student' ? 'Scheduled Assessments & Exams' : 'View Assessment List' }} ({{ filteredAssessments.length }})</h2>
-                <div class="table-filter-inputs">
+            <!-- Quick Metrics Grid -->
+            <div class="metrics-grid">
+                <div class="metric-card">
+                    <div class="metric-icon">📝</div>
+                    <div class="metric-info">
+                        <h3>Active Online Exams</h3>
+                        <div class="metric-value">{{ filteredOnlineExams.length }}</div>
+                        <p class="metric-desc">Available for enrollment & testing</p>
+                    </div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-icon">👥</div>
+                    <div class="metric-info">
+                        <h3>Submissions Logged</h3>
+                        <div class="metric-value">{{ examSubmissions.length }}</div>
+                        <p class="metric-desc">Auto-graded & recorded in OBE</p>
+                    </div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-icon">🎯</div>
+                    <div class="metric-info">
+                        <h3>Enrolled Department</h3>
+                        <div class="metric-value small-text">{{ userDept }}</div>
+                        <p class="metric-desc">Targeted curriculum mapping</p>
+                    </div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-icon">⚡</div>
+                    <div class="metric-info">
+                        <h3>Evaluation System</h3>
+                        <div class="metric-value small-text gold">Instant Auto-Tally</div>
+                        <p class="metric-desc">Syncs with SGPA & CO attainment</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Filter & Search Deck -->
+            <div class="filter-deck">
+                <div class="search-box">
+                    <span class="search-icon">🔍</span>
                     <input 
                         type="text" 
-                        [(ngModel)]="searchAssessment" 
-                        placeholder="Search course, type, status..." 
-                        class="table-search-input"
+                        [(ngModel)]="searchOnlineExams" 
+                        placeholder="Search exam title, course code, faculty..." 
+                        class="search-input"
                     />
-                    <select [(ngModel)]="typeFilter" class="table-filter-select">
-                        <option value="">All Types</option>
-                        <option *ngFor="let t of assessmentTypes" [value]="t">{{ t }}</option>
+                </div>
+                <div class="filter-dropdowns">
+                    <select [(ngModel)]="filterCourse" class="filter-select">
+                        <option value="">All Assigned Courses</option>
+                        <option *ngFor="let c of coursesList" [value]="c.code">{{ c.code }} - {{ c.title }}</option>
                     </select>
                 </div>
             </div>
-            <table>
-                <thead>
-                    <tr>
-                        <th>Course</th>
-                        <th>Type</th>
-                        <th>Questions</th>
-                        <th>Max Marks</th>
-                        <th>Due Date</th>
-                        <th>Status</th>
-                        <th *ngIf="role === 'faculty' || role === 'admin'">Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr *ngIf="filteredAssessments.length === 0">
-                        <td [attr.colspan]="(role === 'faculty' || role === 'admin') ? 7 : 6" style="text-align: center; color: #888; padding: 20px;">No assessments match your filter.</td>
-                    </tr>
-                    <tr *ngFor="let assessment of filteredAssessments; index as i">
-                        <td><strong>{{ assessment.course }}</strong></td>
-                        <td>
-                            <span style="background: rgba(212, 175, 55, 0.15); color: #d4af37; border: 1px solid rgba(212, 175, 55, 0.3); padding: 3px 10px; border-radius: 6px; font-weight: 700; font-size: 12px; display: inline-block;">
-                                {{ assessment.type || 'Assignment' }}
-                            </span>
-                        </td>
-                        <td>{{ assessment.questions }}</td>
-                        <td>{{ assessment.maxMarks }}</td>
-                        <td>{{ assessment.dueDate }}</td>
-                        <td><span class="status-badge" [class.completed]="assessment.status === 'Completed'">{{ assessment.status }}</span></td>
-                        <td *ngIf="role === 'faculty' || role === 'admin'">
-                            <button type="button" (click)="editAssessment(i)">Edit</button>
-                            <button type="button" class="danger" (click)="deleteAssessment(i)">Delete</button>
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
 
-        <div class="table-card">
-            <div class="table-header-row">
-                <h2>{{ role === 'student' ? 'My Assessment Scorecard' : 'Marks Entered' }} ({{ filteredMarkEntries.length }})</h2>
-                <div class="table-filter-inputs">
-                    <input 
-                        type="text" 
-                        [(ngModel)]="searchMarks" 
-                        placeholder="Search assessment or student..." 
-                        class="table-search-input"
-                    />
+            <!-- Online Exams Cards Grid -->
+            <div class="exams-grid" *ngIf="filteredOnlineExams.length > 0">
+                <div class="exam-card" *ngFor="let exam of filteredOnlineExams">
+                    <div class="exam-card-header">
+                        <div class="exam-course-badge">{{ exam.courseCode }}</div>
+                        <div class="exam-sem-badge">{{ exam.semester }}</div>
+                        <div class="exam-status-tag" [class.published]="exam.status === 'Published'">{{ exam.status }}</div>
+                    </div>
+
+                    <h2 class="exam-title">{{ exam.title }}</h2>
+                    <div class="exam-course-title">{{ exam.courseTitle }}</div>
+
+                    <div class="exam-meta-grid">
+                        <div class="meta-item">
+                            <span class="meta-icon">👨‍🏫</span>
+                            <div class="meta-text">
+                                <span class="meta-label">Faculty</span>
+                                <span class="meta-val">{{ exam.facultyName }}</span>
+                            </div>
+                        </div>
+                        <div class="meta-item">
+                            <span class="meta-icon">⏱️</span>
+                            <div class="meta-text">
+                                <span class="meta-label">Duration</span>
+                                <span class="meta-val">{{ exam.durationMinutes }} Minutes</span>
+                            </div>
+                        </div>
+                        <div class="meta-item">
+                            <span class="meta-icon">🎯</span>
+                            <div class="meta-text">
+                                <span class="meta-label">Total / Pass Marks</span>
+                                <span class="meta-val">{{ exam.totalMarks }} / {{ exam.passMarks }} Marks</span>
+                            </div>
+                        </div>
+                        <div class="meta-item">
+                            <span class="meta-icon">❓</span>
+                            <div class="meta-text">
+                                <span class="meta-label">Questions</span>
+                                <span class="meta-val">{{ exam.questions.length }} MCQs</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Target Department Notice -->
+                    <div class="exam-target-banner">
+                        <span class="target-icon">🎓</span> Target: <strong>{{ exam.department }}</strong>
+                    </div>
+
+                    <!-- Card Actions -->
+                    <div class="exam-card-actions">
+                        <!-- Faculty & Admin Controls -->
+                        <ng-container *ngIf="role === 'faculty' || role === 'admin'">
+                            <button class="action-btn share-btn" (click)="copyExamLink(exam)" title="Copy Shareable Link for Enrolled Students">
+                                <span>🔗</span> Copy Link
+                            </button>
+                            <button class="action-btn notify-btn" (click)="broadcastExamAlert(exam)" title="Broadcast alert to enrolled students">
+                                <span>📢</span> Notify Class
+                            </button>
+                            <button class="action-btn analytics-btn" (click)="openExamAnalytics(exam)">
+                                <span>📊</span> Roster & Analytics ({{ getAttemptedSubmissions(exam.id).length }}/{{ getEnrolledStudentsForExam(exam).length }})
+                            </button>
+                        </ng-container>
+
+                        <!-- Student Controls -->
+                        <ng-container *ngIf="role === 'student'">
+                            <div *ngIf="hasStudentAttempted(exam.id)" class="student-result-pill">
+                                <span class="pill-badge">✅ Completed</span>
+                                <span class="pill-score">{{ getStudentExamSubmission(exam.id)?.scoreObtained }}/{{ exam.totalMarks }} ({{ getStudentExamSubmission(exam.id)?.percentage }}%)</span>
+                                <button class="action-btn review-btn" (click)="openExamForTaking(exam.id)">
+                                    <span>🔍</span> Review Scorecard
+                                </button>
+                            </div>
+
+                            <button *ngIf="!hasStudentAttempted(exam.id)" class="action-btn start-exam-btn" (click)="openExamForTaking(exam.id)">
+                                <span>✍️</span> Take Online Exam
+                            </button>
+                        </ng-container>
+                    </div>
                 </div>
             </div>
-            <table>
-                <thead>
-                    <tr>
-                        <th *ngIf="role !== 'student'">Student</th>
-                        <th>Assessment</th>
-                        <th>Obtained</th>
-                        <th>Max Marks</th>
-                        <th>Percentage</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr *ngIf="filteredMarkEntries.length === 0">
-                        <td [attr.colspan]="role !== 'student' ? 5 : 4" style="text-align: center; color: #888; padding: 20px;">No mark records match your search.</td>
-                    </tr>
-                    <tr *ngFor="let mark of filteredMarkEntries">
-                        <td *ngIf="role !== 'student'"><strong>{{ mark.student }}</strong></td>
-                        <td><strong>{{ mark.assessment }}</strong></td>
-                        <td>{{ mark.obtained }}</td>
-                        <td>{{ mark.maxMarks }}</td>
-                        <td><strong>{{ Math.round((mark.obtained / mark.maxMarks) * 100) }}%</strong></td>
-                    </tr>
-                </tbody>
-            </table>
+
+            <!-- Empty State -->
+            <div class="empty-state" *ngIf="filteredOnlineExams.length === 0">
+                <div class="empty-icon">📭</div>
+                <h3>No Online Exams Found</h3>
+                <p>No examinations match your current course filters or search criteria.</p>
+                <button *ngIf="role === 'faculty' || role === 'admin'" class="primary-btn" (click)="openCreateExamModal()">
+                    ➕ Create Your First Online Exam
+                </button>
+            </div>
         </div>
 
-        <app-footer></app-footer>
+        <!-- ========================================================================= -->
+        <!-- TAB 2: TRADITIONAL ASSESSMENT REGISTRY & MARKS ENTRY -->
+        <!-- ========================================================================= -->
+        <div *ngIf="activeTab === 'schedule-table'">
+
+            <div class="summary-grid">
+                <div class="section-card">
+                    <h3>Assignments</h3>
+                    <strong>{{ countByType('Assignment') }}</strong>
+                    <p>Active assignments in current courses.</p>
+                </div>
+                <div class="section-card">
+                    <h3>Quizzes</h3>
+                    <strong>{{ countByType('Quiz') }}</strong>
+                    <p>Quizzes scheduled for evaluation.</p>
+                </div>
+                <div class="section-card">
+                    <h3>Mid Exams</h3>
+                    <strong>{{ countByType('Mid Exam') }}</strong>
+                    <p>Midterm examinations scheduled.</p>
+                </div>
+                <div class="section-card">
+                    <h3>Final Exams</h3>
+                    <strong>{{ countByType('Final Exam') }}</strong>
+                    <p>End-semester examinations scheduled.</p>
+                </div>
+            </div>
+
+            <!-- Add/Edit Assessment (Faculty & Admin) -->
+            <div class="form-card" *ngIf="role === 'faculty' || role === 'admin'">
+                <h2>Add / Edit Assessment</h2>
+                <form (ngSubmit)="saveAssessment()">
+                    <div class="grid-row">
+                        <label>
+                            Course *
+                            <select name="course" [(ngModel)]="currentAssessment.course" required>
+                                <option value="" disabled>-- Select Course --</option>
+                                <option *ngFor="let c of coursesList" [value]="c.title">{{ c.title }} ({{ c.code }})</option>
+                            </select>
+                        </label>
+                        <label>
+                            Assessment Type *
+                            <select name="type" [(ngModel)]="currentAssessment.type" required>
+                                <option *ngFor="let type of assessmentTypes" [value]="type">{{ type }}</option>
+                            </select>
+                        </label>
+                    </div>
+                    <div class="grid-row">
+                        <label>
+                            Questions
+                            <input type="number" name="questions" [(ngModel)]="currentAssessment.questions" min="1" required />
+                        </label>
+                        <label>
+                            Max Marks
+                            <input type="number" name="maxMarks" [(ngModel)]="currentAssessment.maxMarks" min="1" required />
+                        </label>
+                    </div>
+                    <div class="grid-row">
+                        <label>
+                            Due Date
+                            <input type="date" name="dueDate" [(ngModel)]="currentAssessment.dueDate" required />
+                        </label>
+                        <label>
+                            Status
+                            <select name="status" [(ngModel)]="currentAssessment.status">
+                                <option>Planned</option>
+                                <option>Pending</option>
+                                <option>Completed</option>
+                            </select>
+                        </label>
+                    </div>
+                    <div class="form-actions">
+                        <button type="submit">{{ editAssessmentIndex >= 0 ? 'Update Assessment' : 'Create Assessment' }}</button>
+                        <button type="button" class="secondary" (click)="resetAssessmentForm()">Clear</button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Enter / Update Marks (Faculty & Admin) -->
+            <div class="form-card" *ngIf="role === 'faculty' || role === 'admin'">
+                <h2>Enter / Update Student Marks</h2>
+                <form (ngSubmit)="saveMarks()">
+                    <div class="grid-row">
+                        <label>
+                            Student Name *
+                            <select name="student" [(ngModel)]="currentMark.student" required>
+                                <option value="" disabled>-- Select Student --</option>
+                                <option *ngFor="let s of studentsList" [value]="s.name">{{ s.name }} ({{ s.id }})</option>
+                            </select>
+                        </label>
+                        <label>
+                            Assessment *
+                            <select name="assessment" [(ngModel)]="currentMark.assessment" required>
+                                <option *ngFor="let type of assessmentTypes" [value]="type">{{ type }}</option>
+                            </select>
+                        </label>
+                    </div>
+                    <div class="grid-row">
+                        <label>
+                            Obtained Marks
+                            <input type="number" name="obtained" [(ngModel)]="currentMark.obtained" min="0" required />
+                        </label>
+                        <label>
+                            Max Marks
+                            <input type="number" name="maxMarks" [(ngModel)]="currentMark.maxMarks" min="1" required />
+                        </label>
+                    </div>
+                    <div class="form-actions">
+                        <button type="submit">Enter Marks</button>
+                        <button type="button" class="secondary" (click)="resetMarksForm()">Reset</button>
+                    </div>
+                </form>
+            </div>
+
+            <div class="table-card">
+                <div class="table-header-row">
+                    <h2>{{ role === 'student' ? 'Scheduled Assessments & Exams' : 'View Assessment List' }} ({{ filteredAssessments.length }})</h2>
+                    <div class="table-filter-inputs">
+                        <input 
+                            type="text" 
+                            [(ngModel)]="searchAssessment" 
+                            placeholder="Search course, type, status..." 
+                            class="table-search-input"
+                        />
+                        <select [(ngModel)]="typeFilter" class="table-filter-select">
+                            <option value="">All Types</option>
+                            <option *ngFor="let t of assessmentTypes" [value]="t">{{ t }}</option>
+                        </select>
+                    </div>
+                </div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Course</th>
+                            <th>Type</th>
+                            <th>Questions</th>
+                            <th>Max Marks</th>
+                            <th>Due Date</th>
+                            <th>Status</th>
+                            <th *ngIf="role === 'faculty' || role === 'admin'">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr *ngIf="filteredAssessments.length === 0">
+                            <td [attr.colspan]="(role === 'faculty' || role === 'admin') ? 7 : 6" style="text-align: center; color: #888; padding: 20px;">No assessments match your filter.</td>
+                        </tr>
+                        <tr *ngFor="let assessment of filteredAssessments; index as i">
+                            <td><strong>{{ assessment.course }}</strong></td>
+                            <td>
+                                <span style="background: rgba(212, 175, 55, 0.15); color: #d4af37; border: 1px solid rgba(212, 175, 55, 0.3); padding: 3px 10px; border-radius: 6px; font-weight: 700; font-size: 12px; display: inline-block;">
+                                    {{ assessment.type || 'Assignment' }}
+                                </span>
+                            </td>
+                            <td>{{ assessment.questions }}</td>
+                            <td>{{ assessment.maxMarks }}</td>
+                            <td>{{ assessment.dueDate }}</td>
+                            <td><span class="status-badge" [class.completed]="assessment.status === 'Completed'">{{ assessment.status }}</span></td>
+                            <td *ngIf="role === 'faculty' || role === 'admin'">
+                                <button type="button" (click)="editAssessment(i)">Edit</button>
+                                <button type="button" class="danger" (click)="deleteAssessment(i)">Delete</button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="table-card">
+                <div class="table-header-row">
+                    <h2>{{ role === 'student' ? 'My Assessment Scorecard' : 'Marks Entered' }} ({{ filteredMarkEntries.length }})</h2>
+                    <div class="table-filter-inputs">
+                        <input 
+                            type="text" 
+                            [(ngModel)]="searchMarks" 
+                            placeholder="Search assessment or student..." 
+                            class="table-search-input"
+                        />
+                    </div>
+                </div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th *ngIf="role !== 'student'">Student</th>
+                            <th>Assessment</th>
+                            <th>Obtained</th>
+                            <th>Max Marks</th>
+                            <th>Percentage</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr *ngIf="filteredMarkEntries.length === 0">
+                            <td [attr.colspan]="role !== 'student' ? 5 : 4" style="text-align: center; color: #888; padding: 20px;">No mark records match your search.</td>
+                        </tr>
+                        <tr *ngFor="let mark of filteredMarkEntries">
+                            <td *ngIf="role !== 'student'"><strong>{{ mark.student }}</strong></td>
+                            <td>{{ mark.assessment }}</td>
+                            <td>{{ mark.obtained }}</td>
+                            <td>{{ mark.maxMarks }}</td>
+                            <td>
+                                <strong [style.color]="(mark.obtained / mark.maxMarks) >= 0.4 ? '#4ade80' : '#f87171'">
+                                    {{ Math.round((mark.obtained / mark.maxMarks) * 100) }}%
+                                </strong>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- ========================================================================= -->
+        <!-- TAB 3: LIVE EXAM TAKING MODE (STUDENT & RESULT REVIEW) -->
+        <!-- ========================================================================= -->
+        <div *ngIf="activeTab === 'take-exam' && activeExamToTake" class="live-exam-container">
+            
+            <!-- Live Taking Screen (if not reviewing scorecard) -->
+            <div *ngIf="!showExamResultModal" class="exam-taker-box">
+                <!-- Exam Taking Header -->
+                <div class="taker-header">
+                    <div class="taker-title-group">
+                        <div class="taker-badge">{{ activeExamToTake.courseCode }}</div>
+                        <div>
+                            <h2>{{ activeExamToTake.title }}</h2>
+                            <p>{{ activeExamToTake.courseTitle }} • Faculty: {{ activeExamToTake.facultyName }}</p>
+                        </div>
+                    </div>
+                    <div class="taker-timer-card" [class.timer-warning]="examTimeRemainingSeconds < 180">
+                        <span class="timer-icon">⏱️</span>
+                        <div class="timer-display">
+                            <span class="timer-label">Time Left</span>
+                            <span class="timer-digits">{{ formattedTimer }}</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Question Navigation Ribbon -->
+                <div class="question-navigator">
+                    <div class="nav-title">Questions:</div>
+                    <div class="nav-pills">
+                        <button 
+                            *ngFor="let q of activeExamToTake.questions; index as idx"
+                            class="nav-pill"
+                            [class.current]="idx === currentQuestionIndex"
+                            [class.answered]="studentAnswers[q.id] !== undefined"
+                            (click)="jumpToQuestion(idx)">
+                            {{ idx + 1 }}
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Current Question Card -->
+                <div class="question-card" *ngIf="activeExamToTake.questions[currentQuestionIndex] as curQ">
+                    <div class="question-meta-row">
+                        <span class="q-num-tag">Question {{ currentQuestionIndex + 1 }} of {{ activeExamToTake.questions.length }}</span>
+                        <div class="q-tags">
+                            <span class="co-badge">{{ curQ.mappedCO || 'CO1' }}</span>
+                            <span class="marks-badge">{{ curQ.marks }} Marks</span>
+                        </div>
+                    </div>
+
+                    <h3 class="question-text">{{ curQ.questionText }}</h3>
+
+                    <!-- Options Grid -->
+                    <div class="options-container">
+                        <div 
+                            *ngFor="let opt of curQ.options" 
+                            class="option-item" 
+                            [class.selected]="studentAnswers[curQ.id] === opt.key"
+                            (click)="selectAnswerOption(opt.key)">
+                            <div class="opt-key">{{ opt.key }}</div>
+                            <div class="opt-text">{{ opt.text }}</div>
+                            <div class="opt-radio">
+                                <span class="dot" *ngIf="studentAnswers[curQ.id] === opt.key"></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Exam Action Controls -->
+                <div class="taker-actions">
+                    <button class="nav-action-btn prev" [disabled]="currentQuestionIndex === 0" (click)="prevQuestion()">
+                        ⬅️ Previous
+                    </button>
+                    
+                    <button class="danger-btn" (click)="exitExamView()">
+                        🚪 Exit Exam
+                    </button>
+
+                    <button class="nav-action-btn next" *ngIf="currentQuestionIndex < activeExamToTake.questions.length - 1" (click)="nextQuestion()">
+                        Next Question ➡️
+                    </button>
+
+                    <button class="submit-exam-btn pulse-gold" *ngIf="currentQuestionIndex === activeExamToTake.questions.length - 1 || Object.keys(studentAnswers).length === activeExamToTake.questions.length" (click)="submitExamAnswers()">
+                        ✅ Submit Examination
+                    </button>
+                </div>
+            </div>
+
+            <!-- Instant Scorecard & Performance Review -->
+            <div *ngIf="showExamResultModal && examCompletedResult" class="scorecard-container">
+                <div class="scorecard-header">
+                    <div class="score-banner" [class.passed]="examCompletedResult.status === 'Pass'" [class.failed]="examCompletedResult.status === 'Fail'">
+                        <div class="trophy-icon">{{ examCompletedResult.status === 'Pass' ? '🏆' : '⚠️' }}</div>
+                        <h2>Examination Result: {{ examCompletedResult.status === 'Pass' ? 'PASSED' : 'NEEDS IMPROVEMENT' }}</h2>
+                        <div class="final-score-display">
+                            <span class="score-big">{{ examCompletedResult.scoreObtained }}</span>
+                            <span class="score-total">/ {{ examCompletedResult.maxMarks }} Marks ({{ examCompletedResult.percentage }}%)</span>
+                        </div>
+                        <p class="obe-synced-msg">
+                            ⚡ <strong>Auto-Grading Complete:</strong> Score has been officially recorded in OBE Gradebook and mapped to Course Outcomes.
+                        </p>
+                    </div>
+
+                    <div class="scorecard-meta-chips">
+                        <div class="meta-chip">👤 Student: <strong>{{ examCompletedResult.studentName }}</strong></div>
+                        <div class="meta-chip">🆔 Roll No: <strong>{{ examCompletedResult.studentRoll }}</strong></div>
+                        <div class="meta-chip">⏱️ Time Taken: <strong>{{ Math.floor(examCompletedResult.timeTakenSeconds / 60) }}m {{ examCompletedResult.timeTakenSeconds % 60 }}s</strong></div>
+                        <div class="meta-chip">📅 Date: <strong>{{ examCompletedResult.submittedAt | date:'medium' }}</strong></div>
+                    </div>
+                </div>
+
+                <!-- Detailed Question-by-Question Review -->
+                <div class="review-questions-deck">
+                    <h3>📋 Detailed Answer Breakdown & Key Verification</h3>
+                    <div class="review-card" *ngFor="let q of activeExamToTake.questions; index as idx" 
+                         [class.correct-card]="examCompletedResult.answers[q.id] === q.correctOption"
+                         [class.wrong-card]="examCompletedResult.answers[q.id] !== q.correctOption">
+                        
+                        <div class="review-header">
+                            <span class="q-tag">Q{{ idx + 1 }}. ({{ q.marks }} Marks • {{ q.mappedCO }})</span>
+                            <span class="status-indicator" [class.correct]="examCompletedResult.answers[q.id] === q.correctOption">
+                                {{ examCompletedResult.answers[q.id] === q.correctOption ? '✅ Correct (+'+q.marks+' pts)' : '❌ Incorrect (0 pts)' }}
+                            </span>
+                        </div>
+
+                        <div class="review-q-text">{{ q.questionText }}</div>
+
+                        <div class="review-options">
+                            <div *ngFor="let opt of q.options" class="review-opt"
+                                 [class.is-correct-key]="opt.key === q.correctOption"
+                                 [class.is-student-choice]="opt.key === examCompletedResult.answers[q.id]"
+                                 [class.student-wrong]="opt.key === examCompletedResult.answers[q.id] && opt.key !== q.correctOption">
+                                <span class="rev-key">{{ opt.key }}.</span>
+                                <span class="rev-text">{{ opt.text }}</span>
+                                <span *ngIf="opt.key === q.correctOption" class="ans-tag correct">✔ Correct Answer</span>
+                                <span *ngIf="opt.key === examCompletedResult.answers[q.id] && opt.key !== q.correctOption" class="ans-tag wrong">✖ Your Choice</span>
+                                <span *ngIf="opt.key === examCompletedResult.answers[q.id] && opt.key === q.correctOption" class="ans-tag student-correct">★ Your Choice (Correct)</span>
+                            </div>
+                        </div>
+
+                        <div class="explanation-box" *ngIf="q.explanation">
+                            💡 <strong>Faculty Rationale:</strong> {{ q.explanation }}
+                        </div>
+                    </div>
+                </div>
+
+                <div class="scorecard-actions">
+                    <button class="primary-btn" (click)="exitExamView()">
+                        🔙 Back to Assessments Dashboard
+                    </button>
+                </div>
+            </div>
+
+        </div>
+
     </div>
 
 </div>
+
+<!-- ========================================================================= -->
+<!-- MODAL 1: CREATE ONLINE EXAM BUILDER -->
+<!-- ========================================================================= -->
+<div class="modal-overlay" *ngIf="showCreateExamModal">
+    <div class="modal-container large-modal">
+        <div class="modal-header">
+            <div class="modal-title-group">
+                <span class="modal-icon">📝</span>
+                <div>
+                    <h2>Design New Online Examination</h2>
+                    <p>Create MCQs, assign marks & Course Outcomes, and generate direct student access links.</p>
+                </div>
+            </div>
+            <button class="close-btn" (click)="closeCreateExamModal()">✕</button>
+        </div>
+
+        <div class="modal-body scrollable-modal">
+            <!-- Exam Basic Details -->
+            <div class="form-section-title">1. Examination Details & Targeting</div>
+            <div class="grid-row">
+                <label>
+                    Target Course *
+                    <select name="examCourse" [(ngModel)]="newExam.courseCode" (ngModelChange)="onNewExamCourseChange($event)">
+                        <option *ngFor="let c of coursesList" [value]="c.code">{{ c.code }} - {{ c.title }}</option>
+                    </select>
+                </label>
+                <label>
+                    Exam Title *
+                    <input type="text" [(ngModel)]="newExam.title" placeholder="e.g. Midterm MCQ Assessment on SQL & Normalization" />
+                </label>
+            </div>
+
+            <div class="grid-row">
+                <label>
+                    Target Department
+                    <input type="text" [(ngModel)]="newExam.department" placeholder="Department" />
+                </label>
+                <label>
+                    Duration (Minutes) *
+                    <input type="number" [(ngModel)]="newExam.durationMinutes" min="5" max="180" />
+                </label>
+                <label>
+                    Due Date *
+                    <input type="date" [(ngModel)]="newExam.dueDate" />
+                </label>
+            </div>
+
+            <!-- Question Builder Section -->
+            <div class="form-section-title">2. Build Questions (MCQ Format)</div>
+            <div class="question-builder-card">
+                <div class="q-builder-header">
+                    <h4>Add Question #{{ currentQuestion.id }}</h4>
+                    <div class="q-builder-meta">
+                        <label class="inline-label">
+                            Marks: 
+                            <input type="number" [(ngModel)]="currentQuestion.marks" min="1" max="20" style="width: 70px;" />
+                        </label>
+                        <label class="inline-label">
+                            Target CO:
+                            <select [(ngModel)]="currentQuestion.mappedCO" style="width: 90px;">
+                                <option>CO1</option>
+                                <option>CO2</option>
+                                <option>CO3</option>
+                                <option>CO4</option>
+                                <option>CO5</option>
+                            </select>
+                        </label>
+                    </div>
+                </div>
+
+                <label>
+                    Question Statement *
+                    <textarea [(ngModel)]="currentQuestion.questionText" rows="3" placeholder="Enter question description or problem statement..."></textarea>
+                </label>
+
+                <!-- Options A, B, C, D -->
+                <div class="builder-options-grid">
+                    <div class="opt-input-row" *ngFor="let opt of currentQuestion.options">
+                        <span class="opt-letter">{{ opt.key }}</span>
+                        <input type="text" [(ngModel)]="opt.text" [placeholder]="'Enter option ' + opt.key + ' text...'" />
+                        <label class="radio-label">
+                            <input type="radio" name="correctKey" [value]="opt.key" [(ngModel)]="currentQuestion.correctOption" />
+                            <span>Correct</span>
+                        </label>
+                    </div>
+                </div>
+
+                <label>
+                    Answer Explanation / Rationale (Optional)
+                    <input type="text" [(ngModel)]="currentQuestion.explanation" placeholder="Explain why the correct answer is valid..." />
+                </label>
+
+                <div class="builder-actions">
+                    <button type="button" class="primary-btn" (click)="addQuestionToNewExam()">
+                        ➕ Add Question to Exam
+                    </button>
+                </div>
+            </div>
+
+            <!-- Added Questions Preview -->
+            <div class="added-questions-section" *ngIf="newExam.questions.length > 0">
+                <h4>Questions Added ({{ newExam.questions.length }}) • Total Marks: {{ newExam.totalMarks }}</h4>
+                <div class="added-q-chip" *ngFor="let q of newExam.questions; index as idx">
+                    <div class="chip-info">
+                        <strong>Q{{ idx + 1 }}.</strong> {{ q.questionText | slice:0:70 }}... 
+                        <span class="gold-badge">Correct: {{ q.correctOption }}</span>
+                        <span class="co-badge">{{ q.mappedCO }}</span>
+                        <span class="marks-badge">{{ q.marks }} pts</span>
+                    </div>
+                    <button class="remove-chip-btn" (click)="removeQuestionFromNewExam(idx)">✕</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="modal-footer">
+            <div class="footer-summary">
+                <span>Total Questions: <strong>{{ newExam.questions.length }}</strong></span>
+                <span>Total Marks: <strong>{{ newExam.totalMarks }}</strong></span>
+                <span>Pass Marks: <strong>{{ newExam.passMarks }} (40%)</strong></span>
+            </div>
+            <div class="modal-actions">
+                <button class="secondary-btn" (click)="closeCreateExamModal()">Cancel</button>
+                <button class="primary-btn pulse-glow" (click)="publishNewExam()">
+                    🚀 Publish Exam & Broadcast Link
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ========================================================================= -->
+<!-- MODAL 2: FACULTY LIVE SUBMISSIONS ROSTER & ANALYTICS -->
+<!-- ========================================================================= -->
+<div class="modal-overlay" *ngIf="showAnalyticsModal && selectedExamForAnalytics">
+    <div class="modal-container extra-large-modal">
+        <div class="modal-header">
+            <div class="modal-title-group">
+                <span class="modal-icon">📊</span>
+                <div>
+                    <h2>{{ selectedExamForAnalytics.title }}</h2>
+                    <p>{{ selectedExamForAnalytics.courseCode }} - {{ selectedExamForAnalytics.courseTitle }} • Target: {{ selectedExamForAnalytics.department }}</p>
+                </div>
+            </div>
+            <button class="close-btn" (click)="closeAnalyticsModal()">✕</button>
+        </div>
+
+        <div class="modal-body scrollable-modal">
+            <!-- KPI Summary Strip -->
+            <div class="analytics-kpi-grid">
+                <div class="kpi-box">
+                    <span class="kpi-label">👥 Enrolled Students</span>
+                    <span class="kpi-num">{{ getEnrolledStudentsForExam(selectedExamForAnalytics).length }}</span>
+                </div>
+                <div class="kpi-box">
+                    <span class="kpi-label">✍️ Attempted / Submitted</span>
+                    <span class="kpi-num green">{{ getAttemptedSubmissions(selectedExamForAnalytics.id).length }}</span>
+                </div>
+                <div class="kpi-box">
+                    <span class="kpi-label">⏳ Pending / Not Taken</span>
+                    <span class="kpi-num amber">{{ getPendingStudentsForExam(selectedExamForAnalytics).length }}</span>
+                </div>
+                <div class="kpi-box">
+                    <span class="kpi-label">📈 Class Average</span>
+                    <span class="kpi-num gold">{{ getExamAverageScore(selectedExamForAnalytics.id) }} / {{ selectedExamForAnalytics.totalMarks }}</span>
+                </div>
+                <div class="kpi-box">
+                    <span class="kpi-label">🏆 Highest Score</span>
+                    <span class="kpi-num gold">{{ getExamHighestScore(selectedExamForAnalytics.id) }} / {{ selectedExamForAnalytics.totalMarks }}</span>
+                </div>
+                <div class="kpi-box">
+                    <span class="kpi-label">🎯 Pass Rate</span>
+                    <span class="kpi-num">{{ getExamPassRate(selectedExamForAnalytics.id) }}%</span>
+                </div>
+            </div>
+
+            <!-- Shareable Link Card -->
+            <div class="share-link-card">
+                <div class="link-details">
+                    <span class="link-label">🔗 Student Shareable Link (Restricted to {{ selectedExamForAnalytics.department }}):</span>
+                    <code class="link-code">{{ getShareableExamLink(selectedExamForAnalytics) }}</code>
+                </div>
+                <div class="link-actions">
+                    <button class="action-btn copy" (click)="copyExamLink(selectedExamForAnalytics)">📋 Copy Link</button>
+                    <button class="action-btn broadcast" (click)="broadcastExamAlert(selectedExamForAnalytics)">📢 Notify All</button>
+                </div>
+            </div>
+
+            <!-- Attempted Students Table -->
+            <div class="roster-section">
+                <div class="roster-header">
+                    <h3>✅ Attempted Students ({{ getAttemptedSubmissions(selectedExamForAnalytics.id).length }})</h3>
+                </div>
+                <table class="roster-table">
+                    <thead>
+                        <tr>
+                            <th>Student Name</th>
+                            <th>Roll Number</th>
+                            <th>Department</th>
+                            <th>Score / Max</th>
+                            <th>Percentage</th>
+                            <th>Time Taken</th>
+                            <th>Submitted Date</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr *ngIf="getAttemptedSubmissions(selectedExamForAnalytics.id).length === 0">
+                            <td colspan="8" class="text-center text-muted">No students have submitted this examination yet.</td>
+                        </tr>
+                        <tr *ngFor="let sub of getAttemptedSubmissions(selectedExamForAnalytics.id)">
+                            <td><strong>{{ sub.studentName }}</strong></td>
+                            <td><code>{{ sub.studentRoll }}</code></td>
+                            <td>{{ sub.studentDept }}</td>
+                            <td><strong>{{ sub.scoreObtained }} / {{ sub.maxMarks }}</strong></td>
+                            <td>
+                                <strong [style.color]="sub.percentage >= 40 ? '#4ade80' : '#f87171'">{{ sub.percentage }}%</strong>
+                            </td>
+                            <td>{{ Math.floor(sub.timeTakenSeconds / 60) }}m {{ sub.timeTakenSeconds % 60 }}s</td>
+                            <td>{{ sub.submittedAt | date:'short' }}</td>
+                            <td>
+                                <span class="status-pill" [class.pass]="sub.status === 'Pass'" [class.fail]="sub.status === 'Fail'">
+                                    {{ sub.status }}
+                                </span>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Pending / Not Attempted Students Table -->
+            <div class="roster-section">
+                <div class="roster-header">
+                    <h3>⏳ Pending / Not Attempted Students ({{ getPendingStudentsForExam(selectedExamForAnalytics).length }})</h3>
+                </div>
+                <table class="roster-table">
+                    <thead>
+                        <tr>
+                            <th>Student Name</th>
+                            <th>Roll Number / ID</th>
+                            <th>Department</th>
+                            <th>Status</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr *ngIf="getPendingStudentsForExam(selectedExamForAnalytics).length === 0">
+                            <td colspan="5" class="text-center text-green">🎉 Great news! All enrolled students have attempted this examination.</td>
+                        </tr>
+                        <tr *ngFor="let student of getPendingStudentsForExam(selectedExamForAnalytics)">
+                            <td><strong>{{ student.name }}</strong></td>
+                            <td><code>{{ student.id || student.roll || 'STU_ENROLLED' }}</code></td>
+                            <td>{{ student.department || student.dept || selectedExamForAnalytics.department }}</td>
+                            <td><span class="status-pill pending">⏳ Not Attempted</span></td>
+                            <td>
+                                <button class="action-btn remind-btn" (click)="sendReminderToStudent(student)">
+                                    📩 Send Reminder
+                                </button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+        </div>
+
+        <div class="modal-footer">
+            <button class="primary-btn" (click)="closeAnalyticsModal()">Close</button>
+        </div>
+    </div>
+</div>
+
+<app-footer></app-footer>
