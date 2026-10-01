@@ -22,6 +22,25 @@ export interface SemesterCourseRecord {
   status: 'Pass' | 'Fail';
 }
 
+export interface StudentAcademicProfileGroup {
+  studentId: string;
+  studentName: string;
+  department: string;
+  shortDept: string;
+  semester: string;
+  email: string;
+  courses: SemesterCourseRecord[];
+  totalCredits: number;
+  earnedCredits: number;
+  sgpa: number;
+  cgpa: number;
+  totalCourses: number;
+  passedCourses: number;
+  failedCourses: number;
+  overallGrade: string;
+  standing: string;
+}
+
 export interface StudentResult {
   id: number;
   student: string;
@@ -46,8 +65,8 @@ export interface StudentResult {
 
         <div class="page-header">
             <div class="header-text-block">
-                <h1>📋 Student Semester Results & Marksheet</h1>
-                <p>{{ role === 'student' ? 'Official semester performance transcript, SGPA/CGPA breakdown, and complete marksheet download.' : 'Faculty & Admin dashboard for viewing individual student marksheets, semester results, and class analytics.' }}</p>
+                <h1>📋 Student Semester Results & Marksheet Deck</h1>
+                <p>{{ role === 'student' ? 'Official semester performance transcript, SGPA/CGPA breakdown, and complete marksheet download.' : 'Master academic results deck: Expandable student profiles, departmental performance matrix, and official semester transcripts.' }}</p>
             </div>
             
             <!-- View Mode Switcher for Faculty and Admin -->
@@ -56,13 +75,13 @@ export interface StudentResult {
                         class="mode-btn" 
                         [class.active]="viewMode === 'class'" 
                         (click)="setViewMode('class')">
-                    <span class="material-icons">groups</span> Class Overview
+                    <span class="material-icons">view_agenda</span> Student Results Deck
                 </button>
                 <button type="button" 
                         class="mode-btn" 
                         [class.active]="viewMode === 'student'" 
                         (click)="setViewMode('student')">
-                    <span class="material-icons">person_search</span> Student Marksheet View
+                    <span class="material-icons">description</span> Official Marksheet View
                 </button>
             </div>
         </div>
@@ -72,19 +91,19 @@ export interface StudentResult {
             <div class="picker-label-wrap">
                 <span class="material-icons picker-icon">account_circle</span>
                 <div>
-                    <span class="picker-sub">Selected Student:</span>
-                    <strong class="picker-name">{{ studentName }} ({{ studentRoll }})</strong>
+                    <span class="picker-sub">Selected Student Profile:</span>
+                    <strong class="picker-name">{{ studentName }} ({{ studentRoll }}) — {{ studentDept }}</strong>
                 </div>
             </div>
             <div class="picker-controls">
-                <label for="studentSelect" class="picker-select-label">Choose Student:</label>
+                <label for="studentSelect" class="picker-select-label">Switch Student:</label>
                 <select id="studentSelect" class="student-dropdown" [(ngModel)]="studentName" (ngModelChange)="onStudentSelect($event)">
                     <option *ngFor="let stu of availableStudentsList" [value]="stu.name">
-                        {{ stu.name }} ({{ stu.roll || 'CUTM' }}) - {{ stu.dept || 'CSE' }}
+                        {{ stu.name }} ({{ stu.roll || 'CUTM' }}) - {{ getShortDept(stu.dept) }}
                     </option>
                 </select>
                 <button type="button" class="btn-switch-back" (click)="setViewMode('class')">
-                    ← Back to Class Overview
+                    ← Back to Results Deck
                 </button>
             </div>
         </div>
@@ -92,7 +111,7 @@ export interface StudentResult {
         <!-- Semester Selection Filter Toolbar -->
         <div class="semester-filter-toolbar">
             <div class="semester-header-info">
-                <span class="toolbar-title">🎓 Choose Semester:</span>
+                <span class="toolbar-title">🎓 Choose Evaluation Semester:</span>
                 <span class="active-sem-tag">{{ selectedSemester }}</span>
             </div>
             <div class="semester-pills">
@@ -108,25 +127,37 @@ export interface StudentResult {
 
         <!-- Summary Statistics (Faculty/Admin Class Overview) -->
         <div class="summary-grid" *ngIf="role !== 'student' && viewMode === 'class'">
-            <div class="section-card">
-                <h3>Total Evaluated Students</h3>
-                <strong>{{ availableStudentsList.length || 3 }}</strong>
-                <p>Registered students across active courses.</p>
+            <div class="section-card kpi-card-lux">
+                <div class="kpi-icon-badge" style="background: rgba(56, 189, 248, 0.15); color: #38bdf8;">👨‍🎓</div>
+                <div class="kpi-text-block">
+                    <span class="kpi-tag">Enrolled Students</span>
+                    <strong class="kpi-num">{{ filteredStudentGroups.length }} <small style="font-size: 0.9rem; color: #94a3b8;">/ {{ studentGroups.length }}</small></strong>
+                    <p>Total evaluated student profiles across departments.</p>
+                </div>
             </div>
-            <div class="section-card">
-                <h3>Internal Average</h3>
-                <strong>{{ internalAverage }}%</strong>
-                <p>Average internal score across class.</p>
+            <div class="section-card kpi-card-lux">
+                <div class="kpi-icon-badge" style="background: rgba(212, 175, 55, 0.15); color: #fde68a;">⭐</div>
+                <div class="kpi-text-block">
+                    <span class="kpi-tag">Average Class SGPA</span>
+                    <strong class="kpi-num" style="color: #fde68a;">{{ classAverageSgpa }} <small style="font-size: 0.9rem; color: #94a3b8;">/ 10</small></strong>
+                    <p>Weighted semester SGPA across active students.</p>
+                </div>
             </div>
-            <div class="section-card">
-                <h3>External Average</h3>
-                <strong>{{ externalAverage }}%</strong>
-                <p>Average external score across class.</p>
+            <div class="section-card kpi-card-lux">
+                <div class="kpi-icon-badge" style="background: rgba(96, 165, 250, 0.15); color: #60a5fa;">📈</div>
+                <div class="kpi-text-block">
+                    <span class="kpi-tag">Cumulative CGPA</span>
+                    <strong class="kpi-num" style="color: #60a5fa;">{{ classAverageCgpa }} <small style="font-size: 0.9rem; color: #94a3b8;">/ 10</small></strong>
+                    <p>Average cumulative standing (all semesters).</p>
+                </div>
             </div>
-            <div class="section-card">
-                <h3>Class Pass Rate</h3>
-                <strong style="color: #4ade80;">{{ passRate }}%</strong>
-                <p>Passing percentage for evaluated subjects.</p>
+            <div class="section-card kpi-card-lux">
+                <div class="kpi-icon-badge" style="background: rgba(16, 185, 129, 0.15); color: #34d399;">🏆</div>
+                <div class="kpi-text-block">
+                    <span class="kpi-tag">Overall Pass Rate</span>
+                    <strong class="kpi-num" style="color: #4ade80;">{{ classPassRate }}%</strong>
+                    <p>Students cleared in evaluated curriculum.</p>
+                </div>
             </div>
         </div>
 
@@ -154,20 +185,262 @@ export interface StudentResult {
             </div>
         </div>
 
-        <div class="action-row">
+        <!-- Action Row -->
+        <div class="action-row" *ngIf="role === 'student' || viewMode === 'student'">
             <button type="button" class="btn-download" (click)="downloadResults()">
                 📥 Download {{ studentName }}'s {{ selectedSemester }} Marksheet (CSV)
             </button>
-            <button type="button" class="btn-print" (click)="printTranscript()" *ngIf="role === 'student' || viewMode === 'student'">
+            <button type="button" class="btn-print" (click)="printTranscript()">
                 🖨️ Export Official Marksheet PDF ({{ studentName }})
-            </button>
-            <button type="button" class="btn-print" (click)="triggerBatchPrint()" *ngIf="role !== 'student' && viewMode === 'class'" style="background: #10b981;">
-                🖨️ Export Batch Transcripts (Selected: {{ getSelectedCount() }})
             </button>
             <span class="status-message" *ngIf="downloadMessage">{{ downloadMessage }}</span>
         </div>
 
-        <div class="table-card">
+        <!-- ========================================================================= -->
+        <!-- VIEW 1: STUDENT RESULTS ACCORDION DECK (CLASS OVERVIEW)                   -->
+        <!-- ========================================================================= -->
+        <div class="results-deck-container" *ngIf="role !== 'student' && viewMode === 'class'">
+            
+            <!-- Search & Filter Deck Toolbar -->
+            <div class="results-search-toolbar">
+                <div class="search-input-wrap">
+                    <span class="search-icon">🔍</span>
+                    <input 
+                        type="text" 
+                        [(ngModel)]="searchQuery" 
+                        (input)="onSearchChange()" 
+                        placeholder="Search student name (e.g. Krishnavamsi), Roll / ID (e.g. CUTM2026CSE042, STU004), department, or subject..."
+                        class="results-search-input"
+                    />
+                    <button class="clear-search-btn" *ngIf="searchQuery" (click)="clearSearch()" title="Clear search">✕</button>
+                </div>
+
+                <div class="search-filter-wrap">
+                    <select [(ngModel)]="filterDept" (change)="onSearchChange()" class="filter-dropdown-select">
+                        <option value="">All Departments (6 Branches)</option>
+                        <option value="CSE">Computer Science & Engineering (CSE)</option>
+                        <option value="IT">Information Technology (IT)</option>
+                        <option value="ECE">Electronics & Communication (ECE)</option>
+                        <option value="ME">Mechanical Engineering (ME)</option>
+                        <option value="CE">Civil Engineering (CE)</option>
+                        <option value="EEE">Electrical & Electronics (EEE)</option>
+                    </select>
+
+                    <select [(ngModel)]="filterGrade" (change)="onSearchChange()" class="filter-dropdown-select">
+                        <option value="">All Academic Grades</option>
+                        <option value="O">Grade O (Outstanding ≥ 9.0 SGPA)</option>
+                        <option value="A+">Grade A+ (Excellent 8.0 - 8.9)</option>
+                        <option value="A">Grade A (Very Good 7.0 - 7.9)</option>
+                        <option value="B+">Grade B+ (Good 6.0 - 6.9)</option>
+                        <option value="B">Grade B (Above Average 5.5 - 5.9)</option>
+                        <option value="F">Grade F (Backlog / Re-appear)</option>
+                    </select>
+
+                    <div class="accordion-global-buttons">
+                        <button type="button" class="btn-toggle-accordion" (click)="expandAllStudents()" title="Expand all student result cards">
+                            ▾ Expand All
+                        </button>
+                        <button type="button" class="btn-toggle-accordion" (click)="collapseAllStudents()" title="Collapse all student result cards">
+                            ▴ Collapse All
+                        </button>
+                    </div>
+
+                    <span class="match-count-badge">
+                        Showing <strong>{{ filteredStudentGroups.length }}</strong> of {{ studentGroups.length }} Students
+                    </span>
+                </div>
+            </div>
+
+            <!-- Empty Results State -->
+            <div *ngIf="filteredStudentGroups.length === 0" class="empty-state">
+                <p>📭 No student academic records found matching your filters in {{ selectedSemester }}.</p>
+                <button type="button" class="btn-clear-filters" (click)="clearSearch()">Reset Search & Filters</button>
+            </div>
+
+            <!-- Master-Detail Expandable Student Cards Deck -->
+            <div class="student-accordion-deck" *ngIf="filteredStudentGroups.length > 0">
+                <div 
+                    *ngFor="let s of filteredStudentGroups" 
+                    class="student-accordion-card"
+                    [class.expanded]="isStudentExpanded(s.studentId)"
+                >
+                    <!-- Student Card Master Header (Click to Expand) -->
+                    <div class="student-card-header" (click)="toggleExpandStudent(s.studentId)">
+                        <div class="student-main-profile">
+                            <div class="student-avatar" [ngClass]="s.shortDept.toLowerCase()">
+                                {{ getAvatarInitials(s.studentName) }}
+                            </div>
+                            <div class="student-meta-details">
+                                <div class="student-name-row">
+                                    <h3 class="student-heading">{{ s.studentName }}</h3>
+                                    <span class="stu-id-tag">{{ s.studentId }}</span>
+                                    <span class="badge-dept-tag" [ngClass]="s.shortDept.toLowerCase()">{{ s.shortDept }}</span>
+                                </div>
+                                <div class="student-sub-row">
+                                    <span class="student-dept-name">{{ s.department }}</span>
+                                    <span class="student-dot-separator">•</span>
+                                    <span class="student-sem-tag">{{ s.semester }}</span>
+                                    <span class="student-dot-separator">•</span>
+                                    <span class="student-email-link">{{ s.email }}</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Performance Metric KPI Badges -->
+                        <div class="student-kpi-deck">
+                            <div class="kpi-mini-pill" title="Total Subjects Evaluated">
+                                <span class="kpi-mini-icon">📚</span>
+                                <span class="kpi-mini-label">Subjects:</span>
+                                <strong class="kpi-mini-val">{{ s.passedCourses }}/{{ s.totalCourses }}</strong>
+                            </div>
+
+                            <div class="kpi-mini-pill credits" title="Academic Credits Completed">
+                                <span class="kpi-mini-icon">⭐</span>
+                                <span class="kpi-mini-label">Credits:</span>
+                                <strong class="kpi-mini-val">{{ s.earnedCredits }}/{{ s.totalCredits }} CR</strong>
+                            </div>
+
+                            <div class="kpi-mini-pill sgpa" title="Semester SGPA">
+                                <span class="kpi-mini-icon">🏆</span>
+                                <span class="kpi-mini-label">SGPA:</span>
+                                <strong class="kpi-mini-val">{{ s.sgpa }}</strong>
+                            </div>
+
+                            <div class="kpi-mini-pill cgpa" title="Cumulative CGPA">
+                                <span class="kpi-mini-icon">📈</span>
+                                <span class="kpi-mini-label">CGPA:</span>
+                                <strong class="kpi-mini-val">{{ s.cgpa }}</strong>
+                            </div>
+
+                            <div class="kpi-mini-pill grade" [class.pass]="s.standing === 'PASS'" [class.fail]="s.standing !== 'PASS'">
+                                <span class="kpi-mini-label">Grade:</span>
+                                <strong class="kpi-mini-val">{{ s.overallGrade }}</strong>
+                            </div>
+                        </div>
+
+                        <!-- Card Quick Actions -->
+                        <div class="student-card-actions" (click)="$event.stopPropagation()">
+                            <button 
+                                type="button" 
+                                class="btn-deck-action view-btn" 
+                                (click)="viewSpecificStudent(s.studentName)"
+                                title="Open full official marksheet for {{ s.studentName }}"
+                            >
+                                👁️ View Marksheet
+                            </button>
+                            <button 
+                                type="button" 
+                                class="btn-deck-action csv-btn" 
+                                (click)="downloadSingleStudentCsv(s)"
+                                title="Download CSV transcript"
+                            >
+                                📥 CSV
+                            </button>
+                            <button 
+                                type="button" 
+                                class="btn-expand-chevron" 
+                                (click)="toggleExpandStudent(s.studentId)"
+                                [title]="isStudentExpanded(s.studentId) ? 'Collapse subject breakdown' : 'Expand subject breakdown'"
+                            >
+                                <span class="material-icons chevron-icon">{{ isStudentExpanded(s.studentId) ? 'expand_less' : 'expand_more' }}</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Expandable Nested Subject Marks Breakdown -->
+                    <div class="student-card-body" *ngIf="isStudentExpanded(s.studentId)">
+                        <div class="nested-table-wrap">
+                            <table class="nested-results-table">
+                                <thead>
+                                    <tr>
+                                        <th style="width: 110px;">Subject Code</th>
+                                        <th>Course / Subject Title</th>
+                                        <th style="text-align: center; width: 80px;">Credits</th>
+                                        <th style="text-align: center; width: 130px;">Internal (40%)</th>
+                                        <th style="text-align: center; width: 130px;">External (60%)</th>
+                                        <th style="text-align: center; width: 110px;">Total (100)</th>
+                                        <th style="text-align: center; width: 90px;">Grade</th>
+                                        <th style="text-align: center; width: 90px;">Grade Pts</th>
+                                        <th style="text-align: center; width: 90px;">Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr *ngFor="let c of s.courses">
+                                        <td>
+                                            <span class="sub-code-badge">{{ c.courseCode }}</span>
+                                        </td>
+                                        <td>
+                                            <strong class="sub-title-text">{{ c.courseTitle }}</strong>
+                                        </td>
+                                        <td style="text-align: center;">
+                                            <span class="sub-cr-pill">{{ c.credits }} CR</span>
+                                        </td>
+                                        <td style="text-align: center;">
+                                            <span class="mark-val">{{ c.internalMarks }}</span> / 40
+                                        </td>
+                                        <td style="text-align: center;">
+                                            <span class="mark-val">{{ c.externalMarks }}</span> / 60
+                                        </td>
+                                        <td style="text-align: center;">
+                                            <strong class="mark-total-val">{{ c.totalMarks }}</strong>
+                                        </td>
+                                        <td style="text-align: center;">
+                                            <span class="grade-badge" [class.excellent]="c.grade === 'O' || c.grade === 'A+'">{{ c.grade }}</span>
+                                        </td>
+                                        <td style="text-align: center;">
+                                            <strong style="color: #cbd5e1;">{{ c.gradePoints }}</strong>
+                                        </td>
+                                        <td style="text-align: center;">
+                                            <span class="status-pill" [class.pass]="c.status === 'Pass'" [class.fail]="c.status !== 'Pass'">{{ c.status }}</span>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- Mini Semester Performance Summary Footer -->
+                        <div class="nested-summary-footer">
+                            <div class="nested-kpi-item">
+                                <span class="lbl">Evaluated Semester:</span>
+                                <strong class="val" style="color: #fde68a;">{{ selectedSemester }}</strong>
+                            </div>
+                            <div class="nested-kpi-item">
+                                <span class="lbl">Registered Credits:</span>
+                                <strong class="val">{{ s.totalCredits }} CR</strong>
+                            </div>
+                            <div class="nested-kpi-item">
+                                <span class="lbl">Credits Earned:</span>
+                                <strong class="val" style="color: #4ade80;">{{ s.earnedCredits }} CR</strong>
+                            </div>
+                            <div class="nested-kpi-item">
+                                <span class="lbl">Semester SGPA:</span>
+                                <strong class="val" style="color: #d4af37;">{{ s.sgpa }} / 10.00</strong>
+                            </div>
+                            <div class="nested-kpi-item">
+                                <span class="lbl">Cumulative CGPA:</span>
+                                <strong class="val" style="color: #60a5fa;">{{ s.cgpa }} / 10.00</strong>
+                            </div>
+                            <div class="nested-kpi-item">
+                                <span class="lbl">Academic Standing:</span>
+                                <strong class="val standing-badge" [class.pass]="s.standing === 'PASS'" [class.fail]="s.standing !== 'PASS'">
+                                    {{ s.standing === 'PASS' ? 'PASS (FIRST CLASS WITH DISTINCTION)' : 'RE-APPEAR / BACKLOG' }}
+                                </strong>
+                            </div>
+                            <div class="nested-kpi-actions">
+                                <button type="button" class="btn-micro-print" (click)="printStudentMarksheet(s)">
+                                    🖨️ Export PDF Transcript
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ========================================================================= -->
+        <!-- VIEW 2: SINGLE STUDENT OFFICIAL MARKSHEET TRANSCRIPT VIEW                 -->
+        <!-- ========================================================================= -->
+        <div class="table-card" *ngIf="role === 'student' || viewMode === 'student'">
             <!-- Print Only Header Details (Single student view) -->
             <div class="print-header-details">
                 <div class="inst-banner">
@@ -178,33 +451,33 @@ export interface StudentResult {
                 <div class="student-meta-box">
                     <div><strong>Student Name:</strong> {{ studentName }}</div>
                     <div><strong>Registration / Roll No:</strong> {{ studentRoll }}</div>
-                    <div><strong>Academic Program:</strong> Bachelor of Technology (CSE)</div>
+                    <div><strong>Academic Program:</strong> Bachelor of Technology ({{ getShortDept(studentDept) }})</div>
                     <div><strong>Semester Evaluated:</strong> {{ selectedSemester }}</div>
                     <div><strong>Academic Session:</strong> 2025 - 2026</div>
-                    <div><strong>Evaluation Schema:</strong> Internal 40% + External 60%</div>
+                    <div><strong>Evaluation Schema:</strong> Internal {{ getObeWeights().internal }}% + External {{ getObeWeights().external }}%</div>
                 </div>
             </div>
             
             <div class="table-header-row">
-                <h2>{{ (role === 'student' || viewMode === 'student') ? studentName + ' — ' + selectedSemester + ' Official Grade Sheet' : 'Class Results & Student Performance' }}</h2>
-                <div class="sem-stats-pills" *ngIf="role === 'student' || viewMode === 'student'">
+                <h2>{{ studentName }} — {{ selectedSemester }} Official Grade Sheet</h2>
+                <div class="sem-stats-pills">
                     <span class="stat-badge">Student: <strong>{{ studentName }}</strong></span>
                     <span class="stat-badge">Semester: <strong>{{ selectedSemester }}</strong></span>
                     <span class="stat-badge">SGPA: <strong>{{ semesterSgpa }}</strong></span>
-                    <span class="stat-badge">Credits: <strong>{{ semesterCredits.earned }}</strong></span>
+                    <span class="stat-badge">Credits: <strong>{{ semesterCredits.earned }} CR</strong></span>
                     <span class="stat-badge status-pass">Result: <strong>PASS</strong></span>
                 </div>
             </div>
             
-            <!-- Student Semester Detailed Table (Shown in Student Role OR Faculty/Admin Single Student View) -->
-            <table *ngIf="role === 'student' || viewMode === 'student'">
+            <!-- Student Semester Detailed Table -->
+            <table>
                 <thead>
                     <tr>
-                        <th style="width: 110px;">Code</th>
+                        <th style="width: 110px;">Subject Code</th>
                         <th>Course Title</th>
                         <th style="text-align: center; width: 75px;">Credits</th>
-                        <th style="text-align: center; width: 130px;">Internal (40%)</th>
-                        <th style="text-align: center; width: 130px;">External (60%)</th>
+                        <th style="text-align: center; width: 130px;">Internal ({{ getObeWeights().internal }}%)</th>
+                        <th style="text-align: center; width: 130px;">External ({{ getObeWeights().external }}%)</th>
                         <th style="text-align: center; width: 110px;">Total (100)</th>
                         <th style="text-align: center; width: 90px;">Grade</th>
                         <th style="text-align: center; width: 90px;">Grade Pts</th>
@@ -216,8 +489,8 @@ export interface StudentResult {
                         <td><strong style="color: #60a5fa; font-family: monospace;">{{ c.courseCode }}</strong></td>
                         <td>{{ c.courseTitle }}</td>
                         <td style="text-align: center;">{{ c.credits }}</td>
-                        <td style="text-align: center;">{{ c.internalMarks }} / 40</td>
-                        <td style="text-align: center;">{{ c.externalMarks }} / 60</td>
+                        <td style="text-align: center;">{{ c.internalMarks }} / {{ getObeWeights().internal }}</td>
+                        <td style="text-align: center;">{{ c.externalMarks }} / {{ getObeWeights().external }}</td>
                         <td style="text-align: center; font-weight: 800; color: #ffffff;">{{ c.totalMarks }}</td>
                         <td style="text-align: center;">
                             <span class="grade-badge" [class.excellent]="c.grade === 'O' || c.grade === 'A+'">{{ c.grade }}</span>
@@ -231,7 +504,7 @@ export interface StudentResult {
             </table>
 
             <!-- Semester Summary Footer for Student View -->
-            <div class="student-sem-summary-footer" *ngIf="role === 'student' || viewMode === 'student'">
+            <div class="student-sem-summary-footer">
                 <div class="summary-metric-item">
                     <span>Total Courses:</span>
                     <strong>{{ displayedCourses.length }}</strong>
@@ -254,77 +527,6 @@ export interface StudentResult {
                 </div>
             </div>
 
-            <!-- Search Toolbar for Class Results -->
-            <div class="results-search-toolbar" *ngIf="role !== 'student' && viewMode === 'class'">
-                <div class="search-input-wrap">
-                    <span class="search-icon">🔍</span>
-                    <input 
-                        type="text" 
-                        [(ngModel)]="searchQuery" 
-                        (input)="onSearchChange()" 
-                        placeholder="Search by Student Name (e.g. Krishnavamsi), Student ID (e.g. CUTM2026CSE042, STU001), Course, or Grade..."
-                        class="results-search-input"
-                    />
-                    <button class="clear-search-btn" *ngIf="searchQuery" (click)="clearSearch()" title="Clear search">✕</button>
-                </div>
-                <div class="search-filter-wrap">
-                    <select [(ngModel)]="filterGrade" (change)="onSearchChange()" class="grade-filter-select">
-                        <option value="">All Final Grades</option>
-                        <option value="O">Grade O (Outstanding)</option>
-                        <option value="A+">Grade A+ (Excellent)</option>
-                        <option value="A">Grade A (Very Good)</option>
-                        <option value="B+">Grade B+ (Good)</option>
-                        <option value="B">Grade B (Above Average)</option>
-                    </select>
-                    <span class="match-count-badge">
-                        Showing <strong>{{ filteredResults.length }}</strong> of {{ studentResults.length }}
-                    </span>
-                </div>
-            </div>
-
-            <!-- Faculty / Admin Class Overview Table -->
-            <table *ngIf="role !== 'student' && viewMode === 'class' && filteredResults.length > 0">
-                <thead>
-                    <tr>
-                        <th style="width: 40px; text-align: center;">
-                            <input type="checkbox" (change)="selectAllStudents($event)" [checked]="isAllSelected()" />
-                        </th>
-                        <th style="width: 140px;">Student ID</th>
-                        <th>Student Name</th>
-                        <th>Course / Assessment</th>
-                        <th style="text-align: center;">Internal ({{ getObeWeights().internal }}%)</th>
-                        <th style="text-align: center;">External ({{ getObeWeights().external }}%)</th>
-                        <th style="text-align: center;">Final Grade</th>
-                        <th style="text-align: center;">Status</th>
-                        <th style="text-align: center; width: 140px;">Action</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr *ngFor="let result of filteredResults">
-                        <td style="text-align: center;">
-                            <input type="checkbox" [(ngModel)]="selectedStudentsForPrint[result.student]" />
-                        </td>
-                        <td>
-                            <span class="stu-id-badge">{{ getStudentRoll(result.student) }}</span>
-                        </td>
-                        <td>
-                            <strong style="color: #ffffff;">{{ result.student }}</strong>
-                        </td>
-                        <td>{{ result.course }}</td>
-                        <td style="text-align: center;">{{ result.internal }}%</td>
-                        <td style="text-align: center;">{{ result.external }}%</td>
-                        <td style="text-align: center;"><span class="grade-badge" [class.excellent]="result.grade === 'O' || result.grade === 'A+'">{{ result.grade }}</span></td>
-                        <td style="text-align: center;"><span class="status-pill" [class.pass]="result.status === 'Pass'" [class.fail]="result.status === 'Fail'">{{ result.status }}</span></td>
-                        <td style="text-align: center;">
-                            <button type="button" class="btn-view-single" (click)="viewSpecificStudent(result.student)" title="View complete marksheet for {{ result.student }}">
-                                👁️ View Marksheet
-                            </button>
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
-            <p *ngIf="role !== 'student' && viewMode === 'class' && filteredResults.length === 0" class="empty-state">No academic results match your search.</p>
-
             <!-- Signatures for Printed Marksheet -->
             <div class="print-signatures-area">
                 <div class="sig-col">
@@ -332,7 +534,7 @@ export interface StudentResult {
                     <small>Office of the Examination Section</small>
                 </div>
                 <div class="sig-col">
-                    <div class="sig-line">Head of Department (CSE)</div>
+                    <div class="sig-line">Head of Department ({{ getShortDept(studentDept) }})</div>
                     <small>School of Engineering & Technology</small>
                 </div>
                 <div class="sig-col">
@@ -345,78 +547,7 @@ export interface StudentResult {
         <app-footer></app-footer>
     </div>
 
-</div>
-
-<!-- Batch printing layout (visible ONLY in print mode when batch printing is triggered) -->
-<div class="batch-print-container" *ngIf="selectedBatchStudents.length > 0">
-    <div class="batch-print-page" *ngFor="let sName of selectedBatchStudents" style="page-break-after: always; border: 2px solid #1e3a8a; padding: 40px; border-radius: 12px; margin-bottom: 30px; background: white; box-sizing: border-box; width: 100%;">
-        <h2 style="text-align: center; color: #1e3a8a; font-size: 1.8rem; margin-top: 0; text-transform: uppercase; letter-spacing: 0.5px;">Outcome-Based Learning Management System</h2>
-        <h3 style="text-align: center; color: #475569; font-size: 1.25rem; margin-top: 4px; margin-bottom: 24px; text-transform: uppercase; border-bottom: 2px solid #1e3a8a; padding-bottom: 8px;">Official Academic Transcript</h3>
-        
-        <div style="display: flex; justify-content: space-between; margin-bottom: 20px;">
-            <div>
-                <h3 style="margin: 0; color: #1e3a8a; font-size: 1.4rem;">Student Name: {{ sName }}</h3>
-                <p style="margin: 4px 0 0; color: #475569; font-size: 0.95rem;">Academic Program: Bachelor of Technology (CSE)</p>
-                <p style="margin: 2px 0 0; color: #475569; font-size: 0.95rem;">Academic Session: 2025-2026</p>
-            </div>
-            <div style="text-align: right;">
-                <p style="margin: 0; color: #64748b; font-size: 0.9rem;">Date Issued: {{ currentDate | date:'mediumDate' }}</p>
-                <p style="margin: 2px 0 0; color: #64748b; font-size: 0.9rem;">Status: OFFICIAL TRANSCRIPT</p>
-            </div>
-        </div>
-        
-        <table style="width: 100%; border-collapse: collapse; margin-top: 20px; border: 1px solid #cbd5e1;">
-            <thead>
-                <tr style="background: #f8fafc; border-bottom: 2px solid #cbd5e1;">
-                    <th style="padding: 12px; text-align: left; font-weight: 700; color: #1f3d7a; border: 1px solid #cbd5e1;">Course Title</th>
-                    <th style="padding: 12px; text-align: center; font-weight: 700; color: #1f3d7a; border: 1px solid #cbd5e1; width: 130px;">Internal ({{ getObeWeights().internal }}%)</th>
-                    <th style="padding: 12px; text-align: center; font-weight: 700; color: #1f3d7a; border: 1px solid #cbd5e1; width: 130px;">External ({{ getObeWeights().external }}%)</th>
-                    <th style="padding: 12px; text-align: center; font-weight: 700; color: #1f3d7a; border: 1px solid #cbd5e1; width: 110px;">Final Grade</th>
-                    <th style="padding: 12px; text-align: center; font-weight: 700; color: #1f3d7a; border: 1px solid #cbd5e1; width: 100px;">Status</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr *ngFor="let result of getStudentResultsList(sName)" style="border-bottom: 1px solid #cbd5e1;">
-                    <td style="padding: 12px; border: 1px solid #cbd5e1; font-weight: 600;">{{ result.course }}</td>
-                    <td style="padding: 12px; border: 1px solid #cbd5e1; text-align: center;">{{ result.internal }}%</td>
-                    <td style="padding: 12px; border: 1px solid #cbd5e1; text-align: center;">{{ result.external }}%</td>
-                    <td style="padding: 12px; border: 1px solid #cbd5e1; text-align: center;">
-                        <span style="font-weight: 700; font-size: 0.9rem; padding: 2px 8px; border-radius: 4px; background: #f1f5f9;">{{ result.grade }}</span>
-                    </td>
-                    <td style="padding: 12px; border: 1px solid #cbd5e1; text-align: center; font-weight: 700;" 
-                        [style.color]="result.status === 'Pass' ? '#166534' : '#991b1b'">
-                        {{ result.status }}
-                    </td>
-                </tr>
-            </tbody>
-        </table>
-        
-        <div style="margin-top: 35px; display: flex; justify-content: space-between; align-items: center; border-top: 2px dashed #cbd5e1; padding-top: 20px;">
-            <div style="font-size: 1.1rem;">
-                <strong>Calculated CGPA:</strong> <span style="font-size: 1.25rem; font-weight: bold; color: #1e3a8a;">{{ getStudentCGPA(sName) }}</span>
-            </div>
-            <div style="font-size: 1.1rem;">
-                <strong>Academic Standing:</strong> 
-                <span style="font-weight: bold; font-size: 1.2rem; text-transform: uppercase; padding: 4px 14px; border-radius: 8px;"
-                      [style.background]="getStudentStanding(sName) === 'PASS' ? '#dcfce7' : '#fee2e2'"
-                      [style.color]="getStudentStanding(sName) === 'PASS' ? '#15803d' : '#b91c1c'">
-                    {{ getStudentStanding(sName) }}
-                </span>
-            </div>
-        </div>
-
-        <div style="margin-top: 60px; display: flex; justify-content: space-between;">
-            <div style="text-align: center; width: 200px; border-top: 1px solid #475569; padding-top: 6px; font-size: 0.85rem; color: #475569;">
-                Prepared By: Registrar Office
-            </div>
-            <div style="text-align: center; width: 200px; border-top: 1px solid #475569; padding-top: 6px; font-size: 0.85rem; color: #475569;">
-                Authorized Controller of Exams
-            </div>
-        </div>
-    </div>
-</div>
-
-<app-footer></app-footer>`,
+</div>`,
   styles: [
     `
     .page-header {
@@ -526,7 +657,7 @@ export interface StudentResult {
       font-weight: 600;
       font-size: 13.5px;
       outline: none;
-      min-width: 240px;
+      min-width: 260px;
       cursor: pointer;
     }
     .btn-switch-back {
@@ -543,22 +674,6 @@ export interface StudentResult {
     .btn-switch-back:hover {
       background: #243b70;
       color: #ffffff;
-    }
-    .btn-view-single {
-      background: rgba(212, 175, 55, 0.15);
-      color: #fde68a;
-      border: 1px solid rgba(212, 175, 55, 0.35);
-      padding: 6px 12px;
-      border-radius: 6px;
-      font-size: 12px;
-      font-weight: 700;
-      cursor: pointer;
-      transition: all 0.2s ease;
-    }
-    .btn-view-single:hover {
-      background: #d4af37;
-      color: #0a1128;
-      transform: translateY(-1px);
     }
 
     .semester-filter-toolbar {
@@ -621,13 +736,87 @@ export interface StudentResult {
       box-shadow: 0 4px 14px rgba(212, 175, 55, 0.3);
     }
 
-    .summary-grid { display: grid; gap: 16px; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); margin-bottom: 24px; }
-    .section-card, .table-card { padding: 22px; background: #101b38; border: 1px solid #1f2f54; border-radius: 14px; box-shadow: 0 8px 24px rgba(0,0,0,.35); margin-bottom: 24px; }
-    .section-card h3, .table-card h2 { margin-top: 0; font-size: 1.1rem; color: #ffffff; font-weight: 800; }
-    .section-card strong { display: block; font-size: 2rem; margin-top: 8px; margin-bottom: 8px; color: #ffffff; }
-    .pass-standing { color: #4ade80 !important; font-size: 1.4rem !important; }
+    .summary-grid {
+      display: grid;
+      gap: 16px;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      margin-bottom: 24px;
+    }
+    .section-card, .table-card {
+      padding: 22px;
+      background: #101b38;
+      border: 1px solid #1f2f54;
+      border-radius: 14px;
+      box-shadow: 0 8px 24px rgba(0,0,0,.35);
+      margin-bottom: 24px;
+    }
+    .kpi-card-lux {
+      display: flex;
+      align-items: center;
+      gap: 18px;
+      padding: 20px;
+      margin-bottom: 0;
+    }
+    .kpi-icon-badge {
+      font-size: 28px;
+      width: 54px;
+      height: 54px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 12px;
+      flex-shrink: 0;
+    }
+    .kpi-text-block {
+      flex: 1;
+    }
+    .kpi-tag {
+      font-size: 11px;
+      text-transform: uppercase;
+      font-weight: 700;
+      color: #94a3b8;
+      display: block;
+      margin-bottom: 4px;
+    }
+    .kpi-num {
+      display: block;
+      font-size: 1.8rem;
+      font-weight: 800;
+      color: #ffffff;
+      line-height: 1.1;
+      margin-bottom: 4px;
+    }
+    .kpi-text-block p {
+      margin: 0;
+      font-size: 12px;
+      color: #64748b;
+    }
+
+    .section-card h3, .table-card h2 {
+      margin-top: 0;
+      font-size: 1.1rem;
+      color: #ffffff;
+      font-weight: 800;
+    }
+    .section-card strong {
+      display: block;
+      font-size: 2rem;
+      margin-top: 8px;
+      margin-bottom: 8px;
+      color: #ffffff;
+    }
+    .pass-standing {
+      color: #4ade80 !important;
+      font-size: 1.4rem !important;
+    }
     
-    .action-row { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; margin-bottom: 22px; }
+    .action-row {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      flex-wrap: wrap;
+      margin-bottom: 22px;
+    }
     .btn-download {
       padding: 12px 22px;
       border: none;
@@ -640,17 +829,66 @@ export interface StudentResult {
       box-shadow: 0 4px 14px rgba(212,175,55,0.3);
       transition: all 0.2s ease;
     }
-    .btn-download:hover { filter: brightness(1.1); transform: translateY(-1px); }
-    .btn-print { background: #10b981 !important; color: white !important; padding: 12px 20px; border: none; border-radius: 8px; cursor: pointer; font-weight: 700; font-size: 13.5px; }
-    .btn-print:hover { filter: brightness(1.1); }
-    .status-message { color: #4ade80; font-weight: 700; background: rgba(34, 197, 94, 0.15); border: 1px solid rgba(74, 222, 128, 0.3); padding: 8px 14px; border-radius: 8px; font-size: 13px; }
+    .btn-download:hover {
+      filter: brightness(1.1);
+      transform: translateY(-1px);
+    }
+    .btn-print {
+      background: #10b981 !important;
+      color: white !important;
+      padding: 12px 20px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 700;
+      font-size: 13.5px;
+    }
+    .btn-print:hover {
+      filter: brightness(1.1);
+    }
+    .status-message {
+      color: #4ade80;
+      font-weight: 700;
+      background: rgba(34, 197, 94, 0.15);
+      border: 1px solid rgba(74, 222, 128, 0.3);
+      padding: 8px 14px;
+      border-radius: 8px;
+      font-size: 13px;
+    }
     
-    .table-header-row { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; margin-bottom: 16px; }
-    .sem-stats-pills { display: flex; gap: 8px; flex-wrap: wrap; }
-    .stat-badge { background: #091024; border: 1px solid #1f2f54; color: #cbd5e1; padding: 4px 10px; border-radius: 6px; font-size: 12px; }
-    .stat-badge strong { color: #ffffff; margin-left: 4px; }
-    .stat-badge.status-pass { background: rgba(34, 197, 94, 0.15); border-color: rgba(74, 222, 128, 0.3); color: #4ade80; }
-    .stat-badge.status-pass strong { color: #4ade80; }
+    .table-header-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+    .sem-stats-pills {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .stat-badge {
+      background: #091024;
+      border: 1px solid #1f2f54;
+      color: #cbd5e1;
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-size: 12px;
+    }
+    .stat-badge strong {
+      color: #ffffff;
+      margin-left: 4px;
+    }
+    .stat-badge.status-pass {
+      background: rgba(34, 197, 94, 0.15);
+      border-color: rgba(74, 222, 128, 0.3);
+      color: #4ade80;
+    }
+    .stat-badge.status-pass strong {
+      color: #4ade80;
+    }
 
     /* Results Search Toolbar */
     .results-search-toolbar {
@@ -658,11 +896,12 @@ export interface StudentResult {
       justify-content: space-between;
       align-items: center;
       gap: 14px;
-      margin-bottom: 16px;
+      margin-bottom: 20px;
       padding: 14px 18px;
-      background: #091024;
+      background: #101b38;
       border: 1px solid #1f2f54;
       border-radius: 12px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
       flex-wrap: wrap;
     }
     .search-input-wrap {
@@ -670,7 +909,7 @@ export interface StudentResult {
       min-width: 280px;
       display: flex;
       align-items: center;
-      background: #101b38;
+      background: #091024;
       border: 1px solid #1f2f54;
       border-radius: 8px;
       padding: 0 12px;
@@ -712,16 +951,38 @@ export interface StudentResult {
       display: flex;
       align-items: center;
       gap: 12px;
+      flex-wrap: wrap;
     }
-    .grade-filter-select {
+    .filter-dropdown-select {
       padding: 9px 14px;
-      background: #101b38;
+      background: #091024;
       border: 1px solid #1f2f54;
       border-radius: 8px;
       color: #fde68a;
       font-size: 13px;
+      font-weight: 600;
       outline: none;
       cursor: pointer;
+    }
+    .accordion-global-buttons {
+      display: flex;
+      gap: 6px;
+    }
+    .btn-toggle-accordion {
+      background: #091024;
+      color: #94a3b8;
+      border: 1px solid #1f2f54;
+      padding: 8px 12px;
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    .btn-toggle-accordion:hover {
+      background: #18284e;
+      color: #ffffff;
+      border-color: #d4af37;
     }
     .match-count-badge {
       font-size: 12.5px;
@@ -731,31 +992,462 @@ export interface StudentResult {
     .match-count-badge strong {
       color: #d4af37;
     }
-    .stu-id-badge {
+
+    /* ========================================================================= */
+    /* STUDENT RESULTS ACCORDION DECK STYLES                                     */
+    /* ========================================================================= */
+    .student-accordion-deck {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+    .student-accordion-card {
+      background: #101b38;
+      border: 1px solid #1f2f54;
+      border-radius: 14px;
+      overflow: hidden;
+      transition: all 0.25s ease;
+      box-shadow: 0 4px 18px rgba(0, 0, 0, 0.25);
+    }
+    .student-accordion-card:hover {
+      border-color: #3b82f6;
+      box-shadow: 0 6px 24px rgba(0, 0, 0, 0.35);
+    }
+    .student-accordion-card.expanded {
+      border-color: #d4af37;
+      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.45);
+    }
+
+    /* Master Card Header */
+    .student-card-header {
+      padding: 16px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 16px;
+      cursor: pointer;
+      background: #101b38;
+      user-select: none;
+      transition: background 0.2s ease;
+    }
+    .student-accordion-card.expanded .student-card-header {
+      background: #132247;
+      border-bottom: 1px solid #1f2f54;
+    }
+    .student-main-profile {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      min-width: 260px;
+    }
+    .student-avatar {
+      width: 46px;
+      height: 46px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #1e3a8a, #3b82f6);
+      color: #ffffff;
+      font-weight: 800;
+      font-size: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 3px 10px rgba(0, 0, 0, 0.3);
+      flex-shrink: 0;
+    }
+    .student-avatar.cse { background: linear-gradient(135deg, #3730a3, #6366f1); }
+    .student-avatar.it { background: linear-gradient(135deg, #0e7490, #06b6d4); }
+    .student-avatar.ece { background: linear-gradient(135deg, #b45309, #f59e0b); }
+    .student-avatar.me { background: linear-gradient(135deg, #c2410c, #f97316); }
+    .student-avatar.ce { background: linear-gradient(135deg, #15803d, #22c55e); }
+    .student-avatar.eee { background: linear-gradient(135deg, #7e22ce, #a855f7); }
+
+    .student-meta-details {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .student-name-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .student-heading {
+      margin: 0;
+      color: #ffffff;
+      font-size: 1.15rem;
+      font-weight: 800;
+    }
+    .stu-id-tag {
       background: rgba(212, 175, 55, 0.15);
       color: #fde68a;
       border: 1px solid rgba(212, 175, 55, 0.35);
       font-family: monospace;
       font-weight: 700;
-      padding: 3px 8px;
+      padding: 2px 8px;
       border-radius: 6px;
       font-size: 12px;
-      display: inline-block;
+    }
+    .badge-dept-tag {
+      padding: 2px 8px;
+      border-radius: 6px;
+      font-size: 11px;
+      font-weight: 800;
+      text-transform: uppercase;
+      background: rgba(99, 102, 241, 0.2);
+      color: #a5b4fc;
+      border: 1px solid rgba(99, 102, 241, 0.4);
+    }
+    .badge-dept-tag.cse { background: rgba(99, 102, 241, 0.2); color: #a5b4fc; border-color: rgba(99, 102, 241, 0.4); }
+    .badge-dept-tag.it { background: rgba(6, 182, 212, 0.2); color: #67e8f9; border-color: rgba(6, 182, 212, 0.4); }
+    .badge-dept-tag.ece { background: rgba(245, 158, 11, 0.2); color: #fcd34d; border-color: rgba(245, 158, 11, 0.4); }
+    .badge-dept-tag.me { background: rgba(249, 115, 22, 0.2); color: #fdba74; border-color: rgba(249, 115, 22, 0.4); }
+    .badge-dept-tag.ce { background: rgba(34, 197, 94, 0.2); color: #86efac; border-color: rgba(34, 197, 94, 0.4); }
+    .badge-dept-tag.eee { background: rgba(168, 85, 247, 0.2); color: #d8b4fe; border-color: rgba(168, 85, 247, 0.4); }
+
+    .student-sub-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+      font-size: 12px;
+      color: #94a3b8;
+    }
+    .student-dept-name {
+      color: #cbd5e1;
+      font-weight: 600;
+    }
+    .student-dot-separator {
+      opacity: 0.5;
+    }
+    .student-sem-tag {
+      color: #d4af37;
+      font-weight: 700;
+    }
+    .student-email-link {
+      color: #64748b;
+      font-family: monospace;
+      font-size: 11.5px;
     }
 
-    .table-card table { width: 100%; border-collapse: collapse; margin-top: 12px; }
-    .table-card th, .table-card td { padding: 12px 14px; border-bottom: 1px solid #1f2f54; text-align: left; }
-    .table-card th { font-weight: 700; color: #d4af37; background: #132247; text-transform: uppercase; font-size: 0.82rem; }
-    .table-card td { color: #e2e8f0; font-size: 13.5px; }
-    .table-card tbody tr:hover { background: #18284e; }
+    /* KPI Summary Pills */
+    .student-kpi-deck {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    .kpi-mini-pill {
+      background: #091024;
+      border: 1px solid #1f2f54;
+      border-radius: 8px;
+      padding: 6px 12px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12px;
+    }
+    .kpi-mini-icon {
+      font-size: 13px;
+    }
+    .kpi-mini-label {
+      color: #94a3b8;
+      font-size: 11px;
+      text-transform: uppercase;
+      font-weight: 700;
+    }
+    .kpi-mini-val {
+      color: #ffffff;
+      font-weight: 800;
+      font-size: 13px;
+    }
+    .kpi-mini-pill.credits strong {
+      color: #fde68a;
+    }
+    .kpi-mini-pill.sgpa {
+      background: rgba(212, 175, 55, 0.12);
+      border-color: rgba(212, 175, 55, 0.35);
+    }
+    .kpi-mini-pill.sgpa strong {
+      color: #d4af37;
+      font-size: 14px;
+    }
+    .kpi-mini-pill.cgpa {
+      background: rgba(96, 165, 250, 0.12);
+      border-color: rgba(96, 165, 250, 0.35);
+    }
+    .kpi-mini-pill.cgpa strong {
+      color: #60a5fa;
+      font-size: 14px;
+    }
+    .kpi-mini-pill.grade.pass {
+      background: rgba(34, 197, 94, 0.15);
+      border-color: rgba(74, 222, 128, 0.35);
+    }
+    .kpi-mini-pill.grade.pass strong {
+      color: #4ade80;
+    }
+    .kpi-mini-pill.grade.fail {
+      background: rgba(239, 68, 68, 0.15);
+      border-color: rgba(248, 113, 113, 0.35);
+    }
+    .kpi-mini-pill.grade.fail strong {
+      color: #f87171;
+    }
+
+    /* Actions */
+    .student-card-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .btn-deck-action {
+      padding: 7px 12px;
+      border-radius: 8px;
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    .btn-deck-action.view-btn {
+      background: rgba(212, 175, 55, 0.15);
+      color: #fde68a;
+      border: 1px solid rgba(212, 175, 55, 0.35);
+    }
+    .btn-deck-action.view-btn:hover {
+      background: #d4af37;
+      color: #0a1128;
+      transform: translateY(-1px);
+    }
+    .btn-deck-action.csv-btn {
+      background: #091024;
+      color: #cbd5e1;
+      border: 1px solid #1f2f54;
+    }
+    .btn-deck-action.csv-btn:hover {
+      background: #18284e;
+      color: #ffffff;
+    }
+    .btn-expand-chevron {
+      background: #091024;
+      border: 1px solid #1f2f54;
+      color: #94a3b8;
+      border-radius: 8px;
+      width: 36px;
+      height: 36px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    .btn-expand-chevron:hover {
+      background: #18284e;
+      color: #d4af37;
+      border-color: #d4af37;
+    }
+    .chevron-icon {
+      font-size: 22px;
+    }
+
+    /* Nested Table & Body */
+    .student-card-body {
+      padding: 18px 20px;
+      background: #091024;
+      animation: fadeIn 0.2s ease-in-out;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(-4px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .nested-table-wrap {
+      overflow-x: auto;
+      border-radius: 10px;
+      border: 1px solid #1f2f54;
+      margin-bottom: 14px;
+    }
+    .nested-results-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+    }
+    .nested-results-table th {
+      background: #101b38;
+      color: #d4af37;
+      font-weight: 700;
+      text-transform: uppercase;
+      font-size: 0.78rem;
+      padding: 10px 14px;
+      border-bottom: 1px solid #1f2f54;
+      text-align: left;
+    }
+    .nested-results-table td {
+      padding: 10px 14px;
+      border-bottom: 1px solid #18284e;
+      color: #cbd5e1;
+    }
+    .nested-results-table tbody tr:hover {
+      background: #101b38;
+    }
+    .sub-code-badge {
+      font-family: monospace;
+      font-weight: 700;
+      color: #60a5fa;
+      background: rgba(96, 165, 250, 0.1);
+      padding: 2px 6px;
+      border-radius: 4px;
+      border: 1px solid rgba(96, 165, 250, 0.25);
+    }
+    .sub-title-text {
+      color: #ffffff;
+    }
+    .sub-cr-pill {
+      background: rgba(212, 175, 55, 0.15);
+      color: #fde68a;
+      border: 1px solid rgba(212, 175, 55, 0.3);
+      padding: 2px 8px;
+      border-radius: 12px;
+      font-size: 11px;
+      font-weight: 800;
+    }
+    .mark-val {
+      color: #e2e8f0;
+      font-weight: 700;
+    }
+    .mark-total-val {
+      color: #ffffff;
+      font-size: 14px;
+    }
+
+    /* Nested Summary Footer */
+    .nested-summary-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 14px;
+      padding: 12px 16px;
+      background: #101b38;
+      border: 1px solid #1f2f54;
+      border-radius: 10px;
+    }
+    .nested-kpi-item {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+    .nested-kpi-item .lbl {
+      font-size: 11px;
+      color: #94a3b8;
+      text-transform: uppercase;
+      font-weight: 700;
+    }
+    .nested-kpi-item .val {
+      font-size: 13.5px;
+      color: #ffffff;
+      font-weight: 800;
+    }
+    .standing-badge.pass {
+      color: #4ade80 !important;
+    }
+    .standing-badge.fail {
+      color: #f87171 !important;
+    }
+    .btn-micro-print {
+      background: #10b981;
+      color: #ffffff;
+      border: none;
+      padding: 6px 14px;
+      border-radius: 6px;
+      font-weight: 700;
+      font-size: 12px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    .btn-micro-print:hover {
+      filter: brightness(1.1);
+    }
+
+    /* Standard Table */
+    .table-card table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 12px;
+    }
+    .table-card th, .table-card td {
+      padding: 12px 14px;
+      border-bottom: 1px solid #1f2f54;
+      text-align: left;
+    }
+    .table-card th {
+      font-weight: 700;
+      color: #d4af37;
+      background: #132247;
+      text-transform: uppercase;
+      font-size: 0.82rem;
+    }
+    .table-card td {
+      color: #e2e8f0;
+      font-size: 13.5px;
+    }
+    .table-card tbody tr:hover {
+      background: #18284e;
+    }
     
-    .grade-badge { background: #091024; color: #d4af37; border: 1px solid #1f2f54; padding: 4px 8px; border-radius: 8px; font-size: 0.85rem; font-weight: 800; font-family: monospace; }
-    .grade-badge.excellent { background: rgba(34, 197, 94, 0.15); color: #4ade80; border: 1px solid rgba(74, 222, 128, 0.3); }
+    .grade-badge {
+      background: #091024;
+      color: #d4af37;
+      border: 1px solid #1f2f54;
+      padding: 4px 8px;
+      border-radius: 8px;
+      font-size: 0.85rem;
+      font-weight: 800;
+      font-family: monospace;
+    }
+    .grade-badge.excellent {
+      background: rgba(34, 197, 94, 0.15);
+      color: #4ade80;
+      border: 1px solid rgba(74, 222, 128, 0.3);
+    }
     
-    .status-pill { font-size: 0.8rem; font-weight: 800; padding: 3px 8px; border-radius: 4px; text-transform: uppercase; }
-    .status-pill.pass { background: rgba(34, 197, 94, 0.15); color: #4ade80; border: 1px solid rgba(74, 222, 128, 0.3); }
-    .status-pill.fail { background: rgba(239, 68, 68, 0.15); color: #f87171; border: 1px solid rgba(248, 113, 113, 0.3); }
-    .empty-state { text-align: center; color: #94a3b8; padding: 40px 20px; background: #091024; border: 1px solid #1f2f54; border-radius: 12px; }
+    .status-pill {
+      font-size: 0.8rem;
+      font-weight: 800;
+      padding: 3px 8px;
+      border-radius: 4px;
+      text-transform: uppercase;
+    }
+    .status-pill.pass {
+      background: rgba(34, 197, 94, 0.15);
+      color: #4ade80;
+      border: 1px solid rgba(74, 222, 128, 0.3);
+    }
+    .status-pill.fail {
+      background: rgba(239, 68, 68, 0.15);
+      color: #f87171;
+      border: 1px solid rgba(248, 113, 113, 0.3);
+    }
+    .empty-state {
+      text-align: center;
+      color: #94a3b8;
+      padding: 40px 20px;
+      background: #101b38;
+      border: 1px solid #1f2f54;
+      border-radius: 12px;
+    }
+    .btn-clear-filters {
+      margin-top: 12px;
+      padding: 8px 18px;
+      background: #18284e;
+      color: #fde68a;
+      border: 1px solid #d4af37;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 700;
+      font-size: 13px;
+    }
 
     .student-sem-summary-footer {
       display: flex;
@@ -783,26 +1475,16 @@ export interface StudentResult {
 
     .print-header-details { display: none; }
     .print-signatures-area { display: none; }
-    .batch-print-container { display: none; }
     
     @media print {
       body * {
         visibility: hidden;
       }
-      body.batch-mode .batch-print-container,
-      body.batch-mode .batch-print-container * {
-        visibility: visible;
-        display: block !important;
-      }
-      body.batch-mode .print-single-card {
-        display: none !important;
-      }
-      
-      body:not(.batch-mode) .table-card, 
-      body:not(.batch-mode) .table-card * {
+      .table-card, 
+      .table-card * {
         visibility: visible;
       }
-      body:not(.batch-mode) .table-card {
+      .table-card {
         position: absolute;
         left: 0;
         top: 0;
@@ -815,17 +1497,17 @@ export interface StudentResult {
         background: #ffffff !important;
         color: #1e293b !important;
       }
-      body:not(.batch-mode) .print-header-details {
+      .print-header-details {
         display: block !important;
         margin-bottom: 20px;
         border-bottom: 2px solid #1e3a8a;
         padding-bottom: 12px;
       }
-      body:not(.batch-mode) .inst-banner {
+      .inst-banner {
         text-align: center;
         margin-bottom: 14px;
       }
-      body:not(.batch-mode) .student-meta-box {
+      .student-meta-box {
         display: grid;
         grid-template-columns: 1fr 1fr;
         gap: 8px;
@@ -836,40 +1518,40 @@ export interface StudentResult {
         font-size: 12px;
         color: #1e293b;
       }
-      body:not(.batch-mode) table {
+      table {
         border-collapse: collapse;
         width: 100%;
         margin-top: 15px;
       }
-      body:not(.batch-mode) th {
+      th {
         background: #1e40af !important;
         color: #ffffff !important;
         border: 1px solid #1e40af !important;
         padding: 8px 10px !important;
         font-size: 11px !important;
       }
-      body:not(.batch-mode) td {
+      td {
         border: 1px solid #cbd5e1 !important;
         color: #1e293b !important;
         padding: 8px 10px !important;
         font-size: 11px !important;
       }
-      body:not(.batch-mode) .student-sem-summary-footer {
+      .student-sem-summary-footer {
         background: #f8fafc !important;
         border: 1px solid #cbd5e1 !important;
         color: #1e293b !important;
         margin-top: 15px !important;
       }
-      body:not(.batch-mode) .summary-metric-item strong {
+      .summary-metric-item strong {
         color: #1e3a8a !important;
       }
-      body:not(.batch-mode) .print-signatures-area {
+      .print-signatures-area {
         display: flex !important;
         justify-content: space-between;
         margin-top: 50px;
         padding-top: 20px;
       }
-      body:not(.batch-mode) .sig-col {
+      .sig-col {
         text-align: center;
         width: 180px;
         border-top: 1px solid #475569;
@@ -878,7 +1560,7 @@ export interface StudentResult {
         font-weight: 700;
         color: #1e293b;
       }
-      app-navbar, app-sidebar, app-footer, .page-header, .semester-filter-toolbar, .summary-grid, .action-row, .empty-state, .sem-stats-pills {
+      app-navbar, app-sidebar, app-footer, .page-header, .semester-filter-toolbar, .summary-grid, .action-row, .empty-state, .sem-stats-pills, .results-deck-container, .student-picker-banner {
         display: none !important;
       }
     }
@@ -910,20 +1592,16 @@ export class Results implements OnInit, OnDestroy {
   selectedSemester: string = 'Semester 6';
   downloadMessage = '';
 
-  studentResults: StudentResult[] = [];
-  filteredResults: StudentResult[] = [];
+  // Expandable Master Deck State
+  studentGroups: StudentAcademicProfileGroup[] = [];
+  filteredStudentGroups: StudentAcademicProfileGroup[] = [];
+  expandedStudentIds = new Set<string>();
 
-  availableStudentsList: { name: string; roll: string; dept: string; email: string }[] = [
-    { name: 'vamsi', roll: '646456455', dept: 'Computer Science & Engineering', email: 'vamsi1201@gmail.com' },
-    { name: 'Krishnavamsi', roll: 'CUTM2026CSE042', dept: 'Computer Science & Engineering', email: 'krishnavamsi1201@gmail.com' },
-    { name: 'Raj Kumar', roll: 'CUTM2026CSE018', dept: 'Computer Science & Engineering', email: 'raj.kumar@oblms.edu' },
-    { name: 'zing', roll: '4444444556', dept: 'Civil Engineering', email: 'zing@gmail.com' },
-    { name: 'Aarav Mehta', roll: 'CUTM2026CSE003', dept: 'Computer Science & Engineering', email: 'aarav.mehta@oblms.edu' }
-  ];
+  searchQuery: string = '';
+  filterDept: string = '';
+  filterGrade: string = '';
 
-  // Batch Printing bindings
-  selectedStudentsForPrint: { [name: string]: boolean } = {};
-  selectedBatchStudents: string[] = [];
+  availableStudentsList: { name: string; roll: string; dept: string; email: string }[] = [];
 
   private http = inject(HttpClient);
   private cdr = inject(ChangeDetectorRef);
@@ -1003,13 +1681,77 @@ export class Results implements OnInit, OnDestroy {
     ]
   };
 
-  getShortDept(dept: string): 'CSE' | 'IT' | 'ECE' | 'ME' | 'CE' {
+  getShortDept(dept: string): 'CSE' | 'IT' | 'ECE' | 'ME' | 'CE' | 'EEE' {
     const d = (dept || '').toLowerCase();
     if (d.includes('civil') || d === 'ce') return 'CE';
     if (d.includes('mechanical') || d.includes('mech') || d === 'me') return 'ME';
-    if (d.includes('electronic') || d.includes('ece') || d.includes('electrical') || d.includes('eee') || d === 'ee') return 'ECE';
+    if (d.includes('electrical & electronics') || d.includes('eee')) return 'EEE';
+    if (d.includes('electronic') || d.includes('ece') || d.includes('electrical') || d === 'ee') return 'ECE';
     if (d.includes('information') || d.includes('it')) return 'IT';
     return 'CSE';
+  }
+
+  getAvatarInitials(name: string): string {
+    if (!name) return 'ST';
+    const parts = name.trim().split(/\s+/);
+    if (parts.length === 1) return parts[0].substring(0, 2).toUpperCase();
+    return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+  }
+
+  buildCurriculumForStudent(studentName: string, dept: string, semester: string): SemesterCourseRecord[] {
+    const shortDept = this.getShortDept(dept);
+    const prefix = shortDept === 'CSE' ? 'CS' : shortDept;
+    const deptCourses = DEFAULT_DATABASE_COURSES.filter(c => c.code.toUpperCase().startsWith(prefix));
+
+    if (deptCourses.length === 0) {
+      if (semester === 'All Semesters') {
+        const all: SemesterCourseRecord[] = [];
+        for (const s of ['Semester 1', 'Semester 2', 'Semester 3', 'Semester 4', 'Semester 5', 'Semester 6', 'Semester 7', 'Semester 8']) {
+          if (this.semesterCurriculumData[s]) all.push(...this.semesterCurriculumData[s]);
+        }
+        return all;
+      }
+      return this.semesterCurriculumData[semester] || this.semesterCurriculumData['Semester 6'] || [];
+    }
+
+    const semsToBuild = semester === 'All Semesters' 
+      ? ['Semester 1', 'Semester 2', 'Semester 3', 'Semester 4', 'Semester 5', 'Semester 6', 'Semester 7', 'Semester 8']
+      : [semester];
+
+    const result: SemesterCourseRecord[] = [];
+
+    for (const sem of semsToBuild) {
+      const semCourses = deptCourses.filter(c => c.semester === sem);
+      const coursesToMap = semCourses.length > 0 ? semCourses : deptCourses.slice(0, 5);
+
+      coursesToMap.forEach((c) => {
+        const isLab = c.code.endsWith('L') || c.title.toLowerCase().includes('lab');
+        const isProject = c.code.includes('498') || c.title.toLowerCase().includes('project');
+        const isViva = c.code.includes('499') || c.title.toLowerCase().includes('viva');
+        const credits = isProject ? 8 : (isLab || isViva) ? 2 : (c.code.includes('115') || c.code.includes('125')) ? 3 : 4;
+
+        const seed = Math.abs(((studentName || 'student') + c.code).split('').reduce((acc, ch) => acc + ch.charCodeAt(0), 0));
+        const internalMarks = 34 + (seed % 7);
+        const externalMarks = 50 + ((seed * 3) % 10);
+        const totalMarks = internalMarks + externalMarks;
+        const grade = totalMarks >= 90 ? 'O' : totalMarks >= 80 ? 'A+' : totalMarks >= 70 ? 'A' : totalMarks >= 60 ? 'B+' : 'B';
+        const gradePoints = grade === 'O' ? 10 : grade === 'A+' ? 9 : grade === 'A' ? 8 : grade === 'B+' ? 7 : 6;
+
+        result.push({
+          courseCode: c.code,
+          courseTitle: c.title,
+          credits,
+          internalMarks,
+          externalMarks,
+          totalMarks,
+          grade,
+          gradePoints,
+          status: 'Pass'
+        });
+      });
+    }
+
+    return result;
   }
 
   buildCurriculumForDepartment(dept: string): { [sem: string]: SemesterCourseRecord[] } {
@@ -1079,12 +1821,11 @@ export class Results implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
-    this.loadStudentsList();
-    this.loadResultsData();
+    this.loadAllStudentsAndResults();
 
     this.syncSub = this.syncService.events$.subscribe((e) => {
-      if (e.type === 'MARKS_CHANGED') {
-        this.loadResultsData();
+      if (e.type === 'MARKS_CHANGED' || e.type === 'COURSES_CHANGED' || e.type === 'USERS_CHANGED') {
+        this.loadAllStudentsAndResults();
       }
     });
   }
@@ -1096,6 +1837,33 @@ export class Results implements OnInit, OnDestroy {
   setViewMode(mode: 'class' | 'student'): void {
     this.viewMode = mode;
     this.cdr.detectChanges();
+  }
+
+  selectSemester(sem: string): void {
+    this.selectedSemester = sem;
+    this.rebuildStudentGroups();
+    this.cdr.detectChanges();
+  }
+
+  // Accordion Expand/Collapse methods
+  toggleExpandStudent(studentId: string): void {
+    if (this.expandedStudentIds.has(studentId)) {
+      this.expandedStudentIds.delete(studentId);
+    } else {
+      this.expandedStudentIds.add(studentId);
+    }
+  }
+
+  isStudentExpanded(studentId: string): boolean {
+    return this.expandedStudentIds.has(studentId);
+  }
+
+  expandAllStudents(): void {
+    this.filteredStudentGroups.forEach(s => this.expandedStudentIds.add(s.studentId));
+  }
+
+  collapseAllStudents(): void {
+    this.expandedStudentIds.clear();
   }
 
   viewSpecificStudent(sName: string): void {
@@ -1121,37 +1889,254 @@ export class Results implements OnInit, OnDestroy {
     this.cdr.detectChanges();
   }
 
-  private loadStudentsList(): void {
+  private generateAllDefaultStudents(): { name: string; roll: string; dept: string; email: string }[] {
+    const list: { name: string; roll: string; dept: string; email: string }[] = [
+      { name: 'vamsi', roll: '646456455', dept: 'Computer Science & Engineering', email: 'vamsi1201@gmail.com' },
+      { name: 'Krishnavamsi', roll: 'CUTM2026CSE042', dept: 'Computer Science & Engineering', email: 'krishnavamsi1201@gmail.com' },
+      { name: 'Raj Kumar', roll: 'CUTM2026CSE018', dept: 'Computer Science & Engineering', email: 'raj.kumar@oblms.edu' },
+      { name: 'zing', roll: '4444444556', dept: 'Civil Engineering', email: 'zing@gmail.com' },
+      { name: 'Aarav Mehta', roll: 'CUTM2026CSE003', dept: 'Computer Science & Engineering', email: 'aarav.mehta@oblms.edu' }
+    ];
+
+    const branches = [
+      { code: 'CSE', name: 'Computer Science & Engineering' },
+      { code: 'IT', name: 'Information Technology' },
+      { code: 'ECE', name: 'Electronics & Communication Engineering' },
+      { code: 'ME', name: 'Mechanical Engineering' },
+      { code: 'CE', name: 'Civil Engineering' },
+      { code: 'EEE', name: 'Electrical & Electronics Engineering' }
+    ];
+
+    const firstNames = [
+      'Rahul', 'Priya', 'Amit', 'Sneha', 'Vikram', 'Ananya', 'Rohan', 'Divya', 
+      'Aditya', 'Meera', 'Karthik', 'Pooja', 'Suresh', 'Harish', 'Bhavya', 
+      'Chaitanya', 'Deepak', 'Gautam', 'Ishaan', 'Kalyan', 'Kavya', 'Keerthi', 'Madhuri', 
+      'Manoj', 'Naveen', 'Neha', 'Nikhil', 'Pranav', 'Prashanth', 'Rajesh', 'Rakesh', 
+      'Riya', 'Rohit', 'Sai', 'Sameer', 'Sanjay', 'Santosh', 'Shreya', 'Sowmya', 
+      'Srikanth', 'Surya', 'Swathi', 'Tarun', 'Varun', 'Venkatesh', 'Vikas', 'Vinay'
+    ];
+
+    const lastNames = [
+      'Sharma', 'Patel', 'Reddy', 'Nair', 'Singh', 'Roy', 'Gupta', 'Sri',
+      'Verma', 'Hegde', 'Rao', 'Kalyan', 'Pillai', 'Mishra', 'Joshi', 'Bhat',
+      'Choudhury', 'Das', 'Menon', 'Prasad', 'Naidu', 'Babu', 'Sundaram', 'Sen'
+    ];
+
+    let nameIndex = 0;
+    let globalCounter = 5;
+
+    for (const b of branches) {
+      for (let sem = 1; sem <= 8; sem++) {
+        for (let stuNum = 1; stuNum <= 3; stuNum++) {
+          const stuId = `CUTM2026${b.code}${String(globalCounter).padStart(3, '0')}`;
+          globalCounter++;
+
+          const f = firstNames[nameIndex % firstNames.length];
+          const l = lastNames[Math.floor(nameIndex / firstNames.length) % lastNames.length];
+          nameIndex++;
+          const fullName = `${f} ${l}`;
+          const email = `${f.toLowerCase()}.${l.toLowerCase()}.${b.code.toLowerCase()}@oblms.edu`;
+
+          list.push({
+            name: fullName,
+            roll: stuId,
+            dept: b.name,
+            email: email
+          });
+        }
+      }
+    }
+
+    return list;
+  }
+
+  private loadAllStudentsAndResults(): void {
+    const studentMap = new Map<string, { name: string; roll: string; dept: string; email: string }>();
+
+    // 1. Initialize default student roster
+    const defaults = this.generateAllDefaultStudents();
+    defaults.forEach(s => studentMap.set(s.name.toLowerCase(), s));
+
+    // 2. Load from localStorage if present
+    try {
+      const stored = localStorage.getItem('obslmsStudents');
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        if (Array.isArray(parsed)) {
+          parsed.forEach((s: any) => {
+            if (s.name) {
+              studentMap.set(s.name.toLowerCase(), {
+                name: s.name,
+                roll: s.regNo || s.id || `CUTM2026CSE${Math.floor(Math.random()*900+100)}`,
+                dept: s.department || 'Computer Science & Engineering',
+                email: s.email || `${s.name.toLowerCase().replace(/\s+/g, '.')}@oblms.edu`
+              });
+            }
+          });
+        }
+      }
+    } catch {}
+
+    // 3. Load from backend API if active
     this.http.get<any[]>('http://localhost:8080/api/users').subscribe({
       next: (users) => {
         if (Array.isArray(users)) {
-          const studentUsers = users
-            .filter(u => u.role?.toUpperCase() === 'STUDENT')
-            .map(u => ({
-              name: u.name,
-              roll: u.id,
-              dept: u.department || 'Computer Science & Engineering',
-              email: u.email
-            }));
-          if (studentUsers.length > 0) {
-            this.availableStudentsList = studentUsers;
-            if (this.role !== 'student' && !this.studentName && studentUsers[0]) {
-              this.studentName = studentUsers[0].name;
-              this.studentRoll = studentUsers[0].roll;
-              this.studentDept = studentUsers[0].dept;
-              this.semesterCurriculumData = this.buildCurriculumForDepartment(this.studentDept);
+          const studentUsers = users.filter(u => u.role?.toUpperCase() === 'STUDENT');
+          studentUsers.forEach((u: any) => {
+            if (u.name) {
+              studentMap.set(u.name.toLowerCase(), {
+                name: u.name,
+                roll: u.id || `CUTM2026CSE${Math.floor(Math.random()*900+100)}`,
+                dept: u.department || 'Computer Science & Engineering',
+                email: u.email || `${u.name.toLowerCase().replace(/\s+/g, '.')}@oblms.edu`
+              });
             }
-            this.cdr.detectChanges();
-          }
+          });
         }
+        this.availableStudentsList = Array.from(studentMap.values());
+        this.rebuildStudentGroups();
       },
-      error: () => {}
+      error: () => {
+        this.availableStudentsList = Array.from(studentMap.values());
+        this.rebuildStudentGroups();
+      }
     });
   }
 
-  selectSemester(sem: string): void {
-    this.selectedSemester = sem;
+  private rebuildStudentGroups(): void {
+    // Check if marks are recorded in localStorage
+    let savedMarks: any[] = [];
+    try {
+      const stored = localStorage.getItem('obslmsMarkEntries');
+      if (stored) savedMarks = JSON.parse(stored) || [];
+    } catch {}
+
+    const weights = this.getObeWeights();
+    const intWeight = weights.internal;
+    const extWeight = weights.external;
+
+    this.studentGroups = this.availableStudentsList.map((stu) => {
+      const shortDept = this.getShortDept(stu.dept);
+      const courses = this.buildCurriculumForStudent(stu.name, stu.dept, this.selectedSemester);
+
+      // Overlay any customized mark entries
+      courses.forEach(c => {
+        const found = savedMarks.find(m => 
+          (m.student && m.student.toLowerCase() === stu.name.toLowerCase()) &&
+          (m.assessment && (m.assessment.includes(c.courseCode) || m.assessment.includes(c.courseTitle)))
+        );
+        if (found && found.obtained !== undefined) {
+          const ob = Number(found.obtained) || 35;
+          const mx = Number(found.maxMarks) || 40;
+          c.internalMarks = Math.min(intWeight, Math.round((ob / mx) * intWeight));
+          c.totalMarks = c.internalMarks + c.externalMarks;
+          c.grade = c.totalMarks >= 90 ? 'O' : c.totalMarks >= 80 ? 'A+' : c.totalMarks >= 70 ? 'A' : c.totalMarks >= 60 ? 'B+' : 'B';
+          c.gradePoints = c.grade === 'O' ? 10 : c.grade === 'A+' ? 9 : c.grade === 'A' ? 8 : c.grade === 'B+' ? 7 : 6;
+          c.status = 'Pass';
+        }
+      });
+
+      const totalCredits = courses.reduce((sum, c) => sum + c.credits, 0);
+      const earnedCredits = courses.filter(c => c.status === 'Pass').reduce((sum, c) => sum + c.credits, 0);
+      const weightedPoints = courses.reduce((sum, c) => sum + (c.credits * c.gradePoints), 0);
+      const sgpa = totalCredits > 0 ? Number((weightedPoints / totalCredits).toFixed(2)) : 0;
+      
+      const seed = Math.abs((stu.name + stu.roll).split('').reduce((acc, ch) => acc + ch.charCodeAt(0), 0));
+      const cgpa = Number((Math.min(9.95, Math.max(7.2, sgpa - 0.2 + (seed % 5) * 0.1))).toFixed(2));
+      
+      const totalCourses = courses.length;
+      const passedCourses = courses.filter(c => c.status === 'Pass').length;
+      const failedCourses = totalCourses - passedCourses;
+
+      let overallGrade = 'O';
+      if (sgpa < 9.0) overallGrade = 'A+';
+      if (sgpa < 8.0) overallGrade = 'A';
+      if (sgpa < 7.0) overallGrade = 'B+';
+      if (sgpa < 6.0) overallGrade = 'B';
+      if (failedCourses > 0) overallGrade = 'F';
+
+      const standing = failedCourses === 0 ? 'PASS' : 'FAIL';
+
+      return {
+        studentId: stu.roll || 'CUTM2026CSE001',
+        studentName: stu.name,
+        department: stu.dept,
+        shortDept,
+        semester: this.selectedSemester,
+        email: stu.email,
+        courses,
+        totalCredits,
+        earnedCredits,
+        sgpa,
+        cgpa,
+        totalCourses,
+        passedCourses,
+        failedCourses,
+        overallGrade,
+        standing
+      };
+    });
+
+    // Expand the top 3 students by default
+    this.expandedStudentIds.clear();
+    if (this.studentGroups.length > 0) {
+      this.expandedStudentIds.add(this.studentGroups[0].studentId);
+      if (this.studentGroups[1]) this.expandedStudentIds.add(this.studentGroups[1].studentId);
+    }
+
+    this.applyResultsFilter();
+  }
+
+  onSearchChange(): void {
+    this.applyResultsFilter();
+  }
+
+  clearSearch(): void {
+    this.searchQuery = '';
+    this.filterDept = '';
+    this.filterGrade = '';
+    this.applyResultsFilter();
+  }
+
+  applyResultsFilter(): void {
+    const q = this.searchQuery.toLowerCase().trim();
+    const dept = this.filterDept;
+    const grade = this.filterGrade;
+
+    this.filteredStudentGroups = this.studentGroups.filter(s => {
+      const matchSearch = !q ||
+        s.studentName.toLowerCase().includes(q) ||
+        s.studentId.toLowerCase().includes(q) ||
+        s.email.toLowerCase().includes(q) ||
+        s.department.toLowerCase().includes(q) ||
+        s.courses.some(c => c.courseTitle.toLowerCase().includes(q) || c.courseCode.toLowerCase().includes(q));
+
+      const matchDept = !dept || s.shortDept === dept || s.department.toLowerCase().includes(dept.toLowerCase());
+      const matchGrade = !grade || s.overallGrade === grade;
+
+      return matchSearch && matchDept && matchGrade;
+    });
+
     this.cdr.detectChanges();
+  }
+
+  // Analytics Metrics
+  get classAverageSgpa(): number {
+    if (!this.filteredStudentGroups.length) return 0;
+    const total = this.filteredStudentGroups.reduce((sum, s) => sum + s.sgpa, 0);
+    return Number((total / this.filteredStudentGroups.length).toFixed(2));
+  }
+
+  get classAverageCgpa(): number {
+    if (!this.filteredStudentGroups.length) return 0;
+    const total = this.filteredStudentGroups.reduce((sum, s) => sum + s.cgpa, 0);
+    return Number((total / this.filteredStudentGroups.length).toFixed(2));
+  }
+
+  get classPassRate(): number {
+    if (!this.filteredStudentGroups.length) return 0;
+    const passed = this.filteredStudentGroups.filter(s => s.standing === 'PASS').length;
+    return Math.round((passed / this.filteredStudentGroups.length) * 100);
   }
 
   get displayedCourses(): SemesterCourseRecord[] {
@@ -1161,9 +2146,7 @@ export class Results implements OnInit, OnDestroy {
     if (this.selectedSemester === 'All Semesters') {
       const all: SemesterCourseRecord[] = [];
       for (const sem of ['Semester 1', 'Semester 2', 'Semester 3', 'Semester 4', 'Semester 5', 'Semester 6', 'Semester 7', 'Semester 8']) {
-        if (cur[sem]) {
-          all.push(...cur[sem]);
-        }
+        if (cur[sem]) all.push(...cur[sem]);
       }
       return all;
     }
@@ -1230,218 +2213,49 @@ export class Results implements OnInit, OnDestroy {
     return { internal, external };
   }
 
-  searchQuery: string = '';
-  filterGrade: string = '';
+  downloadSingleStudentCsv(s: StudentAcademicProfileGroup): void {
+    let csv = `CENTURION UNIVERSITY OF TECHNOLOGY & MANAGEMENT\n`;
+    csv += `OUTCOME-BASED EDUCATION (OBE) CELL - OFFICIAL ACADEMIC TRANSCRIPT\n`;
+    csv += `Student Name,${s.studentName}\n`;
+    csv += `Roll Number,${s.studentId}\n`;
+    csv += `Department,${s.department}\n`;
+    csv += `Academic Program,Bachelor of Technology (${s.shortDept})\n`;
+    csv += `Semester,${s.semester}\n`;
+    csv += `Date Generated,${new Date().toLocaleDateString('en-IN')}\n\n`;
 
-  getStudentRoll(name: string): string {
-    if (!name) return 'CUTM2026CSE001';
-    const match = this.availableStudentsList.find(s => s.name?.toLowerCase() === name.toLowerCase());
-    if (match && match.roll) return match.roll;
-    const num = (Math.abs(name.split('').reduce((acc, ch) => acc + ch.charCodeAt(0), 0)) % 80) + 1;
-    return 'CUTM2026CSE' + String(num).padStart(3, '0');
-  }
+    csv += `Course Code,Course Title,Credits,Internal Marks (40),External Marks (60),Total Marks (100),Grade,Grade Points,Status\n`;
 
-  onSearchChange(): void {
-    this.applyResultsFilter();
-  }
-
-  clearSearch(): void {
-    this.searchQuery = '';
-    this.filterGrade = '';
-    this.applyResultsFilter();
-  }
-
-  applyResultsFilter(): void {
-    const q = this.searchQuery.toLowerCase().trim();
-    const grade = this.filterGrade;
-
-    if (this.role === 'student') {
-      this.filteredResults = this.studentResults.filter(
-        r => r.student.toLowerCase() === this.userName.toLowerCase()
-      );
-    } else {
-      this.filteredResults = this.studentResults.filter(r => {
-        const sRoll = this.getStudentRoll(r.student).toLowerCase();
-        const matchSearch = !q ||
-          r.student.toLowerCase().includes(q) ||
-          sRoll.includes(q) ||
-          r.course.toLowerCase().includes(q) ||
-          r.grade.toLowerCase() === q ||
-          r.status.toLowerCase() === q;
-        
-        const matchGrade = !grade || r.grade === grade;
-        return matchSearch && matchGrade;
-      });
-
-      this.filteredResults.forEach(r => {
-        if (this.selectedStudentsForPrint[r.student] === undefined) {
-          this.selectedStudentsForPrint[r.student] = false;
-        }
-      });
-    }
-    this.cdr.detectChanges();
-  }
-
-  private processMarksIntoResults(marks: any[]): void {
-    const weights = this.getObeWeights();
-    const intRatio = weights.internal / 100;
-    const extRatio = weights.external / 100;
-
-    const grouped = new Map<string, any>();
-
-    marks.forEach((mark: any) => {
-      if (!mark.student) return;
-      const key = `${mark.student}_${mark.assessment || 'General Course'}`;
-
-      if (!grouped.has(key)) {
-        grouped.set(key, {
-          student: mark.student,
-          course: mark.assessment || 'General Course',
-          marksList: []
-        });
-      }
-      grouped.get(key).marksList.push(mark);
+    s.courses.forEach(c => {
+      csv += `"${c.courseCode}","${c.courseTitle}",${c.credits},${c.internalMarks},${c.externalMarks},${c.totalMarks},"${c.grade}",${c.gradePoints},"${c.status}"\n`;
     });
 
-    let idCounter = 1;
-    this.studentResults = Array.from(grouped.values()).map(group => {
-      const totalObtained = group.marksList.reduce((sum: number, m: any) => sum + (Number(m.obtained) || 0), 0);
-      const totalMax = group.marksList.reduce((sum: number, m: any) => sum + (Number(m.maxMarks) || 100), 0);
-      
-      const internalScore = totalMax > 0 ? Math.round((totalObtained / totalMax) * 100) : 75;
-      const externalScore = Math.min(100, Math.max(0, Math.round(internalScore - 5)));
-      const finalScore = Math.round(internalScore * intRatio + externalScore * extRatio);
+    csv += `\nSUMMARY EVALUATION METRICS\n`;
+    csv += `Total Registered Credits,${s.totalCredits}\n`;
+    csv += `Total Credits Earned,${s.earnedCredits}\n`;
+    csv += `Semester Grade Point Average (SGPA),${s.sgpa}\n`;
+    csv += `Cumulative Grade Point Average (CGPA),${s.cgpa}\n`;
+    csv += `Overall Academic Standing,${s.standing === 'PASS' ? 'PASS (FIRST CLASS WITH DISTINCTION)' : 'RE-APPEAR'}\n`;
+    csv += `Status,OFFICIAL NOTIFICATION OF RESULTS\n`;
 
-      let grade = 'F';
-      let status = 'Fail';
-      
-      if (finalScore >= 90) { grade = 'O'; status = 'Pass'; }
-      else if (finalScore >= 80) { grade = 'A+'; status = 'Pass'; }
-      else if (finalScore >= 70) { grade = 'A'; status = 'Pass'; }
-      else if (finalScore >= 60) { grade = 'B+'; status = 'Pass'; }
-      else if (finalScore >= 50) { grade = 'B'; status = 'Pass'; }
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    const cleanSem = s.semester.replace(/\s+/g, '_');
+    a.download = `${s.studentId}_${s.studentName}_${cleanSem}_Marksheet.csv`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    window.URL.revokeObjectURL(url);
 
-      return {
-        id: idCounter++,
-        student: group.student,
-        course: group.course,
-        internal: internalScore,
-        external: externalScore,
-        grade,
-        status
-      };
-    });
-
-    this.applyResultsFilter();
+    this.toastService.success(`Downloaded transcript for ${s.studentName} 📥`);
   }
 
-  private loadResultsData(): void {
-    try {
-      const stored = localStorage.getItem('obslmsMarkEntries');
-      if (stored) {
-        const localMarks = JSON.parse(stored);
-        if (Array.isArray(localMarks) && localMarks.length > 0) {
-          this.processMarksIntoResults(localMarks);
-        }
-      }
-    } catch {}
-
-    this.http.get<any[]>('http://localhost:8080/api/obe/marks').subscribe({
-      next: (marks) => {
-        if (Array.isArray(marks) && marks.length > 0) {
-          this.processMarksIntoResults(marks);
-        }
-      },
-      error: () => {}
-    });
-  }
-
-  // Selection helpers
-  selectAllStudents(event: any): void {
-    const checked = event.target.checked;
-    this.filteredResults.forEach(r => {
-      this.selectedStudentsForPrint[r.student] = checked;
-    });
-  }
-
-  isAllSelected(): boolean {
-    if (this.filteredResults.length === 0) return false;
-    return this.filteredResults.every(r => this.selectedStudentsForPrint[r.student]);
-  }
-
-  getSelectedCount(): number {
-    return Object.keys(this.selectedStudentsForPrint).filter(k => this.selectedStudentsForPrint[k]).length;
-  }
-
-  getStudentResultsList(name: string): StudentResult[] {
-    return this.studentResults.filter(r => r.student === name);
-  }
-
-  getStudentCGPA(name: string): number {
-    const list = this.getStudentResultsList(name);
-    if (!list.length) return 0;
-    const weights = this.getObeWeights();
-    const intRatio = weights.internal / 100;
-    const extRatio = weights.external / 100;
-    const averages = list.map(r => {
-      const finalScore = r.internal * intRatio + r.external * extRatio;
-      return (finalScore / 100) * 10;
-    });
-    const avg = averages.reduce((sum, val) => sum + val, 0) / averages.length;
-    return Number(avg.toFixed(2));
-  }
-
-  getStudentStanding(name: string): string {
-    const list = this.getStudentResultsList(name);
-    if (!list.length) return 'FAIL';
-    return list.every(r => r.status === 'Pass') ? 'PASS' : 'FAIL';
-  }
-
-  triggerBatchPrint(): void {
-    const selected = Object.keys(this.selectedStudentsForPrint).filter(k => this.selectedStudentsForPrint[k]);
-    if (selected.length === 0) {
-      this.toastService.warning('Please select at least one student to export batch transcripts.');
-      return;
-    }
-    
-    this.selectedBatchStudents = selected;
-    this.toastService.info(`Preparing transcripts for ${selected.length} student(s)... 📄`);
-    document.body.classList.add('batch-mode');
-    
-    try {
-      const activeAdmin = localStorage.getItem('userName') || 'Admin';
-      const stored = localStorage.getItem('obslmsAuditLogs');
-      const logs = stored ? JSON.parse(stored) : [];
-      logs.unshift({
-        user: activeAdmin,
-        action: `Exported Batch Transcripts for: ${selected.join(', ')}`,
-        timestamp: new Date().toISOString()
-      });
-      localStorage.setItem('obslmsAuditLogs', JSON.stringify(logs));
-    } catch {}
-
+  printStudentMarksheet(s: StudentAcademicProfileGroup): void {
+    this.viewSpecificStudent(s.studentName);
     setTimeout(() => {
       window.print();
-      this.selectedBatchStudents = [];
-      document.body.classList.remove('batch-mode');
-    }, 100);
-  }
-
-  // Getters for Faculty View
-  get internalAverage(): number {
-    if (!this.studentResults.length) return 0;
-    return Math.round(this.studentResults.reduce((sum, r) => sum + r.internal, 0) / this.studentResults.length);
-  }
-
-  get externalAverage(): number {
-    if (!this.studentResults.length) return 0;
-    return Math.round(this.studentResults.reduce((sum, r) => sum + r.external, 0) / this.studentResults.length);
-  }
-
-  get passRate(): number {
-    if (!this.studentResults.length) return 0;
-    const passed = this.studentResults.filter(r => r.status === 'Pass').length;
-    return Math.round((passed / this.studentResults.length) * 100);
+    }, 150);
   }
 
   downloadResults() {
