@@ -4,166 +4,360 @@
   <app-sidebar></app-sidebar>
 
   <div class="content">
+    <!-- Header Section -->
     <div class="page-header">
       <div class="header-title">
-        <h1>📚 Course-Subject Assignment</h1>
-        <p>Assign subjects to courses and manage course curriculum</p>
+        <h1>🏗️ Degree Program Curriculum Scheme & Instruction Structure</h1>
+        <p>Master regulation scheme of instruction, AICTE 160-credit category distribution, semester-wise course classification, and contact hours across accredited engineering programs.</p>
       </div>
-      <button class="btn btn-primary" (click)="openAddForm()">+ Assign Subject</button>
+      <div class="header-actions">
+        <button class="btn btn-secondary" (click)="exportSchemeCsv()" title="Export Scheme of Instruction CSV">
+          📥 Export Scheme (CSV)
+        </button>
+        <button class="btn btn-primary" (click)="openAddForm()">
+          + Allocate Subject to Scheme
+        </button>
+      </div>
     </div>
 
-    <!-- Search and Filter Bar -->
+    <!-- 1. Degree Program Selector Tabs -->
+    <div class="program-selector-bar">
+      <div class="selector-label">
+        <span>🎓 Degree Program:</span>
+      </div>
+      <div class="program-pills">
+        <button 
+          *ngFor="let prog of programs" 
+          type="button" 
+          class="program-pill" 
+          [class.active]="selectedProgramId === prog.id"
+          (click)="selectProgram(prog.id)"
+        >
+          <span class="prog-icon">{{ prog.icon }}</span>
+          <span class="prog-title">{{ prog.name }}</span>
+          <span class="prog-badge">{{ prog.totalCredits }} Credits</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- 2. AICTE 160-Credit Category Breakdown KPI Grid -->
+    <div class="credit-structure-grid">
+      <div class="credit-card total-card">
+        <div class="credit-card-top">
+          <span class="credit-label">Total Program Scheme</span>
+          <span class="credit-tag">160 Credits</span>
+        </div>
+        <div class="credit-val">{{ totalCurriculumCredits }} <small>/ 160</small></div>
+        <div class="credit-progress-bar">
+          <div class="credit-fill" [style.width.%]="(totalCurriculumCredits / 160) * 100"></div>
+        </div>
+        <span class="credit-sub">AICTE Model Curriculum Compliant</span>
+      </div>
+
+      <div class="credit-card">
+        <div class="credit-card-top">
+          <span class="credit-label" style="color: #38bdf8;">📘 Professional Core (PC)</span>
+          <span class="cat-pill pc-pill">PC</span>
+        </div>
+        <div class="credit-val" style="color: #38bdf8;">{{ getCreditsByCategory('PC') }} <small>Credits</small></div>
+        <span class="credit-sub">Discipline Core Engineering</span>
+      </div>
+
+      <div class="credit-card">
+        <div class="credit-card-top">
+          <span class="credit-label" style="color: #a78bfa;">🔬 Basic & Engg Science</span>
+          <span class="cat-pill bs-pill">BS / ES</span>
+        </div>
+        <div class="credit-val" style="color: #a78bfa;">{{ getCreditsByCategory('BS') + getCreditsByCategory('ES') }} <small>Credits</small></div>
+        <span class="credit-sub">Math, Physics, Chemistry, CAD</span>
+      </div>
+
+      <div class="credit-card">
+        <div class="credit-card-top">
+          <span class="credit-label" style="color: #fde68a;">💡 Elective Tracks</span>
+          <span class="cat-pill pe-pill">PE / OE</span>
+        </div>
+        <div class="credit-val" style="color: #fde68a;">{{ getCreditsByCategory('PE') + getCreditsByCategory('OE') }} <small>Credits</small></div>
+        <span class="credit-sub">Professional & Open Electives</span>
+      </div>
+
+      <div class="credit-card">
+        <div class="credit-card-top">
+          <span class="credit-label" style="color: #f43f5e;">🚀 Projects & Internships</span>
+          <span class="cat-pill pr-pill">PR</span>
+        </div>
+        <div class="credit-val" style="color: #f43f5e;">{{ getCreditsByCategory('PR') }} <small>Credits</small></div>
+        <span class="credit-sub">Capstone & Industry Defense</span>
+      </div>
+
+      <div class="credit-card">
+        <div class="credit-card-top">
+          <span class="credit-label" style="color: #ec4899;">🏛️ Humanities & Social</span>
+          <span class="cat-pill hs-pill">HS / MC</span>
+        </div>
+        <div class="credit-val" style="color: #ec4899;">{{ getCreditsByCategory('HS') }} <small>Credits</small></div>
+        <span class="credit-sub">Ethics, Management, Audit</span>
+      </div>
+    </div>
+
+    <!-- 3. Search and Semester Filter Toolbar -->
     <div class="toolbar">
       <div class="search-box">
         <input 
           type="text" 
-          placeholder="🔍 Search by course or subject..." 
+          placeholder="🔍 Search scheme by subject code (e.g. CS101, MA101), title, or category..."
           [(ngModel)]="searchQuery"
           (input)="onSearchChange()"
           class="search-input"
         />
       </div>
-      <select 
-        [(ngModel)]="filterCourse"
-        (change)="onFilterChange()"
-        class="filter-select"
-      >
-        <option value="">All Courses</option>
-        <option *ngFor="let course of courseList" [value]="course.id">{{ course.name }} ({{ course.code }})</option>
-      </select>
+
+      <div class="filter-group">
+        <select 
+          [(ngModel)]="selectedCategory"
+          (change)="onSearchChange()"
+          class="filter-select"
+        >
+          <option value="">All AICTE Categories</option>
+          <option *ngFor="let cat of categoryOptions" [value]="cat.code">{{ cat.label }}</option>
+        </select>
+      </div>
     </div>
 
-    <!-- Add/Edit Form Modal -->
+    <!-- Semester Filter Switcher Pills -->
+    <div class="semester-pills-bar">
+      <button 
+        type="button" 
+        class="sem-pill" 
+        [class.active]="selectedSemester === ''"
+        (click)="selectSemesterFilter('')"
+      >
+        📚 All 8 Semesters
+      </button>
+      <button 
+        *ngFor="let sem of semesters" 
+        type="button" 
+        class="sem-pill" 
+        [class.active]="selectedSemester === sem"
+        (click)="selectSemesterFilter(sem)"
+      >
+        {{ sem }}
+      </button>
+    </div>
+
+    <!-- 4. Grouped Semester Scheme Matrix Tables -->
+    <div class="scheme-container">
+      <div *ngIf="groupedSemesters.length === 0" class="empty-state">
+        <p>📭 No curriculum scheme subjects found for the selected program and filters.</p>
+        <button class="btn btn-primary" (click)="openAddForm()">+ Allocate Subject to Scheme</button>
+      </div>
+
+      <div *ngFor="let group of groupedSemesters" class="semester-scheme-block">
+        <div class="semester-block-header">
+          <div class="sem-title-wrap">
+            <span class="sem-icon">🗓️</span>
+            <h3>{{ group.semester }} Scheme of Instruction</h3>
+            <span class="badge sem-badge">{{ currentProgram.code }}</span>
+          </div>
+          <div class="sem-kpi-wrap">
+            <span class="kpi-pill">Subjects: <strong>{{ group.subjects.length }}</strong></span>
+            <span class="kpi-pill">Credits: <strong style="color: #d4af37;">{{ group.totalCredits }}</strong></span>
+            <span class="kpi-pill">Contact Hours: <strong>{{ group.totalHours }} Hrs/Wk</strong></span>
+          </div>
+        </div>
+
+        <div class="table-wrapper">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th style="width: 110px;">Code</th>
+                <th>Curriculum Subject Title</th>
+                <th style="width: 190px;">AICTE Category</th>
+                <th style="width: 100px; text-align: center;" title="Lecture - Tutorial - Practical">L-T-P</th>
+                <th style="width: 110px; text-align: center;">Contact Hrs</th>
+                <th style="width: 90px; text-align: center;">Credits</th>
+                <th style="width: 160px; text-align: center;">Exam Scheme</th>
+                <th style="width: 120px; text-align: center;">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let sub of group.subjects">
+                <td>
+                  <span class="code-badge">{{ sub.subjectCode }}</span>
+                </td>
+                <td class="subject-title">
+                  <strong>{{ sub.subjectTitle }}</strong>
+                </td>
+                <td>
+                  <span 
+                    class="category-badge" 
+                    [style.color]="getCategoryColor(sub.category)"
+                    [style.borderColor]="getCategoryColor(sub.category)"
+                    [style.backgroundColor]="'rgba(16, 27, 56, 0.8)'"
+                  >
+                    {{ sub.categoryName }}
+                  </span>
+                </td>
+                <td style="text-align: center; font-family: monospace; font-weight: 700; color: #cbd5e1;">
+                  {{ sub.ltp }}
+                </td>
+                <td style="text-align: center; color: #94a3b8;">
+                  {{ sub.contactHours }} hrs/wk
+                </td>
+                <td style="text-align: center;">
+                  <span class="credits-badge">{{ sub.credits }}</span>
+                </td>
+                <td style="text-align: center; font-size: 0.82rem; color: #a7f3d0; font-family: monospace;">
+                  {{ sub.evaluationSchema }}
+                </td>
+                <td class="actions-cell">
+                  <div class="actions-btn-wrap">
+                    <button type="button" class="btn-action-pill edit" (click)="openEditForm(sub)" title="Edit Scheme Entry">
+                      ✎ Edit
+                    </button>
+                    <button type="button" class="btn-action-pill delete" (click)="deleteSubjectScheme(sub.id)" title="Remove from Scheme">
+                      🗑️
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+            <tfoot>
+              <tr class="semester-footer-row">
+                <td colspan="4" style="font-weight: 700; color: #fde68a;">
+                  ✨ {{ group.semester }} Totals:
+                </td>
+                <td style="text-align: center; font-weight: 800; color: #ffffff;">
+                  {{ group.totalHours }} Hrs/Wk
+                </td>
+                <td style="text-align: center; font-weight: 800; color: #d4af37; font-size: 1.05rem;">
+                  {{ group.totalCredits }} Credits
+                </td>
+                <td colspan="2" style="text-align: right; color: #94a3b8; font-size: 0.82rem;">
+                  Full Continuous & Semester Evaluation
+                </td>
+              </tr>
+            </tfoot>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- 5. Add / Edit Scheme Subject Modal -->
     <div class="modal" *ngIf="showForm">
       <div class="modal-content">
         <div class="modal-header">
-          <h2>{{ isEditMode ? 'Edit Assignment' : 'Assign Subject to Course' }}</h2>
+          <h2>{{ isEditMode ? 'Edit Curriculum Scheme Subject' : 'Allocate Subject to Degree Program Scheme' }}</h2>
           <button class="close-btn" (click)="closeForm()">✕</button>
         </div>
 
-        <form (ngSubmit)="saveAssignment()" class="assignment-form">
-          <div class="form-group">
-            <label>Select Course *</label>
-            <select [(ngModel)]="formData.courseId" name="courseId" required>
-              <option value="">Choose a course</option>
-              <option *ngFor="let course of courseList" [value]="course.id">
-                {{ course.name }} ({{ course.code }})
-              </option>
-            </select>
+        <form (ngSubmit)="saveSubjectScheme()" class="scheme-form">
+          <div class="form-row">
+            <div class="form-group">
+              <label>Academic Degree Program *</label>
+              <select [(ngModel)]="formData.programId" name="programId" required>
+                <option *ngFor="let p of programs" [value]="p.id">{{ p.name }} ({{ p.code }})</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label>Semester *</label>
+              <select [(ngModel)]="formData.semester" name="semester" required>
+                <option *ngFor="let sem of semesters" [value]="sem">{{ sem }}</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label>Subject / Course Code *</label>
+              <input 
+                type="text" 
+                [(ngModel)]="formData.subjectCode" 
+                name="subjectCode" 
+                placeholder="e.g. CS101, MA101, EC201" 
+                required 
+                style="font-family: monospace; font-weight: 700; color: #fde68a;"
+              />
+            </div>
+
+            <div class="form-group">
+              <label>AICTE Category Classification *</label>
+              <select [(ngModel)]="formData.category" name="category" required>
+                <option *ngFor="let cat of categoryOptions" [value]="cat.code">{{ cat.label }}</option>
+              </select>
+            </div>
           </div>
 
           <div class="form-group">
-            <label>Select Subject *</label>
-            <select [(ngModel)]="formData.subjectId" name="subjectId" required>
-              <option value="">Choose a subject</option>
-              <option *ngFor="let subject of subjectList" [value]="subject.id">
-                {{ subject.name }} ({{ subject.code }})
-              </option>
-            </select>
-          </div>
-
-          <div class="form-group">
-            <label>Credits</label>
+            <label>Subject / Course Title *</label>
             <input 
-              type="number" 
-              [(ngModel)]="formData.credits" 
-              name="credits"
-              min="0"
-              max="10"
-              placeholder="Credits"
+              type="text" 
+              [(ngModel)]="formData.subjectTitle" 
+              name="subjectTitle" 
+              placeholder="e.g. Database Management Systems & Relational SQL" 
+              required 
             />
+          </div>
+
+          <div class="form-row" style="grid-template-columns: 1fr 1fr 1fr;">
+            <div class="form-group">
+              <label>L-T-P Hours *</label>
+              <input 
+                type="text" 
+                [(ngModel)]="formData.ltp" 
+                name="ltp" 
+                placeholder="e.g. 3-1-0 or 3-0-2" 
+                required 
+              />
+              <small style="color: #94a3b8; font-size: 0.75rem;">Lecture-Tutorial-Practical</small>
+            </div>
+
+            <div class="form-group">
+              <label>Contact Hrs / Week *</label>
+              <input 
+                type="number" 
+                [(ngModel)]="formData.contactHours" 
+                name="contactHours" 
+                min="1" 
+                max="30" 
+                required 
+              />
+            </div>
+
+            <div class="form-group">
+              <label>Credits *</label>
+              <input 
+                type="number" 
+                [(ngModel)]="formData.credits" 
+                name="credits" 
+                min="0" 
+                max="20" 
+                step="0.5" 
+                required 
+              />
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label>Evaluation Schema *</label>
+            <select [(ngModel)]="formData.evaluationSchema" name="evaluationSchema" required>
+              <option value="40 CIE / 60 SEE">40 CIE (Internal) / 60 SEE (Semester Exam)</option>
+              <option value="50 CIE / 50 SEE">50 CIE (Internal) / 50 SEE (Laboratory Exam)</option>
+              <option value="100 Internal Viva">100 Continuous Evaluation / Internal Viva</option>
+              <option value="100 External Board Viva">100 External Board Defense / Dissertation</option>
+              <option value="Satisfactory / Non-Credit">Satisfactory / Non-Credit Mandatory Audit</option>
+            </select>
           </div>
 
           <div class="form-actions">
             <button type="button" class="btn btn-secondary" (click)="closeForm()">Cancel</button>
-            <button type="submit" class="btn btn-primary">{{ isEditMode ? 'Update' : 'Assign' }} Subject</button>
+            <button type="submit" class="btn btn-primary">{{ isEditMode ? 'Update' : 'Save' }} Scheme Entry</button>
           </div>
         </form>
       </div>
     </div>
-
-    <!-- Table Section -->
-    <div class="table-section">
-      <div class="table-header">
-        <h3>Assigned Curriculum Subjects ({{ filteredCourseSubjectList.length }})</h3>
-
-        <div class="page-size-selector" *ngIf="filteredCourseSubjectList.length > 0">
-          <label style="font-size: 0.85rem; color: #94a3b8; margin-right: 8px;">Show:</label>
-          <select [(ngModel)]="pageSize" (change)="onPageSizeChange()" style="padding: 4px 10px; background: #0a1128; border: 1px solid #1f2f54; color: #f8fafc; border-radius: 6px; font-size: 0.85rem;">
-            <option *ngFor="let opt of pageSizeOptions" [value]="opt">{{ opt }} per page</option>
-          </select>
-        </div>
-      </div>
-
-      <div *ngIf="filteredCourseSubjectList.length === 0" class="empty-state">
-        <p>📭 No subject assignments found. Start by assigning subjects to courses.</p>
-        <button class="btn btn-primary" (click)="openAddForm()">+ Assign Subject</button>
-      </div>
-
-      <div *ngIf="filteredCourseSubjectList.length > 0" class="table-wrapper">
-        <table class="data-table">
-          <thead>
-            <tr>
-              <th style="min-width: 280px;">Department / Branch (Course)</th>
-              <th style="min-width: 250px;">Curriculum Subject Title</th>
-              <th style="width: 130px;">Subject Code</th>
-              <th style="width: 120px;">Credits</th>
-              <th style="width: 100px; text-align: center;">Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr *ngFor="let cs of pagedCourseSubjectList">
-              <td class="course-name">
-                <span class="badge" style="background: rgba(212, 175, 55, 0.12); color: #fde68a; border: 1px solid rgba(212, 175, 55, 0.3); font-weight: 700; padding: 4px 8px; border-radius: 6px;">
-                  🎓 {{ cs.courseName }}
-                </span>
-              </td>
-              <td class="subject-name">
-                <strong style="color: #ffffff;">{{ cs.subjectName }}</strong>
-              </td>
-              <td class="subject-code">
-                <code style="background: #091024; color: #38bdf8; padding: 2px 6px; border-radius: 4px; font-weight: 700; border: 1px solid #1f2f54;">{{ cs.subjectId }}</code>
-              </td>
-              <td class="credits">
-                <span class="badge badge-credits">{{ cs.credits }} credits</span>
-              </td>
-              <td class="actions-cell" style="text-align: center;">
-                <button class="btn-icon btn-edit" (click)="openEditForm(cs)" title="Edit">✎</button>
-                <button class="btn-icon btn-delete" (click)="deleteAssignment(cs.id)" title="Delete">🗑️</button>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-
-        <!-- Pagination Controls -->
-        <div class="pagination-bar" *ngIf="filteredCourseSubjectList.length > pageSize" style="display: flex; justify-content: space-between; align-items: center; padding: 14px 20px; background: #0c1530; border-top: 1px solid #1f2f54; border-radius: 0 0 12px 12px;">
-          <div class="pagination-info" style="font-size: 0.88rem; color: #94a3b8;">
-            Showing <strong style="color: #d4af37;">{{ startIndex }}</strong> - <strong style="color: #d4af37;">{{ endIndex }}</strong> of <strong style="color: #f8fafc;">{{ filteredCourseSubjectList.length }}</strong> subjects
-          </div>
-          <div class="pagination-btns" style="display: flex; gap: 8px; align-items: center;">
-            <button 
-              type="button" 
-              class="btn-action-pill" 
-              [disabled]="currentPage === 1" 
-              (click)="goToPage(currentPage - 1)" 
-              style="padding: 6px 14px; cursor: pointer; opacity: currentPage === 1 ? 0.5 : 1; background: #101b38; border: 1px solid #1f2f54; color: #f8fafc; border-radius: 6px;">
-              ◀ Previous
-            </button>
-            <span style="font-size: 0.88rem; color: #cbd5e1; font-weight: 600;">Page {{ currentPage }} of {{ totalPages }}</span>
-            <button 
-              type="button" 
-              class="btn-action-pill" 
-              [disabled]="currentPage === totalPages" 
-              (click)="goToPage(currentPage + 1)" 
-              style="padding: 6px 14px; cursor: pointer; opacity: currentPage === totalPages ? 0.5 : 1; background: #101b38; border: 1px solid #1f2f54; color: #f8fafc; border-radius: 6px;">
-              Next ▶
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <app-footer></app-footer>
   </div>
-
 </div>
+
+<app-footer></app-footer>
