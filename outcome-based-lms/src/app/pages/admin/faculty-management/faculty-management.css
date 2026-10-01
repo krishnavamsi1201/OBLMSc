@@ -293,6 +293,19 @@
   outline: none;
 }
 
+.btn-action-pill.copy {
+  background: rgba(56, 189, 248, 0.15);
+  color: #38bdf8;
+  border-color: rgba(56, 189, 248, 0.35);
+}
+
+.btn-action-pill.copy:hover {
+  background: #38bdf8;
+  color: #0a1128;
+  font-weight: 800;
+  transform: translateY(-1px);
+}
+
 .btn-action-pill.edit {
   background: rgba(16, 185, 129, 0.15);
   color: #34d399;

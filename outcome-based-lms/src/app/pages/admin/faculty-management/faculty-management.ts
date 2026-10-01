@@ -13,6 +13,7 @@ interface Faculty {
   id: string;
   name: string;
   email: string;
+  password?: string;
   department: string;
   designation: string;
   courses: string[];
@@ -249,6 +250,7 @@ export class FacultyManagement implements OnInit {
                 id: u.id,
                 name: u.name,
                 email: u.email,
+                password: u.password || 'password',
                 department: dept,
                 designation: u.designation || 'Assistant Professor',
                 courses: courseList
@@ -264,9 +266,23 @@ export class FacultyManagement implements OnInit {
         }
       },
       error: () => {
-        this.facultyList = this.getSafeJson('obslmsFaculty') || [];
+        const local = this.getSafeJson('obslmsFaculty') || [];
+        this.facultyList = local.map((f: any) => ({
+          ...f,
+          password: f.password || 'password'
+        }));
         this.filterFaculty();
       }
+    });
+  }
+
+  copyCredentials(faculty: Faculty): void {
+    const pwd = faculty.password || 'password';
+    const text = `Username/Email: ${faculty.email}\nPassword: ${pwd}`;
+    navigator.clipboard.writeText(text).then(() => {
+      this.toast.success(`Copied login credentials for "${faculty.name}"! 📋`);
+    }).catch(() => {
+      this.toast.info(`Email: ${faculty.email} | Password: ${pwd}`);
     });
   }
 
@@ -329,7 +345,7 @@ export class FacultyManagement implements OnInit {
     this.formData = {
       name: faculty.name,
       email: faculty.email,
-      password: 'password',
+      password: faculty.password || 'password',
       department: faculty.department,
       designation: faculty.designation,
       selectedCourses: faculty.courses ? [...faculty.courses] : []

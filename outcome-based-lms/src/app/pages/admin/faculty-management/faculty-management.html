@@ -144,9 +144,10 @@
               <th>Name</th>
               <th>Department</th>
               <th>Designation</th>
-              <th>Email</th>
+              <th>Email Address</th>
+              <th>Login Password</th>
               <th>Allocated Subjects</th>
-              <th style="width: 240px; text-align: center;">Actions</th>
+              <th style="width: 290px; text-align: center;">Actions</th>
             </tr>
           </thead>
           <tbody>
@@ -155,9 +156,14 @@
               <td class="faculty-name"><strong>{{ faculty.name }}</strong></td>
               <td><span class="badge badge-dept">{{ faculty.department }}</span></td>
               <td>{{ faculty.designation }}</td>
-              <td class="faculty-email">{{ faculty.email }}</td>
+              <td class="faculty-email">
+                <span style="font-family: monospace; color: #38bdf8;">{{ faculty.email }}</span>
+              </td>
+              <td class="faculty-password">
+                <code style="background: #091024; border: 1px solid #1f2f54; padding: 4px 8px; border-radius: 6px; font-weight: 700; color: #a7f3d0; font-family: monospace; font-size: 0.88rem;">{{ faculty.password || 'password' }}</code>
+              </td>
               <td class="courses-cell">
-                <div *ngIf="faculty.courses && faculty.courses.length > 0" style="display: flex; flex-wrap: wrap; gap: 4px; max-width: 280px;">
+                <div *ngIf="faculty.courses && faculty.courses.length > 0" style="display: flex; flex-wrap: wrap; gap: 4px; max-width: 260px;">
                   <span *ngFor="let c of faculty.courses" class="courses-badge">{{ c }}</span>
                 </div>
                 <button *ngIf="!faculty.courses || faculty.courses.length === 0" (click)="openAllotModal(faculty)" class="btn-action-pill edit" style="padding: 2px 8px; font-size: 0.75rem;">
@@ -165,7 +171,10 @@
                 </button>
               </td>
               <td class="actions-cell">
-                <div class="actions-btn-wrap">
+                <div class="actions-btn-wrap" style="display: flex; gap: 6px; flex-wrap: wrap; justify-content: center;">
+                  <button type="button" class="btn-action-pill copy" (click)="copyCredentials(faculty)" title="Copy login credentials to clipboard">
+                    📋 Copy
+                  </button>
                   <button type="button" class="btn-action-pill edit" (click)="openAllotModal(faculty)" title="Allot Subjects to this faculty">
                     📚 Allot
                   </button>
@@ -173,7 +182,7 @@
                     ✎ Edit
                   </button>
                   <button type="button" class="btn-action-pill delete" (click)="deleteFaculty(faculty.id)" title="Delete Faculty">
-                    🗑️ Delete
+                    🗑️
                   </button>
                 </div>
               </td>
