@@ -148,9 +148,9 @@ export interface StudentResult {
                 <p>{{ selectedSemester === 'All Semesters' ? 'Total credits completed across all semesters' : 'Credits earned in ' + selectedSemester }}.</p>
             </div>
             <div class="section-card">
-                <h3>Academic Standing</h3>
-                <strong class="pass-standing">PASS (DISTINCTION)</strong>
-                <p>All enrolled courses cleared successfully.</p>
+                <h3>Semester Grade & Standing</h3>
+                <strong class="pass-standing">{{ getAcademicStandingGrade() }}</strong>
+                <p>Calculated dynamically based on SGPA & Credit Points.</p>
             </div>
         </div>
 
@@ -249,8 +249,8 @@ export interface StudentResult {
                     <strong style="color: #60a5fa;">{{ cumulativeCgpa }} / 10.00</strong>
                 </div>
                 <div class="summary-metric-item">
-                    <span>Semester Standing:</span>
-                    <strong style="color: #4ade80;">PASSED WITH DISTINCTION</strong>
+                    <span>Semester Grade:</span>
+                    <strong style="color: #4ade80;">{{ getAcademicStandingGrade() }}</strong>
                 </div>
             </div>
 
@@ -1076,6 +1076,21 @@ export class Results implements OnInit, OnDestroy {
     const registered = list.reduce((sum, c) => sum + c.credits, 0);
     const earned = list.filter(c => c.status === 'Pass').reduce((sum, c) => sum + c.credits, 0);
     return { registered, earned };
+  }
+
+  getAcademicStandingGrade(): string {
+    const sgpa = this.semesterSgpa;
+    const allPassed = this.displayedCourses.length > 0 && this.displayedCourses.every(c => c.status === 'Pass');
+    if (!allPassed && this.displayedCourses.length > 0) {
+      return 'GRADE F (RE-APPEAR)';
+    }
+    if (sgpa >= 9.0) return 'GRADE O (OUTSTANDING)';
+    if (sgpa >= 8.0) return 'GRADE A+ (EXCELLENT)';
+    if (sgpa >= 7.0) return 'GRADE A (VERY GOOD)';
+    if (sgpa >= 6.0) return 'GRADE B+ (GOOD)';
+    if (sgpa >= 5.5) return 'GRADE B (ABOVE AVERAGE)';
+    if (sgpa >= 5.0) return 'GRADE C (PASS)';
+    return 'GRADE F (FAIL)';
   }
 
   getObeWeights(): { internal: number; external: number } {
