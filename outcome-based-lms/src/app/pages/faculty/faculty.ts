@@ -192,6 +192,73 @@ export class Faculty implements OnInit {
   dossierCOs: CourseCOAttainmentSummary[] = [];
   dossierAssessments: Assessment[] = [];
   dossierStudents: StudentProgress[] = [];
+
+  // ==========================================
+  // MODAL 8: Enrolled Students Roster
+  // ==========================================
+  showEnrolledStudentsModal = false;
+  allEnrolledStudentsRoster: any[] = [];
+  enrolledStudentsSearch = '';
+  enrolledStudentsCourseFilter = '';
+
+  openEnrolledStudentsModal(): void {
+    this.loadEnrolledStudentsRoster();
+    this.showEnrolledStudentsModal = true;
+    this.cdr.detectChanges();
+  }
+
+  closeEnrolledStudentsModal(): void {
+    this.showEnrolledStudentsModal = false;
+  }
+
+  loadEnrolledStudentsRoster(): void {
+    let list: any[] = [];
+    try {
+      const stored = localStorage.getItem('obslmsStudents');
+      if (stored) list = JSON.parse(stored);
+      if (!list.length) {
+        const users = JSON.parse(localStorage.getItem('obslmsUsersDatabase') || '[]');
+        list = users.filter((u: any) => u.role?.toUpperCase() === 'STUDENT');
+      }
+    } catch {}
+
+    this.allEnrolledStudentsRoster = list.map((s: any, idx: number) => {
+      const sDept = s.department || s.dept || 'Computer Science & Engineering';
+      const sSem = s.semester || `Semester ${((idx % 8) + 1)}`;
+      return {
+        id: s.id || s.regNo || `STU${idx + 1}`,
+        regNo: s.regNo || s.id || `CUTM2026CSE${String(idx + 1).padStart(3, '0')}`,
+        name: s.name,
+        email: s.email || `${(s.name || 'student').toLowerCase().replace(/\s+/g, '.')}@centurionuniv.edu.in`,
+        department: sDept,
+        semester: sSem,
+        enrolledCourses: s.enrolledCourses || (this.courses.length > 0 ? this.courses[idx % this.courses.length].name : 'Database Management Systems')
+      };
+    });
+  }
+
+  get filteredEnrolledStudentsRoster(): any[] {
+    let list = this.allEnrolledStudentsRoster;
+    if (this.enrolledStudentsSearch.trim()) {
+      const q = this.enrolledStudentsSearch.toLowerCase().trim();
+      list = list.filter(s => 
+        (s.name && s.name.toLowerCase().includes(q)) ||
+        (s.regNo && s.regNo.toLowerCase().includes(q)) ||
+        (s.id && s.id.toLowerCase().includes(q)) ||
+        (s.department && s.department.toLowerCase().includes(q)) ||
+        (s.email && s.email.toLowerCase().includes(q))
+      );
+    }
+    if (this.enrolledStudentsCourseFilter) {
+      const cf = this.enrolledStudentsCourseFilter.toLowerCase();
+      list = list.filter(s => 
+        (s.enrolledCourses && s.enrolledCourses.toLowerCase().includes(cf)) || 
+        (s.semester && s.semester.toLowerCase() === cf)
+      );
+    }
+    return list;
+  }
+
   private http = inject(HttpClient);
   private syncService = inject(SyncService);
   private toast = inject(ToastService);
