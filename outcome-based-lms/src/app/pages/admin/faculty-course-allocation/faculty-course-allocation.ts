@@ -8,7 +8,7 @@ import { ToastService } from '../../../shared/services/toast.service';
 import { CourseService, AppCourse, DEFAULT_DATABASE_COURSES } from '../../../shared/services/course.service';
 import { HttpClient } from '@angular/common/http';
 
-interface FacultyAllocation {
+export interface FacultyAllocation {
   id: string;
   facultyId: string;
   facultyName: string;
@@ -17,55 +17,86 @@ interface FacultyAllocation {
   subjectId: string;
   subjectName: string;
   semester: string;
+  credits?: number;
+  ltp?: string;
+  contactHours?: number;
 }
 
-interface Faculty {
+export interface Faculty {
   id: string;
   name: string;
   email?: string;
   department?: string;
+  designation?: string;
   courses?: string[];
 }
 
-interface Course {
+export interface Course {
   id: string;
   name: string;
   code: string;
+  icon?: string;
 }
 
-interface Subject {
-  id: string;
-  name: string;
-  code: string;
-  semester?: string;
-}
-
-interface CourseSubject {
+export interface CourseSubject {
   id: string;
   courseId: string;
   courseName: string;
   subjectId: string;
   subjectName: string;
   semester?: string;
+  credits?: number;
+  ltp?: string;
+  contactHours?: number;
+}
+
+export interface FacultyWorkloadGroup {
+  facultyId: string;
+  facultyName: string;
+  department: string;
+  designation: string;
+  email: string;
+  allocations: FacultyAllocation[];
+  totalSubjects: number;
+  totalCredits: number;
+  totalHours: number;
+  semestersCovered: string[];
+}
+
+export interface SemesterMatrixGroup {
+  semester: string;
+  subjects: {
+    code: string;
+    title: string;
+    credits: number;
+    ltp: string;
+    contactHours: number;
+    department: string;
+    facultyName: string;
+    facultyId: string;
+    allocationId?: string;
+  }[];
+  totalCredits: number;
+  totalHours: number;
 }
 
 const DEFAULT_FACULTY_ROSTER: Faculty[] = [
-  { id: 'FAC001', name: 'Dr. Ramesh Babu', department: 'Computer Science & Engineering', courses: ['CS101', 'CS102', 'CS103'] },
-  { id: 'FAC002', name: 'Prof. Sunita Sharma', department: 'Computer Science & Engineering', courses: ['CS102', 'CS202'] },
-  { id: 'FAC003', name: 'Dr. Amit Patel', department: 'Electronics & Communication Engineering', courses: ['CS201', 'CS303', 'EC201'] },
-  { id: 'FAC004', name: 'Dr. Priya Nair', department: 'Information Technology', courses: ['CS301', 'IT201', 'IT301'] },
-  { id: 'FAC005', name: 'Prof. Rajesh Verma', department: 'Computer Science & Engineering', courses: ['CS302', 'CS402'] },
-  { id: 'FAC006', name: 'Dr. Suresh Kumar', department: 'Civil Engineering', courses: ['CE111', 'CE201', 'CE301'] },
-  { id: 'FAC007', name: 'Dr. Ananya Mishra', department: 'Mechanical Engineering', courses: ['ME111', 'ME201', 'ME301'] },
-  { id: 'FAC008', name: 'Prof. Deepa Reddy', department: 'Electronics & Communication Engineering', courses: ['EC111', 'EC201', 'EC301'] },
-  { id: 'FAC009', name: 'Dr. V. C. Reddy', department: 'Information Technology', courses: ['IT111', 'IT201', 'IT401'] },
-  { id: 'FAC010', name: 'Prof. Meenakshi Iyer', department: 'Computer Science & Engineering', courses: ['CS111', 'CS121'] },
-  { id: 'FAC011', name: 'Dr. Alok Nath', department: 'Civil Engineering', courses: ['CE201', 'CE301', 'CE401'] },
-  { id: 'FAC012', name: 'Prof. Snehalata Das', department: 'Electronics & Communication Engineering', courses: ['EC201', 'EC301', 'EC401'] },
-  { id: 'FAC013', name: 'Dr. Manoj Joshi', department: 'Computer Science & Engineering', courses: ['CS101', 'CS201'] },
-  { id: 'FAC014', name: 'Dr. Kavita Menon', department: 'Computer Science & Engineering', courses: ['CS401', 'CS402'] },
-  { id: 'FAC015', name: 'Prof. Arun Roy', department: 'Mechanical Engineering', courses: ['ME201', 'ME301', 'ME401'] },
-  { id: 'FAC-1788427317827-699', name: 'Dr.Prasanth Kumar', department: 'Computer Science & Engineering', courses: ['CS101', 'CS102', 'CS103'] }
+  { id: 'FAC001', name: 'Dr. Ramesh Babu', department: 'Computer Science & Engineering', designation: 'Head of Department (HOD)', courses: ['CS101', 'CS102', 'CS103'] },
+  { id: 'FAC002', name: 'Prof. Sunita Sharma', department: 'Computer Science & Engineering', designation: 'Associate Professor', courses: ['CS102', 'CS202'] },
+  { id: 'FAC003', name: 'Dr. Amit Patel', department: 'Electronics & Communication Engineering', designation: 'Associate Professor', courses: ['CS201', 'CS303', 'EC201'] },
+  { id: 'FAC004', name: 'Dr. Priya Nair', department: 'Information Technology', designation: 'Professor', courses: ['CS301', 'IT201', 'IT301'] },
+  { id: 'FAC005', name: 'Prof. Rajesh Verma', department: 'Computer Science & Engineering', designation: 'Associate Professor', courses: ['CS302', 'CS402'] },
+  { id: 'FAC006', name: 'Dr. Suresh Kumar', department: 'Civil Engineering', designation: 'Head of Department (HOD)', courses: ['CE111', 'CE201', 'CE301'] },
+  { id: 'FAC007', name: 'Dr. Ananya Mishra', department: 'Mechanical Engineering', designation: 'Associate Professor', courses: ['ME111', 'ME201', 'ME301'] },
+  { id: 'FAC008', name: 'Prof. Deepa Reddy', department: 'Electronics & Communication Engineering', designation: 'Associate Professor', courses: ['EC111', 'EC201', 'EC301'] },
+  { id: 'FAC009', name: 'Dr. V. C. Reddy', department: 'Information Technology', designation: 'Head of Department (HOD)', courses: ['IT111', 'IT201', 'IT401'] },
+  { id: 'FAC010', name: 'Prof. Meenakshi Iyer', department: 'Computer Science & Engineering', designation: 'Assistant Professor', courses: ['CS111', 'CS121'] },
+  { id: 'FAC011', name: 'Dr. Alok Nath', department: 'Civil Engineering', designation: 'Associate Professor', courses: ['CE201', 'CE301', 'CE401'] },
+  { id: 'FAC012', name: 'Prof. Snehalata Das', department: 'Electronics & Communication Engineering', designation: 'Assistant Professor', courses: ['EC201', 'EC301', 'EC401'] },
+  { id: 'FAC013', name: 'Dr. Manoj Joshi', department: 'Computer Science & Engineering', designation: 'Associate Professor', courses: ['CS101', 'CS201'] },
+  { id: 'FAC014', name: 'Dr. Kavita Menon', department: 'Computer Science & Engineering', designation: 'Assistant Professor', courses: ['CS401', 'CS402'] },
+  { id: 'FAC015', name: 'Prof. Arun Roy', department: 'Mechanical Engineering', designation: 'Associate Professor', courses: ['ME201', 'ME301', 'ME401'] },
+  { id: 'FAC-1788427317827-699', name: 'Dr. Prasanth Kumar', department: 'Computer Science & Engineering', designation: 'Professor', courses: ['CS101', 'CS102', 'CS103'] }
 ];
 
 @Component({
@@ -81,56 +112,34 @@ export class FacultyCourseAllocation implements OnInit {
   private http = inject(HttpClient);
   private cdr = inject(ChangeDetectorRef);
 
+  // Dual View Mode: 'faculty' = Faculty Workload Deck, 'matrix' = Branch & Semester Matrix
+  currentView: 'faculty' | 'matrix' = 'faculty';
+
+  // Workload Accordion State
+  expandedFacultyIds = new Set<string>();
+
   allocationList: FacultyAllocation[] = [];
   filteredAllocationList: FacultyAllocation[] = [];
   
   facultyList: Faculty[] = [];
   courseList: Course[] = [
-    { id: 'PRG_CSE', name: 'Computer Science & Engineering', code: 'CSE' },
-    { id: 'PRG_IT', name: 'Information Technology', code: 'IT' },
-    { id: 'PRG_ECE', name: 'Electronics & Communication Engineering', code: 'ECE' },
-    { id: 'PRG_ME', name: 'Mechanical Engineering', code: 'ME' },
-    { id: 'PRG_CE', name: 'Civil Engineering', code: 'CE' },
-    { id: 'PRG_EEE', name: 'Electrical & Electronics Engineering', code: 'EEE' }
+    { id: 'PRG_CSE', name: 'Computer Science & Engineering', code: 'CSE', icon: '💻' },
+    { id: 'PRG_IT', name: 'Information Technology', code: 'IT', icon: '🌐' },
+    { id: 'PRG_ECE', name: 'Electronics & Communication Engineering', code: 'ECE', icon: '📡' },
+    { id: 'PRG_ME', name: 'Mechanical Engineering', code: 'ME', icon: '⚙️' },
+    { id: 'PRG_CE', name: 'Civil Engineering', code: 'CE', icon: '🏗️' },
+    { id: 'PRG_EEE', name: 'Electrical & Electronics Engineering', code: 'EEE', icon: '⚡' }
   ];
   courseSubjectList: CourseSubject[] = [];
   allRawCourses: AppCourse[] = [];
   
-  // Filtered subjects based on selected course
+  // Matrix View State
+  selectedMatrixCourseId = 'PRG_CSE';
+  selectedMatrixSemester = '';
+
+  // Filtered subjects based on selected course in modal
   availableSubjects: CourseSubject[] = [];
   
-  // Pagination
-  currentPage = 1;
-  pageSize = 25;
-  pageSizeOptions = [10, 25, 50, 100, 200];
-
-  get totalPages(): number {
-    return Math.ceil(this.filteredAllocationList.length / this.pageSize) || 1;
-  }
-
-  get pagedAllocationList(): FacultyAllocation[] {
-    const start = (this.currentPage - 1) * this.pageSize;
-    return this.filteredAllocationList.slice(start, start + this.pageSize);
-  }
-
-  get startIndex(): number {
-    return this.filteredAllocationList.length === 0 ? 0 : (this.currentPage - 1) * this.pageSize + 1;
-  }
-
-  get endIndex(): number {
-    return Math.min(this.currentPage * this.pageSize, this.filteredAllocationList.length);
-  }
-
-  goToPage(page: number): void {
-    if (page >= 1 && page <= this.totalPages) {
-      this.currentPage = page;
-    }
-  }
-
-  onPageSizeChange(): void {
-    this.currentPage = 1;
-  }
-
   // Form fields
   showForm = false;
   isEditMode = false;
@@ -154,8 +163,241 @@ export class FacultyCourseAllocation implements OnInit {
     'Semester 5', 'Semester 6', 'Semester 7', 'Semester 8'
   ];
 
+  // Computed KPIs
+  get totalActiveFacultyCount(): number {
+    return this.groupedFacultyWorkload.filter(f => f.totalSubjects > 0).length;
+  }
+
+  get totalAllocationsCount(): number {
+    return this.allocationList.length;
+  }
+
+  get averageCreditsPerFaculty(): number {
+    if (this.totalActiveFacultyCount === 0) return 0;
+    const totalCr = this.groupedFacultyWorkload.reduce((acc, f) => acc + f.totalCredits, 0);
+    return Math.round((totalCr / this.totalActiveFacultyCount) * 10) / 10;
+  }
+
+  get unassignedSubjectsCount(): number {
+    const assignedCodes = new Set(this.allocationList.map(a => (a.subjectId || '').toUpperCase().trim()));
+    return this.allRawCourses.filter(c => !assignedCodes.has((c.code || '').toUpperCase().trim())).length;
+  }
+
+  // Grouped Faculty Workload
+  get groupedFacultyWorkload(): FacultyWorkloadGroup[] {
+    const map = new Map<string, FacultyWorkloadGroup>();
+
+    // 1. Initialize all faculty members
+    for (const fac of this.facultyList) {
+      const idKey = (fac.id || fac.name).toUpperCase();
+      map.set(idKey, {
+        facultyId: fac.id,
+        facultyName: fac.name,
+        department: fac.department || 'Computer Science & Engineering',
+        designation: fac.designation || 'Faculty Member',
+        email: fac.email || `${fac.name.toLowerCase().replace(/[^a-z0-9]/g, '.')}@oblms.edu`,
+        allocations: [],
+        totalSubjects: 0,
+        totalCredits: 0,
+        totalHours: 0,
+        semestersCovered: []
+      });
+    }
+
+    // 2. Map all allocations
+    for (const alloc of this.allocationList) {
+      const facKey = (alloc.facultyId || alloc.facultyName).toUpperCase();
+      let group = map.get(facKey);
+      if (!group) {
+        // Try find by name
+        const byName = Array.from(map.values()).find(g => g.facultyName.toLowerCase().trim() === alloc.facultyName.toLowerCase().trim());
+        if (byName) {
+          group = byName;
+        } else {
+          group = {
+            facultyId: alloc.facultyId || `FAC-${Date.now()}`,
+            facultyName: alloc.facultyName,
+            department: alloc.courseName || 'Engineering',
+            designation: 'Faculty Instructor',
+            email: `${alloc.facultyName.toLowerCase().replace(/[^a-z0-9]/g, '.')}@oblms.edu`,
+            allocations: [],
+            totalSubjects: 0,
+            totalCredits: 0,
+            totalHours: 0,
+            semestersCovered: []
+          };
+          map.set(facKey, group);
+        }
+      }
+
+      // Compute credits and hours for this allocation
+      const rawCourse = this.allRawCourses.find(c => 
+        (c.code && c.code.toLowerCase() === alloc.subjectId.toLowerCase()) ||
+        (c.title && c.title.toLowerCase() === alloc.subjectName.toLowerCase())
+      );
+
+      const credits = rawCourse ? (rawCourse.code?.endsWith('L') ? 1.5 : (rawCourse.code?.startsWith('CS49') ? 8 : (rawCourse.code?.startsWith('CS11') ? 3 : 4))) : (alloc.subjectId?.endsWith('L') ? 1.5 : 3);
+      const ltp = rawCourse?.code?.endsWith('L') ? '0-0-3' : (credits === 4 ? '3-1-0' : '3-0-0');
+      const hours = rawCourse?.code?.endsWith('L') ? 3 : (credits === 4 ? 4 : 3);
+
+      const enrichedAlloc: FacultyAllocation = {
+        ...alloc,
+        credits: credits,
+        ltp: ltp,
+        contactHours: hours
+      };
+
+      group.allocations.push(enrichedAlloc);
+      group.totalSubjects += 1;
+      group.totalCredits += credits;
+      group.totalHours += hours;
+
+      const semClean = alloc.semester || 'Semester 1';
+      if (!group.semestersCovered.includes(semClean)) {
+        group.semestersCovered.push(semClean);
+      }
+    }
+
+    // Sort semesters for each group
+    for (const group of map.values()) {
+      group.semestersCovered.sort((a, b) => a.localeCompare(b, undefined, { numeric: true }));
+    }
+
+    return Array.from(map.values()).sort((a, b) => b.totalSubjects - a.totalSubjects);
+  }
+
+  // Filtered Faculty Workload for Search & Department
+  get filteredFacultyWorkload(): FacultyWorkloadGroup[] {
+    const q = this.searchQuery.toLowerCase().trim();
+    const courseF = this.filterCourse;
+    const facF = this.filterFaculty;
+
+    return this.groupedFacultyWorkload.filter(group => {
+      const matchSearch = !q || 
+        group.facultyName.toLowerCase().includes(q) ||
+        group.department.toLowerCase().includes(q) ||
+        group.designation.toLowerCase().includes(q) ||
+        group.allocations.some(a => a.subjectId.toLowerCase().includes(q) || a.subjectName.toLowerCase().includes(q));
+
+      const matchDept = !courseF || group.allocations.some(a => a.courseId === courseF) || group.department.toLowerCase().includes(this.getCourseCode(courseF).toLowerCase());
+      const matchFac = !facF || group.facultyId === facF || group.facultyName === facF;
+
+      return matchSearch && matchDept && matchFac;
+    });
+  }
+
+  // Branch & Semester Matrix Grouping
+  get branchSemesterMatrix(): SemesterMatrixGroup[] {
+    const targetBranch = this.courseList.find(c => c.id === this.selectedMatrixCourseId) || this.courseList[0];
+    const semFilter = this.selectedMatrixSemester;
+    const q = this.searchQuery.toLowerCase().trim();
+
+    const result: SemesterMatrixGroup[] = [];
+
+    for (const sem of this.semesters) {
+      if (semFilter && semFilter !== sem) continue;
+
+      // Find all courses for this branch and semester
+      const matchingRaw = this.allRawCourses.filter(c => {
+        const prog = this.inferProgram(c.code, c.title);
+        const matchBranch = prog.id === targetBranch.id;
+        const matchSem = this.normalizeSemester(c.semester, c.code) === sem;
+        const matchSearch = !q || (c.title && c.title.toLowerCase().includes(q)) || (c.code && c.code.toLowerCase().includes(q));
+        return matchBranch && matchSem && matchSearch;
+      });
+
+      if (matchingRaw.length === 0 && semFilter) continue;
+
+      const subjects = matchingRaw.map(c => {
+        // Find assigned faculty from allocationList or course
+        const alloc = this.allocationList.find(a => 
+          a.subjectId.toUpperCase() === c.code.toUpperCase() &&
+          a.courseId === targetBranch.id
+        ) || this.allocationList.find(a => a.subjectId.toUpperCase() === c.code.toUpperCase());
+
+        const facName = alloc ? alloc.facultyName : (c.faculty && c.faculty !== 'Faculty Board' ? c.faculty : 'Unassigned');
+        const facId = alloc ? alloc.facultyId : '';
+
+        const credits = c.code?.endsWith('L') ? 1.5 : (c.code?.startsWith('CS49') ? 8 : (c.code?.startsWith('CS11') ? 3 : 4));
+        const ltp = c.code?.endsWith('L') ? '0-0-3' : (credits === 4 ? '3-1-0' : '3-0-0');
+        const hours = c.code?.endsWith('L') ? 3 : (credits === 4 ? 4 : 3);
+
+        return {
+          code: c.code,
+          title: c.title,
+          credits: credits,
+          ltp: ltp,
+          contactHours: hours,
+          department: targetBranch.name,
+          facultyName: facName,
+          facultyId: facId,
+          allocationId: alloc?.id
+        };
+      });
+
+      const totalCredits = subjects.reduce((sum, s) => sum + s.credits, 0);
+      const totalHours = subjects.reduce((sum, s) => sum + s.contactHours, 0);
+
+      result.push({
+        semester: sem,
+        subjects: subjects,
+        totalCredits: Math.round(totalCredits * 10) / 10,
+        totalHours: totalHours
+      });
+    }
+
+    return result;
+  }
+
+  get currentMatrixProgram(): Course {
+    return this.courseList.find(c => c.id === this.selectedMatrixCourseId) || this.courseList[0];
+  }
+
   ngOnInit(): void {
     this.loadAllData();
+  }
+
+  // View Switcher
+  switchView(view: 'faculty' | 'matrix'): void {
+    this.currentView = view;
+    this.searchQuery = '';
+    this.filterCourse = '';
+    this.filterFaculty = '';
+  }
+
+  selectMatrixCourse(courseId: string): void {
+    this.selectedMatrixCourseId = courseId;
+  }
+
+  selectMatrixSemester(sem: string): void {
+    this.selectedMatrixSemester = sem;
+  }
+
+  // Accordion Expand / Collapse
+  toggleExpandFaculty(facultyId: string): void {
+    if (this.expandedFacultyIds.has(facultyId)) {
+      this.expandedFacultyIds.delete(facultyId);
+    } else {
+      this.expandedFacultyIds.add(facultyId);
+    }
+  }
+
+  isFacultyExpanded(facultyId: string): boolean {
+    // By default, if fewer than 5 faculty, expand the first 2, or check set
+    return this.expandedFacultyIds.has(facultyId);
+  }
+
+  expandAllFaculty(): void {
+    this.groupedFacultyWorkload.forEach(f => this.expandedFacultyIds.add(f.facultyId));
+  }
+
+  collapseAllFaculty(): void {
+    this.expandedFacultyIds.clear();
+  }
+
+  private getCourseCode(courseId: string): string {
+    const found = this.courseList.find(c => c.id === courseId);
+    return found ? found.code : '';
   }
 
   private inferProgram(code: string, title: string): { id: string; name: string } {
@@ -181,11 +423,9 @@ export class FacultyCourseAllocation implements OnInit {
   }
 
   private loadAllData(): void {
-    // 1. Initialize Courses
     const localCourses = this.courseService.ensureCoursesInitialized();
     this.allRawCourses = (localCourses && localCourses.length > 0) ? localCourses : [...DEFAULT_DATABASE_COURSES];
 
-    // Try fetching from backend courses
     this.http.get<any[]>('http://localhost:8080/api/courses').subscribe({
       next: (data) => {
         if (Array.isArray(data) && data.length > 0) {
@@ -238,6 +478,7 @@ export class FacultyCourseAllocation implements OnInit {
                 name: u.name,
                 email: u.email,
                 department: u.department || 'Computer Science & Engineering',
+                designation: u.designation || 'Associate Professor',
                 courses: courseArr
               };
             });
@@ -282,6 +523,7 @@ export class FacultyCourseAllocation implements OnInit {
             name: u.name,
             email: u.email,
             department: u.department,
+            designation: u.designation || 'Assistant Professor',
             courses: Array.isArray(u.assignedCourses) ? u.assignedCourses : []
           }));
           return;
@@ -318,7 +560,7 @@ export class FacultyCourseAllocation implements OnInit {
     for (const c of this.allRawCourses) {
       if (c.faculty && c.faculty !== 'Faculty Board' && c.faculty.trim() !== '') {
         const prog = this.inferProgram(c.code, c.title);
-        const fac = this.facultyList.find(f => f.name.toLowerCase() === c.faculty.toLowerCase());
+        const fac = this.facultyList.find(f => f.name.toLowerCase().trim() === c.faculty.toLowerCase().trim());
         const facId = fac ? fac.id : 'FAC-' + c.faculty.replace(/\s+/g, '-');
         const key = `${c.faculty.trim().toLowerCase()}__${(c.code || c.title).trim().toLowerCase()}`;
 
@@ -342,12 +584,10 @@ export class FacultyCourseAllocation implements OnInit {
           if (!courseRef) continue;
           const refClean = courseRef.trim().toLowerCase();
           
-          // Purge any MCA references
           if (refClean.includes('mca') || refClean.startsWith('inmca') || refClean.startsWith('rlmca')) {
             continue;
           }
 
-          // Find matching course in catalog
           const matchedCourse = this.allRawCourses.find(c => 
             (c.code && c.code.toLowerCase() === refClean) || 
             (c.title && c.title.toLowerCase() === refClean)
@@ -375,7 +615,7 @@ export class FacultyCourseAllocation implements OnInit {
       }
     }
 
-    // 3. Add any saved in localStorage with strict sanitization
+    // 3. Add any saved in localStorage
     try {
       const storedAllocations = localStorage.getItem('obslmsFacultyAllocations');
       if (storedAllocations) {
@@ -386,7 +626,6 @@ export class FacultyCourseAllocation implements OnInit {
               const subCode = (item.subjectId || '').trim().toUpperCase();
               const subTitle = (item.subjectName || '').trim().toUpperCase();
 
-              // Completely purge MCA allocations
               if (subCode.includes('MCA') || subTitle.includes('MCA') || subCode.startsWith('INMCA') || subCode.startsWith('RLMCA')) {
                 continue;
               }
@@ -417,21 +656,10 @@ export class FacultyCourseAllocation implements OnInit {
       localStorage.setItem('obslmsFacultyAllocations', JSON.stringify(this.allocationList));
     } catch {}
 
-    this.filterAllocations();
-    this.cdr.detectChanges();
-  }
+    // Initially expand first 3 faculty for quick visibility
+    this.groupedFacultyWorkload.slice(0, 3).forEach(f => this.expandedFacultyIds.add(f.facultyId));
 
-  private filterAllocations(): void {
-    this.filteredAllocationList = this.allocationList.filter(a => {
-      const matchSearch = a.facultyName.toLowerCase().includes(this.searchQuery.toLowerCase()) ||
-                         a.courseName.toLowerCase().includes(this.searchQuery.toLowerCase()) ||
-                         a.subjectName.toLowerCase().includes(this.searchQuery.toLowerCase()) ||
-                         a.subjectId.toLowerCase().includes(this.searchQuery.toLowerCase());
-      const matchCourse = this.filterCourse === '' || a.courseId === this.filterCourse;
-      const matchFaculty = this.filterFaculty === '' || a.facultyId === this.filterFaculty || a.facultyName === this.filterFaculty;
-      return matchSearch && matchCourse && matchFaculty;
-    });
-    this.currentPage = 1;
+    this.cdr.detectChanges();
   }
 
   onCourseChange(): void {
@@ -448,13 +676,8 @@ export class FacultyCourseAllocation implements OnInit {
     }
   }
 
-  onSearchChange(): void {
-    this.filterAllocations();
-  }
-
-  onFilterChange(): void {
-    this.filterAllocations();
-  }
+  onSearchChange(): void {}
+  onFilterChange(): void {}
 
   openAddForm(): void {
     this.showForm = true;
@@ -462,6 +685,32 @@ export class FacultyCourseAllocation implements OnInit {
     this.resetForm();
     this.formData.courseId = this.courseList[0].id;
     this.onCourseChange();
+  }
+
+  openAddForFaculty(fac: FacultyWorkloadGroup): void {
+    this.showForm = true;
+    this.isEditMode = false;
+    this.resetForm();
+    this.formData.facultyId = fac.facultyId;
+    
+    // Find department id matching faculty
+    const matchCourse = this.courseList.find(c => fac.department.toLowerCase().includes(c.code.toLowerCase()));
+    if (matchCourse) {
+      this.formData.courseId = matchCourse.id;
+    } else {
+      this.formData.courseId = this.courseList[0].id;
+    }
+    this.onCourseChange();
+  }
+
+  openAssignModalForSubject(subjectCode: string, sem: string, branchId: string): void {
+    this.showForm = true;
+    this.isEditMode = false;
+    this.resetForm();
+    this.formData.courseId = branchId;
+    this.onCourseChange();
+    this.formData.subjectId = subjectCode;
+    this.formData.semester = sem;
   }
 
   openEditForm(allocation: FacultyAllocation): void {
@@ -526,7 +775,7 @@ export class FacultyCourseAllocation implements OnInit {
           semester: this.formData.semester
         };
       }
-      this.toast.success(`Allocation updated for "${faculty.name}"!`);
+      this.toast.success(`Allocation updated for "${faculty.name}"! 🎉`);
     } else {
       const newAlloc: FacultyAllocation = {
         id: 'FAL-' + Date.now() + '-' + Math.floor(Math.random() * 1000),
@@ -542,6 +791,9 @@ export class FacultyCourseAllocation implements OnInit {
       this.toast.success(`Faculty "${faculty.name}" allocated to ${subjectCode}! 🎉`);
     }
 
+    // Auto-expand this faculty's card to show the newly added subject
+    this.expandedFacultyIds.add(faculty.id);
+
     // Update faculty assigned subjects in list & storage
     if (faculty.courses && !faculty.courses.includes(subjectCode)) {
       faculty.courses.push(subjectCode);
@@ -551,8 +803,8 @@ export class FacultyCourseAllocation implements OnInit {
       localStorage.setItem('obslmsFacultyAllocations', JSON.stringify(this.allocationList));
     } catch {}
 
-    this.filterAllocations();
     this.closeForm();
+    this.cdr.detectChanges();
 
     // Background sync to backend
     const payload = {
@@ -569,27 +821,38 @@ export class FacultyCourseAllocation implements OnInit {
 
   deleteAllocation(id: string): void {
     const allocation = this.allocationList.find(a => a.id === id);
+    if (!allocation) return;
+
+    if (!confirm(`Are you sure you want to remove ${allocation.subjectId} (${allocation.subjectName}) from ${allocation.facultyName}?`)) {
+      return;
+    }
+
     this.allocationList = this.allocationList.filter(a => a.id !== id);
     
+    // Also remove from faculty.courses
+    const fac = this.facultyList.find(f => f.id === allocation.facultyId || f.name.toLowerCase() === allocation.facultyName.toLowerCase());
+    if (fac && fac.courses) {
+      fac.courses = fac.courses.filter(c => c.toUpperCase() !== allocation.subjectId.toUpperCase());
+    }
+
     try {
+      localStorage.setItem('obslmsFaculty', JSON.stringify(this.facultyList));
       localStorage.setItem('obslmsFacultyAllocations', JSON.stringify(this.allocationList));
     } catch {}
 
-    this.filterAllocations();
-    this.toast.info(`Allocation ${allocation ? allocation.facultyName + ' - ' + allocation.subjectId : ''} removed.`);
+    this.toast.info(`Subject ${allocation.subjectId} removed from "${allocation.facultyName}".`);
+    this.cdr.detectChanges();
 
-    if (allocation) {
-      const payload = {
-        code: allocation.subjectId,
-        title: allocation.subjectName,
-        faculty: 'Faculty Board',
-        semester: allocation.semester
-      };
-      this.http.post('http://localhost:8080/api/courses', payload).subscribe({
-        next: () => {},
-        error: () => {}
-      });
-    }
+    const payload = {
+      code: allocation.subjectId,
+      title: allocation.subjectName,
+      faculty: 'Faculty Board',
+      semester: allocation.semester
+    };
+    this.http.post('http://localhost:8080/api/courses', payload).subscribe({
+      next: () => {},
+      error: () => {}
+    });
   }
 
   private validateForm(): boolean {

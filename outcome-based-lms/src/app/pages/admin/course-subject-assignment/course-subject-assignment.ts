@@ -55,6 +55,8 @@ export class CourseSubjectAssignment implements OnInit {
     { id: 'PRG_CE', name: 'B.Tech Civil Engineering', code: 'CE', department: 'Civil Engineering', totalCredits: 160, icon: '🏗️' }
   ];
 
+  protected Math = Math;
+
   selectedProgramId: string = 'PRG_CSE';
   selectedSemester: string = ''; // '' for All Semesters
   selectedCategory: string = '';

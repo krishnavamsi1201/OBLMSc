@@ -4,44 +4,436 @@
   <app-sidebar></app-sidebar>
 
   <div class="content">
+    <!-- Header Section -->
     <div class="page-header">
       <div class="header-title">
-        <h1>👨‍🏫 Faculty Course Allocation</h1>
-        <p>Assign faculty to departments, programs, and curriculum subjects</p>
+        <h1>👨‍🏫 Faculty Course Allocation & Workload Deck</h1>
+        <p>Comprehensive faculty instructional matrix, departmental teaching portfolios, and semester-wise course assignment governance.</p>
       </div>
-      <button class="btn btn-primary" (click)="openAddForm()">+ Allocate Faculty</button>
+      <div class="header-actions">
+        <!-- Dual View Mode Switcher -->
+        <div class="view-switcher-bar">
+          <button 
+            type="button" 
+            class="view-pill" 
+            [class.active]="currentView === 'faculty'"
+            (click)="switchView('faculty')"
+          >
+            👨‍🏫 By Faculty Workload Deck
+          </button>
+          <button 
+            type="button" 
+            class="view-pill" 
+            [class.active]="currentView === 'matrix'"
+            (click)="switchView('matrix')"
+          >
+            🏛️ By Branch & Semester Matrix
+          </button>
+        </div>
+
+        <button class="btn btn-primary" (click)="openAddForm()">
+          + Allocate Subject
+        </button>
+      </div>
     </div>
 
-    <!-- Search and Filter Bar -->
-    <div class="toolbar">
-      <div class="search-box">
-        <input 
-          type="text" 
-          placeholder="🔍 Search by faculty, course, or subject..." 
-          [(ngModel)]="searchQuery"
-          (input)="onSearchChange()"
-          class="search-input"
-        />
+    <!-- KPI Metric Summary Grid -->
+    <div class="kpi-grid">
+      <div class="kpi-card">
+        <div class="kpi-icon-wrap" style="background: rgba(56, 189, 248, 0.15); color: #38bdf8;">
+          👨‍🏫
+        </div>
+        <div class="kpi-body">
+          <span class="kpi-label">Active Teaching Faculty</span>
+          <h3 class="kpi-val">{{ totalActiveFacultyCount }} <small style="font-size: 0.85rem; color: #94a3b8;">/ {{ facultyList.length }}</small></h3>
+          <span class="kpi-sub">Across All Academic Units</span>
+        </div>
       </div>
-      <select 
-        [(ngModel)]="filterCourse"
-        (change)="onFilterChange()"
-        class="filter-select"
-      >
-        <option value="">All Departments / Branches</option>
-        <option *ngFor="let course of courseList" [value]="course.id">{{ course.name }} ({{ course.code }})</option>
-      </select>
-      <select 
-        [(ngModel)]="filterFaculty"
-        (change)="onFilterChange()"
-        class="filter-select"
-      >
-        <option value="">All Faculty Members</option>
-        <option *ngFor="let faculty of facultyList" [value]="faculty.id">{{ faculty.name }}</option>
-      </select>
+
+      <div class="kpi-card">
+        <div class="kpi-icon-wrap" style="background: rgba(212, 175, 55, 0.15); color: #fde68a;">
+          📚
+        </div>
+        <div class="kpi-body">
+          <span class="kpi-label">Total Course Portfolios</span>
+          <h3 class="kpi-val">{{ totalAllocationsCount }}</h3>
+          <span class="kpi-sub">Active Subject Assignments</span>
+        </div>
+      </div>
+
+      <div class="kpi-card">
+        <div class="kpi-icon-wrap" style="background: rgba(16, 185, 129, 0.15); color: #34d399;">
+          ⭐
+        </div>
+        <div class="kpi-body">
+          <span class="kpi-label">Average Teaching Load</span>
+          <h3 class="kpi-val">{{ averageCreditsPerFaculty }} <small style="font-size: 0.85rem; color: #94a3b8;">CR / Prof</small></h3>
+          <span class="kpi-sub">Weekly Teaching Commitment</span>
+        </div>
+      </div>
+
+      <div class="kpi-card">
+        <div class="kpi-icon-wrap" style="background: rgba(168, 85, 247, 0.15); color: #c084fc;">
+          🏛️
+        </div>
+        <div class="kpi-body">
+          <span class="kpi-label">Accredited Branches</span>
+          <h3 class="kpi-val">6 Departments</h3>
+          <span class="kpi-sub">CSE, IT, ECE, ME, CE, EEE</span>
+        </div>
+      </div>
     </div>
 
-    <!-- Add/Edit Form Modal -->
+    <!-- ========================================================================= -->
+    <!-- VIEW 1: BY FACULTY WORKLOAD DECK (EXPANDABLE ACCORDION)                   -->
+    <!-- ========================================================================= -->
+    <div *ngIf="currentView === 'faculty'" class="faculty-view-container">
+      
+      <!-- Search and Filter Toolbar -->
+      <div class="toolbar">
+        <div class="search-box">
+          <input 
+            type="text" 
+            placeholder="🔍 Search faculty name, department, or subject code (e.g. CS101)..." 
+            [(ngModel)]="searchQuery"
+            (input)="onSearchChange()"
+            class="search-input"
+          />
+        </div>
+
+        <div class="filter-group">
+          <select 
+            [(ngModel)]="filterCourse"
+            (change)="onFilterChange()"
+            class="filter-select"
+          >
+            <option value="">All Departments / Branches</option>
+            <option *ngFor="let course of courseList" [value]="course.id">{{ course.name }} ({{ course.code }})</option>
+          </select>
+        </div>
+
+        <div class="accordion-global-actions">
+          <button type="button" class="btn-toggle-all" (click)="expandAllFaculty()" title="Expand all faculty cards">
+            ▾ Expand All
+          </button>
+          <button type="button" class="btn-toggle-all" (click)="collapseAllFaculty()" title="Collapse all faculty cards">
+            ▴ Collapse All
+          </button>
+        </div>
+      </div>
+
+      <!-- Empty State -->
+      <div *ngIf="filteredFacultyWorkload.length === 0" class="empty-state">
+        <p>📭 No faculty members found matching your search query.</p>
+        <button class="btn btn-primary" (click)="openAddForm()">+ Allocate Subject</button>
+      </div>
+
+      <!-- Faculty Workload Accordion Deck -->
+      <div class="faculty-deck-list" *ngIf="filteredFacultyWorkload.length > 0">
+        
+        <div 
+          *ngFor="let fac of filteredFacultyWorkload" 
+          class="faculty-accordion-card"
+          [class.expanded]="isFacultyExpanded(fac.facultyId)"
+        >
+          <!-- Faculty Card Header (Click to Expand / Collapse) -->
+          <div class="faculty-card-header" (click)="toggleExpandFaculty(fac.facultyId)">
+            
+            <div class="faculty-main-meta">
+              <div class="faculty-avatar">
+                {{ fac.facultyName ? fac.facultyName.charAt(fac.facultyName.startsWith('Dr.') ? 4 : (fac.facultyName.startsWith('Prof.') ? 6 : 0)).toUpperCase() : 'F' }}
+              </div>
+              
+              <div class="faculty-meta-text">
+                <div class="faculty-title-row">
+                  <h3 class="faculty-heading">{{ fac.facultyName }}</h3>
+                  <span class="badge badge-desig">{{ fac.designation }}</span>
+                </div>
+                <div class="faculty-sub-row">
+                  <span class="badge badge-dept">{{ fac.department }}</span>
+                  <span class="faculty-email-text">{{ fac.email }}</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Workload KPI Pills -->
+            <div class="workload-summary-pills">
+              <div class="wl-pill" title="Total Allocated Subjects">
+                <span class="wl-icon">📚</span>
+                <span class="wl-label">Subjects:</span>
+                <strong class="wl-val">{{ fac.totalSubjects }}</strong>
+              </div>
+
+              <div class="wl-pill gold" title="Total Academic Credits">
+                <span class="wl-icon">⭐</span>
+                <span class="wl-label">Credits:</span>
+                <strong class="wl-val" style="color: #fde68a;">{{ fac.totalCredits }} CR</strong>
+              </div>
+
+              <div class="wl-pill" title="Weekly Contact Teaching Hours">
+                <span class="wl-icon">⏱️</span>
+                <span class="wl-label">Hours:</span>
+                <strong class="wl-val">{{ fac.totalHours }} Hrs/Wk</strong>
+              </div>
+
+              <div class="wl-pill" *ngIf="fac.semestersCovered.length > 0" title="Semesters with active classes">
+                <span class="wl-icon">🗓️</span>
+                <span class="wl-label">Semesters:</span>
+                <strong class="wl-val" style="font-size: 0.78rem;">{{ fac.semestersCovered.join(', ') }}</strong>
+              </div>
+            </div>
+
+            <!-- Header Quick Actions -->
+            <div class="faculty-card-actions" (click)="$event.stopPropagation()">
+              <button 
+                type="button" 
+                class="btn-action-pill add-sub-btn" 
+                (click)="openAddForFaculty(fac)" 
+                title="Assign new subject to this faculty"
+              >
+                + Assign Subject
+              </button>
+
+              <button 
+                type="button" 
+                class="btn-expand-arrow" 
+                (click)="toggleExpandFaculty(fac.facultyId)"
+                [attr.aria-expanded]="isFacultyExpanded(fac.facultyId)"
+                title="Click to view allotted subjects"
+              >
+                {{ isFacultyExpanded(fac.facultyId) ? '▲' : '▼' }}
+              </button>
+            </div>
+          </div>
+
+          <!-- Expanded Subject Portfolio Content -->
+          <div class="faculty-card-body" *ngIf="isFacultyExpanded(fac.facultyId)">
+            
+            <div *ngIf="fac.allocations.length === 0" class="no-subjects-box">
+              <span>⚠️ No subjects currently allocated to this faculty member.</span>
+              <button class="btn-action-pill add-sub-btn" (click)="openAddForFaculty(fac)">+ Allocate Subject Now</button>
+            </div>
+
+            <div *ngIf="fac.allocations.length > 0" class="nested-table-wrap">
+              <table class="nested-subject-table">
+                <thead>
+                  <tr>
+                    <th style="width: 100px;">Code</th>
+                    <th>Subject Title</th>
+                    <th>Department / Branch</th>
+                    <th style="width: 130px; text-align: center;">Semester</th>
+                    <th style="width: 90px; text-align: center;">L-T-P</th>
+                    <th style="width: 100px; text-align: center;">Credits</th>
+                    <th style="width: 110px; text-align: center;">Contact Hrs</th>
+                    <th style="width: 110px; text-align: center;">Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let alloc of fac.allocations">
+                    <td>
+                      <span class="subject-code-pill">{{ alloc.subjectId }}</span>
+                    </td>
+                    <td class="subject-title-cell">
+                      <strong>{{ alloc.subjectName }}</strong>
+                    </td>
+                    <td>
+                      <span class="badge badge-branch">{{ alloc.courseName }}</span>
+                    </td>
+                    <td style="text-align: center;">
+                      <span class="badge badge-sem">{{ alloc.semester }}</span>
+                    </td>
+                    <td style="text-align: center; font-family: monospace; font-weight: 700; color: #cbd5e1;">
+                      {{ alloc.ltp }}
+                    </td>
+                    <td style="text-align: center;">
+                      <span class="nested-credit-badge">{{ alloc.credits }} CR</span>
+                    </td>
+                    <td style="text-align: center; color: #94a3b8; font-size: 0.85rem;">
+                      {{ alloc.contactHours }} hrs/wk
+                    </td>
+                    <td style="text-align: center;">
+                      <div class="nested-actions-wrap">
+                        <button type="button" class="btn-action-pill edit" (click)="openEditForm(alloc)" title="Edit Allocation Details">
+                          ✎
+                        </button>
+                        <button type="button" class="btn-action-pill delete" (click)="deleteAllocation(alloc.id)" title="Remove Subject Allocation">
+                          🗑️
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                </tbody>
+                <tfoot>
+                  <tr class="nested-footer-row">
+                    <td colspan="5" style="text-align: right; font-weight: 700; color: #fde68a;">
+                      Teaching Portfolio Total for {{ fac.facultyName }}:
+                    </td>
+                    <td style="text-align: center;">
+                      <strong style="color: #fde68a; font-family: monospace; font-size: 0.95rem;">{{ fac.totalCredits }} CR</strong>
+                    </td>
+                    <td style="text-align: center;">
+                      <strong style="color: #38bdf8; font-size: 0.9rem;">{{ fac.totalHours }} Hrs/Wk</strong>
+                    </td>
+                    <td></td>
+                  </tr>
+                </tfoot>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ========================================================================= -->
+    <!-- VIEW 2: BY BRANCH & SEMESTER MATRIX                                       -->
+    <!-- ========================================================================= -->
+    <div *ngIf="currentView === 'matrix'" class="matrix-view-container">
+      
+      <!-- 1. Department Branch Selector Bar -->
+      <div class="program-selector-bar">
+        <span class="selector-label">🏛️ Select Department:</span>
+        <div class="program-pills">
+          <button 
+            *ngFor="let prog of courseList" 
+            type="button" 
+            class="program-pill" 
+            [class.active]="selectedMatrixCourseId === prog.id"
+            (click)="selectMatrixCourse(prog.id)"
+          >
+            <span class="prog-icon">{{ prog.icon || '🎓' }}</span>
+            <span class="prog-title">{{ prog.name }}</span>
+            <span class="prog-code-tag">{{ prog.code }}</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- 2. Semester Filter Switcher Bar -->
+      <div class="semester-pills-bar">
+        <button 
+          type="button" 
+          class="sem-pill" 
+          [class.active]="selectedMatrixSemester === ''"
+          (click)="selectMatrixSemester('')"
+        >
+          📚 All 8 Semesters
+        </button>
+        <button 
+          *ngFor="let sem of semesters" 
+          type="button" 
+          class="sem-pill" 
+          [class.active]="selectedMatrixSemester === sem"
+          (click)="selectMatrixSemester(sem)"
+        >
+          {{ sem }}
+        </button>
+      </div>
+
+      <!-- 3. Search Bar for Matrix -->
+      <div class="toolbar" style="margin-bottom: 22px;">
+        <div class="search-box">
+          <input 
+            type="text" 
+            placeholder="🔍 Filter matrix by subject code or title..." 
+            [(ngModel)]="searchQuery"
+            class="search-input"
+          />
+        </div>
+      </div>
+
+      <!-- Matrix Semester Blocks -->
+      <div class="matrix-scheme-container">
+        <div *ngIf="branchSemesterMatrix.length === 0" class="empty-state">
+          <p>📭 No courses found for the selected department and semester.</p>
+        </div>
+
+        <div *ngFor="let group of branchSemesterMatrix" class="matrix-semester-card">
+          <div class="matrix-sem-header">
+            <div class="matrix-sem-title">
+              <span class="sem-icon">🗓️</span>
+              <h3>{{ group.semester }} Instruction Matrix</h3>
+              <span class="badge sem-badge">{{ currentMatrixProgram.code }}</span>
+            </div>
+            <div class="matrix-sem-stats">
+              <span class="matrix-kpi-pill">Subjects: <strong>{{ group.subjects.length }}</strong></span>
+              <span class="matrix-kpi-pill gold">Credits: <strong>{{ group.totalCredits }} CR</strong></span>
+              <span class="matrix-kpi-pill">Hours: <strong>{{ group.totalHours }} Hrs/Wk</strong></span>
+            </div>
+          </div>
+
+          <div class="table-wrapper">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th style="width: 110px;">Subject Code</th>
+                  <th>Curriculum Subject Title</th>
+                  <th style="min-width: 220px;">Assigned Faculty Instructor</th>
+                  <th style="width: 90px; text-align: center;">L-T-P</th>
+                  <th style="width: 100px; text-align: center;">Credits</th>
+                  <th style="width: 110px; text-align: center;">Contact Hrs</th>
+                  <th style="width: 120px; text-align: center;">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let sub of group.subjects">
+                  <td>
+                    <span class="subject-code-pill">{{ sub.code }}</span>
+                  </td>
+                  <td class="subject-title-cell">
+                    <strong>{{ sub.title }}</strong>
+                  </td>
+                  <td>
+                    <div *ngIf="sub.facultyName !== 'Unassigned'" class="faculty-assigned-pill">
+                      <span class="fac-pill-icon">👨‍🏫</span>
+                      <strong class="fac-pill-name">{{ sub.facultyName }}</strong>
+                    </div>
+                    <span *ngIf="sub.facultyName === 'Unassigned'" class="badge badge-unassigned">
+                      ⚠️ Unassigned Faculty
+                    </span>
+                  </td>
+                  <td style="text-align: center; font-family: monospace; font-weight: 700; color: #cbd5e1;">
+                    {{ sub.ltp }}
+                  </td>
+                  <td style="text-align: center;">
+                    <span class="nested-credit-badge">{{ sub.credits }} CR</span>
+                  </td>
+                  <td style="text-align: center; color: #94a3b8;">
+                    {{ sub.contactHours }} hrs/wk
+                  </td>
+                  <td style="text-align: center;">
+                    <button 
+                      type="button" 
+                      class="btn-action-pill edit" 
+                      (click)="openAssignModalForSubject(sub.code, group.semester, selectedMatrixCourseId)"
+                      title="Assign or change faculty instructor"
+                    >
+                      {{ sub.facultyName === 'Unassigned' ? '+ Assign' : '✎ Reassign' }}
+                    </button>
+                  </td>
+                </tr>
+              </tbody>
+              <tfoot>
+                <tr class="semester-footer-row">
+                  <td colspan="4" style="text-align: right; font-weight: 700; color: #fde68a;">
+                    {{ group.semester }} Semester Totals:
+                  </td>
+                  <td style="text-align: center;">
+                    <strong style="color: #fde68a; font-family: monospace; font-size: 0.95rem;">{{ group.totalCredits }} CR</strong>
+                  </td>
+                  <td style="text-align: center;">
+                    <strong style="color: #38bdf8; font-size: 0.9rem;">{{ group.totalHours }} Hrs/Wk</strong>
+                  </td>
+                  <td></td>
+                </tr>
+              </tfoot>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ========================================================================= -->
+    <!-- ADD / EDIT ALLOCATION MODAL                                               -->
+    <!-- ========================================================================= -->
     <div class="modal" *ngIf="showForm">
       <div class="modal-content">
         <div class="modal-header">
@@ -51,7 +443,7 @@
 
         <form (ngSubmit)="saveAllocation()" class="allocation-form">
           <div class="form-group">
-            <label>Select Faculty *</label>
+            <label>Select Faculty Member *</label>
             <select [(ngModel)]="formData.facultyId" name="facultyId" required>
               <option value="">Select Faculty</option>
               <option *ngFor="let faculty of facultyList" [value]="faculty.id">
@@ -76,7 +468,7 @@
           </div>
 
           <div class="form-group">
-            <label>Subject *</label>
+            <label>Curriculum Subject *</label>
             <select [(ngModel)]="formData.subjectId" name="subjectId" required>
               <option value="">Select Subject</option>
               <option *ngFor="let subject of availableSubjects" [value]="subject.subjectId">
@@ -103,98 +495,7 @@
       </div>
     </div>
 
-    <!-- Table Section -->
-    <div class="table-section">
-      <div class="table-header">
-        <h3>Assigned Faculty Allocations ({{ filteredAllocationList.length }})</h3>
-
-        <div class="page-size-selector" *ngIf="filteredAllocationList.length > 0">
-          <label style="font-size: 0.85rem; color: #94a3b8; margin-right: 8px;">Show:</label>
-          <select [(ngModel)]="pageSize" (change)="onPageSizeChange()" style="padding: 4px 10px; background: #0a1128; border: 1px solid #1f2f54; color: #f8fafc; border-radius: 6px; font-size: 0.85rem;">
-            <option *ngFor="let opt of pageSizeOptions" [value]="opt">{{ opt }} per page</option>
-          </select>
-        </div>
-      </div>
-
-      <div *ngIf="filteredAllocationList.length === 0" class="empty-state">
-        <p>📭 No faculty allocations found. Start by allocating faculty to courses and subjects.</p>
-        <button class="btn btn-primary" (click)="openAddForm()">+ Allocate Faculty</button>
-      </div>
-
-      <div *ngIf="filteredAllocationList.length > 0" class="table-wrapper">
-        <table class="data-table">
-          <thead>
-            <tr>
-              <th style="min-width: 220px;">Faculty Member</th>
-              <th style="min-width: 260px;">Department / Branch (Course)</th>
-              <th style="min-width: 240px;">Subject Title</th>
-              <th style="width: 130px;">Subject Code</th>
-              <th style="width: 140px;">Semester</th>
-              <th style="width: 100px; text-align: center;">Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr *ngFor="let allocation of pagedAllocationList">
-              <td class="faculty-name">
-                <strong style="color: #f8fafc; font-size: 0.95rem; display: flex; align-items: center; gap: 6px;">
-                  👨‍🏫 {{ allocation.facultyName }}
-                </strong>
-              </td>
-              <td class="course-name">
-                <span class="badge" style="background: rgba(212, 175, 55, 0.12); color: #fde68a; border: 1px solid rgba(212, 175, 55, 0.3); font-weight: 700; padding: 4px 8px; border-radius: 6px;">
-                  🏛️ {{ allocation.courseName }}
-                </span>
-              </td>
-              <td class="subject-name">
-                <span style="color: #e2e8f0; font-weight: 600;">{{ allocation.subjectName }}</span>
-              </td>
-              <td class="subject-code">
-                <code style="background: #091024; color: #38bdf8; padding: 2px 6px; border-radius: 4px; font-weight: 700; border: 1px solid #1f2f54;">
-                  {{ allocation.subjectId }}
-                </code>
-              </td>
-              <td class="semester">
-                <span class="badge badge-semester" style="background: rgba(56, 189, 248, 0.12); color: #7dd3fc; border: 1px solid rgba(56, 189, 248, 0.3); padding: 4px 8px; border-radius: 6px; font-weight: 600;">
-                  📅 {{ allocation.semester }}
-                </span>
-              </td>
-              <td class="actions-cell" style="text-align: center;">
-                <button class="btn-icon btn-edit" (click)="openEditForm(allocation)" title="Edit">✎</button>
-                <button class="btn-icon btn-delete" (click)="deleteAllocation(allocation.id)" title="Delete">🗑️</button>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-
-        <!-- Pagination Controls -->
-        <div class="pagination-bar" *ngIf="filteredAllocationList.length > pageSize" style="display: flex; justify-content: space-between; align-items: center; padding: 14px 20px; background: #0c1530; border-top: 1px solid #1f2f54; border-radius: 0 0 12px 12px;">
-          <div class="pagination-info" style="font-size: 0.88rem; color: #94a3b8;">
-            Showing <strong style="color: #d4af37;">{{ startIndex }}</strong> - <strong style="color: #d4af37;">{{ endIndex }}</strong> of <strong style="color: #f8fafc;">{{ filteredAllocationList.length }}</strong> allocations
-          </div>
-          <div class="pagination-btns" style="display: flex; gap: 8px; align-items: center;">
-            <button 
-              type="button" 
-              class="btn-action-pill" 
-              [disabled]="currentPage === 1" 
-              (click)="goToPage(currentPage - 1)" 
-              style="padding: 6px 14px; cursor: pointer; opacity: currentPage === 1 ? 0.5 : 1; background: #101b38; border: 1px solid #1f2f54; color: #f8fafc; border-radius: 6px;">
-              ◀ Previous
-            </button>
-            <span style="font-size: 0.88rem; color: #cbd5e1; font-weight: 600;">Page {{ currentPage }} of {{ totalPages }}</span>
-            <button 
-              type="button" 
-              class="btn-action-pill" 
-              [disabled]="currentPage === totalPages" 
-              (click)="goToPage(currentPage + 1)" 
-              style="padding: 6px 14px; cursor: pointer; opacity: currentPage === totalPages ? 0.5 : 1; background: #101b38; border: 1px solid #1f2f54; color: #f8fafc; border-radius: 6px;">
-              Next ▶
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <app-footer></app-footer>
   </div>
-
 </div>
+
+<app-footer></app-footer>
