@@ -429,29 +429,82 @@ export class StudentManagement implements OnInit {
       department: this.formData.department
     };
 
+    const newStudent: Student = {
+      id: studentId,
+      regNo: studentId,
+      name: this.formData.name.trim(),
+      email: this.formData.email.trim(),
+      password: this.formData.password.trim() || 'password',
+      department: this.formData.department,
+      semester: this.formData.semester || 'Semester 1'
+    };
+
+    if (this.isEditMode && this.currentId) {
+      const idx = this.studentList.findIndex(s => s.id === this.currentId);
+      if (idx !== -1) {
+        this.studentList[idx] = newStudent;
+      } else {
+        this.studentList.unshift(newStudent);
+      }
+    } else {
+      this.studentList.unshift(newStudent);
+    }
+
+    try {
+      localStorage.setItem('obslmsStudents', JSON.stringify(this.studentList));
+
+      const storedUsers = localStorage.getItem('obslmsUsersDatabase');
+      const usersList = storedUsers ? JSON.parse(storedUsers) : [];
+      const filteredUsers = usersList.filter((u: any) => u.id !== studentId && u.email !== payload.email);
+      filteredUsers.push(payload);
+      localStorage.setItem('obslmsUsersDatabase', JSON.stringify(filteredUsers));
+    } catch {}
+
+    this.filterUsers();
+    this.closeForm();
+    this.syncService.emit('STUDENTS_CHANGED', payload);
+    this.toast.success(`Student "${this.formData.name}" saved with login credentials! 🎉`);
+    this.cdr.detectChanges();
+
     this.http.post('http://localhost:8080/api/users', payload).subscribe({
       next: () => {
         this.loadUsers();
-        this.closeForm();
-        this.syncService.emit('STUDENTS_CHANGED', payload);
-        this.toast.success(`Student "${this.formData.name}" saved with login credentials! 🎉`);
       },
-      error: () => {
-        this.toast.error('Failed to save student to database.');
-      }
+      error: () => {}
     });
   }
 
   deleteStudent(id: string): void {
+    if (!confirm('Are you sure you want to remove this student profile?')) {
+      return;
+    }
+
+    // 1. Remove from local memory and storage
+    this.studentList = this.studentList.filter(s => s.id !== id && s.regNo !== id);
+    try {
+      localStorage.setItem('obslmsStudents', JSON.stringify(this.studentList));
+
+      const storedUsers = localStorage.getItem('obslmsUsersDatabase');
+      if (storedUsers) {
+        const usersList = JSON.parse(storedUsers);
+        if (Array.isArray(usersList)) {
+          const filtered = usersList.filter((u: any) => u.id !== id && u.regNo !== id);
+          localStorage.setItem('obslmsUsersDatabase', JSON.stringify(filtered));
+        }
+      }
+    } catch {}
+
+    this.filterUsers();
+    this.cdr.detectChanges();
+    this.toast.info('Student removed.');
+    this.syncService.emit('STUDENTS_CHANGED', { id });
+
+    // 2. Persist deletion in Spring Boot Database
     this.http.delete('http://localhost:8080/api/users/' + id).subscribe({
       next: () => {
         this.loadUsers();
-        this.syncService.emit('STUDENTS_CHANGED', { id });
-        this.toast.info('Student removed.');
       },
-      error: () => {
-        this.toast.error('Failed to delete student.');
-      }
+      error: () => {}
     });
   }
 

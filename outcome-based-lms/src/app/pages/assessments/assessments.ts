@@ -562,6 +562,23 @@ export class Assessments implements OnInit, OnDestroy {
     this.onlineExams.unshift({ ...this.newExam });
     this.saveOnlineExams();
 
+    // Persist assessment into Spring Boot Database
+    const assessmentPayload = {
+      id: null,
+      assessmentName: `Online Exam: ${this.newExam.title} (${this.newExam.courseCode})`,
+      assessmentType: 'Quiz',
+      courseId: this.newExam.courseCode,
+      courseName: this.newExam.courseTitle,
+      courseOutcomes: 'CO1',
+      maxMarks: this.newExam.totalMarks
+    };
+    this.http.post('http://localhost:8080/api/obe/assessments', assessmentPayload).subscribe({
+      next: () => {
+        this.loadAssessments();
+      },
+      error: () => {}
+    });
+
     // Broadcast exam notification to enrolled students
     this.broadcastExamAlert(this.newExam);
 
@@ -780,20 +797,35 @@ export class Assessments implements OnInit, OnDestroy {
   }
 
   private recordExamMarkIntoObeSystem(exam: OnlineExam, sub: ExamSubmission): void {
+    const markEntry = {
+      id: null,
+      student: sub.studentName,
+      assessment: `Online Exam - ${exam.title} (${exam.courseCode})`,
+      obtained: sub.scoreObtained,
+      maxMarks: sub.maxMarks
+    };
+
     try {
       const stored = localStorage.getItem('obslmsMarkEntries');
       const marks = stored ? JSON.parse(stored) : [];
-      
       marks.unshift({
         id: Date.now(),
         student: sub.studentName,
-        assessment: `${exam.title} (${exam.courseCode})`,
+        assessment: markEntry.assessment,
         obtained: sub.scoreObtained,
         maxMarks: sub.maxMarks
       });
       localStorage.setItem('obslmsMarkEntries', JSON.stringify(marks));
       this.loadMarks();
     } catch {}
+
+    // Persist to Spring Boot Database
+    this.http.post('http://localhost:8080/api/obe/marks', markEntry).subscribe({
+      next: () => {
+        this.loadMarks();
+      },
+      error: () => {}
+    });
   }
 
   exitExamView(): void {

@@ -32,6 +32,7 @@ export class Login implements OnInit {
   };
 
   ngOnInit(): void {
+    this.loadStats();
     this.syncDatabaseToLocalStorage();
   }
 
@@ -39,23 +40,28 @@ export class Login implements OnInit {
     // 1. Fetch courses
     this.http.get<any[]>('http://localhost:8080/api/courses').subscribe({
       next: (courses) => {
-        const obslmsCourses = courses.map(c => ({
-          id: c.id,
-          code: c.code,
-          title: c.title,
-          faculty: c.faculty || 'Faculty Board',
-          semester: c.semester || 'Semester 1'
-        }));
-        localStorage.setItem('obslmsCourses', JSON.stringify(obslmsCourses));
+        if (Array.isArray(courses) && courses.length > 0) {
+          const obslmsCourses = courses.map(c => ({
+            id: c.id,
+            code: c.code,
+            title: c.title,
+            faculty: c.faculty || 'Faculty Board',
+            semester: c.semester || 'Semester 1'
+          }));
+          localStorage.setItem('obslmsCourses', JSON.stringify(obslmsCourses));
 
-        const obslmsCourseSubjects = courses.map(c => ({
-          id: c.id.toString(),
-          courseId: c.id.toString(),
-          courseName: c.title,
-          subjectId: c.id.toString(),
-          subjectName: c.code
-        }));
-        localStorage.setItem('obslmsCourseSubjects', JSON.stringify(obslmsCourseSubjects));
+          const obslmsCourseSubjects = courses.map(c => ({
+            id: c.id.toString(),
+            courseId: c.id.toString(),
+            courseName: c.title,
+            subjectId: c.id.toString(),
+            subjectName: c.code
+          }));
+          localStorage.setItem('obslmsCourseSubjects', JSON.stringify(obslmsCourseSubjects));
+        }
+        this.loadStats();
+      },
+      error: () => {
         this.loadStats();
       }
     });
@@ -63,54 +69,57 @@ export class Login implements OnInit {
     // 2. Fetch users
     this.http.get<any[]>('http://localhost:8080/api/users').subscribe({
       next: (users) => {
-        let existingFacultyMap = new Map<string, any>();
-        try {
-          const stored = JSON.parse(localStorage.getItem('obslmsFaculty') || '[]');
-          if (Array.isArray(stored)) {
-            stored.forEach((f: any) => {
-              if (f.id) existingFacultyMap.set(f.id.toUpperCase(), f);
-              if (f.name) existingFacultyMap.set(f.name.toLowerCase().trim(), f);
-            });
-          }
-        } catch {}
+        if (Array.isArray(users) && users.length > 0) {
+          localStorage.setItem('obslmsUsersDatabase', JSON.stringify(users));
 
-        const faculty = users.filter(u => u.role?.toUpperCase() === 'FACULTY').map(u => {
-          const existing = existingFacultyMap.get((u.id || '').toUpperCase()) || existingFacultyMap.get((u.name || '').toLowerCase().trim());
-          let courses: string[] = [];
-          if (Array.isArray(u.assignedCourses) && u.assignedCourses.length > 0) {
-            courses = u.assignedCourses;
-          } else if (u.enrolledCourses && typeof u.enrolledCourses === 'string') {
-            courses = u.enrolledCourses.split(',').map((s: string) => s.trim()).filter(Boolean);
-          } else if (existing && Array.isArray(existing.courses) && existing.courses.length > 0) {
-            courses = existing.courses;
-          }
+          let existingFacultyMap = new Map<string, any>();
+          try {
+            const stored = JSON.parse(localStorage.getItem('obslmsFaculty') || '[]');
+            if (Array.isArray(stored)) {
+              stored.forEach((f: any) => {
+                if (f.id) existingFacultyMap.set(f.id.toUpperCase(), f);
+                if (f.name) existingFacultyMap.set(f.name.toLowerCase().trim(), f);
+              });
+            }
+          } catch {}
 
-          return {
+          const faculty = users.filter(u => u.role?.toUpperCase() === 'FACULTY').map(u => {
+            const existing = existingFacultyMap.get((u.id || '').toUpperCase()) || existingFacultyMap.get((u.name || '').toLowerCase().trim());
+            let courses: string[] = [];
+            if (Array.isArray(u.assignedCourses) && u.assignedCourses.length > 0) {
+              courses = u.assignedCourses;
+            } else if (u.enrolledCourses && typeof u.enrolledCourses === 'string') {
+              courses = u.enrolledCourses.split(',').map((s: string) => s.trim()).filter(Boolean);
+            } else if (existing && Array.isArray(existing.courses) && existing.courses.length > 0) {
+              courses = existing.courses;
+            }
+
+            return {
+              id: u.id,
+              name: u.name,
+              email: u.email,
+              department: u.department || existing?.department || 'Computer Science & Engineering',
+              designation: u.designation || existing?.designation || 'Assistant Professor',
+              courses: courses
+            };
+          });
+
+          localStorage.setItem('obslmsFaculty', JSON.stringify(faculty));
+
+          const students = users.filter(u => u.role?.toUpperCase() === 'STUDENT').map(u => ({
             id: u.id,
+            regNo: u.id,
             name: u.name,
             email: u.email,
-            department: u.department || existing?.department || 'Computer Science & Engineering',
-            designation: u.designation || existing?.designation || 'Assistant Professor',
-            courses: courses
-          };
-        });
-
-        if (faculty.length > 0) {
-          localStorage.setItem('obslmsFaculty', JSON.stringify(faculty));
+            department: u.department || 'Computer Science & Engineering',
+            semester: 'Semester 1',
+            enrolledCourses: u.enrolledCourses || ''
+          }));
+          localStorage.setItem('obslmsStudents', JSON.stringify(students));
         }
-
-        const students = users.filter(u => u.role?.toUpperCase() === 'STUDENT').map(u => ({
-          id: u.id,
-          regNo: u.id,
-          name: u.name,
-          email: u.email,
-          department: u.department || 'Computer Science',
-          semester: 'Semester 1',
-          enrolledCourses: u.enrolledCourses || ''
-        }));
-        localStorage.setItem('obslmsStudents', JSON.stringify(students));
-        
-        localStorage.setItem('obslmsUsersDatabase', JSON.stringify(users));
+        this.loadStats();
+      },
+      error: () => {
         this.loadStats();
       }
     });
@@ -118,7 +127,12 @@ export class Login implements OnInit {
     // 3. Fetch Program Outcomes
     this.http.get<any[]>('http://localhost:8080/api/copo/po').subscribe({
       next: (pos) => {
-        localStorage.setItem('obslmsProgramOutcomes', JSON.stringify(pos));
+        if (Array.isArray(pos) && pos.length > 0) {
+          localStorage.setItem('obslmsProgramOutcomes', JSON.stringify(pos));
+        }
+        this.loadStats();
+      },
+      error: () => {
         this.loadStats();
       }
     });
@@ -126,14 +140,19 @@ export class Login implements OnInit {
     // 4. Fetch Course Outcomes
     this.http.get<any[]>('http://localhost:8080/api/copo/co').subscribe({
       next: (cos) => {
-        const formattedCos = cos.map(co => ({
-          id: co.id,
-          code: co.co,
-          co: co.co,
-          course: co.course,
-          description: co.description
-        }));
-        localStorage.setItem('obslmsCourseOutcomes', JSON.stringify(formattedCos));
+        if (Array.isArray(cos) && cos.length > 0) {
+          const formattedCos = cos.map(co => ({
+            id: co.id,
+            code: co.co,
+            co: co.co,
+            course: co.course,
+            description: co.description
+          }));
+          localStorage.setItem('obslmsCourseOutcomes', JSON.stringify(formattedCos));
+        }
+        this.loadStats();
+      },
+      error: () => {
         this.loadStats();
       }
     });
@@ -141,60 +160,86 @@ export class Login implements OnInit {
     // 5. Fetch Mappings
     this.http.get<any[]>('http://localhost:8080/api/copo/mappings').subscribe({
       next: (mappings) => {
-        localStorage.setItem('obslmsCOPOMappings', JSON.stringify(mappings));
+        if (Array.isArray(mappings) && mappings.length > 0) {
+          localStorage.setItem('obslmsCOPOMappings', JSON.stringify(mappings));
+        }
       }
     });
 
     // 6. Fetch Assessments
     this.http.get<any[]>('http://localhost:8080/api/obe/assessments').subscribe({
       next: (assessments) => {
-        const formatted = assessments.map(item => ({
-          id: item.id,
-          course: item.courseName || item.courseId,
-          type: item.type,
-          questions: 5,
-          maxMarks: item.maxMarks || 100,
-          dueDate: '2026-12-01',
-          status: 'Active'
-        }));
-        localStorage.setItem('obslmsAssessments', JSON.stringify(formatted));
+        if (Array.isArray(assessments) && assessments.length > 0) {
+          const formatted = assessments.map(item => ({
+            id: item.id,
+            course: item.courseName || item.courseId,
+            type: item.type,
+            questions: 5,
+            maxMarks: item.maxMarks || 100,
+            dueDate: '2026-12-01',
+            status: 'Active'
+          }));
+          localStorage.setItem('obslmsAssessments', JSON.stringify(formatted));
 
-        const formattedMappings = assessments.map(item => ({
-          id: (item.id || '').toString(),
-          assessmentId: (item.id || '').toString(),
-          assessmentName: item.name || `${item.type} - ${item.courseName}`,
-          assessmentType: item.type,
-          courseId: item.courseId,
-          courseName: item.courseName,
-          courseOutcomes: (item.courseOutcomes || 'CO1').split(','),
-          maxMarks: item.maxMarks || 100
-        }));
-        localStorage.setItem('obslmsAssessmentCOMappings', JSON.stringify(formattedMappings));
+          const formattedMappings = assessments.map(item => ({
+            id: (item.id || '').toString(),
+            assessmentId: (item.id || '').toString(),
+            assessmentName: item.name || `${item.type} - ${item.courseName}`,
+            assessmentType: item.type,
+            courseId: item.courseId,
+            courseName: item.courseName,
+            courseOutcomes: (item.courseOutcomes || 'CO1').split(','),
+            maxMarks: item.maxMarks || 100
+          }));
+          localStorage.setItem('obslmsAssessmentCOMappings', JSON.stringify(formattedMappings));
+        }
       }
     });
 
     // 7. Fetch Marks
     this.http.get<any[]>('http://localhost:8080/api/obe/marks').subscribe({
       next: (marks) => {
-        localStorage.setItem('obslmsMarkEntries', JSON.stringify(marks));
+        if (Array.isArray(marks) && marks.length > 0) {
+          localStorage.setItem('obslmsMarkEntries', JSON.stringify(marks));
+        }
       }
     });
   }
 
   private loadStats(): void {
-    this.stats.courses = this.getStorageCount('obslmsCourses');
-    this.stats.faculty = this.getStorageCount('obslmsFaculty');
-    this.stats.students = this.getStorageCount('obslmsStudents');
-    this.stats.outcomes = this.getStorageCount('obslmsCourseOutcomes');
+    // 1. Courses count
+    const courses = this.getStorageArray('obslmsCourses');
+    const courseSubjects = this.getStorageArray('obslmsCourseSubjects');
+    this.stats.courses = courses.length > 0 ? courses.length : courseSubjects.length;
+
+    // 2. Faculty count
+    const facultyList = this.getStorageArray('obslmsFaculty');
+    const usersList = this.getStorageArray('obslmsUsersDatabase');
+    const facultyFromUsers = usersList.filter((u: any) => u.role?.toUpperCase() === 'FACULTY');
+    this.stats.faculty = Math.max(facultyList.length, facultyFromUsers.length);
+
+    // 3. Students count
+    const studentsList = this.getStorageArray('obslmsStudents');
+    const studentsFromUsers = usersList.filter((u: any) => u.role?.toUpperCase() === 'STUDENT');
+    this.stats.students = Math.max(studentsList.length, studentsFromUsers.length);
+
+    // 4. Outcomes count (COs + POs)
+    const cos = this.getStorageArray('obslmsCourseOutcomes');
+    const pos = this.getStorageArray('obslmsProgramOutcomes');
+    this.stats.outcomes = cos.length + pos.length;
+
+    this.cdr.detectChanges();
   }
 
-  private getStorageCount(key: string): number {
+  private getStorageArray(key: string): any[] {
     try {
       const data = localStorage.getItem(key);
-      return data ? (JSON.parse(data) as any[]).length : 0;
-    } catch {
-      return 0;
-    }
+      if (data) {
+        const parsed = JSON.parse(data);
+        if (Array.isArray(parsed)) return parsed;
+      }
+    } catch {}
+    return [];
   }
 
   selectRole(role: 'admin' | 'faculty' | 'student'): void {
