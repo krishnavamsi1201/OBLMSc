@@ -242,7 +242,8 @@
               </td>
               <td class="courses-cell">
                 <div *ngIf="faculty.courses && faculty.courses.length > 0" class="courses-badges-wrap" (click)="openAllotModal(faculty)" title="Click to edit subject allotment" style="cursor: pointer;">
-                  <span *ngFor="let c of faculty.courses" class="courses-badge">{{ c }}</span>
+                  <span *ngFor="let c of getDisplayCourses(faculty.courses)" class="courses-badge">{{ getCourseBadge(c) }}</span>
+                  <span *ngIf="faculty.courses.length > 3" class="courses-badge-more">+{{ faculty.courses.length - 3 }}</span>
                   <span class="allot-edit-tag" title="Edit Allotment">✏️</span>
                 </div>
                 <button *ngIf="!faculty.courses || faculty.courses.length === 0" (click)="openAllotModal(faculty)" class="btn-action-pill allot-btn" title="Allot Subjects to this faculty">

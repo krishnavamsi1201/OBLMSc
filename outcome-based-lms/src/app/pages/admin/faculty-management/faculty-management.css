@@ -268,7 +268,7 @@
   width: 100%;
   border-collapse: collapse;
   text-align: left;
-  font-size: 0.9rem;
+  font-size: 0.88rem;
 }
 
 .data-table thead {
@@ -276,24 +276,32 @@
 }
 
 .data-table th {
-  padding: 13px 18px;
+  padding: 12px 16px;
   font-weight: 700;
   color: #fde68a;
-  font-size: 0.8rem;
+  font-size: 0.78rem;
   text-transform: uppercase;
   letter-spacing: 0.6px;
   border-bottom: 1px solid #1f2f54;
+  white-space: nowrap;
 }
 
 .data-table td {
-  padding: 13px 18px;
+  padding: 10px 16px;
   border-bottom: 1px solid #132247;
   color: #e2e8f0;
-  font-size: 0.92rem;
-  vertical-align: middle;
+  font-size: 0.88rem;
+  vertical-align: middle !important;
+  white-space: nowrap;
+}
+
+.data-table td.courses-cell {
+  white-space: normal;
+  max-width: 240px;
 }
 
 .data-table tbody tr {
+  height: 52px;
   transition: background-color 0.15s ease;
 }
 
@@ -376,25 +384,37 @@
 }
 
 .courses-cell {
-  max-width: 280px;
+  max-width: 240px;
 }
 
 .courses-badges-wrap {
-  display: flex;
+  display: inline-flex;
   flex-wrap: wrap;
   gap: 4px;
-  max-width: 260px;
   align-items: center;
+  max-width: 230px;
 }
 
 .courses-badge {
   background: #0d1730;
   color: #fde68a;
-  padding: 3px 8px;
-  border-radius: 6px;
-  font-size: 0.78rem;
-  font-weight: 600;
+  padding: 3px 7px;
+  border-radius: 5px;
+  font-size: 0.75rem;
+  font-weight: 700;
   border: 1px solid #1f2f54;
+  display: inline-block;
+  font-family: monospace;
+}
+
+.courses-badge-more {
+  background: rgba(56, 189, 248, 0.18);
+  color: #38bdf8;
+  padding: 2px 6px;
+  border-radius: 5px;
+  font-size: 0.72rem;
+  font-weight: 800;
+  border: 1px solid rgba(56, 189, 248, 0.35);
   display: inline-block;
 }
 

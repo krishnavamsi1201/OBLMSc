@@ -250,7 +250,27 @@ export class FacultyManagement implements OnInit {
   }
 
   get totalAllocatedCoursesCount(): number {
-    return this.facultyList.reduce((acc, f) => acc + (f.courses ? f.courses.length : 0), 0);
+    return this.facultyList.reduce((acc, f) => acc + (f.courses && Array.isArray(f.courses) ? f.courses.length : 0), 0);
+  }
+
+  getDisplayCourses(courses: string[]): string[] {
+    if (!courses || !Array.isArray(courses)) return [];
+    return courses.slice(0, 3);
+  }
+
+  getCourseBadge(c: any): string {
+    if (!c) return '';
+    if (typeof c === 'object') {
+      return c.code || c.title || '';
+    }
+    const str = String(c).trim();
+    if (str.includes(' - ')) {
+      return str.split(' - ')[0].trim();
+    }
+    if (str.length > 12) {
+      return str.substring(0, 10) + '...';
+    }
+    return str;
   }
 
   isCourseInDept(course: any, dept: string): boolean {
