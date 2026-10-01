@@ -867,6 +867,12 @@ export class Assessments implements OnInit, OnDestroy {
     return allEnrolled.filter(s => !attempted.includes(s.name.toLowerCase()));
   }
 
+  getOverallPassRate(): number {
+    if (!this.examSubmissions || this.examSubmissions.length === 0) return 100;
+    const passed = this.examSubmissions.filter(s => s.status === 'Pass').length;
+    return Math.round((passed / this.examSubmissions.length) * 100);
+  }
+
   getExamAverageScore(examId: string): number {
     const subs = this.getAttemptedSubmissions(examId);
     if (!subs.length) return 0;

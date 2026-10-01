@@ -46,7 +46,7 @@
                     <div class="metric-info">
                         <h3>Active Online Exams</h3>
                         <div class="metric-value">{{ filteredOnlineExams.length }}</div>
-                        <p class="metric-desc">Available for enrollment & testing</p>
+                        <p class="metric-desc">Available for enrollment</p>
                     </div>
                 </div>
                 <div class="metric-card">
@@ -54,23 +54,23 @@
                     <div class="metric-info">
                         <h3>Submissions Logged</h3>
                         <div class="metric-value">{{ examSubmissions.length }}</div>
-                        <p class="metric-desc">Auto-graded & recorded in OBE</p>
+                        <p class="metric-desc">Auto-graded in OBE</p>
                     </div>
                 </div>
                 <div class="metric-card">
                     <div class="metric-icon">🎯</div>
                     <div class="metric-info">
-                        <h3>Enrolled Department</h3>
-                        <div class="metric-value small-text">{{ userDept }}</div>
-                        <p class="metric-desc">Targeted curriculum mapping</p>
+                        <h3>Class Pass Rate</h3>
+                        <div class="metric-value gold">{{ getOverallPassRate() }}%</div>
+                        <p class="metric-desc">CO attainment standard</p>
                     </div>
                 </div>
                 <div class="metric-card">
                     <div class="metric-icon">⚡</div>
                     <div class="metric-info">
                         <h3>Evaluation System</h3>
-                        <div class="metric-value small-text gold">Instant Auto-Tally</div>
-                        <p class="metric-desc">Syncs with SGPA & CO attainment</p>
+                        <div class="metric-value green">Instant</div>
+                        <p class="metric-desc">Auto-tally with OBE Sync</p>
                     </div>
                 </div>
             </div>
