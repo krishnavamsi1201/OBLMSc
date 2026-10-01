@@ -6,92 +6,186 @@
   <div class="content">
     <div class="page-header">
       <div class="header-title">
-        <h1>📊 Reports Generator</h1>
-        <p>Generate and export comprehensive OBE reports in CSV and JSON formats</p>
+        <h1>📊 Accreditation & Institutional Reports Generator</h1>
+        <p>Generate, filter, and export comprehensive NBA Criterion 3, NAAC 2.6, and departmental performance registries.</p>
+      </div>
+      <div class="header-actions" *ngIf="selectedReportId">
+        <button class="btn btn-back" (click)="selectedReportId = ''">
+          ← Back to All Reports Catalog
+        </button>
       </div>
     </div>
 
     <!-- Report Selection Grid -->
-    <div *ngIf="!selectedReportId" class="reports-grid">
+    <div *ngIf="!selectedReportId" class="reports-catalog-deck">
       <div *ngFor="let report of reportTypes" 
         class="report-card"
         (click)="selectReport(report.id)">
         <div class="card-header">
           <span class="icon">{{ report.icon }}</span>
-          <h3>{{ report.title }}</h3>
+          <div class="card-header-text">
+            <h3>{{ report.title }}</h3>
+            <span class="badge-filter-count">{{ report.filters.length }} Filters Available</span>
+          </div>
         </div>
         <p class="description">{{ report.description }}</p>
         <div class="card-stats">
           <div class="stat">
             <span class="stat-value">{{ report.recordCount || 0 }}</span>
-            <span class="stat-label">Records</span>
+            <span class="stat-label">Available Records</span>
+          </div>
+          <div class="stat">
+            <span class="stat-value" style="font-size: 0.95rem; color: #4ade80; margin-top: 6px;">Live Grid</span>
+            <span class="stat-label">Data Sync</span>
           </div>
         </div>
-        <button class="btn-select">📋 Select</button>
+        <button class="btn-select">📋 Open Generator & Export</button>
       </div>
     </div>
 
-    <!-- Report Generator -->
-    <div *ngIf="selectedReportId && getCurrentReport()" class="report-generator">
-      <button class="btn-back" (click)="selectedReportId = ''">← Back to Reports</button>
-
-      <div class="generator-card">
-        <h2>{{ getCurrentReport()?.title }}</h2>
-        <p>{{ getCurrentReport()?.description }}</p>
-
-        <!-- Filters -->
-        <div class="filters-section">
-          <h3>Report Filters</h3>
-          <div class="filters-grid">
-            <div *ngFor="let filter of getCurrentReport()?.filters || []" class="filter-group">
-              <label>{{ filter }}</label>
-              <select [(ngModel)]="selectedFilters[filter]" class="filter-input">
-                <option value="">All {{ filter }}</option>
-                <option *ngFor="let opt of getFilterOptions(filter)" [value]="opt">{{ opt }}</option>
-              </select>
+    <!-- Report Generator View -->
+    <div *ngIf="selectedReportId && getCurrentReport()" class="report-generator-view">
+      
+      <!-- Generator Config Card -->
+      <div class="generator-config-card">
+        <div class="config-header">
+          <div class="config-title-wrap">
+            <span class="report-lead-icon">{{ getCurrentReport()?.icon }}</span>
+            <div>
+              <h2>{{ getCurrentReport()?.title }}</h2>
+              <p>{{ getCurrentReport()?.description }}</p>
             </div>
           </div>
         </div>
 
-        <!-- Generate Button -->
-        <div class="actions">
-          <button class="btn btn-primary" (click)="generateReport()">🔄 Generate Report</button>
+        <!-- Filters Section -->
+        <div class="filters-section">
+          <div class="filters-bar-header">
+            <h3>⚙️ Report Query Filters</h3>
+            <span class="filters-tip">Select parameters below to filter data before generating</span>
+          </div>
+
+          <div class="filters-grid">
+            <div *ngFor="let filter of getCurrentReport()?.filters || []" class="filter-group">
+              <label>{{ filter }}</label>
+              <select [(ngModel)]="selectedFilters[filter]" class="filter-input" (change)="onFilterChanged()">
+                <option value="">All {{ filter }}s (Entire Institution)</option>
+                <option *ngFor="let opt of getFilterOptions(filter)" [value]="opt">{{ opt }}</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Generate Action Button -->
+          <div class="filters-actions">
+            <button class="btn btn-primary btn-generate" (click)="generateReport()">
+              🔄 Generate & Refresh Report
+            </button>
+            <button class="btn btn-reset" (click)="resetFilters()">
+              ✕ Clear Filters
+            </button>
+          </div>
         </div>
       </div>
 
-      <!-- Report Results -->
-      <div *ngIf="reportGenerated" class="report-results">
-        <div class="results-header">
-          <h3>Report Results ({{ reportData.length }} records)</h3>
-          <div class="export-buttons">
-            <button class="btn btn-secondary" (click)="exportToCSV()" title="Download as CSV file">📥 CSV</button>
-            <button class="btn btn-secondary" (click)="exportToJSON()" title="Download as JSON file">📥 JSON</button>
-            <button class="btn btn-secondary" (click)="exportToPDF()" title="Download as HTML/PDF printable">📄 PDF</button>
+      <!-- Report Results Table Section -->
+      <div *ngIf="reportGenerated" class="report-results-card">
+        <div class="results-header-bar">
+          <div class="results-meta-left">
+            <h3>Report Results</h3>
+            <span class="records-pill">{{ filteredReportData.length }} Total Records</span>
+            <span class="showing-pill" *ngIf="filteredReportData.length > 0">
+              Showing {{ startIndex }} - {{ endIndex }} of {{ filteredReportData.length }}
+            </span>
+          </div>
+
+          <div class="results-actions-right">
+            <!-- Search Inside Results -->
+            <div class="table-search-box">
+              <span class="search-ico">🔍</span>
+              <input 
+                type="text" 
+                [(ngModel)]="tableSearchQuery" 
+                (input)="currentPage = 1"
+                placeholder="Search within results..." 
+                class="table-search-input"
+              />
+              <button class="btn-clear-txt" *ngIf="tableSearchQuery" (click)="tableSearchQuery = ''; currentPage = 1">✕</button>
+            </div>
+
+            <div class="export-buttons-group">
+              <button class="btn btn-export csv" (click)="exportToCSV()" title="Download as CSV file">
+                📥 CSV
+              </button>
+              <button class="btn btn-export json" (click)="exportToJSON()" title="Download as JSON file">
+                📥 JSON
+              </button>
+              <button class="btn btn-export pdf" (click)="exportToPDF()" title="Print or Save official PDF dossier">
+                📄 Print / PDF
+              </button>
+            </div>
           </div>
         </div>
 
-        <div *ngIf="reportData.length === 0" class="empty-results">
-          <p>📭 No data found for the selected filters</p>
+        <div *ngIf="filteredReportData.length === 0" class="empty-results-state">
+          <span style="font-size: 36px;">📭</span>
+          <h4>No Records Matched</h4>
+          <p>Try modifying your report filters or clearing the search query.</p>
         </div>
 
-        <div *ngIf="reportData.length > 0" class="table-wrapper">
-          <table class="results-table">
+        <!-- Fully Responsive Scrollable Data Table Container -->
+        <div *ngIf="filteredReportData.length > 0" class="table-wrapper-responsive">
+          <table class="results-data-table">
             <thead>
               <tr>
-                <th *ngFor="let key of getTableHeaders()">{{ formatHeader(key) }}</th>
+                <th *ngFor="let key of getTableHeaders()" [class.center-header]="isNumericHeader(key)">
+                  {{ formatHeader(key) }}
+                </th>
               </tr>
             </thead>
             <tbody>
-              <tr *ngFor="let row of reportData" [class.status-pass]="row.status === 'Pass'" [class.status-fail]="row.status === 'Fail'">
-                <td *ngFor="let key of getTableHeaders()" [class.numeric]="isNumeric(row[key])">
-                  {{ row[key] }}
+              <tr *ngFor="let row of pagedReportData">
+                <td *ngFor="let key of getTableHeaders()" [class.center-cell]="isNumericHeader(key)">
+                  <!-- Special Formats -->
+                  <ng-container [ngSwitch]="key">
+                    <span *ngSwitchCase="'regNo'" class="id-tag-badge">{{ row[key] }}</span>
+                    <span *ngSwitchCase="'status'" class="status-pill" [class.pass]="row[key] === 'Pass' || row[key] === 'Met' || row[key] === 'Compliant' || row[key] === 'Achieved'" [class.fail]="row[key] === 'Fail' || row[key] === 'Not Met'">
+                      {{ row[key] }}
+                    </span>
+                    <span *ngSwitchCase="'avgPerformance'" class="perf-metric-badge">{{ row[key] }}</span>
+                    <strong *ngSwitchCase="'name'" style="color: #ffffff;">{{ row[key] }}</strong>
+                    <span *ngSwitchDefault>{{ row[key] }}</span>
+                  </ng-container>
                 </td>
               </tr>
             </tbody>
           </table>
         </div>
+
+        <!-- Pagination Controls -->
+        <div *ngIf="filteredReportData.length > pageSize" class="pagination-bar">
+          <div class="page-size-selector">
+            <span>Show</span>
+            <select [(ngModel)]="pageSize" (change)="currentPage = 1" class="page-select">
+              <option [value]="10">10</option>
+              <option [value]="20">20</option>
+              <option [value]="50">50</option>
+              <option [value]="100">100</option>
+            </select>
+            <span>records per page</span>
+          </div>
+
+          <div class="pagination-nav-group">
+            <button class="page-btn" [disabled]="currentPage === 1" (click)="goToPage(1)">«</button>
+            <button class="page-btn" [disabled]="currentPage === 1" (click)="goToPage(currentPage - 1)">‹ Prev</button>
+            <span class="page-current-pill">Page <strong>{{ currentPage }}</strong> of {{ totalPages }}</span>
+            <button class="page-btn" [disabled]="currentPage === totalPages" (click)="goToPage(currentPage + 1)">Next ›</button>
+            <button class="page-btn" [disabled]="currentPage === totalPages" (click)="goToPage(totalPages)">»</button>
+          </div>
+        </div>
+
       </div>
     </div>
+
     <app-footer></app-footer>
   </div>
 </div>

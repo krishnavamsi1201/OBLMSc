@@ -87,7 +87,19 @@ export class Reports implements OnInit {
   reportData: any[] = [];
   reportGenerated: boolean = false;
 
-  departments = ['Computer Science & Engineering', 'Information Technology', 'Electronics & Communication', 'Mechanical Engineering', 'Civil Engineering'];
+  // Search & Pagination
+  tableSearchQuery: string = '';
+  currentPage: number = 1;
+  pageSize: number = 20;
+
+  departments = [
+    'Computer Science & Engineering', 
+    'Information Technology', 
+    'Electronics & Communication Engineering', 
+    'Mechanical Engineering', 
+    'Civil Engineering',
+    'Electrical & Electronics Engineering'
+  ];
   semesters = Array.from({ length: 8 }, (_, i) => `Semester ${i + 1}`);
   courses: any[] = [];
   assessmentTypes = ['Assignment', 'Quiz', 'Midterm 1', 'Midterm 2', 'Practical Lab', 'Semester Final Exam'];
@@ -120,7 +132,7 @@ export class Reports implements OnInit {
             count = 5; // Criterion metrics
             break;
           case 'student-report':
-            count = JSON.parse(localStorage.getItem('obslmsStudents') || '[]').length || 10;
+            count = JSON.parse(localStorage.getItem('obslmsStudents') || '[]').length || 240;
             break;
           case 'course-report':
             count = JSON.parse(localStorage.getItem('obslmsCourses') || '[]').length || 10;
@@ -151,6 +163,8 @@ export class Reports implements OnInit {
     this.selectedFilters = {};
     this.reportData = [];
     this.reportGenerated = false;
+    this.tableSearchQuery = '';
+    this.currentPage = 1;
 
     const report = this.reportTypes.find(r => r.id === reportId);
     if (report) {
@@ -158,6 +172,25 @@ export class Reports implements OnInit {
         this.selectedFilters[filter] = '';
       });
     }
+
+    // Auto generate initial full dataset
+    this.generateReport();
+  }
+
+  onFilterChanged(): void {
+    this.generateReport();
+  }
+
+  resetFilters(): void {
+    const report = this.reportTypes.find(r => r.id === this.selectedReportId);
+    if (report) {
+      report.filters.forEach(filter => {
+        this.selectedFilters[filter] = '';
+      });
+    }
+    this.tableSearchQuery = '';
+    this.currentPage = 1;
+    this.generateReport();
   }
 
   generateReport(): void {
@@ -190,7 +223,42 @@ export class Reports implements OnInit {
         break;
     }
 
+    this.currentPage = 1;
     this.reportGenerated = true;
+  }
+
+  // Filtered & Paged Data Getters
+  get filteredReportData(): any[] {
+    if (!this.tableSearchQuery) return this.reportData;
+    const q = this.tableSearchQuery.toLowerCase().trim();
+    return this.reportData.filter(row => {
+      return Object.values(row).some(v => String(v).toLowerCase().includes(q));
+    });
+  }
+
+  get pagedReportData(): any[] {
+    const data = this.filteredReportData;
+    const start = (this.currentPage - 1) * this.pageSize;
+    return data.slice(start, start + this.pageSize);
+  }
+
+  get totalPages(): number {
+    return Math.ceil(this.filteredReportData.length / this.pageSize) || 1;
+  }
+
+  get startIndex(): number {
+    if (this.filteredReportData.length === 0) return 0;
+    return (this.currentPage - 1) * this.pageSize + 1;
+  }
+
+  get endIndex(): number {
+    return Math.min(this.currentPage * this.pageSize, this.filteredReportData.length);
+  }
+
+  goToPage(p: number): void {
+    if (p >= 1 && p <= this.totalPages) {
+      this.currentPage = p;
+    }
   }
 
   private generateNbaReport(): any[] {
@@ -222,29 +290,41 @@ export class Reports implements OnInit {
 
   private generateStudentReport(): any[] {
     try {
-      const students = JSON.parse(localStorage.getItem('obslmsStudents') || '[]');
+      let students = JSON.parse(localStorage.getItem('obslmsStudents') || '[]');
       const marks = JSON.parse(localStorage.getItem('obslmsMarkEntries') || '[]');
 
-      if (students.length === 0) {
-        return [
-          { regNo: 'STU001', name: 'Raj Kumar', department: 'Computer Science', semester: 'Semester 1', email: 'raj.kumar@oblms.edu', avgPerformance: 82, assessmentCount: 4, status: 'Pass' },
-          { regNo: 'STU004', name: 'Krishnavamsi', department: 'Computer Science', semester: 'Semester 1', email: 'krishnavamsi1201@gmail.com', avgPerformance: 91, assessmentCount: 5, status: 'Pass' }
+      if (!Array.isArray(students) || students.length === 0) {
+        students = [
+          { regNo: 'STU001', name: 'Raj Kumar', department: 'Computer Science & Engineering', semester: 'Semester 1', email: 'raj.kumar@oblms.edu' },
+          { regNo: 'STU004', name: 'Krishna Vamsi', department: 'Computer Science & Engineering', semester: 'Semester 3', email: 'krishnavamsi1201@gmail.com' },
+          { regNo: 'STU002', name: 'Priya Sharma', department: 'Computer Science & Engineering', semester: 'Semester 1', email: 'priya.sharma.cse@oblms.edu' }
         ];
       }
 
+      // Apply selected filters
+      const deptFilter = this.selectedFilters['Department'];
+      const semFilter = this.selectedFilters['Semester'];
+
+      if (deptFilter) {
+        students = students.filter((s: any) => (s.department || '').toLowerCase().includes(deptFilter.toLowerCase()));
+      }
+      if (semFilter) {
+        students = students.filter((s: any) => (s.semester || '').toLowerCase() === semFilter.toLowerCase());
+      }
+
       return students.map((student: any) => {
-        const studentMarks = marks.filter((m: any) => m.student === student.name);
+        const studentMarks = marks.filter((m: any) => m.student && m.student.toLowerCase() === student.name.toLowerCase());
         const avgMarks = studentMarks.length > 0
-          ? studentMarks.reduce((sum: number, m: any) => sum + (m.obtained / m.maxMarks * 100), 0) / studentMarks.length
-          : 78;
+          ? studentMarks.reduce((sum: number, m: any) => sum + ((Number(m.obtained) || 0) / (Number(m.maxMarks) || 40) * 100), 0) / studentMarks.length
+          : (75 + (Math.abs((student.name || 'S').charCodeAt(0)) % 20));
 
         return {
-          regNo: student.regNo || student.id,
+          regNo: student.regNo || student.id || 'STU001',
           name: student.name,
-          department: student.department || 'Computer Science',
+          department: student.department || 'Computer Science & Engineering',
           semester: student.semester || 'Semester 1',
-          email: student.email,
-          avgPerformance: Math.round(avgMarks),
+          email: student.email || `${(student.name || 'student').toLowerCase().replace(/\s+/g, '.')}@oblms.edu`,
+          avgPerformance: `${Math.round(avgMarks)}%`,
           assessmentCount: studentMarks.length || 4,
           status: avgMarks >= 40 ? 'Pass' : 'Fail'
         };
@@ -258,7 +338,7 @@ export class Reports implements OnInit {
     try {
       const courses = JSON.parse(localStorage.getItem('obslmsCourses') || '[]');
 
-      return courses.slice(0, 10).map((course: any) => ({
+      return courses.slice(0, 15).map((course: any) => ({
         courseCode: course.code,
         courseTitle: course.title || course.name,
         faculty: course.faculty || 'Faculty In-Charge',
@@ -305,12 +385,12 @@ export class Reports implements OnInit {
   }
 
   exportToCSV(): void {
-    if (this.reportData.length === 0) return;
+    if (this.filteredReportData.length === 0) return;
 
     const headers = this.getTableHeaders();
     const csvContent = [
       headers.map(h => `"${this.formatHeader(h)}"`).join(','),
-      ...this.reportData.map(row =>
+      ...this.filteredReportData.map(row =>
         headers.map(h => `"${(row[h] || '').toString().replace(/"/g, '""')}"`).join(',')
       )
     ].join('\n');
@@ -324,9 +404,9 @@ export class Reports implements OnInit {
   }
 
   exportToJSON(): void {
-    if (this.reportData.length === 0) return;
+    if (this.filteredReportData.length === 0) return;
 
-    const jsonContent = JSON.stringify(this.reportData, null, 2);
+    const jsonContent = JSON.stringify(this.filteredReportData, null, 2);
     const blob = new Blob([jsonContent], { type: 'application/json' });
     const url = window.URL.createObjectURL(blob);
     const link = document.createElement('a');
@@ -336,7 +416,7 @@ export class Reports implements OnInit {
   }
 
   exportToPDF(): void {
-    if (this.reportData.length === 0) return;
+    if (this.filteredReportData.length === 0) return;
 
     const report = this.getCurrentReport();
     const headers = this.getTableHeaders();
@@ -376,7 +456,7 @@ export class Reports implements OnInit {
 
           <div class="header-banner">
             <div>
-              <div class="inst-name">OUTCOME-BASED LEARNING MANAGEMENT SYSTEM</div>
+              <div class="inst-name">CENTURION UNIVERSITY OF TECHNOLOGY & MANAGEMENT</div>
               <div class="inst-sub">Internal Quality Assurance Cell (IQAC) & NBA Accreditation Board</div>
             </div>
             <div class="badge-cell">
@@ -387,11 +467,11 @@ export class Reports implements OnInit {
           <div class="report-title">${report?.title}</div>
 
           <div class="meta-grid">
-            <div><strong>Department:</strong> Computer Science & Engineering</div>
+            <div><strong>Department:</strong> ${this.selectedFilters['Department'] || 'Institutional Registry'}</div>
             <div><strong>Academic Year:</strong> 2025 - 2026</div>
             <div><strong>Evaluation Level:</strong> Tier-1 Outcome Based</div>
             <div><strong>Generated Date:</strong> ${new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</div>
-            <div><strong>Total Assessed Elements:</strong> ${this.reportData.length}</div>
+            <div><strong>Total Assessed Records:</strong> ${this.filteredReportData.length}</div>
             <div><strong>Compliance Standing:</strong> High (NAAC/NBA Standards)</div>
           </div>
 
@@ -402,7 +482,7 @@ export class Reports implements OnInit {
               </tr>
             </thead>
             <tbody>
-              ${this.reportData.map(row => `
+              ${this.filteredReportData.map(row => `
                 <tr>
                   ${headers.map(h => `<td>${row[h]}</td>`).join('')}
                 </tr>
@@ -418,7 +498,7 @@ export class Reports implements OnInit {
           </div>
 
           <div class="footer">
-            <p>Confidential & Proprietary • Outcome-Based Education Management System (OBLMS) • Academic Year 2025-26</p>
+            <p>Confidential & Proprietary • Outcome-Based Education Management System (OBLMS) • Academic Session 2025-26</p>
           </div>
         </body>
       </html>
@@ -441,7 +521,14 @@ export class Reports implements OnInit {
       case 'Semester': return this.semesters;
       case 'Course': return this.courses.map(c => c.title || c.name);
       case 'Assessment Type': return this.assessmentTypes;
-      case 'Program': return ['B.Tech Computer Science & Engineering', 'B.Tech Information Technology', 'B.Tech Electronics & Communication'];
+      case 'Program': return [
+        'B.Tech Computer Science & Engineering', 
+        'B.Tech Information Technology', 
+        'B.Tech Electronics & Communication Engineering',
+        'B.Tech Mechanical Engineering',
+        'B.Tech Civil Engineering',
+        'B.Tech Electrical & Electronics Engineering'
+      ];
       case 'Academic Year': return ['2025 - 2026', '2024 - 2025', '2023 - 2024'];
       case 'Faculty': return ['Dr. Ramesh Babu', 'Prof. Sunita Sharma', 'Dr. Amit Patel', 'Dr. Priya Nair'];
       default: return [];
@@ -449,8 +536,8 @@ export class Reports implements OnInit {
   }
 
   getTableHeaders(): string[] {
-    if (this.reportData.length === 0) return [];
-    return Object.keys(this.reportData[0]);
+    if (this.filteredReportData.length === 0) return [];
+    return Object.keys(this.filteredReportData[0]);
   }
 
   formatHeader(header: string): string {
@@ -460,7 +547,8 @@ export class Reports implements OnInit {
       .trim();
   }
 
-  isNumeric(value: any): boolean {
-    return typeof value === 'number';
+  isNumericHeader(header: string): boolean {
+    const h = header.toLowerCase();
+    return h.includes('count') || h.includes('performance') || h.includes('credits') || h.includes('marks') || h.includes('points') || h.includes('score');
   }
 }
