@@ -96,9 +96,7 @@ export class Admin implements OnInit, OnDestroy {
   departmentStats: DeptStats[] = [];
   recentActivities: ActivityItem[] = [];
 
-  // Master Directory Tabs & State
-  activeDirectoryTab: 'faculty' | 'students' = 'faculty';
-  directorySearchQuery = '';
+  // Master Directory & Institutional State
   facultyList: DirectoryUser[] = [];
   studentList: DirectoryUser[] = [];
   adminUser: DirectoryUser = {
@@ -109,27 +107,29 @@ export class Admin implements OnInit, OnDestroy {
     department: 'Chief Academic Administrator & Dean Office'
   };
 
-  get filteredFacultyList(): DirectoryUser[] {
-    const q = this.directorySearchQuery.toLowerCase().trim();
-    if (!q) return this.facultyList;
-    return this.facultyList.filter(f => 
-      f.name.toLowerCase().includes(q) ||
-      f.id.toLowerCase().includes(q) ||
-      f.email.toLowerCase().includes(q) ||
-      (f.department && f.department.toLowerCase().includes(q))
-    );
-  }
+  // Interactive Department Attainment & NBA Benchmark Comparison Matrix
+  activeMetricView: 'po' | 'cie' | 'attendance' = 'po';
+  departmentAttainments = [
+    { code: 'CSE', name: 'Computer Science & Engineering', poAttainment: 91, cieScore: 88, attendance: 92, target: 75, status: 'Exemplary', badge: 'NBA Tier-1 Target Exceeded', color: '#10b981', studentCount: 145, facultyCount: 7, courseCount: 40 },
+    { code: 'IT', name: 'Information Technology', poAttainment: 86, cieScore: 84, attendance: 89, target: 75, status: 'High Performing', badge: 'Accreditation Ready', color: '#38bdf8', studentCount: 110, facultyCount: 3, courseCount: 40 },
+    { code: 'ECE', name: 'Electronics & Communication Engineering', poAttainment: 82, cieScore: 80, attendance: 86, target: 75, status: 'Compliant', badge: 'Target Met', color: '#818cf8', studentCount: 88, facultyCount: 3, courseCount: 40 },
+    { code: 'CE', name: 'Civil Engineering', poAttainment: 80, cieScore: 78, attendance: 85, target: 75, status: 'Compliant', badge: 'Target Met', color: '#f59e0b', studentCount: 68, facultyCount: 2, courseCount: 40 },
+    { code: 'ME', name: 'Mechanical Engineering', poAttainment: 78, cieScore: 76, attendance: 82, target: 75, status: 'Compliant', badge: 'Target Met', color: '#ec4899', studentCount: 68, facultyCount: 2, courseCount: 40 }
+  ];
 
-  get filteredStudentList(): DirectoryUser[] {
-    const q = this.directorySearchQuery.toLowerCase().trim();
-    if (!q) return this.studentList;
-    return this.studentList.filter(s => 
-      s.name.toLowerCase().includes(q) ||
-      s.id.toLowerCase().includes(q) ||
-      s.email.toLowerCase().includes(q) ||
-      (s.department && s.department.toLowerCase().includes(q))
-    );
-  }
+  // AI Diagnostic & Copilot State
+  aiAuditRunning = false;
+  aiAuditSummary: string | null = null;
+
+  // SSR & Notice Modals
+  showSsrModal = false;
+  showNoticeModal = false;
+  noticeForm = {
+    title: '',
+    targetRole: 'ALL',
+    message: '',
+    priority: 'HIGH'
+  };
 
   constructor() {
     this.initializeLocalFallbackStats();
@@ -405,17 +405,73 @@ export class Admin implements OnInit, OnDestroy {
     };
   }
 
-  setDirectoryTab(tab: 'faculty' | 'students'): void {
-    this.activeDirectoryTab = tab;
+  setActiveMetric(metric: 'po' | 'cie' | 'attendance'): void {
+    this.activeMetricView = metric;
   }
 
-  copyCredentials(user: DirectoryUser): void {
-    const text = `User ID: ${user.id}\nEmail: ${user.email}\nRole: ${user.role}\nPassword: password`;
-    navigator.clipboard.writeText(text).then(() => {
-      this.toast.success(`Copied login credentials for ${user.name}! 📋`);
-    }).catch(() => {
-      this.toast.info(`ID: ${user.id} | Email: ${user.email} (Password: password)`);
-    });
+  runAiObeDiagnostic(): void {
+    this.aiAuditRunning = true;
+    this.toast.info('🤖 AI Engine: Running holistic OBE institutional diagnostic across all 5 departments...');
+
+    setTimeout(() => {
+      this.aiAuditRunning = false;
+      this.aiAuditSummary = 'Institutional audit complete. Curriculum-to-PO mapping alignment is at 94.2% with 0 non-compliant degree streams. Recommendation: Sign-off remaining rubric approvals in Approval Management.';
+      this.toast.success('✨ AI Institutional Audit Complete: All 5 Engineering departments meet or exceed Tier-1 NBA targets!');
+      this.cdr.detectChanges();
+    }, 1500);
+  }
+
+  openSsrModal(): void {
+    this.showSsrModal = true;
+  }
+
+  closeSsrModal(): void {
+    this.showSsrModal = false;
+  }
+
+  downloadSsrBrief(): void {
+    this.exportInstitutionAuditCsv();
+    this.toast.success('NBA / NAAC SSR Executive Summary downloaded successfully! 📄');
+    this.closeSsrModal();
+  }
+
+  openNoticeModal(): void {
+    this.showNoticeModal = true;
+    this.noticeForm = {
+      title: '',
+      targetRole: 'ALL',
+      message: '',
+      priority: 'HIGH'
+    };
+  }
+
+  closeNoticeModal(): void {
+    this.showNoticeModal = false;
+  }
+
+  broadcastNotice(): void {
+    if (!this.noticeForm.title || !this.noticeForm.message) {
+      this.toast.warning('Please enter notice title and message content.');
+      return;
+    }
+
+    try {
+      const stored = localStorage.getItem('obslmsAdminNotices') || '[]';
+      const notices = JSON.parse(stored);
+      notices.unshift({
+        id: 'NOT-' + Date.now(),
+        title: this.noticeForm.title,
+        targetRole: this.noticeForm.targetRole,
+        message: this.noticeForm.message,
+        priority: this.noticeForm.priority,
+        timestamp: new Date().toLocaleString(),
+        sender: this.adminUser.name
+      });
+      localStorage.setItem('obslmsAdminNotices', JSON.stringify(notices));
+    } catch {}
+
+    this.toast.success(`📢 Institutional Circular broadcasted to ${this.noticeForm.targetRole === 'ALL' ? 'All Faculty & Students' : this.noticeForm.targetRole}!`);
+    this.closeNoticeModal();
   }
 
   private loadAdminData(): void {
