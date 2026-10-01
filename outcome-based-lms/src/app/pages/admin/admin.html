@@ -158,57 +158,6 @@
 			</div>
 		</div>
 
-		<!-- Split Section: Department Distribution & Live Activity -->
-		<div class="executive-two-col">
-			<!-- Department Breakdown -->
-			<div class="exec-card">
-				<div class="exec-card-header">
-					<h3>Department Enrolment & Faculty Distribution</h3>
-					<small>Institutional breakdown across active academic departments</small>
-				</div>
-				<div *ngIf="departmentStats.length > 0" class="dept-list">
-					<div *ngFor="let dept of departmentStats" class="dept-item">
-						<div class="dept-info">
-							<span class="dept-name">{{ dept.name }}</span>
-							<span class="dept-counts">{{ dept.studentCount }} Students • {{ dept.facultyCount }} Faculty</span>
-						</div>
-						<div class="dept-bar-track">
-							<div class="dept-bar-fill" [style.width]="counts.students > 0 ? (dept.studentCount / counts.students * 100) + '%' : '0%'"></div>
-						</div>
-					</div>
-				</div>
-				<div *ngIf="departmentStats.length === 0" class="empty-state-box">
-					<div class="empty-state-icon"><span class="material-icons" style="font-size: 36px; color: #94a3b8;">domain</span></div>
-					<div class="empty-state-text">No departmental records found</div>
-					<small>Add students or faculty members to view automatic departmental metrics.</small>
-				</div>
-			</div>
-
-			<!-- Live Activity Feed -->
-			<div class="exec-card">
-				<div class="exec-card-header">
-					<h3>System Activity & Audit Trail</h3>
-					<small>Real-time log of administrative updates and submissions</small>
-				</div>
-				<div *ngIf="recentActivities.length > 0" class="activity-list">
-					<div *ngFor="let act of recentActivities" class="activity-item">
-						<div class="activity-icon">
-							<span class="material-icons" style="font-size: 18px; color: #2563eb;">history</span>
-						</div>
-						<div class="activity-details">
-							<h4>{{ act.title }}</h4>
-							<p>{{ act.description }}</p>
-							<small class="activity-time">{{ act.time }}</small>
-						</div>
-					</div>
-				</div>
-				<div *ngIf="recentActivities.length === 0" class="empty-state-box">
-					<div class="empty-state-icon"><span class="material-icons" style="font-size: 36px; color: #94a3b8;">notifications_none</span></div>
-					<div class="empty-state-text">No recent administrative activity</div>
-					<small>Audit trail logs and event notifications will appear here in real-time.</small>
-				</div>
-			</div>
-		</div>
 
 		<!-- AI Academic Intelligence & Executive Copilot Hub -->
 		<div class="ai-copilot-card">
