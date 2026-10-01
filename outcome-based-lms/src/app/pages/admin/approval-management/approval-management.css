@@ -40,60 +40,167 @@
   font-size: 0.92rem;
 }
 
-/* Stats Grid */
+/* Stats Grid as Interactive Cards */
 .stats-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
   gap: 16px;
   margin-bottom: 22px;
 }
 
 .stat-card {
-  padding: 18px 20px;
-  border-radius: 14px;
-  text-align: center;
+  padding: 20px 22px;
+  border-radius: 16px;
+  text-align: left;
   color: #ffffff;
   font-weight: 600;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  transition: transform 0.2s ease;
+  border: 2px solid rgba(255, 255, 255, 0.08);
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  cursor: pointer;
+  user-select: none;
+  position: relative;
+  overflow: hidden;
+  background: #101b38;
 }
 
 .stat-card:hover {
-  transform: translateY(-2px);
+  transform: translateY(-3px);
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.4);
+}
+
+.stat-icon-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.stat-icon {
+  font-size: 1.6rem;
+}
+
+.active-badge {
+  font-size: 0.7rem;
+  font-weight: 800;
+  padding: 3px 8px;
+  border-radius: 6px;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
 }
 
 .stat-card.pending {
-  background: linear-gradient(135deg, rgba(245, 158, 11, 0.3) 0%, #101b38 100%);
-  border-color: rgba(245, 158, 11, 0.4);
-  box-shadow: 0 4px 14px rgba(245, 158, 11, 0.2);
+  background: linear-gradient(135deg, rgba(245, 158, 11, 0.15) 0%, #101b38 100%);
+  border-color: rgba(245, 158, 11, 0.25);
+}
+
+.stat-card.pending:hover,
+.stat-card.pending.active {
+  border-color: #f59e0b;
+  box-shadow: 0 0 25px rgba(245, 158, 11, 0.35);
+  background: linear-gradient(135deg, rgba(245, 158, 11, 0.28) 0%, #101b38 100%);
+}
+
+.stat-card.pending .active-badge {
+  background: #f59e0b;
+  color: #0a1128;
 }
 
 .stat-card.approved {
-  background: linear-gradient(135deg, rgba(16, 185, 129, 0.3) 0%, #101b38 100%);
-  border-color: rgba(16, 185, 129, 0.4);
-  box-shadow: 0 4px 14px rgba(16, 185, 129, 0.2);
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.15) 0%, #101b38 100%);
+  border-color: rgba(16, 185, 129, 0.25);
+}
+
+.stat-card.approved:hover,
+.stat-card.approved.active {
+  border-color: #10b981;
+  box-shadow: 0 0 25px rgba(16, 185, 129, 0.35);
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.28) 0%, #101b38 100%);
+}
+
+.stat-card.approved .active-badge {
+  background: #10b981;
+  color: #0a1128;
 }
 
 .stat-card.rejected {
-  background: linear-gradient(135deg, rgba(239, 68, 68, 0.3) 0%, #101b38 100%);
-  border-color: rgba(239, 68, 68, 0.4);
-  box-shadow: 0 4px 14px rgba(239, 68, 68, 0.2);
+  background: linear-gradient(135deg, rgba(239, 68, 68, 0.15) 0%, #101b38 100%);
+  border-color: rgba(239, 68, 68, 0.25);
+}
+
+.stat-card.rejected:hover,
+.stat-card.rejected.active {
+  border-color: #ef4444;
+  box-shadow: 0 0 25px rgba(239, 68, 68, 0.35);
+  background: linear-gradient(135deg, rgba(239, 68, 68, 0.28) 0%, #101b38 100%);
+}
+
+.stat-card.rejected .active-badge {
+  background: #ef4444;
+  color: #ffffff;
+}
+
+.stat-card.all {
+  background: linear-gradient(135deg, rgba(56, 189, 248, 0.15) 0%, #101b38 100%);
+  border-color: rgba(56, 189, 248, 0.25);
+}
+
+.stat-card.all:hover,
+.stat-card.all.active {
+  border-color: #38bdf8;
+  box-shadow: 0 0 25px rgba(56, 189, 248, 0.35);
+  background: linear-gradient(135deg, rgba(56, 189, 248, 0.28) 0%, #101b38 100%);
+}
+
+.stat-card.all .active-badge {
+  background: #38bdf8;
+  color: #0a1128;
 }
 
 .stat-number {
-  font-size: 2.2rem;
+  font-size: 2.3rem;
   font-weight: 800;
   margin-bottom: 4px;
-  color: #ffffff;
+  line-height: 1.1;
 }
 
 .stat-card.pending .stat-number { color: #fbbf24; }
 .stat-card.approved .stat-number { color: #34d399; }
 .stat-card.rejected .stat-number { color: #f87171; }
+.stat-card.all .stat-number { color: #7dd3fc; }
 
 .stat-label {
-  font-size: 0.88rem;
-  color: #cbd5e1;
+  font-size: 0.95rem;
+  color: #ffffff;
+  font-weight: 700;
+}
+
+.stat-desc {
+  font-size: 0.76rem;
+  color: #94a3b8;
+  margin-top: 4px;
+}
+
+/* Section Title Bar */
+.section-title-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+  padding: 12px 18px;
+  background: #0d1730;
+  border-radius: 12px;
+  border: 1px solid #1f2f54;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.tab-indicator {
+  font-size: 0.95rem;
+  color: #ffffff;
+}
+
+.tab-indicator strong {
+  color: #fde68a;
 }
 
 /* Toolbar */

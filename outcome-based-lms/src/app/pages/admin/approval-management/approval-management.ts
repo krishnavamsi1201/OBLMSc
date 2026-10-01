@@ -35,14 +35,18 @@ export class ApprovalManagement implements OnInit {
   private syncService = inject(SyncService);
   private http = inject(HttpClient);
   private cdr = inject(ChangeDetectorRef);
+
   approvalItems: ApprovalItem[] = [];
   filteredItems: ApprovalItem[] = [];
-  filterStatus: string = '';
+  
+  // Tab-based Card Filtering (defaults to Pending)
+  activeTab: 'Pending' | 'Approved' | 'Rejected' | 'All' = 'Pending';
+  filterStatus: string = 'Pending';
   filterType: string = '';
   searchQuery: string = '';
 
   approvalTypes = [
-    { value: '', label: 'All Types' },
+    { value: '', label: 'All Categories' },
     { value: 'course-enrollment', label: '🎓 Student Course Enrollments' },
     { value: 'assessment-co-mapping', label: '🎯 Assessment-CO Mappings' },
     { value: 'copo-mapping', label: '📐 CO-PO Curriculum Mappings' },
@@ -50,7 +54,6 @@ export class ApprovalManagement implements OnInit {
     { value: 'faculty-allocation', label: '👨‍🏫 Faculty Allocations' }
   ];
 
-  statusOptions = ['Pending', 'Approved', 'Rejected'];
   selectedApprovalId: string = '';
   showRejectReason: boolean = false;
   rejectionReasonText: string = '';
@@ -66,6 +69,12 @@ export class ApprovalManagement implements OnInit {
         this.loadApprovalItems();
       }
     });
+  }
+
+  selectTab(tab: 'Pending' | 'Approved' | 'Rejected' | 'All'): void {
+    this.activeTab = tab;
+    this.filterStatus = tab === 'All' ? '' : tab;
+    this.filterApprovals();
   }
 
   loadApprovalItems(): void {
@@ -238,6 +247,7 @@ export class ApprovalManagement implements OnInit {
 
       return matchStatus && matchType && matchSearch;
     });
+    this.cdr.detectChanges();
   }
 
   onSearchChange(): void {
@@ -245,6 +255,11 @@ export class ApprovalManagement implements OnInit {
   }
 
   onFilterChange(): void {
+    if (this.filterStatus === '') {
+      this.activeTab = 'All';
+    } else if (this.filterStatus === 'Pending' || this.filterStatus === 'Approved' || this.filterStatus === 'Rejected') {
+      this.activeTab = this.filterStatus;
+    }
     this.filterApprovals();
   }
 
@@ -258,103 +273,68 @@ export class ApprovalManagement implements OnInit {
         const studentEmail = item.details?.studentEmail || item.requesterEmail || '';
         const courseCode = item.details?.courseCode || item.details?.courseTitle || '';
 
-        // 1. Sync directly with Spring Boot MySQL database
-        if (item.details?.id) {
-          this.http.put(`http://localhost:8080/api/courses/requests/${item.details.id}/approve`, {}).subscribe({
-            next: () => {
-              this.loadApprovalItems();
-            }
+        // Save in approved course enrollments
+        const storedEnrollments = localStorage.getItem('obslmsEnrollments');
+        const enrollments = storedEnrollments ? JSON.parse(storedEnrollments) : [];
+        const exists = enrollments.some((e: any) => e.studentId === studentId && (e.courseCode === courseCode || e.courseTitle === courseCode));
+        
+        if (!exists) {
+          enrollments.push({
+            id: 'enr-' + Date.now(),
+            studentId,
+            studentName,
+            studentEmail,
+            courseCode: item.details?.courseCode || courseCode,
+            courseTitle: item.details?.courseTitle || courseCode,
+            department: item.department || 'Computer Science & Engineering',
+            enrolledDate: new Date().toISOString().split('T')[0],
+            status: 'Active'
           });
-        } else if (courseCode) {
-          const payload = {
-            studentId: studentId,
-            studentName: studentName,
-            studentEmail: studentEmail,
-            courseCode: courseCode
-          };
-          this.http.post('http://localhost:8080/api/users/enroll-course', payload).subscribe({
-            next: (res: any) => {
-              console.log('[INFO] Successfully enrolled course in backend DB:', res);
-            },
-            error: (err: any) => {
-              console.warn('[WARN] Backend DB enrollment sync warning:', err);
-            }
-          });
+          localStorage.setItem('obslmsEnrollments', JSON.stringify(enrollments));
         }
 
-        // 2. Update local course requests state
-        const stored = localStorage.getItem('obslmsCourseRequests');
-        if (stored) {
-          const list = JSON.parse(stored);
-          const req = list.find((r: any) => r.id === item.details?.id || (r.studentName?.toLowerCase() === studentName.toLowerCase() && r.courseCode?.toLowerCase() === courseCode.toLowerCase()));
-          if (req) {
-            req.status = 'Approved';
-            localStorage.setItem('obslmsCourseRequests', JSON.stringify(list));
+        // Update course request status
+        const storedReqs = localStorage.getItem('obslmsCourseRequests');
+        if (storedReqs) {
+          const reqs = JSON.parse(storedReqs);
+          const r = reqs.find((req: any) => req.id === item.details?.id);
+          if (r) {
+            r.status = 'Approved';
+            localStorage.setItem('obslmsCourseRequests', JSON.stringify(reqs));
           }
         }
-
-        // 3. Update official student courses
-        const storedStudentCourses = localStorage.getItem('obslmsStudentCourses');
-        const studentCourses = storedStudentCourses ? JSON.parse(storedStudentCourses) : [];
-        if (!studentCourses.some((sc: any) => sc.studentName?.toLowerCase() === studentName?.toLowerCase() && sc.courseCode?.toLowerCase() === courseCode?.toLowerCase())) {
-          studentCourses.push({
-            studentName: studentName,
-            courseCode: courseCode,
-            courseTitle: item.details?.courseTitle || courseCode,
-            enrolledAt: new Date().toISOString()
-          });
-          localStorage.setItem('obslmsStudentCourses', JSON.stringify(studentCourses));
-        }
-
-        // 4. Update assigned courses for active student session
-        const currentActiveStudent = localStorage.getItem('userName');
-        if (currentActiveStudent && currentActiveStudent.toLowerCase() === studentName.toLowerCase()) {
-          try {
-            const currentAssigned = JSON.parse(localStorage.getItem('userAssignedCourses') || '[]');
-            if (!currentAssigned.includes(courseCode)) {
-              currentAssigned.push(courseCode);
-              localStorage.setItem('userAssignedCourses', JSON.stringify(currentAssigned));
-            }
-          } catch {}
-        }
-
         this.syncService.emit('ENROLLMENTS_CHANGED', item.details);
-        this.toast.success(`Approved course enrollment for ${studentName} (${courseCode}).`);
       } catch (err) {
-        console.error('Error in approve course enrollment:', err);
+        console.error('Error recording approval:', err);
       }
     } else if (item.type === 'assessment-co-mapping') {
       try {
         const stored = localStorage.getItem('obslmsAssessmentCOMappings');
         if (stored) {
           const list = JSON.parse(stored);
-          const mapping = list.find((m: any) => m.id === item.details?.id || m.assessmentName === item.details?.assessmentName);
+          const mapping = list.find((m: any) => m.id === item.details?.id);
           if (mapping) {
             mapping.approvalStatus = 'Approved';
             localStorage.setItem('obslmsAssessmentCOMappings', JSON.stringify(list));
           }
         }
         this.syncService.emit('ASSESSMENTS_CHANGED', item.details);
-        this.toast.success(`Assessment mapping approved.`);
-      } catch {}
+      } catch (err) {
+        console.error('Error approving mapping:', err);
+      }
     }
 
-    this.toast.success(`"${item.title}" approved successfully!`);
+    this.toast.success(`"${item.title}" successfully approved! ✅`);
     this.filterApprovals();
   }
 
   rejectItem(item: ApprovalItem): void {
     this.selectedApprovalId = item.id;
-    this.showRejectReason = true;
     this.rejectionReasonText = '';
+    this.showRejectReason = true;
   }
 
   confirmReject(): void {
-    if (!this.rejectionReasonText.trim()) {
-      this.toast.warning('Please enter a reason for rejection.');
-      return;
-    }
-
     const item = this.approvalItems.find(i => i.id === this.selectedApprovalId);
     if (item) {
       item.status = 'Rejected';
@@ -362,13 +342,6 @@ export class ApprovalManagement implements OnInit {
       item.details.rejectionReason = this.rejectionReasonText;
 
       if (item.type === 'course-enrollment') {
-        if (item.details?.id) {
-          this.http.put(`http://localhost:8080/api/courses/requests/${item.details.id}/reject`, { remarks: this.rejectionReasonText }).subscribe({
-            next: () => {
-              this.loadApprovalItems();
-            }
-          });
-        }
         try {
           const stored = localStorage.getItem('obslmsCourseRequests');
           if (stored) {
@@ -434,9 +407,9 @@ export class ApprovalManagement implements OnInit {
 
   getStatusBgColor(status: string): string {
     switch (status) {
-      case 'Approved': return '#ecfdf5';
-      case 'Rejected': return '#fef2f2';
-      default: return '#fffbeb';
+      case 'Approved': return 'rgba(16, 185, 129, 0.15)';
+      case 'Rejected': return 'rgba(239, 68, 68, 0.15)';
+      default: return 'rgba(245, 158, 11, 0.15)';
     }
   }
 }

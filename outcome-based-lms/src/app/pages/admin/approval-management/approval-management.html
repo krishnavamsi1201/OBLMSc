@@ -7,60 +7,122 @@
     <div class="page-header">
       <div class="header-title">
         <h1>✅ Institutional Approval Workflow</h1>
-        <p>Review and authorize pending student enrollments, faculty assessments, and CO-PO curriculum mappings</p>
+        <p>Review, authorize, and audit pending student enrollments, faculty proposals, and CO-PO curriculum mappings.</p>
       </div>
     </div>
 
-    <!-- Approval Stats -->
+    <!-- Interactive Status Tab Cards Grid -->
     <div class="stats-grid">
-      <div class="stat-card pending">
+      <!-- 1. Pending Review Card -->
+      <div 
+        class="stat-card pending" 
+        [class.active]="activeTab === 'Pending'"
+        (click)="selectTab('Pending')"
+        role="button"
+        title="Click to view all pending requests awaiting review"
+      >
+        <div class="stat-icon-row">
+          <span class="stat-icon">⏳</span>
+          <span class="active-badge" *ngIf="activeTab === 'Pending'">ACTIVE VIEW</span>
+        </div>
         <div class="stat-number">{{ getPendingCount() }}</div>
         <div class="stat-label">Pending Review</div>
+        <div class="stat-desc">Requires Admin Action</div>
       </div>
-      <div class="stat-card approved">
+
+      <!-- 2. Approved Card -->
+      <div 
+        class="stat-card approved" 
+        [class.active]="activeTab === 'Approved'"
+        (click)="selectTab('Approved')"
+        role="button"
+        title="Click to view all approved and authorized requests"
+      >
+        <div class="stat-icon-row">
+          <span class="stat-icon">✅</span>
+          <span class="active-badge" *ngIf="activeTab === 'Approved'">ACTIVE VIEW</span>
+        </div>
         <div class="stat-number">{{ getApprovedCount() }}</div>
-        <div class="stat-label">Approved</div>
+        <div class="stat-label">Approved Requests</div>
+        <div class="stat-desc">Authorized & Enrolled</div>
       </div>
-      <div class="stat-card rejected">
+
+      <!-- 3. Rejected Card -->
+      <div 
+        class="stat-card rejected" 
+        [class.active]="activeTab === 'Rejected'"
+        (click)="selectTab('Rejected')"
+        role="button"
+        title="Click to view all rejected proposals and reason logs"
+      >
+        <div class="stat-icon-row">
+          <span class="stat-icon">❌</span>
+          <span class="active-badge" *ngIf="activeTab === 'Rejected'">ACTIVE VIEW</span>
+        </div>
         <div class="stat-number">{{ getRejectedCount() }}</div>
-        <div class="stat-label">Rejected</div>
+        <div class="stat-label">Rejected Requests</div>
+        <div class="stat-desc">Declined with Feedback</div>
+      </div>
+
+      <!-- 4. All Total Card -->
+      <div 
+        class="stat-card all" 
+        [class.active]="activeTab === 'All'"
+        (click)="selectTab('All')"
+        role="button"
+        title="Click to view complete request history"
+      >
+        <div class="stat-icon-row">
+          <span class="stat-icon">📋</span>
+          <span class="active-badge" *ngIf="activeTab === 'All'">ACTIVE VIEW</span>
+        </div>
+        <div class="stat-number">{{ approvalItems.length }}</div>
+        <div class="stat-label">Total History</div>
+        <div class="stat-desc">All Institutional Submissions</div>
       </div>
     </div>
 
-    <!-- Search and Filter -->
+    <!-- Search and Filter Bar -->
     <div class="toolbar">
       <div class="search-box">
         <input 
           type="text" 
-          placeholder="🔍 Search by student name, reg no, faculty, or course..."
+          placeholder="🔍 Search by student name, faculty ID (e.g. FAC001, STU004), or course..."
           [(ngModel)]="searchQuery"
           (input)="onSearchChange()"
           class="search-input"
         />
       </div>
-      <select 
-        [(ngModel)]="filterStatus"
-        (change)="onFilterChange()"
-        class="filter-select"
-      >
-        <option value="">All Statuses</option>
-        <option value="Pending">Pending</option>
-        <option value="Approved">Approved</option>
-        <option value="Rejected">Rejected</option>
-      </select>
-      <select 
-        [(ngModel)]="filterType"
-        (change)="onFilterChange()"
-        class="filter-select"
-      >
-        <option *ngFor="let type of approvalTypes" [value]="type.value">{{ type.label }}</option>
-      </select>
+
+      <div class="filter-group">
+        <select 
+          [(ngModel)]="filterType"
+          (change)="onFilterChange()"
+          class="filter-select"
+        >
+          <option *ngFor="let type of approvalTypes" [value]="type.value">{{ type.label }}</option>
+        </select>
+      </div>
     </div>
 
-    <!-- Approval Items -->
+    <!-- Current Tab Status Heading Banner -->
+    <div class="section-title-bar">
+      <div class="tab-indicator">
+        <span *ngIf="activeTab === 'Pending'">⏳ Displaying <strong>Pending Review</strong> Requests ({{ filteredItems.length }})</span>
+        <span *ngIf="activeTab === 'Approved'">✅ Displaying <strong>Approved</strong> Requests Archive ({{ filteredItems.length }})</span>
+        <span *ngIf="activeTab === 'Rejected'">❌ Displaying <strong>Rejected</strong> Proposals ({{ filteredItems.length }})</span>
+        <span *ngIf="activeTab === 'All'">📋 Displaying <strong>All</strong> Institutional Requests ({{ filteredItems.length }})</span>
+      </div>
+      <small style="color: #94a3b8;">Click the status cards above to switch views anytime</small>
+    </div>
+
+    <!-- Approval Items List -->
     <div class="approvals-container">
       <div *ngIf="filteredItems.length === 0" class="empty-state">
-        <p>📭 No approval items found matching the selected filters.</p>
+        <div class="empty-icon">📭</div>
+        <h3>No {{ activeTab === 'All' ? '' : activeTab }} Requests Found</h3>
+        <p>There are no items currently in the <strong>{{ activeTab }}</strong> queue matching your search criteria.</p>
+        <button class="btn btn-secondary" *ngIf="activeTab !== 'All'" (click)="selectTab('All')">View All Requests ({{ approvalItems.length }})</button>
       </div>
 
       <div *ngFor="let item of filteredItems" class="approval-card" [style.borderLeftColor]="getStatusColor(item.status)">
@@ -74,7 +136,7 @@
             </div>
             <h3>{{ item.title }}</h3>
           </div>
-          <div class="status-badge" [style.backgroundColor]="getStatusBgColor(item.status)" [style.color]="getStatusColor(item.status)" style="font-weight: 800; font-size: 12px; padding: 6px 14px; border-radius: 20px; text-transform: uppercase; letter-spacing: 0.5px;">
+          <div class="status-badge" [style.backgroundColor]="getStatusBgColor(item.status)" [style.color]="getStatusColor(item.status)" style="font-weight: 800; font-size: 12px; padding: 6px 14px; border-radius: 20px; text-transform: uppercase; letter-spacing: 0.5px; border: 1px solid currentColor;">
             {{ item.status === 'Approved' ? '✓ Request Accepted' : (item.status === 'Rejected' ? '✕ Request Rejected' : '⏳ Pending Review') }}
           </div>
         </div>
@@ -114,20 +176,20 @@
           <button class="btn btn-reject" (click)="rejectItem(item)">✕ Reject</button>
         </div>
         <div class="card-footer decision-footer" *ngIf="item.status === 'Approved'">
-          <div class="decision-pill approved-pill" style="display: flex; align-items: center; gap: 10px; background: rgba(16, 185, 129, 0.12); border: 1.5px solid #10b981; color: #065f46; padding: 10px 18px; border-radius: 10px; width: 100%;">
+          <div class="decision-pill approved-pill" style="display: flex; align-items: center; gap: 10px; background: rgba(16, 185, 129, 0.12); border: 1.5px solid #10b981; color: #34d399; padding: 10px 18px; border-radius: 10px; width: 100%;">
             <span style="font-size: 1.3rem;">✅</span>
             <div style="display: flex; flex-direction: column;">
-              <strong style="font-size: 0.98rem; color: #047857; font-weight: 800;">Request Accepted</strong>
-              <small style="font-size: 0.82rem; color: #065f46; opacity: 0.9;">Enrollment authorized & successfully reflected on student dashboard</small>
+              <strong style="font-size: 0.98rem; color: #34d399; font-weight: 800;">Request Accepted</strong>
+              <small style="font-size: 0.82rem; color: #a7f3d0; opacity: 0.9;">Enrollment authorized & successfully reflected on student dashboard</small>
             </div>
           </div>
         </div>
         <div class="card-footer decision-footer" *ngIf="item.status === 'Rejected'">
-          <div class="decision-pill rejected-pill" style="display: flex; align-items: center; gap: 10px; background: rgba(239, 68, 68, 0.12); border: 1.5px solid #ef4444; color: #991b1b; padding: 10px 18px; border-radius: 10px; width: 100%;">
+          <div class="decision-pill rejected-pill" style="display: flex; align-items: center; gap: 10px; background: rgba(239, 68, 68, 0.12); border: 1.5px solid #ef4444; color: #f87171; padding: 10px 18px; border-radius: 10px; width: 100%;">
             <span style="font-size: 1.3rem;">❌</span>
             <div style="display: flex; flex-direction: column;">
-              <strong style="font-size: 0.98rem; color: #b91c1c; font-weight: 800;">Request Rejected</strong>
-              <small style="font-size: 0.82rem; color: #991b1b; opacity: 0.9;" *ngIf="item.details?.rejectionReason">Reason: {{ item.details.rejectionReason }}</small>
+              <strong style="font-size: 0.98rem; color: #f87171; font-weight: 800;">Request Rejected</strong>
+              <small style="font-size: 0.82rem; color: #fca5a5; opacity: 0.9;" *ngIf="item.details?.rejectionReason">Reason: {{ item.details.rejectionReason }}</small>
             </div>
           </div>
         </div>
@@ -146,7 +208,7 @@
         </div>
       </div>
     </div>
-
-    <app-footer></app-footer>
   </div>
 </div>
+
+<app-footer></app-footer>
