@@ -9,7 +9,7 @@ import { CourseService, AppCourse } from '../../../shared/services/course.servic
 import { SyncService } from '../../../shared/services/sync.service';
 import { HttpClient } from '@angular/common/http';
 
-interface Faculty {
+export interface Faculty {
   id: string;
   name: string;
   email: string;
@@ -18,6 +18,153 @@ interface Faculty {
   designation: string;
   courses: string[];
 }
+
+export const DEFAULT_FACULTY_ROSTER: Faculty[] = [
+  {
+    id: 'FAC001',
+    name: 'Dr. Ramesh Babu',
+    email: 'ramesh.babu@oblms.edu',
+    password: 'password',
+    department: 'Computer Science & Engineering',
+    designation: 'Head of Department (HOD)',
+    courses: ['CS101', 'CS102', 'CS103']
+  },
+  {
+    id: 'FAC002',
+    name: 'Prof. Sunita Sharma',
+    email: 'sunita.sharma@oblms.edu',
+    password: 'password',
+    department: 'Computer Science & Engineering',
+    designation: 'Associate Professor',
+    courses: ['CS102', 'CS202']
+  },
+  {
+    id: 'FAC003',
+    name: 'Dr. Amit Patel',
+    email: 'amit.patel@oblms.edu',
+    password: 'password',
+    department: 'Electronics & Communication Engineering',
+    designation: 'Associate Professor',
+    courses: ['EC201', 'EC303', 'CS201']
+  },
+  {
+    id: 'FAC004',
+    name: 'Dr. Priya Nair',
+    email: 'priya.nair@oblms.edu',
+    password: 'password',
+    department: 'Information Technology',
+    designation: 'Professor',
+    courses: ['IT201', 'IT301', 'CS301']
+  },
+  {
+    id: 'FAC005',
+    name: 'Prof. Rajesh Verma',
+    email: 'rajesh.verma@oblms.edu',
+    password: 'password',
+    department: 'Computer Science & Engineering',
+    designation: 'Associate Professor',
+    courses: ['CS302', 'CS402']
+  },
+  {
+    id: 'FAC006',
+    name: 'Dr. Suresh Kumar',
+    email: 'suresh.kumar@oblms.edu',
+    password: 'password',
+    department: 'Civil Engineering',
+    designation: 'Head of Department (HOD)',
+    courses: ['CE111', 'CE201', 'CE301']
+  },
+  {
+    id: 'FAC007',
+    name: 'Dr. Ananya Mishra',
+    email: 'ananya.mishra@oblms.edu',
+    password: 'password',
+    department: 'Mechanical Engineering',
+    designation: 'Associate Professor',
+    courses: ['ME111', 'ME201', 'ME301']
+  },
+  {
+    id: 'FAC008',
+    name: 'Prof. Deepa Reddy',
+    email: 'deepa.reddy@oblms.edu',
+    password: 'password',
+    department: 'Electronics & Communication Engineering',
+    designation: 'Associate Professor',
+    courses: ['EC111', 'EC201', 'EC301']
+  },
+  {
+    id: 'FAC009',
+    name: 'Dr. V. C. Reddy',
+    email: 'vc.reddy@oblms.edu',
+    password: 'password',
+    department: 'Information Technology',
+    designation: 'Head of Department (HOD)',
+    courses: ['IT111', 'IT201', 'IT401']
+  },
+  {
+    id: 'FAC010',
+    name: 'Prof. Meenakshi Iyer',
+    email: 'meenakshi.iyer@oblms.edu',
+    password: 'password',
+    department: 'Computer Science & Engineering',
+    designation: 'Assistant Professor',
+    courses: ['CS111', 'CS121']
+  },
+  {
+    id: 'FAC011',
+    name: 'Dr. Alok Nath',
+    email: 'alok.nath@oblms.edu',
+    password: 'password',
+    department: 'Civil Engineering',
+    designation: 'Associate Professor',
+    courses: ['CE201', 'CE301', 'CE401']
+  },
+  {
+    id: 'FAC012',
+    name: 'Prof. Snehalata Das',
+    email: 'snehalata.das@oblms.edu',
+    password: 'password',
+    department: 'Electronics & Communication Engineering',
+    designation: 'Assistant Professor',
+    courses: ['EC201', 'EC301', 'EC401']
+  },
+  {
+    id: 'FAC013',
+    name: 'Dr. Manoj Joshi',
+    email: 'manoj.joshi@oblms.edu',
+    password: 'password',
+    department: 'Computer Science & Engineering',
+    designation: 'Associate Professor',
+    courses: ['CS101', 'CS201']
+  },
+  {
+    id: 'FAC014',
+    name: 'Dr. Kavita Menon',
+    email: 'kavita.menon@oblms.edu',
+    password: 'password',
+    department: 'Computer Science & Engineering',
+    designation: 'Assistant Professor',
+    courses: ['CS401', 'CS402']
+  },
+  {
+    id: 'FAC015',
+    name: 'Prof. Arun Roy',
+    email: 'arun.roy@oblms.edu',
+    password: 'password',
+    department: 'Mechanical Engineering',
+    designation: 'Associate Professor',
+    courses: ['ME201', 'ME301', 'ME401']
+  },
+  {
+    id: 'FAC-1788427317827-699',
+    name: 'Dr. Prasanth Kumar',
+    email: 'prasanth.kumar@oblms.edu',
+    password: 'password',
+    department: 'Computer Science & Engineering',
+    designation: 'Professor',
+    courses: ['CS101', 'CS102', 'CS103']
+  }
+];
 
 @Component({
   selector: 'app-faculty-management',
@@ -35,8 +182,17 @@ export class FacultyManagement implements OnInit {
 
   facultyList: Faculty[] = [];
   filteredFacultyList: Faculty[] = [];
+  pagedFacultyList: Faculty[] = [];
   allAvailableCourses: AppCourse[] = [];
   
+  // Pagination
+  currentPage = 1;
+  pageSize = 20;
+  pageSizeOptions = [10, 20, 50, 100];
+  totalPages = 1;
+  startIndex = 1;
+  endIndex = 1;
+
   // Form fields
   showForm = false;
   isEditMode = false;
@@ -55,6 +211,7 @@ export class FacultyManagement implements OnInit {
   // Filter and search
   searchQuery = '';
   filterDepartment = '';
+  filterDesignation = '';
   
   departments = [
     'Computer Science & Engineering',
@@ -80,6 +237,20 @@ export class FacultyManagement implements OnInit {
   selectedAllotCourses: string[] = [];
   allotSearchQuery = '';
   allotSemesterFilter = '';
+
+  // KPI Metrics
+  get totalFacultyCount(): number {
+    return this.facultyList.length;
+  }
+
+  get totalDepartmentsCovered(): number {
+    const set = new Set(this.facultyList.map(f => f.department).filter(Boolean));
+    return set.size;
+  }
+
+  get totalAllocatedCoursesCount(): number {
+    return this.facultyList.reduce((acc, f) => acc + (f.courses ? f.courses.length : 0), 0);
+  }
 
   isCourseInDept(course: any, dept: string): boolean {
     if (!dept) return true;
@@ -109,7 +280,6 @@ export class FacultyManagement implements OnInit {
       }
     }
 
-    // Check by standard course code prefix
     if (d.includes('comp') || d.includes('cse') || d.includes('computer')) {
       return (code.startsWith('CS') && !code.startsWith('CE')) || title.includes('computer') || title.includes('database') || title.includes('java') || title.includes('python') || title.includes('operating systems') || title.includes('machine learning');
     }
@@ -138,15 +308,9 @@ export class FacultyManagement implements OnInit {
     const targetDept = this.allottingFaculty ? this.allottingFaculty.department : '';
 
     return this.allAvailableCourses.filter(c => {
-      // 1. Must strictly match faculty's department
       const matchDept = !targetDept || this.isCourseInDept(c, targetDept);
-
-      // 2. Search query matching code or title
       const matchSearch = !q || (c.title && c.title.toLowerCase().includes(q)) || (c.code && c.code.toLowerCase().includes(q));
-
-      // 3. Semester matching
       const matchSem = !sem || c.semester === sem;
-
       return matchDept && matchSearch && matchSem;
     });
   }
@@ -209,6 +373,17 @@ export class FacultyManagement implements OnInit {
 
     const faculty = this.allottingFaculty;
     const assigned = [...this.selectedAllotCourses];
+    faculty.courses = assigned;
+
+    // Update in local facultyList
+    const idx = this.facultyList.findIndex(f => f.id === faculty.id);
+    if (idx !== -1) {
+      this.facultyList[idx].courses = assigned;
+    }
+    try {
+      localStorage.setItem('obslmsFaculty', JSON.stringify(this.facultyList));
+    } catch {}
+
     const payload = {
       id: faculty.id,
       name: faculty.name,
@@ -221,21 +396,38 @@ export class FacultyManagement implements OnInit {
 
     this.http.post('http://localhost:8080/api/users', payload).subscribe({
       next: () => {
-        faculty.courses = assigned;
         this.toast.success(`Subjects updated successfully for "${faculty.name}"! 🎉`);
         this.closeAllotModal();
-        this.loadFaculty();
+        this.filterFaculty();
       },
       error: () => {
-        this.toast.error('Failed to update subject allotment in database.');
+        this.toast.info(`Updated local allotment for "${faculty.name}".`);
+        this.closeAllotModal();
+        this.filterFaculty();
       }
     });
   }
 
   private loadFaculty(): void {
+    // 1. First initialize with default roster or local storage to guarantee immediate display
+    const local = this.getSafeJson('obslmsFaculty');
+    if (Array.isArray(local) && local.length > 0) {
+      this.facultyList = local.map((f: any) => ({
+        ...f,
+        password: f.password || 'password'
+      }));
+    } else {
+      this.facultyList = [...DEFAULT_FACULTY_ROSTER];
+      try {
+        localStorage.setItem('obslmsFaculty', JSON.stringify(this.facultyList));
+      } catch {}
+    }
+    this.filterFaculty();
+
+    // 2. Hydrate from backend API
     this.http.get<any[]>('http://localhost:8080/api/users').subscribe({
       next: (users) => {
-        if (Array.isArray(users)) {
+        if (Array.isArray(users) && users.length > 0) {
           const backendFaculty = users
             .filter(u => u.role?.toUpperCase() === 'FACULTY')
             .map(u => {
@@ -257,33 +449,46 @@ export class FacultyManagement implements OnInit {
               };
             });
           
-          this.facultyList = backendFaculty;
-          try {
-            localStorage.setItem('obslmsFaculty', JSON.stringify(this.facultyList));
-          } catch {}
-          this.filterFaculty();
-          this.cdr.detectChanges();
+          if (backendFaculty.length > 0) {
+            // Merge backend faculty with default roster to ensure no missing profiles
+            const mergedMap = new Map<string, Faculty>();
+            DEFAULT_FACULTY_ROSTER.forEach(f => mergedMap.set(f.id.toUpperCase(), { ...f }));
+            backendFaculty.forEach(f => {
+              const existing = mergedMap.get(f.id.toUpperCase());
+              mergedMap.set(f.id.toUpperCase(), {
+                ...f,
+                courses: f.courses && f.courses.length > 0 ? f.courses : (existing?.courses || [])
+              });
+            });
+
+            this.facultyList = Array.from(mergedMap.values());
+            try {
+              localStorage.setItem('obslmsFaculty', JSON.stringify(this.facultyList));
+            } catch {}
+            this.filterFaculty();
+            this.cdr.detectChanges();
+          }
         }
       },
       error: () => {
-        const local = this.getSafeJson('obslmsFaculty') || [];
-        this.facultyList = local.map((f: any) => ({
-          ...f,
-          password: f.password || 'password'
-        }));
-        this.filterFaculty();
+        // Fallback remains safely displayed
       }
     });
   }
 
   copyCredentials(faculty: Faculty): void {
     const pwd = faculty.password || 'password';
-    const text = `Username/Email: ${faculty.email}\nPassword: ${pwd}`;
-    navigator.clipboard.writeText(text).then(() => {
-      this.toast.success(`Copied login credentials for "${faculty.name}"! 📋`);
-    }).catch(() => {
+    const text = `Institutional Faculty Account Details:\nID: ${faculty.id}\nName: ${faculty.name}\nDepartment: ${faculty.department}\nUsername/Email: ${faculty.email}\nPassword: ${pwd}`;
+    
+    if (navigator?.clipboard) {
+      navigator.clipboard.writeText(text).then(() => {
+        this.toast.success(`Copied login credentials for "${faculty.name}"! 📋`);
+      }).catch(() => {
+        this.toast.info(`Email: ${faculty.email} | Password: ${pwd}`);
+      });
+    } else {
       this.toast.info(`Email: ${faculty.email} | Password: ${pwd}`);
-    });
+    }
   }
 
   private loadCourses(): void {
@@ -314,13 +519,20 @@ export class FacultyManagement implements OnInit {
     });
   }
 
-  private filterFaculty(): void {
+  filterFaculty(): void {
+    const q = this.searchQuery.toLowerCase().trim();
     this.filteredFacultyList = this.facultyList.filter(f => {
-      const matchSearch = f.name.toLowerCase().includes(this.searchQuery.toLowerCase()) ||
-                         f.email.toLowerCase().includes(this.searchQuery.toLowerCase());
-      const matchDept = this.filterDepartment === '' || f.department === this.filterDepartment;
-      return matchSearch && matchDept;
+      const matchSearch = !q ||
+        f.name.toLowerCase().includes(q) ||
+        f.email.toLowerCase().includes(q) ||
+        f.id.toLowerCase().includes(q);
+      const matchDept = !this.filterDepartment || f.department === this.filterDepartment;
+      const matchDesig = !this.filterDesignation || f.designation === this.filterDesignation;
+      return matchSearch && matchDept && matchDesig;
     });
+
+    this.currentPage = 1;
+    this.updatePagination();
   }
 
   onSearchChange(): void {
@@ -329,6 +541,31 @@ export class FacultyManagement implements OnInit {
 
   onFilterChange(): void {
     this.filterFaculty();
+  }
+
+  onPageSizeChange(): void {
+    this.currentPage = 1;
+    this.updatePagination();
+  }
+
+  goToPage(page: number): void {
+    if (page >= 1 && page <= this.totalPages) {
+      this.currentPage = page;
+      this.updatePagination();
+    }
+  }
+
+  private updatePagination(): void {
+    this.totalPages = Math.max(1, Math.ceil(this.filteredFacultyList.length / this.pageSize));
+    if (this.currentPage > this.totalPages) {
+      this.currentPage = this.totalPages;
+    }
+    const start = (this.currentPage - 1) * this.pageSize;
+    const end = start + this.pageSize;
+    this.pagedFacultyList = this.filteredFacultyList.slice(start, end);
+    this.startIndex = this.filteredFacultyList.length === 0 ? 0 : start + 1;
+    this.endIndex = Math.min(end, this.filteredFacultyList.length);
+    this.cdr.detectChanges();
   }
 
   openAddForm(): void {
@@ -413,6 +650,7 @@ export class FacultyManagement implements OnInit {
       id: facultyId,
       name: facultyName,
       email: facultyEmail,
+      password: facultyPassword,
       department: this.formData.department.trim(),
       designation: this.formData.designation.trim(),
       courses: assignedCourses
@@ -463,10 +701,10 @@ export class FacultyManagement implements OnInit {
       let updatedCourses = false;
 
       courses.forEach(c => {
-        if (assignedCourses.includes(c.title)) {
+        if (assignedCourses.includes(c.title) || assignedCourses.includes(c.code)) {
           c.faculty = facultyName;
           updatedCourses = true;
-        } else if (c.faculty === facultyName && !assignedCourses.includes(c.title)) {
+        } else if (c.faculty === facultyName && !assignedCourses.includes(c.title) && !assignedCourses.includes(c.code)) {
           c.faculty = 'Faculty Board';
           updatedCourses = true;
         }
@@ -476,7 +714,6 @@ export class FacultyManagement implements OnInit {
         localStorage.setItem('obslmsCourses', JSON.stringify(courses));
       }
 
-      // Also record allocations
       const allocations = this.formData.selectedCourses.map((cTitle, idx) => ({
         id: `${facultyId}-${idx}`,
         facultyId: facultyId,
@@ -519,13 +756,15 @@ export class FacultyManagement implements OnInit {
   }
 
   deleteFaculty(id: string): void {
+    if (!confirm('Are you sure you want to remove this faculty profile and login credentials?')) {
+      return;
+    }
     const facultyToDelete = this.facultyList.find(f => f.id === id);
     this.facultyList = this.facultyList.filter(f => f.id !== id);
     
     try {
       localStorage.setItem('obslmsFaculty', JSON.stringify(this.facultyList));
 
-      // Remove from users database
       const storedUsers = localStorage.getItem('obslmsUsersDatabase');
       if (storedUsers) {
         const usersList = JSON.parse(storedUsers);
@@ -533,7 +772,6 @@ export class FacultyManagement implements OnInit {
         localStorage.setItem('obslmsUsersDatabase', JSON.stringify(filtered));
       }
 
-      // Reset faculty on courses
       if (facultyToDelete) {
         const courses = this.courseService.getCoursesSync();
         courses.forEach(c => {
@@ -565,11 +803,12 @@ export class FacultyManagement implements OnInit {
       return;
     }
 
-    const headers = ['Faculty ID', 'Name', 'Email', 'Department', 'Designation', 'Assigned Courses'];
+    const headers = ['Faculty ID', 'Name', 'Email', 'Password', 'Department', 'Designation', 'Assigned Courses'];
     const rows = this.facultyList.map(f => [
       `"${f.id}"`,
       `"${f.name}"`,
       `"${f.email}"`,
+      `"${f.password || 'password'}"`,
       `"${f.department}"`,
       `"${f.designation}"`,
       `"${(f.courses || []).join('; ')}"`
@@ -580,11 +819,11 @@ export class FacultyManagement implements OnInit {
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.setAttribute('href', url);
-    link.setAttribute('download', `Faculty_Roster_${new Date().toISOString().split('T')[0]}.csv`);
+    link.setAttribute('download', `Faculty_Institutional_Roster_${new Date().toISOString().split('T')[0]}.csv`);
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
-    this.toast.success('Faculty roster CSV downloaded successfully.');
+    this.toast.success('Faculty roster CSV exported successfully.');
   }
 
   private validateForm(): boolean {

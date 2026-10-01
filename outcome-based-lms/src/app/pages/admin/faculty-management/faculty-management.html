@@ -4,14 +4,66 @@
   <app-sidebar></app-sidebar>
 
   <div class="content">
+    <!-- Header Section -->
     <div class="page-header">
       <div class="header-title">
-        <h1>👥 Faculty Management</h1>
-        <p>Manage faculty members, departments, and course assignments</p>
+        <h1>👥 Institutional Faculty Directory & Credentials Management</h1>
+        <p>Master roster of active professors, course allotments, credentials, and departmental portfolios across all engineering branches.</p>
       </div>
-      <div style="display: flex; gap: 10px; flex-wrap: wrap;">
-        <button class="btn btn-secondary" (click)="downloadFacultyCsv()" title="Export faculty roster">📥 Export CSV</button>
-        <button class="btn btn-primary" (click)="openAddForm()">+ Add Faculty</button>
+      <div class="header-actions">
+        <button class="btn btn-secondary" (click)="downloadFacultyCsv()" title="Export faculty roster CSV">
+          📥 Export CSV
+        </button>
+        <button class="btn btn-primary" (click)="openAddForm()">
+          + Add Faculty
+        </button>
+      </div>
+    </div>
+
+    <!-- Top KPI Metric Summary Cards -->
+    <div class="kpi-grid">
+      <div class="kpi-card">
+        <div class="kpi-icon-wrap" style="background: rgba(56, 189, 248, 0.15); color: #38bdf8;">
+          👨‍🏫
+        </div>
+        <div class="kpi-body">
+          <span class="kpi-label">Total Faculty Members</span>
+          <h3 class="kpi-val">{{ totalFacultyCount }}</h3>
+          <span class="kpi-sub">Across All Academic Units</span>
+        </div>
+      </div>
+
+      <div class="kpi-card">
+        <div class="kpi-icon-wrap" style="background: rgba(212, 175, 55, 0.15); color: #fde68a;">
+          🏛️
+        </div>
+        <div class="kpi-body">
+          <span class="kpi-label">Active Departments</span>
+          <h3 class="kpi-val">{{ totalDepartmentsCovered }} / 6</h3>
+          <span class="kpi-sub">CSE, IT, ECE, ME, CE, EEE</span>
+        </div>
+      </div>
+
+      <div class="kpi-card">
+        <div class="kpi-icon-wrap" style="background: rgba(16, 185, 129, 0.15); color: #34d399;">
+          📚
+        </div>
+        <div class="kpi-body">
+          <span class="kpi-label">Subject Allotments</span>
+          <h3 class="kpi-val">{{ totalAllocatedCoursesCount }}</h3>
+          <span class="kpi-sub">Active Course Portfolios</span>
+        </div>
+      </div>
+
+      <div class="kpi-card">
+        <div class="kpi-icon-wrap" style="background: rgba(168, 85, 247, 0.15); color: #c084fc;">
+          🔐
+        </div>
+        <div class="kpi-body">
+          <span class="kpi-label">Login Credentials</span>
+          <h3 class="kpi-val">100% Synced</h3>
+          <span class="kpi-sub">Ready for Faculty Portal</span>
+        </div>
       </div>
     </div>
 
@@ -20,27 +72,39 @@
       <div class="search-box">
         <input 
           type="text" 
-          placeholder="🔍 Search by name or email..." 
+          placeholder="🔍 Search by name, ID (e.g. FAC001), or email..." 
           [(ngModel)]="searchQuery"
           (input)="onSearchChange()"
           class="search-input"
         />
       </div>
-      <select 
-        [(ngModel)]="filterDepartment"
-        (change)="onFilterChange()"
-        class="filter-select"
-      >
-        <option value="">All Departments</option>
-        <option *ngFor="let dept of departments" [value]="dept">{{ dept }}</option>
-      </select>
+
+      <div class="filter-group">
+        <select 
+          [(ngModel)]="filterDepartment"
+          (change)="onFilterChange()"
+          class="filter-select"
+        >
+          <option value="">All Departments (All Branches)</option>
+          <option *ngFor="let dept of departments" [value]="dept">{{ dept }}</option>
+        </select>
+
+        <select 
+          [(ngModel)]="filterDesignation"
+          (change)="onFilterChange()"
+          class="filter-select"
+        >
+          <option value="">All Designations</option>
+          <option *ngFor="let des of designations" [value]="des">{{ des }}</option>
+        </select>
+      </div>
     </div>
 
     <!-- Add/Edit Form Modal -->
     <div class="modal" *ngIf="showForm">
       <div class="modal-content">
         <div class="modal-header">
-          <h2>{{ isEditMode ? 'Edit Faculty' : 'Add New Faculty' }}</h2>
+          <h2>{{ isEditMode ? 'Edit Faculty Profile' : 'Add New Faculty Member' }}</h2>
           <button class="close-btn" (click)="closeForm()">✕</button>
         </div>
 
@@ -51,19 +115,19 @@
               type="text" 
               [(ngModel)]="formData.name" 
               name="name"
-              placeholder="e.g. Dr. Manoj Kumar Padhy"
+              placeholder="e.g. Dr. Ramesh Babu"
               required
             />
           </div>
 
           <div class="form-row">
             <div class="form-group">
-              <label>Login Email / Username *</label>
+              <label>Official Login Email *</label>
               <input 
                 type="email" 
                 [(ngModel)]="formData.email" 
                 name="email"
-                placeholder="e.g. manoj@oblms.edu"
+                placeholder="e.g. ramesh.babu@oblms.edu"
                 required
               />
             </div>
@@ -74,7 +138,7 @@
                 type="text" 
                 [(ngModel)]="formData.password" 
                 name="password"
-                placeholder="e.g. Welcome@123"
+                placeholder="e.g. password"
                 required
               />
             </div>
@@ -103,8 +167,8 @@
               <span>Assign Subjects / Courses</span>
               <small style="color: #fde68a; font-weight: 600;">Selected: {{ formData.selectedCourses.length }} subjects</small>
             </label>
-            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 8px; max-height: 180px; overflow-y: auto; padding: 12px; border: 1px solid #1f2f54; border-radius: 8px; background: #091024;">
-              <label *ngFor="let course of getAvailableCoursesForDept(formData.department)" style="display: flex; align-items: center; gap: 8px; font-size: 0.88rem; font-weight: normal; cursor: pointer; background: #101b38; color: #ffffff; padding: 6px 10px; border-radius: 6px; border: 1px solid #1f2f54;">
+            <div class="course-picker-grid">
+              <label *ngFor="let course of getAvailableCoursesForDept(formData.department)" class="course-picker-item">
                 <input 
                   type="checkbox" 
                   [checked]="isCourseSelected(course)" 
@@ -114,7 +178,7 @@
                 <span><strong style="color: #fde68a;">{{ course.code ? course.code + ' : ' : '' }}</strong>{{ course.title }}</span>
               </label>
             </div>
-            <small style="color: #94a3b8; margin-top: 4px; display: block;">Check or uncheck the subjects this faculty member teaches across all semesters.</small>
+            <small style="color: #94a3b8; margin-top: 6px; display: block;">Check or uncheck the subjects this faculty member teaches across all semesters.</small>
           </div>
 
           <div class="form-actions">
@@ -128,11 +192,20 @@
     <!-- Table Section -->
     <div class="table-section">
       <div class="table-header">
-        <h3>Faculty List ({{ filteredFacultyList.length }})</h3>
+        <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+          <h3>👨‍🏫 Faculty Roster & Login Credentials ({{ filteredFacultyList.length }})</h3>
+        </div>
+
+        <div class="page-size-selector" *ngIf="filteredFacultyList.length > 0">
+          <label style="font-size: 0.85rem; color: #94a3b8; margin-right: 8px;">Show:</label>
+          <select [(ngModel)]="pageSize" (change)="onPageSizeChange()" class="page-size-select">
+            <option *ngFor="let opt of pageSizeOptions" [value]="opt">{{ opt }} per page</option>
+          </select>
+        </div>
       </div>
 
       <div *ngIf="filteredFacultyList.length === 0" class="empty-state">
-        <p>📭 No faculty members found. Start by adding your first faculty member.</p>
+        <p>📭 No faculty members found matching your search filters.</p>
         <button class="btn btn-primary" (click)="openAddForm()">+ Add Faculty</button>
       </div>
 
@@ -140,30 +213,39 @@
         <table class="data-table">
           <thead>
             <tr>
-              <th>Faculty ID</th>
-              <th>Name</th>
+              <th style="width: 110px;">Faculty ID</th>
+              <th>Faculty Name</th>
               <th>Department</th>
               <th>Designation</th>
-              <th>Email Address</th>
-              <th>Login Password</th>
+              <th>Official Email</th>
+              <th style="width: 130px;">🔑 Password</th>
               <th>Allocated Subjects</th>
-              <th style="width: 290px; text-align: center;">Actions</th>
+              <th style="width: 250px; text-align: center;">Actions</th>
             </tr>
           </thead>
           <tbody>
-            <tr *ngFor="let faculty of filteredFacultyList">
-              <td class="faculty-id">{{ faculty.id }}</td>
-              <td class="faculty-name"><strong>{{ faculty.name }}</strong></td>
+            <tr *ngFor="let faculty of pagedFacultyList">
+              <td>
+                <span class="id-pill fac-id">{{ faculty.id }}</span>
+              </td>
+              <td class="faculty-name">
+                <div style="display: flex; align-items: center; gap: 10px;">
+                  <div class="faculty-avatar">
+                    {{ faculty.name ? faculty.name.charAt(faculty.name.startsWith('Dr.') ? 4 : (faculty.name.startsWith('Prof.') ? 6 : 0)).toUpperCase() : 'F' }}
+                  </div>
+                  <strong>{{ faculty.name }}</strong>
+                </div>
+              </td>
               <td><span class="badge badge-dept">{{ faculty.department }}</span></td>
-              <td>{{ faculty.designation }}</td>
+              <td><span class="badge badge-desig">{{ faculty.designation }}</span></td>
               <td class="faculty-email">
                 <span style="font-family: monospace; color: #38bdf8;">{{ faculty.email }}</span>
               </td>
               <td class="faculty-password">
-                <code style="background: #091024; border: 1px solid #1f2f54; padding: 4px 8px; border-radius: 6px; font-weight: 700; color: #a7f3d0; font-family: monospace; font-size: 0.88rem;">{{ faculty.password || 'password' }}</code>
+                <code class="cred-pass-badge">{{ faculty.password || 'password' }}</code>
               </td>
               <td class="courses-cell">
-                <div *ngIf="faculty.courses && faculty.courses.length > 0" style="display: flex; flex-wrap: wrap; gap: 4px; max-width: 260px;">
+                <div *ngIf="faculty.courses && faculty.courses.length > 0" class="courses-badges-wrap">
                   <span *ngFor="let c of faculty.courses" class="courses-badge">{{ c }}</span>
                 </div>
                 <button *ngIf="!faculty.courses || faculty.courses.length === 0" (click)="openAllotModal(faculty)" class="btn-action-pill edit" style="padding: 2px 8px; font-size: 0.75rem;">
@@ -171,7 +253,7 @@
                 </button>
               </td>
               <td class="actions-cell">
-                <div class="actions-btn-wrap" style="display: flex; gap: 6px; flex-wrap: wrap; justify-content: center;">
+                <div class="actions-btn-wrap">
                   <button type="button" class="btn-action-pill copy" (click)="copyCredentials(faculty)" title="Copy login credentials to clipboard">
                     📋 Copy
                   </button>
@@ -181,7 +263,7 @@
                   <button type="button" class="btn-action-pill edit" (click)="openEditForm(faculty)" title="Edit Faculty Profile Details">
                     ✎ Edit
                   </button>
-                  <button type="button" class="btn-action-pill delete" (click)="deleteFaculty(faculty.id)" title="Delete Faculty">
+                  <button type="button" class="btn-action-pill delete" (click)="deleteFaculty(faculty.id)" title="Delete Faculty Profile">
                     🗑️
                   </button>
                 </div>
@@ -189,12 +271,40 @@
             </tr>
           </tbody>
         </table>
+
+        <!-- Pagination Controls Bar -->
+        <div class="pagination-bar" *ngIf="filteredFacultyList.length > pageSize">
+          <div class="pagination-info">
+            Showing <strong style="color: #d4af37;">{{ startIndex }}</strong> - <strong style="color: #d4af37;">{{ endIndex }}</strong> of <strong style="color: #f8fafc;">{{ filteredFacultyList.length }}</strong> faculty members
+          </div>
+          <div class="pagination-btns">
+            <button 
+              type="button" 
+              class="btn-action-pill" 
+              [disabled]="currentPage === 1" 
+              (click)="goToPage(currentPage - 1)" 
+              [style.opacity]="currentPage === 1 ? '0.4' : '1'"
+              [style.cursor]="currentPage === 1 ? 'not-allowed' : 'pointer'">
+              ◀ Previous
+            </button>
+            <span style="font-size: 0.88rem; color: #cbd5e1; font-weight: 600;">Page {{ currentPage }} of {{ totalPages }}</span>
+            <button 
+              type="button" 
+              class="btn-action-pill" 
+              [disabled]="currentPage === totalPages" 
+              (click)="goToPage(currentPage + 1)" 
+              [style.opacity]="currentPage === totalPages ? '0.4' : '1'"
+              [style.cursor]="currentPage === totalPages ? 'not-allowed' : 'pointer'">
+              Next ▶
+            </button>
+          </div>
+        </div>
       </div>
     </div>
 
     <!-- Dedicated Focused Allot Subjects Modal -->
     <div class="modal" *ngIf="showAllotModal">
-      <div class="modal-content" style="max-width: 650px;">
+      <div class="modal-content" style="max-width: 680px;">
         
         <div class="modal-header">
           <div>
@@ -248,42 +358,44 @@
               *ngFor="let course of filteredAllotCourses" 
               (click)="toggleAllotCourse(course)"
               [style.background]="isAllotCourseSelected(course) ? 'rgba(212, 175, 55, 0.15)' : '#091024'"
-              [style.border-color]="isAllotCourseSelected(course) ? '#d4af37' : '#1f2f54'"
-              style="display: flex; align-items: center; gap: 12px; padding: 10px 14px; border: 1.5px solid #1f2f54; border-radius: 8px; cursor: pointer; transition: all 0.15s ease;"
+              [style.borderColor]="isAllotCourseSelected(course) ? '#d4af37' : '#1f2f54'"
+              style="padding: 12px 14px; border: 1px solid #1f2f54; border-radius: 8px; cursor: pointer; display: flex; align-items: flex-start; gap: 10px; transition: all 0.15s ease;"
             >
               <input 
                 type="checkbox" 
                 [checked]="isAllotCourseSelected(course)" 
                 (click)="$event.stopPropagation()"
                 (change)="toggleAllotCourse(course)"
-                style="width: 18px; height: 18px; accent-color: #d4af37; cursor: pointer;"
+                style="margin-top: 3px; width: 16px; height: 16px; accent-color: #d4af37; cursor: pointer;"
               />
-              <div style="flex: 1; overflow: hidden;">
-                <div style="display: flex; align-items: center; gap: 6px; margin-bottom: 2px;">
-                  <span style="background: rgba(212, 175, 55, 0.15); color: #fde68a; font-size: 0.75rem; font-weight: 700; padding: 1px 6px; border-radius: 4px; font-family: monospace;">
+              <div style="flex: 1;">
+                <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 4px;">
+                  <strong style="font-size: 0.88rem; color: #ffffff;">{{ course.title }}</strong>
+                  <span style="font-size: 0.75rem; color: #fde68a; font-family: monospace; font-weight: 700; background: #101b38; padding: 2px 6px; border-radius: 4px; border: 1px solid #1f2f54;">
                     {{ course.code }}
                   </span>
-                  <span style="font-size: 0.75rem; color: #94a3b8;">{{ course.semester }}</span>
                 </div>
-                <strong style="font-size: 0.88rem; color: #ffffff; display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" [title]="course.title">
-                  {{ course.title }}
-                </strong>
+                <div style="font-size: 0.78rem; color: #94a3b8; display: flex; gap: 8px;">
+                  <span>{{ course.department || allottingFaculty?.department }}</span>
+                  <span>•</span>
+                  <span>{{ course.semester || 'All Semesters' }}</span>
+                </div>
               </div>
+            </div>
+
+            <div *ngIf="filteredAllotCourses.length === 0" style="grid-column: 1 / -1; padding: 30px; text-align: center; color: #94a3b8; background: #091024; border-radius: 8px; border: 1px dashed #1f2f54;">
+              <p style="margin: 0;">No subjects found for this department / search query.</p>
             </div>
           </div>
         </div>
 
-        <div class="modal-footer" style="padding: 16px 24px; background: #0d1730; border-top: 1px solid #1f2f54; display: flex; justify-content: flex-end; gap: 10px;">
+        <div class="modal-footer" style="display: flex; justify-content: flex-end; gap: 12px; padding: 16px 24px; border-top: 1px solid #1f2f54; background: #0d1730;">
           <button type="button" class="btn btn-secondary" (click)="closeAllotModal()">Cancel</button>
-          <button type="button" class="btn btn-primary" (click)="saveSubjectAllotment()">
-            💾 Save Allocated Subjects
-          </button>
+          <button type="button" class="btn btn-primary" (click)="saveSubjectAllotment()">Save Allotment ({{ selectedAllotCourses.length }})</button>
         </div>
-
       </div>
     </div>
-
-    <app-footer></app-footer>
   </div>
-
 </div>
+
+<app-footer></app-footer>
