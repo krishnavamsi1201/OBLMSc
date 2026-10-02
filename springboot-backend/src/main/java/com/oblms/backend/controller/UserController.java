@@ -31,6 +31,23 @@ public class UserController {
         return userRepository.findAll();
     }
 
+    @GetMapping("/{id}")
+    public ResponseEntity<?> getUserById(@PathVariable String id) {
+        Optional<User> userOpt = userRepository.findByIdIgnoreCase(id);
+        if (userOpt.isEmpty()) {
+            userOpt = userRepository.findByEmailIgnoreCase(id);
+        }
+        if (userOpt.isEmpty()) {
+            userOpt = userRepository.findAll().stream()
+                .filter(u -> u.getName() != null && u.getName().equalsIgnoreCase(id))
+                .findFirst();
+        }
+        if (userOpt.isPresent()) {
+            return ResponseEntity.ok(userOpt.get());
+        }
+        return ResponseEntity.status(404).body(Map.of("error", "User not found"));
+    }
+
     @PostMapping("/seed-all-branch-students")
     public ResponseEntity<?> seedAllBranchStudents() {
         csvSeederService.seedUsersFromDatasetCSV();

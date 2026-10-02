@@ -328,6 +328,18 @@ export class Login implements OnInit {
           const rollNum = 'CUTM2026' + shortDept + (numStr.length > 0 ? numStr.padStart(3, '0').slice(-3) : '042');
           localStorage.setItem('userRoll', rollNum);
 
+          if (response.semester) {
+            localStorage.setItem('userSemester', response.semester);
+            localStorage.setItem('userSem', response.semester);
+          } else if (response.role?.toLowerCase() === 'student') {
+            localStorage.setItem('userSemester', 'Semester 6');
+            localStorage.setItem('userSem', 'Semester 6');
+          }
+
+          if (response.enrolledCourses) {
+            localStorage.setItem('userEnrolledCourses', response.enrolledCourses);
+          }
+
           if (response.assignedCourses) {
             localStorage.setItem('userAssignedCourses', JSON.stringify(response.assignedCourses));
           }

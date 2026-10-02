@@ -528,6 +528,13 @@ export class Students implements OnInit, OnDestroy {
             }
           } catch {}
 
+          if (this.enrolledCourseCards.length > 0) {
+            const codes = this.enrolledCourseCards.map(c => (c.code || '').toUpperCase().trim()).filter(Boolean);
+            if (codes.length > 0) {
+              localStorage.setItem('userEnrolledCourses', codes.join(','));
+            }
+          }
+
           if (data.stats) {
             this.stats = { ...data.stats };
             this.stats.enrolledCourses = this.enrolledCourseCards.length;

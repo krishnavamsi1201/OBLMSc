@@ -8,6 +8,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -108,17 +109,20 @@ public class AuthController {
         // Generate HMAC-SHA256 signed JWT Bearer Token
         String token = jwtTokenProvider.generateToken(user);
 
-        return ResponseEntity.ok(Map.of(
-            "token", token,
-            "tokenType", "Bearer",
-            "expiresIn", 86400,
-            "id", user.getId(),
-            "name", user.getName(),
-            "email", user.getEmail(),
-            "role", user.getRole(),
-            "department", user.getDepartment() != null ? user.getDepartment() : "General",
-            "assignedCourses", assigned
-        ));
+        Map<String, Object> resp = new LinkedHashMap<>();
+        resp.put("token", token);
+        resp.put("tokenType", "Bearer");
+        resp.put("expiresIn", 86400);
+        resp.put("id", user.getId());
+        resp.put("name", user.getName());
+        resp.put("email", user.getEmail());
+        resp.put("role", user.getRole());
+        resp.put("department", user.getDepartment() != null ? user.getDepartment() : "General");
+        resp.put("semester", user.getSemester() != null ? user.getSemester() : "Semester 6");
+        resp.put("enrolledCourses", user.getEnrolledCourses() != null ? user.getEnrolledCourses() : "CS101,CS102,CS103,CS203,CS204,CS101L,CS102L");
+        resp.put("assignedCourses", assigned);
+
+        return ResponseEntity.ok(resp);
     }
 
     @PostMapping("/change-password")

@@ -56,16 +56,41 @@
             </div>
         </div>
 
+        <!-- Student Course Filter Tabs (All / Enrolled / Available) -->
+        <div class="student-course-tabs" *ngIf="role === 'student'">
+            <button type="button" 
+                    [class.active-filter-tab]="studentViewFilter === 'all'" 
+                    (click)="setStudentViewFilter('all')" 
+                    class="course-filter-tab">
+                <span class="material-icons" style="font-size: 18px;">apps</span>
+                All Courses & Catalog ({{ filteredCourses.length }})
+            </button>
+            <button type="button" 
+                    [class.active-filter-tab]="studentViewFilter === 'enrolled'" 
+                    (click)="setStudentViewFilter('enrolled')" 
+                    class="course-filter-tab tab-enrolled">
+                <span class="material-icons" style="font-size: 18px;">check_circle</span>
+                My Enrolled Courses ({{ enrolledCount }})
+            </button>
+            <button type="button" 
+                    [class.active-filter-tab]="studentViewFilter === 'available'" 
+                    (click)="setStudentViewFilter('available')" 
+                    class="course-filter-tab tab-available">
+                <span class="material-icons" style="font-size: 18px;">add_circle</span>
+                Available to Enroll ({{ availableCount }})
+            </button>
+        </div>
+
         <div class="courses-table-card">
             <!-- Search & Filter Toolbar -->
             <div class="table-filter-toolbar">
                 <div class="search-input-wrap">
                     <span class="material-icons search-icon-badge" style="font-size: 18px; color: #94a3b8;">search</span>
-                    <input type="text" [(ngModel)]="searchQuery" placeholder="Search by code, title, faculty..." />
+                    <input type="text" [(ngModel)]="searchQuery" placeholder="Search by code, title, faculty, semester..." />
                 </div>
                 <div class="filter-controls" *ngIf="semesters.length > 0">
                     <select [(ngModel)]="selectedSemester" class="filter-select">
-                        <option value="">{{ role === 'student' ? '🎓 My Semester (' + getStudentSemester() + ')' : 'All Semesters' }}</option>
+                        <option value="">{{ role === 'student' ? '🌐 All Semesters (Enrolled First)' : 'All Semesters' }}</option>
                         <option *ngFor="let sem of semesters" [value]="sem">{{ sem }}</option>
                     </select>
                 </div>
@@ -78,20 +103,38 @@
                         <th>Course Name</th>
                         <th>Faculty</th>
                         <th>Semester</th>
+                        <th *ngIf="role === 'student'">Enrollment Status</th>
                         <th>Actions</th>
                     </tr>
                 </thead>
                 <tbody>
                     <tr *ngIf="filteredCourses.length === 0">
-                        <td colspan="5">
+                        <td [attr.colspan]="role === 'student' ? 6 : 5" style="text-align: center; padding: 30px; color: #94a3b8;">
                             {{ courses.length === 0 ? 'No courses created yet.' : (role === 'faculty' ? 'No courses currently allocated to your faculty account.' : 'No courses matching search/filter criteria.') }}
                         </td>
                     </tr>
-                    <tr *ngFor="let course of filteredCourses; index as i">
+                    <tr *ngFor="let course of filteredCourses; index as i" [class.enrolled-row]="role === 'student' && isEnrolled(course.code)">
                         <td><span class="obe-badge obe-badge-co">{{ course.code }}</span></td>
                         <td><strong>{{ course.title }}</strong></td>
                         <td>{{ course.faculty || 'Unassigned' }}</td>
                         <td>{{ course.semester }}</td>
+                        
+                        <!-- Student Status Column -->
+                        <td *ngIf="role === 'student'">
+                            <span *ngIf="isEnrolled(course.code)" class="badge-pill-success">
+                                <span class="material-icons" style="font-size: 14px;">check_circle</span> Enrolled
+                            </span>
+                            <span *ngIf="!isEnrolled(course.code) && isRequestPending(course.code)" class="badge-pill-warning">
+                                <span class="material-icons" style="font-size: 14px;">hourglass_top</span> Pending Approval
+                            </span>
+                            <span *ngIf="!isEnrolled(course.code) && isRequestRejected(course.code)" class="badge-pill-danger">
+                                <span class="material-icons" style="font-size: 14px;">cancel</span> Rejected
+                            </span>
+                            <span *ngIf="!isEnrolled(course.code) && !isRequestPending(course.code) && !isRequestRejected(course.code)" style="color: #94a3b8; font-size: 0.8rem;">
+                                Not Enrolled
+                            </span>
+                        </td>
+
                         <td class="actions-cell">
                             <!-- Admin Actions -->
                             <ng-container *ngIf="role === 'admin'">
@@ -113,15 +156,17 @@
 
                             <!-- Student Actions -->
                             <ng-container *ngIf="role === 'student'">
-                                <span *ngIf="isEnrolled(course.code)" class="badge-pill-success">Enrolled</span>
-                                <button *ngIf="isEnrolled(course.code)" type="button" class="btn btn-primary" (click)="trackSyllabus(course)">Track Syllabus</button>
-                                
-                                <span *ngIf="isRequestPending(course.code)" class="badge-pill-warning">Pending Approval</span>
-                                <span *ngIf="isRequestRejected(course.code)" class="badge-pill-danger">Rejected</span>
-                                
-                                <button *ngIf="!isEnrolled(course.code) && !isRequestPending(course.code)" type="button" class="btn btn-primary" (click)="requestEnrollment(course)">
-                                    Request Enrollment
+                                <button *ngIf="isEnrolled(course.code)" type="button" class="btn btn-primary" (click)="trackSyllabus(course)" style="display: inline-flex; align-items: center; gap: 6px;">
+                                    <span class="material-icons" style="font-size: 16px;">fact_check</span> Track Syllabus
                                 </button>
+                                
+                                <button *ngIf="!isEnrolled(course.code) && !isRequestPending(course.code)" type="button" class="btn-request-enroll" (click)="requestEnrollment(course)">
+                                    <span class="material-icons" style="font-size: 16px;">add_circle_outline</span> Request Enrollment
+                                </button>
+
+                                <span *ngIf="!isEnrolled(course.code) && isRequestPending(course.code)" style="color: #fbbf24; font-size: 0.84rem; font-weight: 600;">
+                                    Awaiting Approval ⏳
+                                </span>
                             </ng-container>
                         </td>
                     </tr>

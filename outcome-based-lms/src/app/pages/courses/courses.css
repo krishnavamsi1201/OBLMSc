@@ -498,3 +498,122 @@
   height: 20px;
   width: 20px;
 }
+
+/* ==========================================================================
+   Student Course Filter Tabs & Row Badges
+   ========================================================================== */
+.student-course-tabs {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+
+.course-filter-tab {
+  background: #0d1733;
+  color: #94a3b8;
+  border: 1px solid #1f2f54;
+  padding: 8px 18px;
+  border-radius: 12px;
+  font-size: 0.9rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.course-filter-tab:hover {
+  background: #142247;
+  color: #ffffff;
+  border-color: #3b82f6;
+  transform: translateY(-1px);
+}
+
+.course-filter-tab.active-filter-tab {
+  background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 100%);
+  color: #ffffff;
+  border-color: #60a5fa;
+  box-shadow: 0 4px 14px rgba(37, 99, 235, 0.4);
+}
+
+.course-filter-tab.tab-enrolled.active-filter-tab {
+  background: linear-gradient(135deg, #065f46 0%, #059669 100%);
+  border-color: #34d399;
+  box-shadow: 0 4px 14px rgba(5, 150, 105, 0.4);
+}
+
+.course-filter-tab.tab-available.active-filter-tab {
+  background: linear-gradient(135deg, #78350f 0%, #d97706 100%);
+  border-color: #fbbf24;
+  box-shadow: 0 4px 14px rgba(217, 119, 6, 0.4);
+}
+
+.enrolled-row {
+  background: rgba(16, 185, 129, 0.04);
+}
+
+.enrolled-row td:first-child {
+  border-left: 3px solid #10b981;
+}
+
+.badge-pill-success {
+  background: rgba(16, 185, 129, 0.18);
+  color: #34d399;
+  border: 1px solid rgba(16, 185, 129, 0.45);
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.badge-pill-warning {
+  background: rgba(245, 158, 11, 0.18);
+  color: #fbbf24;
+  border: 1px solid rgba(245, 158, 11, 0.45);
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.badge-pill-danger {
+  background: rgba(239, 68, 68, 0.18);
+  color: #f87171;
+  border: 1px solid rgba(239, 68, 68, 0.45);
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.btn-request-enroll {
+  background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 100%);
+  color: #ffffff;
+  border: 1px solid rgba(96, 165, 250, 0.5);
+  padding: 7px 14px;
+  border-radius: 8px;
+  font-weight: 700;
+  font-size: 0.84rem;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.2s ease;
+}
+
+.btn-request-enroll:hover {
+  background: linear-gradient(135deg, #2563eb 0%, #3b82f6 100%);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.35);
+}
