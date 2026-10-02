@@ -336,51 +336,7 @@ export class Faculty implements OnInit {
       }
     } catch {}
 
-    const firstNames = [
-      'Aarav', 'Vivaan', 'Aditya', 'Vihaan', 'Arjun', 'Sai', 'Reyansh', 'Ayaan', 'Krishna', 'Ishaan',
-      'Shaurya', 'Atharv', 'Advik', 'Pranav', 'Advaith', 'Aarush', 'Dhruv', 'Kabir', 'Rudra', 'Ananya',
-      'Diya', 'Gauri', 'Isha', 'Kavya', 'Khushi', 'Mira', 'Navya', 'Pooja', 'Priya', 'Riya',
-      'Saanvi', 'Sara', 'Shreya', 'Sneha', 'Tanvi', 'Veda', 'Zoya', 'Rahul', 'Rohan', 'Vamsi'
-    ];
-    const lastNames = [
-      'Sharma', 'Verma', 'Patel', 'Reddy', 'Nair', 'Rao', 'Kumar', 'Mishra', 'Gupta', 'Singh',
-      'Das', 'Chatterjee', 'Mukherjee', 'Bose', 'Sen', 'Banerjee', 'Ghosh', 'Dutta', 'Roy', 'Choudhury'
-    ];
-
-    const currentCourses = this.courses.map(c => c.name);
-    const fallbackCourseNames = currentCourses.length > 0 ? currentCourses : [
-      'Database Management Systems (CS101)',
-      'Object-Oriented Programming in Java (CS103)',
-      'DBMS Practicum Laboratory',
-      'Data Structures & Algorithms (CS102)'
-    ];
-
-    if (list.length < 240) {
-      const fullList = [];
-      for (let i = 0; i < 240; i++) {
-        const existing = list[i];
-        if (existing && existing.name) {
-          fullList.push(existing);
-        } else {
-          const fn = firstNames[i % firstNames.length];
-          const ln = lastNames[(i * 3 + Math.floor(i / 10)) % lastNames.length];
-          const semNum = (i % 8) + 1;
-          const regNum = `CUTM2026CSE${String(i + 1).padStart(3, '0')}`;
-          const assignedSubj = fallbackCourseNames[i % fallbackCourseNames.length];
-          fullList.push({
-            id: `STU${i + 1}`,
-            regNo: regNum,
-            name: `${fn} ${ln}`,
-            email: `${fn.toLowerCase()}.${ln.toLowerCase()}${i + 1}@centurionuniv.edu.in`,
-            department: 'Computer Science & Engineering',
-            semester: `Semester ${semNum}`,
-            enrolledCourses: assignedSubj
-          });
-        }
-      }
-      list = fullList;
-    }
-
+    const defaultCourse = this.courses[0]?.name || 'Database Management Systems';
     this.allEnrolledStudentsRoster = list.map((s: any, idx: number) => {
       const sDept = s.department || s.dept || 'Computer Science & Engineering';
       const sSem = s.semester || `Semester ${((idx % 8) + 1)}`;
@@ -391,7 +347,7 @@ export class Faculty implements OnInit {
         email: s.email || `${(s.name || 'student').toLowerCase().replace(/\s+/g, '.')}@centurionuniv.edu.in`,
         department: sDept,
         semester: sSem,
-        enrolledCourses: s.enrolledCourses || fallbackCourseNames[idx % fallbackCourseNames.length]
+        enrolledCourses: s.enrolledCourses || s.courses || defaultCourse
       };
     });
   }

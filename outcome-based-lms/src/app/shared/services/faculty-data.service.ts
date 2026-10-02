@@ -480,23 +480,16 @@ export class FacultyDataService {
         const courseName = course.name;
         const courseCode = course.code;
 
-        // Find all unique student names associated with this course
-        // (Either from student roster, mark entries, or attendance logs)
+        // Find all unique student names associated strictly with this course
         const studentNames = new Set<string>();
 
-        // 1. Check all students in localStorage who have this course or department in their profile
+        // 1. Check students explicitly enrolled in this course
         allStudents.forEach((st: any) => {
           const enrolledCourses = (st.enrolledCourses || st.courses || st.course || '').toLowerCase();
-          const sDept = (st.department || st.dept || '').toLowerCase();
-          const sSem = (st.semester || '').toLowerCase();
-          const cSem = (course.semester || '').toLowerCase();
-          const isDeptStudent = sDept.includes('comp') || sDept.includes('cse') || sDept.includes('cs') || courseCode.toLowerCase().startsWith('cs');
-
           const matchExplicit = enrolledCourses.includes(courseCode.toLowerCase()) || 
-                                enrolledCourses.includes(courseName.toLowerCase()) ||
-                                (isDeptStudent && (sSem === cSem || !cSem || cSem.includes(sSem) || sSem.includes(cSem)));
+                                enrolledCourses.includes(courseName.toLowerCase());
 
-          if (matchExplicit || isDeptStudent) {
+          if (matchExplicit) {
             studentNames.add(st.name.trim());
           }
         });
@@ -522,12 +515,21 @@ export class FacultyDataService {
           }
         });
 
-        // Fallback to enrolled batch if still empty
+        // Fallback: If no marks/enrollments yet, map students of matching department & semester
         if (studentNames.size === 0 && allStudents.length > 0) {
-          allStudents.forEach((st: any) => studentNames.add(st.name.trim()));
+          allStudents.forEach((st: any) => {
+            const sDept = (st.department || st.dept || '').toLowerCase();
+            const sSem = (st.semester || '').toLowerCase();
+            const cSem = (course.semester || '').toLowerCase();
+            const isDeptStudent = sDept.includes('comp') || sDept.includes('cse') || sDept.includes('cs') || courseCode.toLowerCase().startsWith('cs');
+
+            if (isDeptStudent && sSem && cSem && (sSem === cSem || cSem.includes(sSem) || sSem.includes(cSem))) {
+              studentNames.add(st.name.trim());
+            }
+          });
         }
 
-        // Now compute metrics for each student in this course
+        // Now compute real metrics for each student in this course (no fake numbers)
         studentNames.forEach(studentName => {
           const sNameLower = studentName.toLowerCase();
 
@@ -547,13 +549,12 @@ export class FacultyDataService {
             maxMarksTotal += Number(m.maxMarks) || 100;
           });
 
-          // If student has taken marks, use real average; else calculate baseline
-          const hash = studentName.split('').reduce((acc: number, char: string) => acc + char.charCodeAt(0), 0);
+          // Pure real attainment percentage from entered marks
           const coAttainment = maxMarksTotal > 0
             ? Math.round((obtainedTotal / maxMarksTotal) * 100)
-            : (68 + (hash % 24));
+            : 0;
 
-          // Aggregate attendance for this student and this course
+          // Aggregate real attendance for this student and this course
           const studentCourseAtt = attendance.filter((a: any) =>
             a.student && a.student.trim().toLowerCase() === sNameLower &&
             a.course && (
@@ -567,8 +568,6 @@ export class FacultyDataService {
           if (studentCourseAtt.length > 0) {
             const presentCount = studentCourseAtt.filter((a: any) => a.status === 'Present').length;
             attendancePct = Math.round((presentCount / studentCourseAtt.length) * 100);
-          } else {
-            attendancePct = 78 + (hash % 20);
           }
 
           progressList.push({
@@ -578,7 +577,7 @@ export class FacultyDataService {
             courseName: courseName,
             attendance: attendancePct,
             coAttainment: coAttainment,
-            totalAssessments: Math.max(1, studentCourseMarks.length),
+            totalAssessments: studentCourseMarks.length,
             lastUpdate: new Date()
           });
         });

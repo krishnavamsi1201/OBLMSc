@@ -429,44 +429,46 @@
 						<h2>Real-Time Student Progress Matrix ({{ filteredProgressList.length }})</h2>
 						<p class="section-subtitle">Semester-wise breakdown of student attainment and attendance with smart pagination.</p>
 					</div>
-					<div class="filter-group progress-matrix-filters">
-						<!-- 1. Semester Selector -->
-						<div class="matrix-filter-item">
-							<span class="filter-icon material-icons">calendar_today</span>
-							<select [(ngModel)]="progressSemesterFilter" (ngModelChange)="onSemesterFilterChange()" class="matrix-select">
-								<option value="">All Semesters</option>
-								<option *ngFor="let sem of availableProgressSemesters" [value]="sem">{{ sem }}</option>
-							</select>
-						</div>
-
-						<!-- 2. Course Selector -->
-						<div class="matrix-filter-item">
-							<span class="filter-icon material-icons">menu_book</span>
-							<select [(ngModel)]="progressCourseFilter" (ngModelChange)="onProgressFilterChange()" class="matrix-select">
-								<option value="">All Courses ({{ availableProgressCourses.length }})</option>
-								<option *ngFor="let c of availableProgressCourses" [value]="c.name">{{ c.name }}</option>
-							</select>
-						</div>
-
-						<!-- 3. Student Search Box -->
-						<div class="matrix-search-box">
-							<span class="search-icon material-icons">search</span>
-							<input type="text" 
-								   [(ngModel)]="progressSearchQuery" 
-								   (ngModelChange)="onProgressFilterChange()" 
-								   placeholder="Search student..." 
-								   class="matrix-search-input" />
-							<button *ngIf="progressSearchQuery" 
-									type="button" 
-									class="matrix-clear-btn" 
-									(click)="progressSearchQuery=''; onProgressFilterChange()"
-									title="Clear search">✕</button>
-						</div>
-
-						<!-- 4. Export CSV -->
+					<div class="header-btn-group">
 						<button class="action-btn secondary small" (click)="exportGradebookCsv()" title="Export Filtered Roster CSV">
 							<span class="material-icons" style="font-size: 15px; vertical-align: middle;">download</span> Export CSV
 						</button>
+					</div>
+				</div>
+
+				<!-- Dedicated Non-Overlapping Filters & Controls Bar -->
+				<div class="progress-matrix-toolbar">
+					<!-- 1. Semester Selector -->
+					<div class="matrix-filter-item">
+						<span class="filter-icon material-icons">calendar_today</span>
+						<select [(ngModel)]="progressSemesterFilter" (ngModelChange)="onSemesterFilterChange()" class="matrix-select">
+							<option value="">All Semesters</option>
+							<option *ngFor="let sem of availableProgressSemesters" [value]="sem">{{ sem }}</option>
+						</select>
+					</div>
+
+					<!-- 2. Course Selector -->
+					<div class="matrix-filter-item">
+						<span class="filter-icon material-icons">menu_book</span>
+						<select [(ngModel)]="progressCourseFilter" (ngModelChange)="onProgressFilterChange()" class="matrix-select">
+							<option value="">All Courses ({{ availableProgressCourses.length }})</option>
+							<option *ngFor="let c of availableProgressCourses" [value]="c.name">{{ c.name }}</option>
+						</select>
+					</div>
+
+					<!-- 3. Student Search Box -->
+					<div class="matrix-search-box">
+						<span class="search-icon material-icons">search</span>
+						<input type="text" 
+							   [(ngModel)]="progressSearchQuery" 
+							   (ngModelChange)="onProgressFilterChange()" 
+							   placeholder="Search student..." 
+							   class="matrix-search-input" />
+						<button *ngIf="progressSearchQuery" 
+								type="button" 
+								class="matrix-clear-btn" 
+								(click)="progressSearchQuery=''; onProgressFilterChange()"
+								title="Clear search">✕</button>
 					</div>
 				</div>
 
