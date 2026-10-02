@@ -1,5 +1,5 @@
 <!-- Floating Chat Button -->
-<button class="chat-float-btn" (click)="toggleChat()" title="OBLMS Chatbot">
+<button class="chat-float-btn" (click)="toggleChat()" title="SIDDHI AI Chatbot">
   <span class="float-icon">🤖</span>
   <span class="float-pulse"></span>
   <span class="ai-badge-chip">AI</span>
@@ -15,7 +15,7 @@
         <div class="bot-avatar">🤖</div>
         <div>
           <div class="bot-title-row">
-            <h3>OBLMS AI Assistant</h3>
+            <h3>SIDDHI AI Assistant</h3>
             <span class="ai-model-tag">⚡ AI Generative Model</span>
           </div>
           <span class="bot-status"><span class="status-dot"></span> Online • RAG Database Brain</span>
@@ -74,7 +74,7 @@
           <div class="bubble-wrap">
             <div class="message-meta-row">
               <span class="message-label">
-                {{ message.from === 'user' ? '👤 You' : '🤖 OBLMS AI' }}
+                {{ message.from === 'user' ? '👤 You' : '✨ SIDDHI AI' }}
               </span>
               <span class="message-time" *ngIf="message.timestamp">{{ message.timestamp }}</span>
             </div>
@@ -111,7 +111,7 @@
         <!-- Thinking / Generating Indicator -->
         <div class="message-row message-bot" *ngIf="isThinking">
           <div class="bubble-wrap">
-            <div class="message-label">🤖 OBLMS AI</div>
+            <div class="message-label">✨ SIDDHI AI</div>
             <div class="message-text thinking-bubble">
               <span class="thinking-dots">
                 <span class="dot"></span>
@@ -179,7 +179,7 @@
     <div class="settings-modal-header">
       <div style="display: flex; align-items: center; gap: 8px;">
         <span style="font-size: 1.3rem;">⚙️</span>
-        <h3 style="margin: 0; color: #d4af37; font-size: 1.15rem;">OBLMS Chatbot Settings</h3>
+        <h3 style="margin: 0; color: #d4af37; font-size: 1.15rem;">SIDDHI Chatbot Settings</h3>
       </div>
       <button type="button" class="close-btn" (click)="closeSettings()">✕</button>
     </div>

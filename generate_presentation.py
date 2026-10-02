@@ -65,7 +65,7 @@ def add_footer(slide, current_page, total_pages=20):
     tf.margin_top = 0
     tf.margin_bottom = 0
     p = tf.paragraphs[0]
-    p.text = f"OBLMS — Outcome-Based Learning Management System  |  Software Technology Project  |  Slide {current_page} of {total_pages}"
+    p.text = f"SIDDHI v2.0 — Outcome-Based Learning Management System  |  Centurion University  |  Slide {current_page} of {total_pages}"
     p.font.name = 'Calibri'
     p.font.size = Pt(10.5)
     p.font.color.rgb = COLOR_TEXT_MUTED
@@ -105,7 +105,7 @@ title_box = slide1.shapes.add_textbox(Inches(1.2), Inches(1.65), Inches(10.9), I
 tf = title_box.text_frame
 tf.word_wrap = True
 p1 = tf.paragraphs[0]
-p1.text = "Outcome-Based Learning Management &\nAccreditation Governance System (OBLMS)"
+p1.text = "Project SIDDHI: Smart Outcome-Based Learning &\nAccreditation Governance System"
 p1.font.name = 'Calibri'
 p1.font.size = Pt(28)
 p1.font.bold = True
@@ -186,7 +186,7 @@ intro_cards = [
         "Teaching Faculty: Manages subject workloads, grades exams & maps questions to COs.",
         "Enrolled Students: Views dynamic SGPA/CGPA marksheets & official PDF transcripts."
     ], COLOR_GOLD),
-    ("💻 The Solution: OBLMS", [
+    ("💻 The Solution: Project SIDDHI", [
         "Enterprise single-page web application built with Angular 18 and Java/Spring Boot.",
         "Automates curriculum allocation, weighted grading, SGPA/CGPA, and SAR reporting.",
         "Features real-time state synchronization across browser tabs with zero lag."
@@ -339,7 +339,7 @@ table.columns[0].width = Inches(3.2)
 table.columns[1].width = Inches(4.4)
 table.columns[2].width = Inches(4.533)
 
-headers = ["Operational Area", "Manual Existing System", "Proposed OBLMS Platform"]
+headers = ["Operational Area", "Manual Existing System", "Proposed SIDDHI Platform"]
 for i, h in enumerate(headers):
     cell = table.cell(0, i)
     cell.fill.solid()
@@ -1097,7 +1097,7 @@ p.font.bold = True
 p.font.color.rgb = COLOR_GOLD
 
 conclusions = [
-    "Successfully built and deployed OBLMS, an Outcome-Based Learning Management System adhering to NBA Tier-1 and NAAC 2.6 standards.",
+    "Successfully architected and developed Project SIDDHI, an Outcome-Based Learning Management System adhering to NBA Tier-1 and NAAC 2.6 standards.",
     "Eliminated manual calculation overhead by automating CIE/SEE weights (40/60), SGPA/CGPA transcripts, and 12-PO vectors.",
     "Delivered a luxury, responsive dark UI featuring dual-view faculty workload decks and expandable student marksheet accordions.",
     "Verified 100% production compilation readiness with zero errors on Angular 18."
@@ -1178,13 +1178,20 @@ for idx, (item, note, color) in enumerate(checklist):
 add_footer(slide20, 20)
 
 # Save Final PPTX
+siddhi_path = r"D:\OBLMSc\Project_SIDDHI_Final_Presentation.pptx"
+prs.save(siddhi_path)
+sys.stdout.write(f"SUCCESS: SIDDHI Presentation saved at {siddhi_path}\n")
+
 output_path_v2 = r"D:\OBLMSc\Project_Final_Presentation_V2.pptx"
-prs.save(output_path_v2)
-sys.stdout.write(f"SUCCESS: Presentation V2 saved at {output_path_v2}\n")
+try:
+    prs.save(output_path_v2)
+    sys.stdout.write(f"SUCCESS: Presentation V2 saved at {output_path_v2}\n")
+except Exception as e:
+    sys.stdout.write(f"Note: Project_Final_Presentation_V2.pptx is open in PowerPoint. Saved as Project_SIDDHI_Final_Presentation.pptx.\n")
 
 output_path = r"D:\OBLMSc\Project_Final_Presentation.pptx"
 try:
     prs.save(output_path)
     sys.stdout.write(f"SUCCESS: Presentation saved at {output_path}\n")
 except Exception as e:
-    sys.stdout.write(f"Note: Main file was locked in viewer, saved as V2 successfully.\n")
+    pass
