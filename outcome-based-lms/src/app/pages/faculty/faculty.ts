@@ -779,9 +779,18 @@ export class Faculty implements OnInit {
   // ==========================================
   // 1. QUICK MARKS ENTRY & CSV BATCH ACTIONS
   // ==========================================
+  cachedEnrolledStudents: Array<{ id?: any; name: string; rollNo?: string }> = [];
+
   get enrolledStudentsForSelectedCourse(): Array<{ id?: any; name: string; rollNo?: string }> {
+    if (this.cachedEnrolledStudents.length === 0) {
+      this.updateCachedEnrolledStudents();
+    }
+    return this.cachedEnrolledStudents;
+  }
+
+  updateCachedEnrolledStudents(): void {
     const allStudents = this.getSafeJson('obslmsStudents');
-    const courseName = this.markEntryCourse;
+    const courseName = (this.markEntryCourse || '').trim().toLowerCase();
     const studentMap = new Map<string, { id?: any; name: string; rollNo?: string }>();
 
     // 1. Check registered students in obslmsStudents
@@ -804,7 +813,7 @@ export class Faculty implements OnInit {
     if (this.rawDashboardData?.studentProgressSummary) {
       this.rawDashboardData.studentProgressSummary.forEach((sp: any) => {
         const spName = (sp.studentName || '').trim();
-        if (spName && (!courseName || (sp.courseName || '').toLowerCase().includes(courseName.toLowerCase()) || courseName.toLowerCase().includes((sp.courseName || '').toLowerCase()))) {
+        if (spName && (!courseName || (sp.courseName || '').toLowerCase().includes(courseName) || courseName.includes((sp.courseName || '').toLowerCase()))) {
           if (!studentMap.has(spName.toLowerCase())) {
             studentMap.set(spName.toLowerCase(), {
               id: sp.studentId || sp.rollNo || '',
@@ -816,9 +825,9 @@ export class Faculty implements OnInit {
       });
     }
 
-    // 3. Fallback to all registered students if specific course mapping is empty
+    // 3. Limit fallback to reasonable batch size if specific course mapping is empty
     if (studentMap.size === 0 && allStudents.length > 0) {
-      allStudents.forEach((s: any) => {
+      allStudents.slice(0, 30).forEach((s: any) => {
         const sName = (s.name || s.studentName || '').trim();
         if (sName && !studentMap.has(sName.toLowerCase())) {
           studentMap.set(sName.toLowerCase(), {
@@ -832,16 +841,16 @@ export class Faculty implements OnInit {
 
     // 4. Default fallback list if no students are registered yet
     if (studentMap.size === 0) {
-      return [
+      this.cachedEnrolledStudents = [
         { name: 'Aditya Sharma', rollNo: 'STU101' },
         { name: 'Pooja Reddy', rollNo: 'STU102' },
         { name: 'Rahul Verma', rollNo: 'STU103' },
         { name: 'Sneha Patel', rollNo: 'STU104' },
         { name: 'Kiran Kumar', rollNo: 'STU105' }
       ];
+    } else {
+      this.cachedEnrolledStudents = Array.from(studentMap.values()).slice(0, 50);
     }
-
-    return Array.from(studentMap.values());
   }
 
   openMarkEntryModal(assessment?: Assessment): void {
@@ -863,15 +872,18 @@ export class Faculty implements OnInit {
 
     this.populateMarkEntryRows();
     this.showMarkEntryModal = true;
+    this.cdr.detectChanges();
   }
 
   onMarkEntryCourseChange(): void {
+    this.updateCachedEnrolledStudents();
     this.populateMarkEntryRows();
   }
 
   populateMarkEntryRows(): void {
+    this.updateCachedEnrolledStudents();
     const existingMarks = this.getSafeJson('obslmsMarkEntries');
-    const enrolledStudents = this.enrolledStudentsForSelectedCourse;
+    const enrolledStudents = this.cachedEnrolledStudents;
 
     const assessmentMarks = existingMarks.filter((m: any) =>
       m.assessment && m.assessment.toLowerCase() === this.markEntryAssessmentTitle.toLowerCase()
@@ -902,7 +914,7 @@ export class Faculty implements OnInit {
   }
 
   addMarkRow(): void {
-    const enrolled = this.enrolledStudentsForSelectedCourse;
+    const enrolled = this.cachedEnrolledStudents;
     const existingNames = new Set(this.markEntryRows.map(r => r.studentName.toLowerCase()));
     const available = enrolled.find(s => !existingNames.has(s.name.toLowerCase()));
     const defaultName = available ? available.name : (enrolled[0]?.name || '');

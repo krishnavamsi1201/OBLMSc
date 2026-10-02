@@ -665,35 +665,55 @@
 						</label>
 					</div>
 
-					<div class="marks-table-header">
-						<h3>Student Scores ({{ markEntryRows.length }} Students)</h3>
-						<button class="add-row-btn" (click)="addMarkRow()">+ Add Student Row</button>
+					<div class="marks-table-header" style="display: flex; justify-content: space-between; align-items: center; margin-top: 16px; margin-bottom: 8px;">
+						<h3 style="margin: 0; font-size: 1.05rem; color: #ffffff;">Student Scores ({{ markEntryRows.length }} Students)</h3>
+						<button type="button" class="add-row-btn" (click)="addMarkRow()" style="background: #1e3a8a; color: #ffffff; border: 1px solid #3b82f6; padding: 6px 14px; border-radius: 6px; font-weight: 600; cursor: pointer;">+ Add Student Row</button>
 					</div>
 
-					<div class="marks-sheet-container">
-						<table class="marks-entry-table">
+					<datalist id="enrolledStudentsDatalist">
+						<option *ngFor="let s of cachedEnrolledStudents" [value]="s.name">{{ s.name }} {{ s.rollNo ? '(' + s.rollNo + ')' : '' }}</option>
+					</datalist>
+
+					<div class="marks-sheet-container" style="max-height: 380px; overflow-y: auto; border: 1px solid #1f2f54; border-radius: 8px;">
+						<table class="marks-entry-table" style="width: 100%; border-collapse: collapse;">
 							<thead>
-								<tr>
-									<th>Enrolled Student Name</th>
-									<th>Marks Obtained (Max: {{ markEntryMaxMarks }})</th>
-									<th>Action</th>
+								<tr style="background: #0f1c3f; position: sticky; top: 0; z-index: 2;">
+									<th style="width: 50px; text-align: center; padding: 10px;">#</th>
+									<th style="padding: 10px; text-align: left;">Enrolled Student Name</th>
+									<th style="width: 200px; text-align: center; padding: 10px;">Marks Obtained (Max: {{ markEntryMaxMarks }})</th>
+									<th style="width: 80px; text-align: center; padding: 10px;">Action</th>
 								</tr>
 							</thead>
 							<tbody>
-								<tr *ngFor="let row of markEntryRows; let i = index">
-									<td>
-										<select [(ngModel)]="row.studentName" class="student-select-field">
-											<option value="" disabled>-- Select Registered Student --</option>
-											<option *ngFor="let s of enrolledStudentsForSelectedCourse" [value]="s.name">
-												{{ s.name }} {{ s.rollNo ? '(' + s.rollNo + ')' : '' }}
-											</option>
-										</select>
+								<tr *ngFor="let row of markEntryRows; let i = index" style="border-bottom: 1px solid #1f2f54;">
+									<td style="text-align: center; color: #94a3b8; font-weight: 600; padding: 8px;">{{ i + 1 }}</td>
+									<td style="padding: 8px 10px;">
+										<input 
+											type="text" 
+											[(ngModel)]="row.studentName" 
+											list="enrolledStudentsDatalist" 
+											placeholder="Select or enter student name..." 
+											style="width: 100%; box-sizing: border-box; padding: 8px 12px; background: #091024; border: 1px solid #1f2f54; border-radius: 6px; color: #ffffff; font-size: 0.9rem;" 
+										/>
 									</td>
-									<td>
-										<input type="number" [(ngModel)]="row.obtained" min="0" [max]="markEntryMaxMarks" />
+									<td style="padding: 8px 10px;">
+										<input 
+											type="number" 
+											[(ngModel)]="row.obtained" 
+											min="0" 
+											[max]="markEntryMaxMarks" 
+											style="width: 100%; box-sizing: border-box; padding: 8px 12px; background: #091024; border: 1px solid #1f2f54; border-radius: 6px; color: #ffffff; font-size: 0.9rem; font-weight: 700; text-align: center;" 
+										/>
 									</td>
-									<td>
-										<button class="delete-row-btn" (click)="removeMarkRow(i)"><span class="material-icons" style="font-size: 16px;">delete</span></button>
+									<td style="text-align: center; padding: 8px 10px;">
+										<button type="button" class="delete-row-btn" (click)="removeMarkRow(i)" style="background: rgba(239, 68, 68, 0.15); border: 1px solid #ef4444; color: #ef4444; border-radius: 6px; padding: 4px 8px; cursor: pointer;" title="Remove row">
+											<span class="material-icons" style="font-size: 16px; vertical-align: middle;">delete</span>
+										</button>
+									</td>
+								</tr>
+								<tr *ngIf="markEntryRows.length === 0">
+									<td colspan="4" style="text-align: center; padding: 24px; color: #94a3b8;">
+										No student score rows added yet. Click "+ Add Student Row" or import from CSV.
 									</td>
 								</tr>
 							</tbody>
