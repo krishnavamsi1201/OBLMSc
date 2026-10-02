@@ -105,6 +105,38 @@ export class Faculty implements OnInit {
   selectedSemesterFilter = '';
   rawDashboardData: any = null;
 
+  // Selected Course Cockpit Card
+  selectedCourseCard: Course | null = null;
+
+  selectCourseCard(course: Course): void {
+    this.selectedCourseCard = course;
+    this.progressCourseFilter = course.name;
+    if (course.semester) {
+      this.progressSemesterFilter = course.semester;
+    }
+    this.onProgressFilterChange();
+    this.cdr.detectChanges();
+  }
+
+  getEvaluatedCountForCourse(courseName: string): number {
+    const marks = this.getSafeJson('obslmsMarkEntries');
+    const cLow = (courseName || '').toLowerCase();
+    const students = new Set<string>();
+    marks.forEach((m: any) => {
+      if (m.student && m.assessment && (m.assessment.toLowerCase().includes(cLow) || cLow.includes(m.assessment.toLowerCase()) || (m.course && m.course.toLowerCase().includes(cLow)))) {
+        students.add(m.student.toLowerCase().trim());
+      }
+    });
+    return students.size;
+  }
+
+  getAtRiskCountForCourse(courseName: string): number {
+    const cLow = (courseName || '').toLowerCase();
+    return this.atRiskStudents.filter(ar => 
+      (ar.courseName || '').toLowerCase().includes(cLow) || cLow.includes((ar.courseName || '').toLowerCase())
+    ).length;
+  }
+
   // Student Progress Matrix: Filters & Smart Pagination
   progressSemesterFilter = '';
   progressCourseFilter = '';
@@ -522,6 +554,10 @@ export class Faculty implements OnInit {
       courseName: cName,
       cos: groups.get(cName)!
     }));
+
+    if (!this.selectedCourseCard && this.courses.length > 0) {
+      this.selectCourseCard(this.courses[0]);
+    }
   }
 
   loadPendingClassAdjustments(): void {

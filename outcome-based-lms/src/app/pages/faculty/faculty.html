@@ -182,86 +182,112 @@
 				</div>
 			</section>
 
-			<!-- 3. Live Course Attainment Overview (Compact Summary) -->
+			<!-- 3. Semester & Course Cards Cockpit -->
 			<section class="dashboard-section">
 				<div class="section-header">
 					<div class="header-title-group">
-						<h2>Live Course Attainment Overview</h2>
-						<p class="section-subtitle">High-level OBE attainment summary across your assigned courses vs target benchmark (75%).</p>
+						<h2>Allocated Semester & Course Cockpit ({{ courses.length }})</h2>
+						<p class="section-subtitle">Click any subject card to view real-time attainment, evaluated metrics, and trigger quick actions.</p>
 					</div>
 					<div class="header-btn-group">
-						<button class="action-btn secondary small" (click)="openCqiModal()">+ Log CQI Action</button>
 						<button class="view-all-btn" (click)="goToCOAttainment()">Detailed CO-PO Matrix (Sidebar) →</button>
 					</div>
 				</div>
 
-				<div class="table-responsive" style="background: #091024; border: 1px solid #1f2f54; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 16px rgba(0,0,0,0.3);">
-					<table class="data-table" style="width: 100%; border-collapse: collapse;">
-						<thead>
-							<tr style="background: #0f1c3f; border-bottom: 2px solid #1f2f54;">
-								<th style="padding: 12px 16px; text-align: left; color: #d4af37; font-size: 0.85rem;">Course Code & Title</th>
-								<th style="padding: 12px 16px; text-align: center; color: #d4af37; font-size: 0.85rem; width: 130px;">Semester</th>
-								<th style="padding: 12px 16px; text-align: center; color: #d4af37; font-size: 0.85rem; width: 110px;">Target</th>
-								<th style="padding: 12px 16px; text-align: center; color: #d4af37; font-size: 0.85rem; width: 130px;">Evaluated</th>
-								<th style="padding: 12px 16px; color: #d4af37; font-size: 0.85rem; width: 220px;">Live Attainment</th>
-								<th style="padding: 12px 16px; text-align: center; color: #d4af37; font-size: 0.85rem; width: 140px;">OBE Status</th>
-								<th style="padding: 12px 16px; text-align: center; color: #d4af37; font-size: 0.85rem; width: 140px;">Action</th>
-							</tr>
-						</thead>
-						<tbody>
-							<tr *ngFor="let course of courses" style="border-bottom: 1px solid #1f2f54;">
-								<td style="padding: 12px 16px;">
-									<div style="display: flex; align-items: center; gap: 10px;">
-										<span class="obe-badge code-badge" style="background: rgba(56, 189, 248, 0.15); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.3); padding: 3px 8px; border-radius: 6px; font-weight: 700; font-size: 0.8rem;">
-											{{ course.code }}
-										</span>
-										<strong style="color: #ffffff; font-size: 0.95rem;">{{ course.name }}</strong>
-									</div>
-								</td>
-								<td style="padding: 12px 16px; text-align: center; color: #94a3b8; font-size: 0.88rem;">
-									{{ course.semester || 'Semester 6' }}
-								</td>
-								<td style="padding: 12px 16px; text-align: center; font-weight: 700; color: #cbd5e1;">
-									75%
-								</td>
-								<td style="padding: 12px 16px; text-align: center; color: #cbd5e1; font-weight: 600;">
-									{{ course.studentCount }} Students
-								</td>
-								<td style="padding: 12px 16px;">
-									<div style="display: flex; flex-direction: column; gap: 6px;">
-										<div style="display: flex; justify-content: space-between; font-size: 0.82rem;">
-											<span style="color: #94a3b8;">Average:</span>
-											<strong [style.color]="course.averageAttainment >= 75 ? '#34d399' : (course.averageAttainment >= 50 ? '#facc15' : (course.averageAttainment > 0 ? '#f87171' : '#94a3b8'))">
-												{{ course.averageAttainment > 0 ? course.averageAttainment + '%' : 'Pending Evaluation' }}
-											</strong>
-										</div>
-										<div class="progress-bar" style="height: 6px; background: rgba(255,255,255,0.08); border-radius: 4px; overflow: hidden;">
-											<div class="progress-fill" [style.width.%]="course.averageAttainment" [style.background]="course.averageAttainment >= 75 ? '#10b981' : (course.averageAttainment >= 50 ? '#eab308' : '#ef4444')"></div>
-										</div>
-									</div>
-								</td>
-								<td style="padding: 12px 16px; text-align: center;">
-									<span class="status-pill" 
-										  [class.achieved]="course.averageAttainment >= 75" 
-										  [class.partial]="course.averageAttainment >= 50 && course.averageAttainment < 75" 
-										  [class.not-achieved]="course.averageAttainment > 0 && course.averageAttainment < 50"
-										  [class.pending]="course.averageAttainment === 0">
-										{{ course.averageAttainment >= 75 ? '🟢 Achieved' : (course.averageAttainment >= 50 ? '🟡 Partial' : (course.averageAttainment > 0 ? '❌ Sub-Target' : '⏳ Pending')) }}
-									</span>
-								</td>
-								<td style="padding: 12px 16px; text-align: center;">
-									<button type="button" (click)="goToCOAttainment()" style="background: rgba(212, 175, 55, 0.15); color: #fde68a; border: 1px solid rgba(212, 175, 55, 0.35); padding: 6px 12px; border-radius: 6px; font-size: 0.8rem; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; gap: 4px;">
-										View Matrix →
-									</button>
-								</td>
-							</tr>
-							<tr *ngIf="courses.length === 0">
-								<td colspan="7" style="text-align: center; padding: 24px; color: #94a3b8;">
-									No courses currently allocated to your account.
-								</td>
-							</tr>
-						</tbody>
-					</table>
+				<!-- Semester Course Cards -->
+				<div class="semester-cards-container" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 14px; margin-bottom: 20px;">
+					<div *ngFor="let course of courses" 
+						 class="sem-course-card" 
+						 [class.active-course]="selectedCourseCard?.code === course.code"
+						 (click)="selectCourseCard(course)"
+						 style="background: #091024; border: 1.5px solid; border-radius: 12px; padding: 14px 16px; cursor: pointer; transition: all 0.25s ease; position: relative;"
+						 [style.borderColor]="selectedCourseCard?.code === course.code ? '#d4af37' : '#1f2f54'"
+						 [style.boxShadow]="selectedCourseCard?.code === course.code ? '0 0 16px rgba(212, 175, 55, 0.25)' : 'none'">
+						
+						<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+							<span style="background: rgba(212, 175, 55, 0.15); color: #fde68a; font-size: 0.75rem; font-weight: 700; padding: 3px 8px; border-radius: 6px; border: 1px solid rgba(212, 175, 55, 0.3);">
+								📅 {{ course.semester || 'Semester 6' }}
+							</span>
+							<span class="status-pill" 
+								  [class.achieved]="course.averageAttainment >= 75" 
+								  [class.partial]="course.averageAttainment >= 50 && course.averageAttainment < 75" 
+								  [class.pending]="course.averageAttainment === 0"
+								  [class.not-achieved]="course.averageAttainment > 0 && course.averageAttainment < 50"
+								  style="font-size: 0.75rem; padding: 2px 8px;">
+								{{ course.averageAttainment >= 75 ? '🟢 Achieved' : (course.averageAttainment >= 50 ? '🟡 Partial' : (course.averageAttainment > 0 ? '❌ Sub-Target' : '⏳ Pending')) }}
+							</span>
+						</div>
+
+						<div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
+							<span style="background: rgba(56, 189, 248, 0.15); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.3); font-family: monospace; font-size: 0.8rem; font-weight: 700; padding: 2px 6px; border-radius: 4px;">
+								{{ course.code }}
+							</span>
+							<strong style="color: #ffffff; font-size: 0.95rem; line-height: 1.3; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+								{{ course.name }}
+							</strong>
+						</div>
+
+						<div style="display: flex; justify-content: space-between; font-size: 0.8rem; color: #94a3b8; border-top: 1px solid #1f2f54; padding-top: 8px; margin-top: 8px;">
+							<span>Evaluated: <strong style="color: #cbd5e1;">{{ getEvaluatedCountForCourse(course.name) }} Students</strong></span>
+							<span>Attainment: <strong [style.color]="course.averageAttainment >= 75 ? '#34d399' : (course.averageAttainment > 0 ? '#facc15' : '#94a3b8')">{{ course.averageAttainment > 0 ? course.averageAttainment + '%' : '0%' }}</strong></span>
+						</div>
+					</div>
+				</div>
+
+				<!-- Selected Course Diagnostics & Quick Action Cockpit -->
+				<div class="selected-course-panel" *ngIf="selectedCourseCard" style="background: linear-gradient(135deg, #0d1a3a 0%, #091024 100%); border: 1.5px solid #d4af37; border-radius: 14px; padding: 20px; margin-bottom: 24px; box-shadow: 0 8px 30px rgba(0,0,0,0.4);">
+					<div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; border-bottom: 1px solid #1f2f54; padding-bottom: 14px; margin-bottom: 18px;">
+						<div>
+							<div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
+								<span style="background: #d4af37; color: #0a1128; font-weight: 800; font-size: 0.72rem; padding: 2px 8px; border-radius: 4px;">SELECTED COURSE</span>
+								<span style="color: #38bdf8; font-weight: 700; font-size: 0.85rem;">{{ selectedCourseCard.code }}</span>
+								<span style="color: #94a3b8; font-size: 0.85rem;">• {{ selectedCourseCard.semester }}</span>
+							</div>
+							<h3 style="margin: 0; font-size: 1.25rem; color: #ffffff;">{{ selectedCourseCard.name }}</h3>
+						</div>
+						<div style="display: flex; gap: 8px; flex-wrap: wrap;">
+							<button type="button" class="action-btn primary small" (click)="openMarkEntryModal()" style="display: inline-flex; align-items: center; gap: 4px;">
+								<span class="material-icons" style="font-size: 15px;">edit</span> Enter Marks
+							</button>
+							<button type="button" class="action-btn secondary small" (click)="openQuickAttendanceModal(selectedCourseCard.name)" style="display: inline-flex; align-items: center; gap: 4px;">
+								<span class="material-icons" style="font-size: 15px;">calendar_today</span> Take Attendance
+							</button>
+							<button type="button" class="view-all-btn" (click)="goToCOAttainment()" style="display: inline-flex; align-items: center; gap: 4px;">
+								Detailed CO-PO Matrix →
+							</button>
+						</div>
+					</div>
+
+					<!-- 5 Real-Time Metrics for Selected Course -->
+					<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 12px;">
+						<div style="background: rgba(15, 23, 42, 0.7); border: 1px solid #1f2f54; border-radius: 10px; padding: 12px 14px;">
+							<span style="color: #94a3b8; font-size: 0.78rem; font-weight: 600; text-transform: uppercase;">Enrolled Students</span>
+							<div style="font-size: 1.4rem; font-weight: 800; color: #ffffff; margin-top: 2px;">{{ selectedCourseCard.studentCount }}</div>
+							<small style="color: #64748b; font-size: 0.75rem;">In your course</small>
+						</div>
+						<div style="background: rgba(15, 23, 42, 0.7); border: 1px solid #1f2f54; border-radius: 10px; padding: 12px 14px;">
+							<span style="color: #94a3b8; font-size: 0.78rem; font-weight: 600; text-transform: uppercase;">Evaluated Submissions</span>
+							<div style="font-size: 1.4rem; font-weight: 800; color: #38bdf8; margin-top: 2px;">{{ getEvaluatedCountForCourse(selectedCourseCard.name) }}</div>
+							<small style="color: #64748b; font-size: 0.75rem;">With recorded marks</small>
+						</div>
+						<div style="background: rgba(15, 23, 42, 0.7); border: 1px solid #1f2f54; border-radius: 10px; padding: 12px 14px;">
+							<span style="color: #94a3b8; font-size: 0.78rem; font-weight: 600; text-transform: uppercase;">Live Attainment</span>
+							<div style="font-size: 1.4rem; font-weight: 800; color: #34d399; margin-top: 2px;">{{ selectedCourseCard.averageAttainment > 0 ? selectedCourseCard.averageAttainment + '%' : '0%' }}</div>
+							<small style="color: #64748b; font-size: 0.75rem;">Target: 75% Benchmark</small>
+						</div>
+						<div style="background: rgba(15, 23, 42, 0.7); border: 1px solid #1f2f54; border-radius: 10px; padding: 12px 14px;">
+							<span style="color: #94a3b8; font-size: 0.78rem; font-weight: 600; text-transform: uppercase;">At-Risk Students</span>
+							<div style="font-size: 1.4rem; font-weight: 800; margin-top: 2px;" [style.color]="getAtRiskCountForCourse(selectedCourseCard.name) > 0 ? '#ef4444' : '#10b981'">
+								{{ getAtRiskCountForCourse(selectedCourseCard.name) }}
+							</div>
+							<small style="color: #64748b; font-size: 0.75rem;">{{ getAtRiskCountForCourse(selectedCourseCard.name) > 0 ? 'Intervention needed' : 'All students on track' }}</small>
+						</div>
+						<div style="background: rgba(15, 23, 42, 0.7); border: 1px solid #1f2f54; border-radius: 10px; padding: 12px 14px;">
+							<span style="color: #94a3b8; font-size: 0.78rem; font-weight: 600; text-transform: uppercase;">Avg Attendance</span>
+							<div style="font-size: 1.4rem; font-weight: 800; color: #a5f3fc; margin-top: 2px;">{{ selectedCourseCard.averageAttendance > 0 ? selectedCourseCard.averageAttendance + '%' : '0%' }}</div>
+							<small style="color: #64748b; font-size: 0.75rem;">Min threshold: 75%</small>
+						</div>
+					</div>
 				</div>
 			</section>
 
@@ -491,30 +517,6 @@
 						</tbody>
 					</table>
 				</div>
-			</section>
-
-			<!-- 11. Dynamic Notifications Section -->
-			<section class="dashboard-section">
-				<div class="section-header">
-					<h2>Real-Time Action Alerts ({{ notifications.length }})</h2>
-					<button class="view-all-btn" (click)="goToNotifications()">All Alerts →</button>
-				</div>
-				<div class="notifications-list">
-					<div *ngFor="let notification of notifications" class="notification-card" 
-						[class.unread]="!notification.read">
-						<div class="notification-icon">
-							<span *ngIf="notification.type === 'alert'" class="material-icons text-danger">warning</span>
-							<span *ngIf="notification.type === 'announcement'" class="material-icons text-primary">campaign</span>
-							<span *ngIf="notification.type === 'update'" class="material-icons text-info">info</span>
-						</div>
-						<div class="notification-content">
-							<h3>{{ notification.title }}</h3>
-							<p>{{ notification.message }}</p>
-							<small>{{ notification.date | date: 'medium' }}</small>
-						</div>
-					</div>
-				</div>
-				<p *ngIf="notifications.length === 0" class="empty-state">All academic tasks and thresholds are currently satisfied.</p>
 			</section>
 
 		</ng-container>
