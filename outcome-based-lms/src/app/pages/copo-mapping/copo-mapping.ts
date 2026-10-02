@@ -348,14 +348,12 @@ export class CopoMapping implements OnInit {
       } catch {}
       if (assigned.length > 0) return assigned;
 
-      const uName = (this.studentName || '').toLowerCase();
-      if (uName.includes('ramesh')) return ['CS101', 'CS102', 'CS103'];
-      if (uName.includes('sunita')) return ['CS201', 'CS202', 'CS205'];
-      if (uName.includes('amit')) return ['EC201', 'EC202', 'EC203'];
-      if (uName.includes('priya')) return ['IT201', 'IT202', 'IT301'];
-      if (uName.includes('rajesh')) return ['CS301', 'CS302', 'CS303'];
-      if (uName.includes('suresh')) return ['CE201', 'CE202', 'CE203'];
-      if (uName.includes('ananya')) return ['ME201', 'ME202', 'ME203'];
+      const branch = this.currentActiveBranch;
+      if (branch === 'CSE') return ['CS101', 'CS102', 'CS103', 'CS201', 'CS202', 'CS301', 'CS302', 'CS401'];
+      if (branch === 'IT') return ['IT111', 'IT201', 'IT202', 'IT301', 'IT311', 'IT401'];
+      if (branch === 'ECE') return ['EC111', 'EC201', 'EC202', 'EC301', 'EC303', 'EC401'];
+      if (branch === 'ME') return ['ME111', 'ME201', 'ME202', 'ME301', 'ME311', 'ME401'];
+      if (branch === 'Civil') return ['CE111', 'CE201', 'CE202', 'CE301', 'CE311', 'CE401'];
       return ['CS101', 'CS102', 'CS103'];
     }
 

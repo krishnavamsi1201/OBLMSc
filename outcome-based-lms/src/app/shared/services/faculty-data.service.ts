@@ -266,14 +266,29 @@ export class FacultyDataService {
       let matchingCourses = allCourses.filter(c => {
         const cFac = (c.faculty || '').trim();
         const isGeneric = !cFac || cFac.toLowerCase() === 'faculty board' || cFac.toLowerCase() === 'unassigned' || cFac.toLowerCase() === 'tbd';
-        if (!isGeneric) {
-          return !!facultyName && (cFac.toLowerCase().includes(facultyName.toLowerCase()) || facultyName.toLowerCase().includes(cFac.toLowerCase()));
+        if (!isGeneric && facultyName) {
+          if (cFac.toLowerCase().includes(facultyName.toLowerCase()) || facultyName.toLowerCase().includes(cFac.toLowerCase())) {
+            return true;
+          }
         }
         if (assigned && assigned.length > 0) {
           return assigned.includes(c.title) || assigned.includes(c.code);
         }
         return false;
       });
+
+      // If no explicit course assignment yet, dynamically bind to faculty's registered department courses
+      if (matchingCourses.length === 0 && isFaculty) {
+        const userDept = (localStorage.getItem('userDepartment') || localStorage.getItem('userDept') || '').toLowerCase();
+        const dCode = (userDept.includes('computer') || userDept.includes('cse') || userDept.includes('cs')) ? 'CS' :
+                      (userDept.includes('information') || userDept.includes('it')) ? 'IT' :
+                      (userDept.includes('electronic') || userDept.includes('ece') || userDept.includes('electrical') || userDept.includes('eee')) ? 'EC' :
+                      (userDept.includes('mechanical') || userDept.includes('mech')) ? 'ME' :
+                      (userDept.includes('civil') || userDept.includes('ce')) ? 'CE' : '';
+        if (dCode) {
+          matchingCourses = allCourses.filter(c => (c.code || '').toUpperCase().startsWith(dCode));
+        }
+      }
 
       let filteredCourses = matchingCourses.map(c => ({
         id: c.id ? c.id.toString() : '1',
