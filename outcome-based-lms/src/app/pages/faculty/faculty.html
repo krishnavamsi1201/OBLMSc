@@ -182,91 +182,87 @@
 				</div>
 			</section>
 
-			<!-- 3. Course Outcome (CO) Attainment Cards -->
+			<!-- 3. Live Course Attainment Overview (Compact Summary) -->
 			<section class="dashboard-section">
 				<div class="section-header">
 					<div class="header-title-group">
-						<h2>Course Outcome (CO) Attainment Monitor</h2>
-						<p class="section-subtitle">Live attainment calculated from actual evaluation marks vs target benchmark (75%).</p>
+						<h2>Live Course Attainment Overview</h2>
+						<p class="section-subtitle">High-level OBE attainment summary across your assigned courses vs target benchmark (75%).</p>
 					</div>
 					<div class="header-btn-group">
-						<button class="view-all-btn" (click)="openCqiModal()">+ Log CQI Plan</button>
-						<button class="view-all-btn" (click)="goToCOAttainment()">Detailed OBE Matrix →</button>
+						<button class="action-btn secondary small" (click)="openCqiModal()">+ Log CQI Action</button>
+						<button class="view-all-btn" (click)="goToCOAttainment()">Detailed CO-PO Matrix (Sidebar) →</button>
 					</div>
 				</div>
-				<div *ngFor="let group of groupedCOAttainments" class="co-group-block" style="margin-bottom: 24px; background: #101b38; border: 1px solid #1f2f54; border-radius: 14px; padding: 18px; box-shadow: 0 8px 24px rgba(0,0,0,0.35);">
-					<h3 style="margin: 0; color: #ffffff; border-bottom: 2px solid #d4af37; padding-bottom: 10px; font-size: 1.15rem; display: flex; justify-content: space-between; align-items: center; cursor: pointer;" (click)="toggleCoGroup(group.courseName)">
-						<span style="display: flex; align-items: center; gap: 8px;">
-							<span class="material-icons" style="font-size: 1.2rem; color: #d4af37;">menu_book</span>
-							{{ group.courseName }} Outcomes
-						</span>
-						<span style="font-size: 0.85rem; color: #94a3b8; font-weight: 600; display: flex; align-items: center; gap: 4px;">
-							{{ collapsedCoGroups[group.courseName] ? 'Show' : 'Hide' }} ({{ group.cos.length }} COs)
-						</span>
-					</h3>
-					
-					<div class="co-attainment-grid" *ngIf="!collapsedCoGroups[group.courseName]" style="display: grid; gap: 16px; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); margin-top: 16px;">
-						<div *ngFor="let co of group.cos" class="co-card" style="margin-bottom: 0;">
-							<div class="co-card-header">
-								<div>
-									<span class="co-badge">{{ co.coCode }}</span>
-									<strong class="co-course">{{ co.courseName }}</strong>
-								</div>
-								<span class="status-pill" 
-									  [class.achieved]="co.status === 'Achieved'" 
-									  [class.partial]="co.status === 'Partial'" 
-									  [class.pending]="co.status === 'Pending Evaluation'" 
-									  [class.not-achieved]="co.status === 'Not Achieved'">
-									{{ co.status === 'Pending Evaluation' ? '⏳ Pending' : (co.status === 'Achieved' ? '🟢 Achieved' : (co.status === 'Partial' ? '🟡 Partial' : '❌ Needs Remedial')) }}
-								</span>
-							</div>
-							<p class="co-description">{{ co.description || 'Applies core concepts and analytical methodologies to engineering problems.' }}</p>
-							<div class="co-progress-block">
-								<div class="co-progress-labels">
-									<span>Live Attainment: <strong>{{ co.attainmentPercentage }}%</strong></span>
-									<span>Target: <strong>{{ co.targetPercentage }}%</strong></span>
-								</div>
-								<div class="co-progress-track">
-									<div class="co-progress-fill" [style.width.%]="co.attainmentPercentage"
-										[class.fill-achieved]="co.status === 'Achieved'"
-										[class.fill-partial]="co.status === 'Partial'"
-										[class.fill-pending]="co.status === 'Pending Evaluation'"
-										[class.fill-failed]="co.status === 'Not Achieved'"></div>
-									<div class="co-target-marker" [style.left.%]="co.targetPercentage" title="Target Benchmark ({{co.targetPercentage}}%)"></div>
-								</div>
-							</div>
 
-							<!-- Mapped 12-POs Contribution Grid -->
-							<div class="co-mapped-pos-container" *ngIf="co.mappedPOs && co.mappedPOs.length > 0">
-								<span class="mapped-pos-heading">Mapped Program Outcomes (POs):</span>
-								<div class="po-badges-flow">
-									<span *ngFor="let po of co.mappedPOs" 
-										  class="po-badge-chip" 
-										  [class.po-achieved]="po.status === 'Achieved'" 
-										  [class.po-partial]="po.status === 'Partial'" 
-										  [class.po-pending]="po.status === 'Pending'" 
-										  [class.po-not-achieved]="po.status === 'Not Achieved'"
-										  [title]="po.poCode + ': ' + po.poTitle">
-										<strong class="po-chip-code">{{ po.poCode }}</strong>
-										<span class="po-chip-val">{{ po.attainment > 0 ? po.attainment + '%' : 'Pending' }}</span>
+				<div class="table-responsive" style="background: #091024; border: 1px solid #1f2f54; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 16px rgba(0,0,0,0.3);">
+					<table class="data-table" style="width: 100%; border-collapse: collapse;">
+						<thead>
+							<tr style="background: #0f1c3f; border-bottom: 2px solid #1f2f54;">
+								<th style="padding: 12px 16px; text-align: left; color: #d4af37; font-size: 0.85rem;">Course Code & Title</th>
+								<th style="padding: 12px 16px; text-align: center; color: #d4af37; font-size: 0.85rem; width: 130px;">Semester</th>
+								<th style="padding: 12px 16px; text-align: center; color: #d4af37; font-size: 0.85rem; width: 110px;">Target</th>
+								<th style="padding: 12px 16px; text-align: center; color: #d4af37; font-size: 0.85rem; width: 130px;">Evaluated</th>
+								<th style="padding: 12px 16px; color: #d4af37; font-size: 0.85rem; width: 220px;">Live Attainment</th>
+								<th style="padding: 12px 16px; text-align: center; color: #d4af37; font-size: 0.85rem; width: 140px;">OBE Status</th>
+								<th style="padding: 12px 16px; text-align: center; color: #d4af37; font-size: 0.85rem; width: 140px;">Action</th>
+							</tr>
+						</thead>
+						<tbody>
+							<tr *ngFor="let course of courses" style="border-bottom: 1px solid #1f2f54;">
+								<td style="padding: 12px 16px;">
+									<div style="display: flex; align-items: center; gap: 10px;">
+										<span class="obe-badge code-badge" style="background: rgba(56, 189, 248, 0.15); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.3); padding: 3px 8px; border-radius: 6px; font-weight: 700; font-size: 0.8rem;">
+											{{ course.code }}
+										</span>
+										<strong style="color: #ffffff; font-size: 0.95rem;">{{ course.name }}</strong>
+									</div>
+								</td>
+								<td style="padding: 12px 16px; text-align: center; color: #94a3b8; font-size: 0.88rem;">
+									{{ course.semester || 'Semester 6' }}
+								</td>
+								<td style="padding: 12px 16px; text-align: center; font-weight: 700; color: #cbd5e1;">
+									75%
+								</td>
+								<td style="padding: 12px 16px; text-align: center; color: #cbd5e1; font-weight: 600;">
+									{{ course.studentCount }} Students
+								</td>
+								<td style="padding: 12px 16px;">
+									<div style="display: flex; flex-direction: column; gap: 6px;">
+										<div style="display: flex; justify-content: space-between; font-size: 0.82rem;">
+											<span style="color: #94a3b8;">Average:</span>
+											<strong [style.color]="course.averageAttainment >= 75 ? '#34d399' : (course.averageAttainment >= 50 ? '#facc15' : (course.averageAttainment > 0 ? '#f87171' : '#94a3b8'))">
+												{{ course.averageAttainment > 0 ? course.averageAttainment + '%' : 'Pending Evaluation' }}
+											</strong>
+										</div>
+										<div class="progress-bar" style="height: 6px; background: rgba(255,255,255,0.08); border-radius: 4px; overflow: hidden;">
+											<div class="progress-fill" [style.width.%]="course.averageAttainment" [style.background]="course.averageAttainment >= 75 ? '#10b981' : (course.averageAttainment >= 50 ? '#eab308' : '#ef4444')"></div>
+										</div>
+									</div>
+								</td>
+								<td style="padding: 12px 16px; text-align: center;">
+									<span class="status-pill" 
+										  [class.achieved]="course.averageAttainment >= 75" 
+										  [class.partial]="course.averageAttainment >= 50 && course.averageAttainment < 75" 
+										  [class.not-achieved]="course.averageAttainment > 0 && course.averageAttainment < 50"
+										  [class.pending]="course.averageAttainment === 0">
+										{{ course.averageAttainment >= 75 ? '🟢 Achieved' : (course.averageAttainment >= 50 ? '🟡 Partial' : (course.averageAttainment > 0 ? '❌ Sub-Target' : '⏳ Pending')) }}
 									</span>
-								</div>
-							</div>
-
-							<div class="co-footer">
-								<span class="co-assessed-info">
-									<span class="material-icons assessed-icon">analytics</span>
-									<span>{{ co.assessedStudentsCount }} Evaluated</span>
-								</span>
-								<button *ngIf="co.status === 'Not Achieved' || co.status === 'Partial'" class="cqi-mini-btn" (click)="openCqiModal(co)" title="Plan remedial action for sub-target CO attainment">
-									<span class="cqi-btn-icon">⚡</span>
-									<span>Plan Remedial Action</span>
-								</button>
-							</div>
-						</div>
-					</div>
+								</td>
+								<td style="padding: 12px 16px; text-align: center;">
+									<button type="button" (click)="goToCOAttainment()" style="background: rgba(212, 175, 55, 0.15); color: #fde68a; border: 1px solid rgba(212, 175, 55, 0.35); padding: 6px 12px; border-radius: 6px; font-size: 0.8rem; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; gap: 4px;">
+										View Matrix →
+									</button>
+								</td>
+							</tr>
+							<tr *ngIf="courses.length === 0">
+								<td colspan="7" style="text-align: center; padding: 24px; color: #94a3b8;">
+									No courses currently allocated to your account.
+								</td>
+							</tr>
+						</tbody>
+					</table>
 				</div>
-				<p *ngIf="groupedCOAttainments.length === 0" class="empty-state">No courses currently allocated to your account. Please ask the Administrator to assign subjects in Faculty Management.</p>
 			</section>
 
 			<!-- 4. Real-Time Grade & Performance Distribution -->
