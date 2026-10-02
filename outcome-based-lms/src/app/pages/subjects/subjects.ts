@@ -149,8 +149,8 @@ interface SubjectRecord {
             />
           </div>
 
-          <!-- Branch Filter Pills: Only All Branches/Multi-Dept for Admin/Faculty; Single Department Badge for Student -->
-          <div class="dept-filter-group" *ngIf="userRole !== 'student'">
+          <!-- Admin View: All Branch Filter Pills -->
+          <div class="dept-filter-group" *ngIf="userRole === 'admin'">
             <button 
               type="button" 
               class="dept-pill" 
@@ -195,10 +195,28 @@ interface SubjectRecord {
             </button>
           </div>
 
+          <!-- Faculty View: Scoped to Faculty's Department by default with option to view all -->
+          <div class="dept-filter-group" *ngIf="userRole === 'faculty'">
+            <button 
+              type="button" 
+              class="dept-pill" 
+              [class.active]="selectedDeptFilter === shortDept" 
+              (click)="selectDepartmentFilter(shortDept)">
+              🏛️ {{ userDept }} ({{ shortDept }})
+            </button>
+            <button 
+              type="button" 
+              class="dept-pill" 
+              [class.active]="selectedDeptFilter === ''" 
+              (click)="selectDepartmentFilter('')">
+              🌐 All Branches / Electives
+            </button>
+          </div>
+
           <!-- Student View: Dedicated Department Badge -->
           <div class="dept-filter-group" *ngIf="userRole === 'student'">
             <div class="dept-pill active" style="cursor: default; display: flex; align-items: center; gap: 6px; background: #1e40af; color: #fff; border-color: #1e40af;">
-              <span>💻 {{ userDept }}</span>
+              <span>💻 {{ userDept }} ({{ shortDept }})</span>
             </div>
           </div>
 
@@ -257,7 +275,7 @@ interface SubjectRecord {
             <table>
               <thead>
                 <tr>
-                  <th style="width: 70px;">ID</th>
+                  <th style="width: 60px; text-align: center;">S.No</th>
                   <th style="width: 140px;">Subject Code</th>
                   <th>Subject Title & Curriculum Name</th>
                   <th style="width: 150px;">Department</th>
@@ -284,8 +302,8 @@ interface SubjectRecord {
                     </div>
                   </td>
                 </tr>
-                <tr *ngFor="let subject of paginatedSubjects">
-                  <td class="sub-id-cell">#{{ subject.id }}</td>
+                <tr *ngFor="let subject of paginatedSubjects; let i = index">
+                  <td class="sub-id-cell" style="text-align: center; font-weight: 600; color: #94a3b8;">{{ (currentPage - 1) * pageSize + i + 1 }}</td>
                   <td>
                     <span class="obe-badge code-badge">{{ subject.code }}</span>
                   </td>
@@ -630,7 +648,11 @@ export class Subjects implements OnInit {
       this.userRole = localStorage.getItem('userRole')?.toLowerCase() || 'student';
       this.userName = localStorage.getItem('userName') || 'Student';
       this.userEmail = localStorage.getItem('userEmail') || '';
-      this.userDept = localStorage.getItem('userDepartment') || localStorage.getItem('userDept') || 'Mechanical Engineering';
+      this.userDept = localStorage.getItem('userDepartment') || localStorage.getItem('userDept') || 'Computer Science & Engineering';
+
+      if (this.userRole === 'faculty') {
+        this.selectedDeptFilter = this.shortDept;
+      }
 
       const studentId = localStorage.getItem('userId') || this.userEmail;
       if (studentId) {
@@ -638,6 +660,9 @@ export class Subjects implements OnInit {
           next: (u) => {
             if (u && u.department) {
               this.userDept = u.department;
+              if (this.userRole === 'faculty') {
+                this.selectedDeptFilter = this.shortDept;
+              }
             }
             if (u && u.enrolledCourses && u.enrolledCourses.trim().length > 0) {
               this.enrolledCourseCodes = u.enrolledCourses.split(',').map((s: string) => s.trim().toUpperCase());
