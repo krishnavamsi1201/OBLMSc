@@ -97,11 +97,125 @@ export class Faculty implements OnInit {
   pendingNotificationsCount = 0;
   pendingAdjustmentCount = 0;
 
+  Math = Math;
+
   // Filter
   selectedCourseFilter = '';
   selectedSubjectFilter = '';
   selectedSemesterFilter = '';
   rawDashboardData: any = null;
+
+  // Student Progress Matrix: Filters & Smart Pagination
+  progressSemesterFilter = '';
+  progressCourseFilter = '';
+  progressStatusFilter: 'ALL' | 'ON_TRACK' | 'AT_RISK' = 'ALL';
+  progressSearchQuery = '';
+  progressCurrentPage = 1;
+  progressPageSize = 8;
+
+  get availableProgressSemesters(): string[] {
+    const set = new Set<string>();
+    (this.courses || []).forEach(c => {
+      if (c.semester) set.add(c.semester);
+    });
+    if (set.size === 0) {
+      return ['Semester 1', 'Semester 2', 'Semester 3', 'Semester 4', 'Semester 5', 'Semester 6', 'Semester 7', 'Semester 8'];
+    }
+    return Array.from(set).sort();
+  }
+
+  get availableProgressCourses(): Course[] {
+    if (!this.progressSemesterFilter) {
+      return this.courses || [];
+    }
+    return (this.courses || []).filter(c => (c.semester || '').toLowerCase() === this.progressSemesterFilter.toLowerCase());
+  }
+
+  get paginatedProgressList(): StudentProgress[] {
+    const start = (this.progressCurrentPage - 1) * this.progressPageSize;
+    return this.filteredProgressList.slice(start, start + this.progressPageSize);
+  }
+
+  get progressTotalPages(): number {
+    return Math.ceil(this.filteredProgressList.length / this.progressPageSize) || 1;
+  }
+
+  get progressOnTrackCount(): number {
+    return this.studentProgressList.filter(sp => sp.coAttainment >= 60 && sp.attendance >= 75).length;
+  }
+
+  get progressAtRiskCount(): number {
+    return this.studentProgressList.filter(sp => sp.coAttainment < 60 || sp.attendance < 75).length;
+  }
+
+  setStatusFilter(status: 'ALL' | 'ON_TRACK' | 'AT_RISK'): void {
+    this.progressStatusFilter = status;
+    this.onProgressFilterChange();
+  }
+
+  onSemesterFilterChange(): void {
+    this.progressCourseFilter = '';
+    this.onProgressFilterChange();
+  }
+
+  onProgressFilterChange(): void {
+    this.progressCurrentPage = 1;
+    let list = [...this.studentProgressList];
+
+    // 1. Semester filter
+    if (this.progressSemesterFilter) {
+      const semCourses = new Set(
+        this.availableProgressCourses.map(c => c.name.toLowerCase())
+      );
+      list = list.filter(sp => 
+        semCourses.has(sp.courseName.toLowerCase()) || 
+        sp.courseName.toLowerCase().includes(this.progressSemesterFilter.toLowerCase())
+      );
+    }
+
+    // 2. Course filter
+    if (this.progressCourseFilter) {
+      list = list.filter(sp => 
+        sp.courseName.toLowerCase().includes(this.progressCourseFilter.toLowerCase())
+      );
+    }
+
+    // 3. Status filter
+    if (this.progressStatusFilter === 'ON_TRACK') {
+      list = list.filter(sp => sp.coAttainment >= 60 && sp.attendance >= 75);
+    } else if (this.progressStatusFilter === 'AT_RISK') {
+      list = list.filter(sp => sp.coAttainment < 60 || sp.attendance < 75);
+    }
+
+    // 4. Search query
+    if (this.progressSearchQuery.trim()) {
+      const q = this.progressSearchQuery.trim().toLowerCase();
+      list = list.filter(sp => 
+        sp.studentName.toLowerCase().includes(q) || 
+        sp.courseName.toLowerCase().includes(q)
+      );
+    }
+
+    this.filteredProgressList = list;
+  }
+
+  prevProgressPage(): void {
+    if (this.progressCurrentPage > 1) {
+      this.progressCurrentPage--;
+    }
+  }
+
+  nextProgressPage(): void {
+    if (this.progressCurrentPage < this.progressTotalPages) {
+      this.progressCurrentPage++;
+    }
+  }
+
+  goToProgressPage(page: number): void {
+    if (page >= 1 && page <= this.progressTotalPages) {
+      this.progressCurrentPage = page;
+    }
+  }
 
   get availableSemesters(): string[] {
     const courses = this.rawDashboardData?.courses || [];
@@ -659,13 +773,7 @@ export class Faculty implements OnInit {
    * Filter student progress table by selected course
    */
   onCourseFilterChange(): void {
-    if (!this.selectedCourseFilter) {
-      this.filteredProgressList = [...this.studentProgressList];
-    } else {
-      this.filteredProgressList = this.studentProgressList.filter(sp =>
-        sp.courseName.toLowerCase().includes(this.selectedCourseFilter.toLowerCase())
-      );
-    }
+    this.onProgressFilterChange();
   }
 
   // ==========================================

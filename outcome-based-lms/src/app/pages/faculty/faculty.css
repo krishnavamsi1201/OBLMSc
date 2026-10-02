@@ -1624,3 +1624,209 @@
     .preview-actions { display: none !important; }
 }
 
+/* ========================================================================= */
+/* STUDENT PROGRESS MATRIX FILTERS & PAGINATION                              */
+/* ========================================================================= */
+.progress-matrix-filters {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.matrix-filter-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: #091024;
+    border: 1px solid #1f2f54;
+    border-radius: 8px;
+    padding: 2px 10px;
+}
+
+.matrix-filter-item .filter-icon {
+    font-size: 16px;
+    color: #d4af37;
+}
+
+.matrix-select {
+    background: transparent;
+    border: none;
+    color: #ffffff;
+    font-size: 13px;
+    font-weight: 500;
+    padding: 6px 4px;
+    outline: none;
+    cursor: pointer;
+}
+
+.matrix-select option {
+    background: #091024;
+    color: #ffffff;
+}
+
+.matrix-search-box {
+    position: relative;
+    display: flex;
+    align-items: center;
+    background: #091024;
+    border: 1px solid #1f2f54;
+    border-radius: 8px;
+    padding: 0 10px;
+    min-width: 220px;
+}
+
+.matrix-search-box:focus-within {
+    border-color: #38bdf8;
+    box-shadow: 0 0 10px rgba(56, 189, 248, 0.25);
+}
+
+.matrix-search-box .search-icon {
+    font-size: 17px;
+    color: #64748b;
+    margin-right: 6px;
+}
+
+.matrix-search-input {
+    background: transparent;
+    border: none;
+    color: #ffffff;
+    font-size: 13px;
+    padding: 7px 0;
+    width: 100%;
+    outline: none;
+}
+
+.matrix-search-input::placeholder {
+    color: #64748b;
+}
+
+.matrix-clear-btn {
+    background: none;
+    border: none;
+    color: #94a3b8;
+    cursor: pointer;
+    font-size: 12px;
+    padding: 2px 4px;
+}
+
+.matrix-clear-btn:hover {
+    color: #f87171;
+}
+
+.matrix-status-pills-bar {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+}
+
+.matrix-status-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 14px;
+    background: rgba(16, 27, 56, 0.7);
+    border: 1px solid #1f2f54;
+    border-radius: 20px;
+    color: #cbd5e1;
+    font-size: 12.5px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.matrix-status-pill:hover {
+    background: rgba(30, 58, 138, 0.4);
+    border-color: #3b82f6;
+    color: #ffffff;
+}
+
+.matrix-status-pill.active {
+    background: linear-gradient(135deg, rgba(212, 175, 55, 0.2), rgba(184, 134, 11, 0.3));
+    border-color: #d4af37;
+    color: #fde68a;
+    box-shadow: 0 0 12px rgba(212, 175, 55, 0.3);
+}
+
+.matrix-status-pill.on-track.active {
+    background: rgba(16, 185, 129, 0.2);
+    border-color: #10b981;
+    color: #6ee7b7;
+    box-shadow: 0 0 12px rgba(16, 185, 129, 0.3);
+}
+
+.matrix-status-pill.at-risk.active {
+    background: rgba(239, 68, 68, 0.2);
+    border-color: #ef4444;
+    color: #fca5a5;
+    box-shadow: 0 0 12px rgba(239, 68, 68, 0.3);
+}
+
+.pill-count {
+    background: rgba(0, 0, 0, 0.35);
+    padding: 1px 7px;
+    border-radius: 10px;
+    font-size: 11px;
+    font-weight: 700;
+}
+
+.table-pagination-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 14px 18px;
+    background: #091024;
+    border: 1px solid #1f2f54;
+    border-top: none;
+    border-radius: 0 0 12px 12px;
+    font-size: 13px;
+    color: #94a3b8;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+.pagination-summary strong {
+    color: #f8fafc;
+}
+
+.pagination-buttons {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.page-btn {
+    background: #101b38;
+    border: 1px solid #1f2f54;
+    color: #cbd5e1;
+    padding: 6px 14px;
+    border-radius: 8px;
+    font-size: 12.5px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.page-btn:hover:not(:disabled) {
+    background: #1e3a8a;
+    border-color: #3b82f6;
+    color: #ffffff;
+}
+
+.page-btn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+.page-chip {
+    padding: 6px 12px;
+    background: rgba(212, 175, 55, 0.12);
+    border: 1px solid rgba(212, 175, 55, 0.3);
+    border-radius: 8px;
+    color: #fde68a;
+    font-size: 12px;
+    font-weight: 700;
+}
+
+

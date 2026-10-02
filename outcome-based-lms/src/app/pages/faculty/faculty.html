@@ -399,23 +399,79 @@
 				<p *ngIf="activeAssessments.length === 0" class="empty-state">No active assessments found.</p>
 			</section>
 
-			<!-- 8. Student Progress Matrix with Course Filter & CSV Export -->
+			<!-- 8. Student Progress Matrix with Semester Filter, Quick Search & Pagination -->
 			<section class="dashboard-section">
 				<div class="section-header">
 					<div class="header-title-group">
 						<h2>Real-Time Student Progress Matrix ({{ filteredProgressList.length }})</h2>
-						<p class="section-subtitle">Live breakdown of student attainment and attendance calculated across evaluation records.</p>
+						<p class="section-subtitle">Semester-wise breakdown of student attainment and attendance with smart pagination.</p>
 					</div>
-					<div class="filter-group">
-						<select [(ngModel)]="selectedCourseFilter" (ngModelChange)="onCourseFilterChange()">
-							<option value="">All Courses</option>
-							<option *ngFor="let c of courses" [value]="c.name">{{ c.name }}</option>
-						</select>
-						<button class="action-btn secondary small" (click)="exportGradebookCsv()">
+					<div class="filter-group progress-matrix-filters">
+						<!-- 1. Semester Selector -->
+						<div class="matrix-filter-item">
+							<span class="filter-icon material-icons">calendar_today</span>
+							<select [(ngModel)]="progressSemesterFilter" (ngModelChange)="onSemesterFilterChange()" class="matrix-select">
+								<option value="">All Semesters</option>
+								<option *ngFor="let sem of availableProgressSemesters" [value]="sem">{{ sem }}</option>
+							</select>
+						</div>
+
+						<!-- 2. Course Selector -->
+						<div class="matrix-filter-item">
+							<span class="filter-icon material-icons">menu_book</span>
+							<select [(ngModel)]="progressCourseFilter" (ngModelChange)="onProgressFilterChange()" class="matrix-select">
+								<option value="">All Courses ({{ availableProgressCourses.length }})</option>
+								<option *ngFor="let c of availableProgressCourses" [value]="c.name">{{ c.name }}</option>
+							</select>
+						</div>
+
+						<!-- 3. Student Search Box -->
+						<div class="matrix-search-box">
+							<span class="search-icon material-icons">search</span>
+							<input type="text" 
+								   [(ngModel)]="progressSearchQuery" 
+								   (ngModelChange)="onProgressFilterChange()" 
+								   placeholder="Search student..." 
+								   class="matrix-search-input" />
+							<button *ngIf="progressSearchQuery" 
+									type="button" 
+									class="matrix-clear-btn" 
+									(click)="progressSearchQuery=''; onProgressFilterChange()"
+									title="Clear search">✕</button>
+						</div>
+
+						<!-- 4. Export CSV -->
+						<button class="action-btn secondary small" (click)="exportGradebookCsv()" title="Export Filtered Roster CSV">
 							<span class="material-icons" style="font-size: 15px; vertical-align: middle;">download</span> Export CSV
 						</button>
 					</div>
 				</div>
+
+				<!-- Quick Status Filter Pills -->
+				<div class="matrix-status-pills-bar">
+					<button type="button" 
+							class="matrix-status-pill" 
+							[class.active]="progressStatusFilter === 'ALL'" 
+							(click)="setStatusFilter('ALL')">
+						<span>👥 All Students</span>
+						<span class="pill-count">{{ studentProgressList.length }}</span>
+					</button>
+					<button type="button" 
+							class="matrix-status-pill on-track" 
+							[class.active]="progressStatusFilter === 'ON_TRACK'" 
+							(click)="setStatusFilter('ON_TRACK')">
+						<span>🟢 On Track</span>
+						<span class="pill-count">{{ progressOnTrackCount }}</span>
+					</button>
+					<button type="button" 
+							class="matrix-status-pill at-risk" 
+							[class.active]="progressStatusFilter === 'AT_RISK'" 
+							(click)="setStatusFilter('AT_RISK')">
+						<span>⚠️ At Risk</span>
+						<span class="pill-count">{{ progressAtRiskCount }}</span>
+					</button>
+				</div>
+
 				<div class="progress-table">
 					<table *ngIf="filteredProgressList.length > 0" class="data-table">
 						<thead>
@@ -429,7 +485,7 @@
 							</tr>
 						</thead>
 						<tbody>
-							<tr *ngFor="let progress of filteredProgressList">
+							<tr *ngFor="let progress of paginatedProgressList">
 								<td><strong>{{ progress.studentName }}</strong></td>
 								<td>{{ progress.courseName }}</td>
 								<td>
@@ -458,6 +514,31 @@
 							</tr>
 						</tbody>
 					</table>
+
+					<!-- Pagination Footer Controls -->
+					<div class="table-pagination-bar" *ngIf="filteredProgressList.length > 0">
+						<div class="pagination-summary">
+							Showing <strong>{{ (progressCurrentPage - 1) * progressPageSize + 1 }}</strong> - 
+							<strong>{{ Math.min(progressCurrentPage * progressPageSize, filteredProgressList.length) }}</strong> of 
+							<strong>{{ filteredProgressList.length }}</strong> students
+						</div>
+						<div class="pagination-buttons">
+							<button type="button" 
+									class="page-btn" 
+									[disabled]="progressCurrentPage === 1" 
+									(click)="prevProgressPage()">
+								◀ Prev
+							</button>
+							<span class="page-chip">Page {{ progressCurrentPage }} / {{ progressTotalPages }}</span>
+							<button type="button" 
+									class="page-btn" 
+									[disabled]="progressCurrentPage >= progressTotalPages" 
+									(click)="nextProgressPage()">
+								Next ▶
+							</button>
+						</div>
+					</div>
+
 					<p *ngIf="filteredProgressList.length === 0" class="empty-state">No student progress data found for the selected filter.</p>
 				</div>
 			</section>
