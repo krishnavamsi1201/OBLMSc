@@ -63,7 +63,7 @@ export class Chatbot implements OnInit, OnDestroy {
   messages: ChatMessage[] = [
     {
       from: 'bot',
-      text: `👋 **Welcome to OBLMS Chatbot!**\n\nI am powered by **Google Gemini AI** and live-synced with your institutional LMS.\n\nAsk me **anything** — whether it is your **SGPA/CGPA**, **attendance safe bunks**, **today's schedule**, **coding solutions**, or **complex academic concepts**!`,
+      text: `👋 **Welcome to SIDDHI AI Assistant!**\n\nI am powered by **Google Gemini AI** and live-synced with **SIDDHI (Smart Outcome-Based Learning System)**.\n\nAsk me **anything** — whether it is your **SGPA/CGPA**, **attendance safe bunks**, **today's schedule**, **coding solutions**, or **complex academic concepts**!`,
       timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
     }
   ];
@@ -331,7 +331,7 @@ Guidelines:
   }
 
   private getGenericFallback(query: string): string {
-    return `🤖 **OBLMS Chatbot**:\n\nI have processed your query for **"${query}"**.\n\n* **Course Syllabi & Notes**: Viewable under \`/courses\`.\n* **CO-PO Attainment**: Check \`/copo-mapping\`.\n* **Timetable & Adjustments**: Open \`/timetable\`.`;
+    return `🤖 **SIDDHI AI Assistant**:\n\nI have processed your query for **"${query}"**.\n\n* **Course Syllabi & Notes**: Viewable under \`/courses\`.\n* **CO-PO Attainment**: Check \`/copo-mapping\`.\n* **Timetable & Adjustments**: Open \`/timetable\`.`;
   }
 
   // Voice Interaction (Speech-to-Text)
