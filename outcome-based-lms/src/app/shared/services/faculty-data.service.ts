@@ -67,14 +67,22 @@ export interface AtRiskStudent {
   severity: 'High' | 'Medium';
 }
 
+export interface MappedPO {
+  poCode: string;
+  poTitle: string;
+  attainment: number;
+  status: 'Achieved' | 'Partial' | 'Not Achieved' | 'Pending';
+}
+
 export interface CourseCOAttainmentSummary {
   courseName: string;
   coCode: string;
   description: string;
   targetPercentage: number;
   attainmentPercentage: number;
-  status: 'Achieved' | 'Partial' | 'Not Achieved';
+  status: 'Achieved' | 'Partial' | 'Not Achieved' | 'Pending Evaluation';
   assessedStudentsCount: number;
+  mappedPOs?: MappedPO[];
 }
 
 export interface GradeDistribution {
@@ -619,105 +627,157 @@ export class FacultyDataService {
   }
 
   /**
-   * Calculate real-time Course Outcome (CO) Attainments for courses
+   * Calculate real-time Course Outcome (CO) Attainments for courses with standard 5-CO hierarchy & mapped 12 POs
    */
   private calculateCourseCOAttainments(courses: Course[]): CourseCOAttainmentSummary[] {
     try {
       const coList = this.getSafeJson('obslmsCourseOutcomes');
-      const coMappings = this.getSafeJson('obslmsAssessmentCOMappings');
       const marks = this.getSafeJson('obslmsMarkEntries');
+      const results: CourseCOAttainmentSummary[] = [];
 
-      if (coList.length === 0) {
-        return [];
-      }
+      // Standard 5 CO Definitions & PO Mappings for NBA accreditation
+      const defaultCODefinitions = [
+        {
+          coCode: 'CO1',
+          description: 'Understand and apply foundational principles, mathematical models, and domain concepts.',
+          pos: [
+            { poCode: 'PO1', poTitle: 'Engineering Knowledge' },
+            { poCode: 'PO2', poTitle: 'Problem Analysis' }
+          ]
+        },
+        {
+          coCode: 'CO2',
+          description: 'Analyze complex engineering problems, data specifications, and algorithmic logic.',
+          pos: [
+            { poCode: 'PO1', poTitle: 'Engineering Knowledge' },
+            { poCode: 'PO2', poTitle: 'Problem Analysis' },
+            { poCode: 'PO3', poTitle: 'Design/Development of Solutions' }
+          ]
+        },
+        {
+          coCode: 'CO3',
+          description: 'Design and implement structured software components, database schemas, and modular systems.',
+          pos: [
+            { poCode: 'PO3', poTitle: 'Design/Development of Solutions' },
+            { poCode: 'PO4', poTitle: 'Conduct Investigations of Complex Problems' },
+            { poCode: 'PO5', poTitle: 'Modern Tool Usage' }
+          ]
+        },
+        {
+          coCode: 'CO4',
+          description: 'Conduct experimental validation, unit/integration testing, and analysis using modern industry tools.',
+          pos: [
+            { poCode: 'PO4', poTitle: 'Conduct Investigations of Complex Problems' },
+            { poCode: 'PO5', poTitle: 'Modern Tool Usage' },
+            { poCode: 'PO9', poTitle: 'Individual and Team Work' }
+          ]
+        },
+        {
+          coCode: 'CO5',
+          description: 'Evaluate system performance, security standards, professional ethics, and lifelong technical learning.',
+          pos: [
+            { poCode: 'PO6', poTitle: 'The Engineer and Society' },
+            { poCode: 'PO8', poTitle: 'Ethics & Professionalism' },
+            { poCode: 'PO10', poTitle: 'Communication Skills' },
+            { poCode: 'PO12', poTitle: 'Life-long Learning' }
+          ]
+        }
+      ];
 
-      // Filter coList to only include Course Outcomes for courses assigned to this faculty
-      const facultyCourseCodes = new Set(courses.map(c => c.code.toLowerCase()));
-      const facultyCourseNames = courses.map(c => c.name.toLowerCase());
+      courses.forEach(course => {
+        const cName = course.name;
+        const cCode = course.code;
+        const cNameLower = cName.toLowerCase();
+        const cCodeLower = cCode.toLowerCase();
 
-      const filteredCoList = coList.filter((co: any) => {
-        const coCourseLower = (co.course || '').toLowerCase().trim();
-        if (!coCourseLower) return false;
-        
-        // Direct code match (e.g. "cs101" === "cs101")
-        if (facultyCourseCodes.has(coCourseLower)) return true;
+        // Generate 5 COs for this course
+        defaultCODefinitions.forEach(def => {
+          const coCode = def.coCode;
 
-        // Code matches parts of the course name or vice versa
-        return facultyCourseNames.some(name => 
-          name.includes(coCourseLower) || coCourseLower.includes(name)
-        );
-      });
-
-      return filteredCoList.map((co: any) => {
-        const coCode = co.code || co.co || 'CO1';
-        const description = co.description || '';
-        const targetPercentage = Number(co.targetPercentage) || 75;
-        
-        // Find matching course to get full title
-        const coCourseLower = (co.course || '').toLowerCase().trim();
-        const matchedCourse = courses.find(c => 
-          c.code.toLowerCase() === coCourseLower || 
-          c.name.toLowerCase().includes(coCourseLower) || 
-          coCourseLower.includes(c.name.toLowerCase())
-        );
-        const courseName = matchedCourse ? matchedCourse.name : (co.course || 'Course');
-
-        // Find assessment mappings linked to this CO
-        const linkedMappings = coMappings.filter((m: any) =>
-          m.courseOutcomes && Array.isArray(m.courseOutcomes) && m.courseOutcomes.includes(coCode)
-        );
-
-        let totalObtained = 0;
-        let totalMax = 0;
-        const studentSet = new Set<string>();
-
-        if (linkedMappings.length > 0) {
-          linkedMappings.forEach((mapping: any) => {
-            const mappedMarks = marks.filter((m: any) =>
-              m.assessment && m.assessment.toLowerCase().includes(mapping.assessmentName.toLowerCase())
-            );
-
-            mappedMarks.forEach((m: any) => {
-              totalObtained += Number(m.obtained) || 0;
-              totalMax += Number(m.maxMarks) || mapping.maxMarks || 100;
-              if (m.student) studentSet.add(m.student.toLowerCase());
-            });
-          });
-        } else {
-          // General mark calculation for this course if no explicit mapping
-          const courseMarks = marks.filter((m: any) =>
-            m.assessment && (m.assessment.toLowerCase().includes(courseName.toLowerCase()) || m.assessment.toLowerCase().includes(coCode.toLowerCase()))
+          // Check if custom description exists in obslmsCourseOutcomes
+          const customCO = coList.find((c: any) => 
+            (c.course?.toLowerCase() === cNameLower || c.course?.toLowerCase() === cCodeLower) &&
+            (c.code === coCode || c.co === coCode)
           );
 
-          courseMarks.forEach((m: any) => {
+          const description = customCO?.description || def.description;
+          const targetPercentage = Number(customCO?.targetPercentage) || 75;
+
+          // Find marks for this course and this CO
+          const matchingMarks = marks.filter((m: any) => {
+            const mCourse = (m.course || m.courseName || '').toLowerCase().trim();
+            const mAssessment = (m.assessment || '').toLowerCase().trim();
+
+            const isCourseMatch = mCourse === cNameLower || mCourse === cCodeLower ||
+                                  mCourse.includes(cNameLower) || cNameLower.includes(mCourse) ||
+                                  mAssessment.includes(cNameLower) || mAssessment.includes(cCodeLower);
+
+            if (!isCourseMatch) return false;
+
+            // If mark explicitly mapped to a CO
+            if (m.coMapped) {
+              return m.coMapped.toUpperCase() === coCode.toUpperCase();
+            }
+            return true;
+          });
+
+          let totalObtained = 0;
+          let totalMax = 0;
+          const studentSet = new Set<string>();
+
+          matchingMarks.forEach((m: any) => {
             totalObtained += Number(m.obtained) || 0;
             totalMax += Number(m.maxMarks) || 100;
             if (m.student) studentSet.add(m.student.toLowerCase());
           });
-        }
 
-        const attainmentPercentage = totalMax > 0
-          ? Math.round((totalObtained / totalMax) * 100)
-          : 0;
+          const attainmentPercentage = totalMax > 0
+            ? Math.round((totalObtained / totalMax) * 100)
+            : 0;
 
-        let status: 'Achieved' | 'Partial' | 'Not Achieved' = 'Not Achieved';
-        if (attainmentPercentage >= targetPercentage) {
-          status = 'Achieved';
-        } else if (attainmentPercentage >= 50) {
-          status = 'Partial';
-        }
+          let status: 'Achieved' | 'Partial' | 'Not Achieved' | 'Pending Evaluation' = 'Pending Evaluation';
+          if (studentSet.size === 0 || totalMax === 0) {
+            status = 'Pending Evaluation';
+          } else if (attainmentPercentage >= targetPercentage) {
+            status = 'Achieved';
+          } else if (attainmentPercentage >= 50) {
+            status = 'Partial';
+          } else {
+            status = 'Not Achieved';
+          }
 
-        return {
-          courseName,
-          coCode,
-          description,
-          targetPercentage,
-          attainmentPercentage,
-          status,
-          assessedStudentsCount: studentSet.size
-        };
+          // Build mapped POs list
+          const mappedPOs: MappedPO[] = def.pos.map(p => {
+            let poAttainment = 0;
+            let poStatus: 'Achieved' | 'Partial' | 'Not Achieved' | 'Pending' = 'Pending';
+
+            if (status !== 'Pending Evaluation') {
+              poAttainment = attainmentPercentage;
+              poStatus = attainmentPercentage >= 75 ? 'Achieved' : attainmentPercentage >= 50 ? 'Partial' : 'Not Achieved';
+            }
+
+            return {
+              poCode: p.poCode,
+              poTitle: p.poTitle,
+              attainment: poAttainment,
+              status: poStatus
+            };
+          });
+
+          results.push({
+            courseName: cName,
+            coCode,
+            description,
+            targetPercentage,
+            attainmentPercentage,
+            status,
+            assessedStudentsCount: studentSet.size,
+            mappedPOs
+          });
+        });
       });
 
+      return results;
     } catch (error) {
       console.error('Error calculating CO attainments:', error);
       return [];

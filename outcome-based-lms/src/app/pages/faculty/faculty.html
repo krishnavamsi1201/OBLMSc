@@ -212,8 +212,12 @@
 									<span class="co-badge">{{ co.coCode }}</span>
 									<strong class="co-course">{{ co.courseName }}</strong>
 								</div>
-								<span class="status-pill" [class.achieved]="co.status === 'Achieved'" [class.partial]="co.status === 'Partial'" [class.not-achieved]="co.status === 'Not Achieved'">
-									{{ co.status }}
+								<span class="status-pill" 
+									  [class.achieved]="co.status === 'Achieved'" 
+									  [class.partial]="co.status === 'Partial'" 
+									  [class.pending]="co.status === 'Pending Evaluation'" 
+									  [class.not-achieved]="co.status === 'Not Achieved'">
+									{{ co.status === 'Pending Evaluation' ? '⏳ Pending' : (co.status === 'Achieved' ? '🟢 Achieved' : (co.status === 'Partial' ? '🟡 Partial' : '❌ Needs Remedial')) }}
 								</span>
 							</div>
 							<p class="co-description">{{ co.description || 'Applies core concepts and analytical methodologies to engineering problems.' }}</p>
@@ -226,16 +230,35 @@
 									<div class="co-progress-fill" [style.width.%]="co.attainmentPercentage"
 										[class.fill-achieved]="co.status === 'Achieved'"
 										[class.fill-partial]="co.status === 'Partial'"
+										[class.fill-pending]="co.status === 'Pending Evaluation'"
 										[class.fill-failed]="co.status === 'Not Achieved'"></div>
 									<div class="co-target-marker" [style.left.%]="co.targetPercentage" title="Target Benchmark ({{co.targetPercentage}}%)"></div>
 								</div>
 							</div>
+
+							<!-- Mapped 12-POs Contribution Grid -->
+							<div class="co-mapped-pos-container" *ngIf="co.mappedPOs && co.mappedPOs.length > 0">
+								<span class="mapped-pos-heading">Mapped Program Outcomes (POs):</span>
+								<div class="po-badges-flow">
+									<span *ngFor="let po of co.mappedPOs" 
+										  class="po-badge-chip" 
+										  [class.po-achieved]="po.status === 'Achieved'" 
+										  [class.po-partial]="po.status === 'Partial'" 
+										  [class.po-pending]="po.status === 'Pending'" 
+										  [class.po-not-achieved]="po.status === 'Not Achieved'"
+										  [title]="po.poCode + ': ' + po.poTitle">
+										<strong class="po-chip-code">{{ po.poCode }}</strong>
+										<span class="po-chip-val">{{ po.attainment > 0 ? po.attainment + '%' : 'Pending' }}</span>
+									</span>
+								</div>
+							</div>
+
 							<div class="co-footer">
 								<span class="co-assessed-info">
 									<span class="material-icons assessed-icon">analytics</span>
 									<span>{{ co.assessedStudentsCount }} Evaluated</span>
 								</span>
-								<button *ngIf="co.status !== 'Achieved'" class="cqi-mini-btn" (click)="openCqiModal(co)" title="Plan remedial action for sub-target CO attainment">
+								<button *ngIf="co.status === 'Not Achieved' || co.status === 'Partial'" class="cqi-mini-btn" (click)="openCqiModal(co)" title="Plan remedial action for sub-target CO attainment">
 									<span class="cqi-btn-icon">⚡</span>
 									<span>Plan Remedial Action</span>
 								</button>

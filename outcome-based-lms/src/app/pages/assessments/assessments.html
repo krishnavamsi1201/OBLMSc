@@ -277,19 +277,38 @@
                             </select>
                         </label>
                         <label>
-                            Assessment *
-                            <select name="assessment" [(ngModel)]="currentMark.assessment" required>
-                                <option *ngFor="let type of assessmentTypes" [value]="type">{{ type }}</option>
+                            Course / Subject *
+                            <select name="course" [(ngModel)]="currentMark.course" required>
+                                <option value="" disabled>-- Select Course --</option>
+                                <option *ngFor="let c of coursesList" [value]="c.name">{{ c.name }} ({{ c.code }})</option>
                             </select>
                         </label>
                     </div>
                     <div class="grid-row">
                         <label>
-                            Obtained Marks
+                            Assessment Type *
+                            <select name="assessment" [(ngModel)]="currentMark.assessment" required>
+                                <option *ngFor="let type of assessmentTypes" [value]="type">{{ type }}</option>
+                            </select>
+                        </label>
+                        <label>
+                            Mapped Course Outcome (CO) *
+                            <select name="coMapped" [(ngModel)]="currentMark.coMapped" required>
+                                <option value="CO1">CO1 - Fundamental Concepts & Principles</option>
+                                <option value="CO2">CO2 - Problem Analysis & Modeling</option>
+                                <option value="CO3">CO3 - Design & Component Implementation</option>
+                                <option value="CO4">CO4 - Investigation & Tool Application</option>
+                                <option value="CO5">CO5 - Evaluation, Ethics & Life-long Learning</option>
+                            </select>
+                        </label>
+                    </div>
+                    <div class="grid-row">
+                        <label>
+                            Obtained Marks *
                             <input type="number" name="obtained" [(ngModel)]="currentMark.obtained" min="0" required />
                         </label>
                         <label>
-                            Max Marks
+                            Max Marks *
                             <input type="number" name="maxMarks" [(ngModel)]="currentMark.maxMarks" min="1" required />
                         </label>
                     </div>

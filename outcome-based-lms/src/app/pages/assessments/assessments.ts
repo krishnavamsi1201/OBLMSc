@@ -67,6 +67,8 @@ export interface Assessment {
 export interface MarkEntry {
   id: number;
   student: string;
+  course?: string;
+  coMapped?: string;
   assessment: string;
   obtained: number;
   maxMarks: number;
@@ -127,7 +129,7 @@ export class Assessments implements OnInit, OnDestroy {
 
   // Traditional assessment form states
   currentAssessment: Assessment = { id: 0, course: '', type: 'Assignment', questions: 5, maxMarks: 50, dueDate: '2026-11-15', status: 'Planned' };
-  currentMark: MarkEntry = { id: 0, student: '', assessment: 'Assignment', obtained: 42, maxMarks: 50 };
+  currentMark: MarkEntry = { id: 0, student: '', course: '', coMapped: 'CO1', assessment: 'Assignment', obtained: 42, maxMarks: 50 };
   editAssessmentIndex = -1;
 
   private http = inject(HttpClient);
@@ -1155,12 +1157,14 @@ export class Assessments implements OnInit, OnDestroy {
       return;
     }
 
-    const payload = {
-      id: null,
+    const payload: MarkEntry = {
+      id: Date.now(),
       student: this.currentMark.student,
+      course: this.currentMark.course || (this.coursesList.length > 0 ? this.coursesList[0].name : 'General Course'),
+      coMapped: this.currentMark.coMapped || 'CO1',
       assessment: this.currentMark.assessment,
-      obtained: this.currentMark.obtained,
-      maxMarks: this.currentMark.maxMarks
+      obtained: Number(this.currentMark.obtained),
+      maxMarks: Number(this.currentMark.maxMarks)
     };
 
     try {
@@ -1187,6 +1191,6 @@ export class Assessments implements OnInit, OnDestroy {
   }
 
   resetMarksForm(): void {
-    this.currentMark = { id: 0, student: '', assessment: 'Assignment', obtained: 0, maxMarks: 0 };
+    this.currentMark = { id: 0, student: '', course: '', coMapped: 'CO1', assessment: 'Assignment', obtained: 0, maxMarks: 100 };
   }
 }
