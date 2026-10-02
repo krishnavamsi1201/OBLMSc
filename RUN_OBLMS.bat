@@ -8,11 +8,11 @@ echo               FULL-STACK LAUNCHER
 echo =========================================================
 echo.
 echo [1/3] Starting Spring Boot Backend on Port 8080...
-start "OBLMS Spring Boot Backend (Port 8080)" cmd /k "cd /d D:\OBLMSc\springboot-backend && mvn spring-boot:run"
+start "OBLMS Spring Boot Backend (Port 8080)" cmd /k "cd /d "%~dp0springboot-backend" && mvn spring-boot:run"
 
 echo.
 echo [2/3] Starting Angular 17 Frontend on Port 4200...
-start "OBLMS Angular Frontend (Port 4200)" cmd /k "cd /d D:\OBLMSc\outcome-based-lms && npm start"
+start "OBLMS Angular Frontend (Port 4200)" cmd /k "cd /d "%~dp0outcome-based-lms" && npm start"
 
 echo.
 echo [3/3] Waiting 6 seconds for servers to initialize...

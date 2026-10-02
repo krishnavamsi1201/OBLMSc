@@ -259,9 +259,6 @@ export class Login implements OnInit {
       this.password = 'password';
     }
     this.cdr.detectChanges();
-    setTimeout(() => {
-      this.login();
-    }, 50);
   }
 
   togglePasswordVisibility(): void {
