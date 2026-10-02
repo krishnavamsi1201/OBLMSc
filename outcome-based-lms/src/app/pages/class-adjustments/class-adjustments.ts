@@ -202,7 +202,7 @@ export interface FacultyUser {
                             <th>Room</th>
                             <th>Substitute Faculty</th>
                             <th>Status</th>
-                            <th>Student Notification Status</th>
+                            <th>Substitute Remarks / Response</th>
                             <th>Actions</th>
                         </tr>
                     </thead>
@@ -226,23 +226,26 @@ export interface FacultyUser {
                             </td>
                             <td>
                                 <div *ngIf="req.status === 'APPROVED'" class="notify-student-cell">
+                                    <span style="color: #4ade80; font-weight: 600; font-size: 0.85rem; display: block; margin-bottom: 4px;">
+                                        ✔️ Accepted by Substitute
+                                    </span>
                                     <button *ngIf="!req.notifiedStudents" 
                                             type="button" 
                                             class="btn-notify-students" 
                                             (click)="openNotifyStudentsModal(req)">
-                                        📢 Send Adjustment Class Details to All Registered Students
+                                        📢 Broadcast to Registered Students
                                     </button>
                                     <div *ngIf="req.notifiedStudents" class="notified-badge-container">
                                         <span class="notified-badge">
-                                            ✅ Details Sent to Students
+                                            ✅ Broadcast Sent to Students
                                         </span>
-                                        <button type="button" class="btn-renotify" (click)="openNotifyStudentsModal(req)" title="Resend Notification">
+                                        <button type="button" class="btn-renotify" (click)="openNotifyStudentsModal(req)" title="Resend Broadcast">
                                             🔄 Resend
                                         </button>
                                     </div>
                                 </div>
                                 <span *ngIf="req.status === 'REJECTED'" class="rej-reason-text">
-                                    ❌ <strong>Declined:</strong> {{ req.rejectionReason || 'No reason provided' }}
+                                    ❌ <strong>Reason:</strong> {{ req.rejectionReason || 'Declined without remarks' }}
                                 </span>
                                 <span *ngIf="req.status === 'PENDING'" class="pending-note-text">
                                     ⏳ Awaiting substitute confirmation
