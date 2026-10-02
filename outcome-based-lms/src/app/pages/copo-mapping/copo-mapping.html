@@ -38,13 +38,7 @@
         </div>
 
         <!-- Branch Filter Navigation Bar -->
-        <div class="branch-filter-toolbar" *ngIf="role !== 'student'">
-            <button *ngIf="role === 'faculty'" type="button" 
-                class="filter-pill-btn" 
-                [class.active]="selectedBranch === 'MY_BRANCH'"
-                (click)="selectedBranch = 'MY_BRANCH'">
-                🌟 My Branch ({{ currentActiveBranch }})
-            </button>
+        <div class="branch-filter-toolbar" *ngIf="role === 'admin'">
             <button type="button" 
                 class="filter-pill-btn" 
                 [class.active]="selectedBranch === 'ALL'"
@@ -82,9 +76,16 @@
                 🏗️ Civil
             </button>
         </div>
+
+        <div class="branch-filter-toolbar" *ngIf="role === 'faculty'">
+            <div class="filter-pill-btn active" style="background: linear-gradient(135deg, #d4af37 0%, #b38f28 100%); color: #0a1128; cursor: default; border-color: #d4af37; font-weight: 800;">
+                👨‍🏫 {{ studentDept || 'Computer Science & Engineering' }} ({{ currentActiveBranch }})
+            </div>
+        </div>
+
         <div class="branch-filter-toolbar" *ngIf="role === 'student'">
-            <div class="filter-pill-btn active" style="cursor: default;">
-                💻 Enrolled Courses: Computer Science & Engineering (CSE)
+            <div class="filter-pill-btn active" style="background: #1e40af; color: #fff; cursor: default; border-color: #1e40af;">
+                💻 Enrolled Courses: {{ studentDept || 'Computer Science & Engineering' }} ({{ currentActiveBranch }})
             </div>
         </div>
 
