@@ -18,20 +18,22 @@
 }
 
 .brand-logo-badge {
-    width: 40px;
-    height: 40px;
-    border-radius: 10px;
-    background: linear-gradient(135deg, #d4af37 0%, #b8860b 100%);
+    width: 42px;
+    height: 42px;
+    border-radius: 12px;
+    background: linear-gradient(135deg, #f59e0b 0%, #d97706 50%, #b45309 100%);
     display: flex;
     align-items: center;
     justify-content: center;
-    box-shadow: 0 4px 12px rgba(212, 175, 55, 0.3);
-    border: 1px solid rgba(255, 255, 255, 0.25);
+    box-shadow: 0 0 16px rgba(245, 158, 11, 0.45), 0 4px 12px rgba(0, 0, 0, 0.4);
+    border: 1.5px solid rgba(254, 240, 138, 0.6);
+    position: relative;
 }
 
 .brand-icon {
     font-size: 24px;
     color: #ffffff;
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
 }
 
 .brand-info {
