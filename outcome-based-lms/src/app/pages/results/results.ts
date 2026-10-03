@@ -41,14 +41,19 @@ export interface StudentAcademicProfileGroup {
   standing: string;
 }
 
-export interface StudentResult {
-  id: number;
-  student: string;
-  course: string;
-  internal: number;
-  external: number;
+export interface ParsedCsvResult {
+  studentRoll: string;
+  studentName: string;
+  department: string;
+  semester: string;
+  courseCode: string;
+  courseTitle: string;
+  internalMarks: number;
+  externalMarks: number;
+  totalMarks: number;
   grade: string;
-  status: string;
+  gradePoints: number;
+  status: 'Pass' | 'Fail';
 }
 
 @Component({
@@ -67,8 +72,8 @@ export interface StudentResult {
             <div class="header-text-block">
                 <h1>📋 Student Semester Results & Marksheet Deck</h1>
                 <p *ngIf="role === 'student'">Official semester performance transcript, SGPA/CGPA breakdown, and complete marksheet download.</p>
-                <p *ngIf="role === 'faculty'">Faculty Subject Evaluation Deck: Restricted to your assigned subjects and courses.</p>
-                <p *ngIf="role === 'admin'">Master academic results deck: Expandable student profiles, departmental performance matrix, and official semester transcripts.</p>
+                <p *ngIf="role === 'faculty'">Faculty Subject Evaluation Deck: Restricted to your assigned subjects. Enter and update student assessment marks.</p>
+                <p *ngIf="role === 'admin'">Master academic results deck: Expandable student profiles, bulk CSV marksheet upload, and official transcripts.</p>
             </div>
             
             <!-- View Mode Switcher for Faculty and Admin -->
@@ -303,6 +308,10 @@ export interface StudentResult {
                         <button type="button" class="btn-toggle-accordion" (click)="collapseAllStudents()" title="Collapse all student result cards">
                             ▴ Collapse All
                         </button>
+                        <!-- Admin Bulk CSV Upload Trigger Button -->
+                        <button *ngIf="role === 'admin'" type="button" class="btn-bulk-upload" (click)="openBulkUploadModal()" title="Upload Bulk Semester Results CSV">
+                            <span class="material-icons">cloud_upload</span> Bulk Upload CSV
+                        </button>
                     </div>
 
                     <span class="match-count-badge">
@@ -409,13 +418,14 @@ export interface StudentResult {
                                     <tr>
                                         <th style="width: 110px;">Subject Code</th>
                                         <th>Course / Subject Title</th>
-                                        <th style="text-align: center; width: 80px;">Credits</th>
-                                        <th style="text-align: center; width: 130px;">Internal (40%)</th>
-                                        <th style="text-align: center; width: 130px;">External (60%)</th>
-                                        <th style="text-align: center; width: 110px;">Total (100)</th>
-                                        <th style="text-align: center; width: 90px;">Grade</th>
-                                        <th style="text-align: center; width: 90px;">Grade Pts</th>
-                                        <th style="text-align: center; width: 90px;">Status</th>
+                                        <th style="text-align: center; width: 75px;">Credits</th>
+                                        <th style="text-align: center; width: 125px;">Internal (40%)</th>
+                                        <th style="text-align: center; width: 125px;">External (60%)</th>
+                                        <th style="text-align: center; width: 105px;">Total (100)</th>
+                                        <th style="text-align: center; width: 85px;">Grade</th>
+                                        <th style="text-align: center; width: 85px;">Grade Pts</th>
+                                        <th style="text-align: center; width: 85px;">Status</th>
+                                        <th *ngIf="role !== 'student'" style="text-align: center; width: 115px;">Actions</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -446,6 +456,11 @@ export interface StudentResult {
                                         </td>
                                         <td style="text-align: center;">
                                             <span class="status-pill" [class.pass]="c.status === 'Pass'" [class.fail]="c.status !== 'Pass'">{{ c.status }}</span>
+                                        </td>
+                                        <td *ngIf="role !== 'student'" style="text-align: center;">
+                                            <button type="button" class="btn-table-edit" (click)="openEditMarksModal(s, c)" title="Edit marks for {{ c.courseCode }}">
+                                                ✏️ Enter Marks
+                                            </button>
                                         </td>
                                     </tr>
                                 </tbody>
@@ -534,11 +549,12 @@ export interface StudentResult {
                         <th style="text-align: center; width: 90px;">Grade</th>
                         <th style="text-align: center; width: 90px;">Grade Pts</th>
                         <th style="text-align: center; width: 90px;">Status</th>
+                        <th *ngIf="role !== 'student'" style="text-align: center; width: 115px;">Actions</th>
                     </tr>
                 </thead>
                 <tbody>
                     <tr *ngIf="displayedCourses.length === 0">
-                        <td colspan="9" class="empty-cell" style="text-align: center; padding: 30px; color: #94a3b8;">
+                        <td [attr.colspan]="role !== 'student' ? 10 : 9" class="empty-cell" style="text-align: center; padding: 30px; color: #94a3b8;">
                             📭 No courses found matching {{ role === 'faculty' ? 'your assigned subject in this semester' : 'the criteria' }}.
                         </td>
                     </tr>
@@ -555,6 +571,11 @@ export interface StudentResult {
                         <td style="text-align: center;"><strong>{{ c.gradePoints }}</strong></td>
                         <td style="text-align: center;">
                             <span class="status-pill pass">{{ c.status }}</span>
+                        </td>
+                        <td *ngIf="role !== 'student'" style="text-align: center;">
+                            <button type="button" class="btn-table-edit" (click)="openEditMarksModalFromSingleView(c)" title="Edit marks for {{ c.courseCode }}">
+                                ✏️ Enter Marks
+                            </button>
                         </td>
                     </tr>
                 </tbody>
@@ -597,6 +618,212 @@ export interface StudentResult {
                 <div class="sig-col">
                     <div class="sig-line">Controller of Examinations</div>
                     <small>Centurion University</small>
+                </div>
+            </div>
+        </div>
+
+        <!-- ========================================================================= -->
+        <!-- MODAL 1: ENTER / EDIT STUDENT MARKS MODAL                                  -->
+        <!-- ========================================================================= -->
+        <div class="modal-backdrop" *ngIf="showEditMarksModal" (click)="closeEditMarksModal()">
+            <div class="modal-dialog" (click)="$event.stopPropagation()">
+                <div class="modal-header">
+                    <div class="modal-title-wrap">
+                        <span class="modal-icon">📝</span>
+                        <div>
+                            <h3>Enter & Update Student Marks</h3>
+                            <p>Continuous Internal Evaluation & Semester End Examination</p>
+                        </div>
+                    </div>
+                    <button type="button" class="modal-close-btn" (click)="closeEditMarksModal()">✕</button>
+                </div>
+
+                <div class="modal-body" *ngIf="activeEditingRecord">
+                    <!-- Student & Course Context Bar -->
+                    <div class="modal-context-box">
+                        <div class="ctx-row">
+                            <span class="ctx-label">Student:</span>
+                            <strong class="ctx-value">{{ activeEditingStudent?.studentName }} ({{ activeEditingStudent?.studentId }})</strong>
+                        </div>
+                        <div class="ctx-row">
+                            <span class="ctx-label">Course:</span>
+                            <strong class="ctx-value" style="color: #60a5fa;">{{ activeEditingRecord.courseCode }} — {{ activeEditingRecord.courseTitle }}</strong>
+                        </div>
+                        <div class="ctx-row">
+                            <span class="ctx-label">Semester & Department:</span>
+                            <span class="ctx-value">{{ activeEditingStudent?.semester }} • {{ activeEditingStudent?.department }}</span>
+                        </div>
+                    </div>
+
+                    <!-- Marks Form Grid -->
+                    <div class="marks-input-grid">
+                        <div class="input-field-group">
+                            <label>
+                                <span>Internal Assessment (CIE)</span>
+                                <small>Max: {{ getObeWeights().internal }} Marks</small>
+                            </label>
+                            <div class="input-with-max">
+                                <input 
+                                    type="number" 
+                                    [(ngModel)]="editInternalMarks" 
+                                    (input)="onEditMarksChange()" 
+                                    [min]="0" 
+                                    [max]="getObeWeights().internal" 
+                                    class="marks-num-input"
+                                    placeholder="0"
+                                />
+                                <span class="max-badge">/ {{ getObeWeights().internal }}</span>
+                            </div>
+                        </div>
+
+                        <div class="input-field-group">
+                            <label>
+                                <span>Semester External Exam (SEE)</span>
+                                <small>Max: {{ getObeWeights().external }} Marks</small>
+                            </label>
+                            <div class="input-with-max">
+                                <input 
+                                    type="number" 
+                                    [(ngModel)]="editExternalMarks" 
+                                    (input)="onEditMarksChange()" 
+                                    [min]="0" 
+                                    [max]="getObeWeights().external" 
+                                    class="marks-num-input"
+                                    placeholder="0"
+                                />
+                                <span class="max-badge">/ {{ getObeWeights().external }}</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Live Grade & Score Preview Box -->
+                    <div class="live-preview-box">
+                        <div class="preview-header">
+                            <span>⚡ Live Computed Grade & Result:</span>
+                        </div>
+                        <div class="preview-metrics-grid">
+                            <div class="prev-item">
+                                <span class="prev-lbl">Total Score:</span>
+                                <strong class="prev-val" [style.color]="editTotalMarks >= 40 ? '#4ade80' : '#f87171'">
+                                    {{ editTotalMarks }} / 100
+                                </strong>
+                            </div>
+                            <div class="prev-item">
+                                <span class="prev-lbl">Calculated Grade:</span>
+                                <span class="grade-badge" [class.excellent]="editCalculatedGrade === 'O' || editCalculatedGrade === 'A+'">
+                                    {{ editCalculatedGrade }}
+                                </span>
+                            </div>
+                            <div class="prev-item">
+                                <span class="prev-lbl">Grade Points:</span>
+                                <strong class="prev-val">{{ editCalculatedGradePoints }} / 10</strong>
+                            </div>
+                            <div class="prev-item">
+                                <span class="prev-lbl">Status:</span>
+                                <span class="status-pill" [class.pass]="editCalculatedStatus === 'Pass'" [class.fail]="editCalculatedStatus !== 'Pass'">
+                                    {{ editCalculatedStatus }}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn-cancel" (click)="closeEditMarksModal()">Cancel</button>
+                    <button type="button" class="btn-save-marks" (click)="saveEditedMarks()">
+                        💾 Save & Publish Marks
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- ========================================================================= -->
+        <!-- MODAL 2: ADMIN BULK CSV / EXCEL RESULTS UPLOADER MODAL                    -->
+        <!-- ========================================================================= -->
+        <div class="modal-backdrop" *ngIf="showBulkUploadModal" (click)="closeBulkUploadModal()">
+            <div class="modal-dialog bulk-dialog" (click)="$event.stopPropagation()">
+                <div class="modal-header">
+                    <div class="modal-title-wrap">
+                        <span class="modal-icon">📤</span>
+                        <div>
+                            <h3>Bulk Semester Results Importer</h3>
+                            <p>Import semester results and evaluation marks via CSV spreadsheet</p>
+                        </div>
+                    </div>
+                    <button type="button" class="modal-close-btn" (click)="closeBulkUploadModal()">✕</button>
+                </div>
+
+                <div class="modal-body">
+                    <!-- Instructions and Template Download -->
+                    <div class="bulk-info-banner">
+                        <div>
+                            <strong>Standard CSV Format Required:</strong>
+                            <p>Columns: <code>StudentRoll, StudentName, Department, Semester, CourseCode, CourseTitle, InternalMarks, ExternalMarks</code></p>
+                        </div>
+                        <button type="button" class="btn-template-download" (click)="downloadSampleCsvTemplate()">
+                            📥 Download CSV Template
+                        </button>
+                    </div>
+
+                    <!-- Upload Dropzone -->
+                    <div class="file-dropzone" (click)="csvFileInput.click()">
+                        <input #csvFileInput type="file" accept=".csv,text/csv" (change)="handleCsvFileSelect($event)" style="display: none;" />
+                        <span class="material-icons upload-cloud-icon">cloud_upload</span>
+                        <h4>Click to Select or Upload Results CSV File</h4>
+                        <p>Upload a standard CSV spreadsheet formatted with student marks.</p>
+                        <span class="selected-filename" *ngIf="selectedCsvFileName">📄 Selected File: {{ selectedCsvFileName }}</span>
+                    </div>
+
+                    <!-- Parsed Data Preview -->
+                    <div class="parsed-preview-wrap" *ngIf="parsedCsvRecords.length > 0">
+                        <div class="parsed-header">
+                            <strong>Preview Parsed Data ({{ parsedCsvRecords.length }} Records Detected):</strong>
+                            <span class="valid-tag">✓ Ready to import</span>
+                        </div>
+                        <div class="parsed-table-scroll">
+                            <table class="parsed-table">
+                                <thead>
+                                    <tr>
+                                        <th>Roll No</th>
+                                        <th>Student Name</th>
+                                        <th>Subject Code</th>
+                                        <th style="text-align: center;">Internal</th>
+                                        <th style="text-align: center;">External</th>
+                                        <th style="text-align: center;">Total</th>
+                                        <th style="text-align: center;">Grade</th>
+                                        <th style="text-align: center;">Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr *ngFor="let r of parsedCsvRecords.slice(0, 10)">
+                                        <td>{{ r.studentRoll }}</td>
+                                        <td><strong>{{ r.studentName }}</strong></td>
+                                        <td><span class="sub-code-badge">{{ r.courseCode }}</span></td>
+                                        <td style="text-align: center;">{{ r.internalMarks }}</td>
+                                        <td style="text-align: center;">{{ r.externalMarks }}</td>
+                                        <td style="text-align: center;"><strong>{{ r.totalMarks }}</strong></td>
+                                        <td style="text-align: center;"><span class="grade-badge" [class.excellent]="r.grade === 'O' || r.grade === 'A+'">{{ r.grade }}</span></td>
+                                        <td style="text-align: center;"><span class="status-pill" [class.pass]="r.status === 'Pass'" [class.fail]="r.status !== 'Pass'">{{ r.status }}</span></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <small *ngIf="parsedCsvRecords.length > 10" style="color: #94a3b8; display: block; margin-top: 6px;">
+                            Showing first 10 of {{ parsedCsvRecords.length }} records.
+                        </small>
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn-cancel" (click)="closeBulkUploadModal()">Cancel</button>
+                    <button 
+                        type="button" 
+                        class="btn-save-marks" 
+                        [disabled]="parsedCsvRecords.length === 0" 
+                        (click)="confirmImportBulkCsv()"
+                    >
+                        🚀 Import & Publish {{ parsedCsvRecords.length }} Results
+                    </button>
                 </div>
             </div>
         </div>
@@ -748,18 +975,16 @@ export interface StudentResult {
       color: #ffffff;
     }
 
-    /* Semester Filter Toolbar */
     .semester-filter-toolbar {
       background: #101b38;
       border: 1px solid #1f2f54;
-      border-radius: 12px;
-      padding: 12px 16px;
+      border-radius: 14px;
+      padding: 14px 20px;
       margin-bottom: 20px;
       display: flex;
-      justify-content: space-between;
-      align-items: center;
-      flex-wrap: wrap;
-      gap: 14px;
+      flex-direction: column;
+      gap: 12px;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
     }
     .semester-header-info {
       display: flex;
@@ -767,7 +992,7 @@ export interface StudentResult {
       gap: 10px;
     }
     .toolbar-title {
-      font-size: 13px;
+      font-size: 0.95rem;
       font-weight: 700;
       color: #cbd5e1;
     }
@@ -775,201 +1000,198 @@ export interface StudentResult {
       background: rgba(212, 175, 55, 0.15);
       color: #fde68a;
       border: 1px solid rgba(212, 175, 55, 0.4);
-      padding: 3px 10px;
-      border-radius: 6px;
+      padding: 2px 10px;
+      border-radius: 20px;
       font-size: 12px;
       font-weight: 800;
     }
     .semester-pills {
       display: flex;
       flex-wrap: wrap;
-      gap: 6px;
+      gap: 8px;
     }
     .sem-pill {
       background: #091024;
       color: #94a3b8;
       border: 1px solid #1f2f54;
-      padding: 5px 12px;
-      border-radius: 6px;
-      font-size: 12px;
+      padding: 6px 14px;
+      border-radius: 8px;
+      font-size: 12.5px;
       font-weight: 700;
       cursor: pointer;
-      transition: all 0.15s ease;
+      transition: all 0.2s ease;
     }
     .sem-pill:hover {
-      background: #18284e;
       color: #ffffff;
+      border-color: #3b82f6;
     }
     .sem-pill.active {
-      background: linear-gradient(135deg, #d4af37 0%, #b38f28 100%);
-      color: #0a1128;
-      border-color: #d4af37;
+      background: linear-gradient(135deg, #1e40af 0%, #1d4ed8 100%);
+      color: #ffffff;
+      border-color: #60a5fa;
+      box-shadow: 0 2px 8px rgba(37, 99, 235, 0.4);
     }
 
-    /* Summary KPI Grid */
     .summary-grid {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
       gap: 16px;
-      margin-bottom: 22px;
+      margin-bottom: 24px;
     }
-    .kpi-card-lux {
-      background: #101b38;
-      border: 1px solid #1f2f54;
-      border-radius: 12px;
-      padding: 16px;
-      display: flex;
-      align-items: center;
-      gap: 14px;
-      box-shadow: 0 4px 16px rgba(0,0,0,0.3);
-    }
-    .kpi-icon-badge {
-      width: 44px;
-      height: 44px;
-      border-radius: 10px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 20px;
-    }
-    .kpi-text-block {
-      display: flex;
-      flex-direction: column;
-    }
-    .kpi-tag {
-      font-size: 11px;
-      text-transform: uppercase;
-      font-weight: 700;
-      color: #94a3b8;
-    }
-    .kpi-num {
-      font-size: 1.5rem;
-      font-weight: 800;
-      color: #ffffff;
-      margin: 2px 0;
-    }
-    .kpi-text-block p {
-      margin: 0;
-      font-size: 11.5px;
-      color: #64748b;
-    }
-
     .section-card {
       background: #101b38;
       border: 1px solid #1f2f54;
       border-radius: 12px;
-      padding: 16px;
-      box-shadow: 0 4px 16px rgba(0,0,0,0.3);
+      padding: 18px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
     }
     .section-card h3 {
-      margin: 0 0 4px 0;
-      font-size: 12px;
-      text-transform: uppercase;
+      margin: 0;
+      font-size: 0.85rem;
       color: #94a3b8;
-      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
     }
     .section-card strong {
-      font-size: 1.5rem;
-      font-weight: 800;
       display: block;
-      margin-bottom: 4px;
+      font-size: 1.8rem;
+      margin: 8px 0;
+      color: #ffffff;
+      font-weight: 800;
     }
     .section-card p {
       margin: 0;
-      font-size: 11.5px;
+      font-size: 0.82rem;
       color: #64748b;
     }
     .pass-standing {
       color: #4ade80 !important;
-      font-size: 1.2rem !important;
+      font-size: 1.25rem !important;
+    }
+
+    .kpi-card-lux {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      padding: 16px 20px;
+    }
+    .kpi-icon-badge {
+      width: 48px;
+      height: 48px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.5rem;
+      flex-shrink: 0;
+    }
+    .kpi-text-block { flex: 1; }
+    .kpi-tag {
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      color: #94a3b8;
+      letter-spacing: 0.5px;
+      display: block;
+    }
+    .kpi-num {
+      font-size: 1.7rem;
+      font-weight: 800;
+      color: #ffffff;
+      margin: 2px 0 0;
+      display: block;
     }
 
     .action-row {
       display: flex;
       gap: 12px;
-      margin-bottom: 20px;
-      flex-wrap: wrap;
       align-items: center;
+      margin-bottom: 24px;
+      flex-wrap: wrap;
     }
     .btn-download, .btn-print {
-      padding: 9px 18px;
+      padding: 10px 18px;
       border-radius: 8px;
-      font-size: 13px;
       font-weight: 700;
+      font-size: 13px;
       cursor: pointer;
-      border: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
       transition: all 0.2s ease;
+      border: none;
     }
     .btn-download {
-      background: linear-gradient(135deg, #d4af37 0%, #b38f28 100%);
-      color: #0a1128;
+      background: #10b981;
+      color: #ffffff;
     }
+    .btn-download:hover { background: #059669; }
     .btn-print {
       background: #18284e;
       color: #cbd5e1;
       border: 1px solid #1f2f54;
     }
-    .status-message {
-      color: #4ade80;
-      font-weight: 700;
-      font-size: 13px;
-    }
+    .btn-print:hover { background: #233876; color: #ffffff; }
+    .status-message { font-size: 13px; color: #4ade80; font-weight: 600; }
 
-    /* Deck Container */
-    .results-deck-container { margin-bottom: 30px; }
+    /* Search & Filter Toolbar */
     .results-search-toolbar {
       background: #101b38;
       border: 1px solid #1f2f54;
       border-radius: 12px;
-      padding: 12px 16px;
-      margin-bottom: 18px;
+      padding: 14px 18px;
+      margin-bottom: 20px;
       display: flex;
-      justify-content: space-between;
-      align-items: center;
-      flex-wrap: wrap;
+      flex-direction: column;
       gap: 12px;
     }
     .search-input-wrap {
+      position: relative;
       display: flex;
       align-items: center;
+    }
+    .search-icon {
+      position: absolute;
+      left: 14px;
+      font-size: 16px;
+      color: #64748b;
+    }
+    .results-search-input {
+      width: 100%;
       background: #091024;
       border: 1px solid #1f2f54;
       border-radius: 8px;
-      padding: 6px 12px;
-      flex: 1;
-      min-width: 260px;
-    }
-    .search-icon {
-      margin-right: 8px;
-      font-size: 1rem;
-      color: #d4af37;
-    }
-    .results-search-input {
-      border: none;
-      background: transparent;
-      width: 100%;
-      outline: none;
-      font-size: 0.92rem;
+      padding: 10px 40px 10px 38px;
       color: #ffffff;
+      font-size: 13.5px;
+      outline: none;
+      box-sizing: border-box;
+    }
+    .results-search-input:focus {
+      border-color: #d4af37;
+      box-shadow: 0 0 0 2px rgba(212, 175, 55, 0.2);
     }
     .clear-search-btn {
-      background: none;
+      position: absolute;
+      right: 12px;
+      background: transparent;
       border: none;
       color: #94a3b8;
       cursor: pointer;
+      font-size: 14px;
     }
     .search-filter-wrap {
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: 10px;
       flex-wrap: wrap;
     }
     .filter-dropdown-select {
       background: #091024;
       color: #cbd5e1;
       border: 1px solid #1f2f54;
-      padding: 6px 10px;
       border-radius: 6px;
+      padding: 7px 12px;
       font-size: 12.5px;
       outline: none;
     }
@@ -977,122 +1199,176 @@ export interface StudentResult {
       border-color: rgba(212, 175, 55, 0.4);
       color: #fde68a;
     }
-    .accordion-global-buttons { display: flex; gap: 6px; }
+    .accordion-global-buttons {
+      display: flex;
+      gap: 6px;
+    }
     .btn-toggle-accordion {
-      background: #18284e;
-      color: #cbd5e1;
+      background: #091024;
+      color: #94a3b8;
       border: 1px solid #1f2f54;
-      padding: 6px 10px;
+      padding: 6px 12px;
       border-radius: 6px;
-      font-size: 11.5px;
+      font-size: 12px;
       font-weight: 700;
       cursor: pointer;
     }
+    .btn-toggle-accordion:hover {
+      color: #ffffff;
+      background: #18284e;
+    }
+    .btn-bulk-upload {
+      background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+      color: #ffffff;
+      border: none;
+      padding: 6px 14px;
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: 800;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3);
+      transition: all 0.2s ease;
+    }
+    .btn-bulk-upload .material-icons {
+      font-size: 16px;
+    }
+    .btn-bulk-upload:hover {
+      background: #059669;
+      box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4);
+    }
     .match-count-badge {
+      margin-left: auto;
       font-size: 12px;
       color: #94a3b8;
     }
     .match-count-badge strong {
-      color: #38bdf8;
+      color: #fde68a;
     }
 
-    /* Student Accordion Deck */
+    /* Accordion Deck Styles */
     .student-accordion-deck {
       display: flex;
       flex-direction: column;
-      gap: 14px;
+      gap: 12px;
+      margin-bottom: 24px;
     }
     .student-accordion-card {
       background: #101b38;
       border: 1px solid #1f2f54;
       border-radius: 12px;
       overflow: hidden;
-      box-shadow: 0 4px 16px rgba(0,0,0,0.25);
       transition: all 0.2s ease;
+    }
+    .student-accordion-card:hover {
+      border-color: #2e447a;
     }
     .student-accordion-card.expanded {
       border-color: rgba(212, 175, 55, 0.4);
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.35);
     }
     .student-card-header {
       padding: 14px 18px;
       display: flex;
       justify-content: space-between;
       align-items: center;
-      flex-wrap: wrap;
-      gap: 14px;
       cursor: pointer;
       user-select: none;
-      background: linear-gradient(90deg, #132247 0%, #101b38 100%);
+      gap: 16px;
+      flex-wrap: wrap;
     }
     .student-main-profile {
       display: flex;
       align-items: center;
       gap: 14px;
+      min-width: 260px;
     }
     .student-avatar {
-      width: 42px;
-      height: 42px;
+      width: 44px;
+      height: 44px;
       border-radius: 10px;
-      background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%);
+      background: #1e293b;
       color: #ffffff;
       font-weight: 800;
+      font-size: 15px;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 14px;
+      border: 1px solid #334155;
     }
-    .student-meta-details { display: flex; flex-direction: column; gap: 2px; }
+    .student-avatar.cse { background: linear-gradient(135deg, #1e3a8a, #3b82f6); }
+    .student-avatar.it { background: linear-gradient(135deg, #065f46, #10b981); }
+    .student-avatar.ece { background: linear-gradient(135deg, #701a75, #d946ef); }
+    .student-avatar.me { background: linear-gradient(135deg, #831843, #f43f5e); }
+    .student-avatar.ce { background: linear-gradient(135deg, #7c2d12, #f97316); }
+    .student-avatar.eee { background: linear-gradient(135deg, #78350f, #eab308); }
+
+    .student-meta-details { display: flex; flex-direction: column; gap: 3px; }
     .student-name-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
-    .student-heading { margin: 0; font-size: 1.05rem; color: #ffffff; font-weight: 800; }
+    .student-heading { margin: 0; font-size: 15px; font-weight: 800; color: #ffffff; }
     .stu-id-tag {
       font-family: monospace;
-      font-size: 11.5px;
-      color: #cbd5e1;
+      font-size: 11px;
+      color: #94a3b8;
       background: #091024;
-      border: 1px solid #1f2f54;
-      padding: 2px 6px;
+      padding: 1px 6px;
       border-radius: 4px;
+      border: 1px solid #1f2f54;
     }
     .badge-dept-tag {
       font-size: 10.5px;
       font-weight: 800;
-      padding: 2px 6px;
+      padding: 1px 6px;
       border-radius: 4px;
-      background: rgba(99, 102, 241, 0.2);
-      color: #a5b4fc;
-      border: 1px solid rgba(99, 102, 241, 0.4);
+      text-transform: uppercase;
     }
-    .student-sub-row {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      font-size: 12px;
-      color: #94a3b8;
-    }
-    .student-sem-tag { color: #d4af37; font-weight: 700; }
-    .student-dot-separator { opacity: 0.5; }
+    .badge-dept-tag.cse { background: rgba(59, 130, 246, 0.15); color: #60a5fa; border: 1px solid rgba(59, 130, 246, 0.3); }
+    .badge-dept-tag.it { background: rgba(16, 185, 129, 0.15); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.3); }
+    .badge-dept-tag.ece { background: rgba(217, 70, 239, 0.15); color: #f472b6; border: 1px solid rgba(217, 70, 239, 0.3); }
+    .badge-dept-tag.me { background: rgba(244, 63, 94, 0.15); color: #fb7185; border: 1px solid rgba(244, 63, 94, 0.3); }
+    .badge-dept-tag.ce { background: rgba(249, 115, 22, 0.15); color: #fb923c; border: 1px solid rgba(249, 115, 22, 0.3); }
+    .badge-dept-tag.eee { background: rgba(234, 179, 8, 0.15); color: #fde047; border: 1px solid rgba(234, 179, 8, 0.3); }
+
+    .student-sub-row { display: flex; align-items: center; gap: 6px; font-size: 12px; color: #94a3b8; }
+    .student-dot-separator { color: #475569; }
+    .student-sem-tag { color: #fde68a; font-weight: 700; }
     .student-email-link { color: #64748b; font-family: monospace; }
 
-    .student-kpi-deck { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+    .student-kpi-deck {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
     .kpi-mini-pill {
       background: #091024;
       border: 1px solid #1f2f54;
+      padding: 4px 10px;
       border-radius: 8px;
-      padding: 5px 10px;
       display: flex;
       align-items: center;
       gap: 6px;
       font-size: 12px;
     }
-    .kpi-mini-label { color: #94a3b8; font-size: 10.5px; text-transform: uppercase; font-weight: 700; }
-    .kpi-mini-val { color: #ffffff; font-weight: 800; font-size: 12.5px; }
-    .kpi-mini-pill.credits strong { color: #fde68a; }
-    .kpi-mini-pill.sgpa strong { color: #d4af37; }
-    .kpi-mini-pill.grade.pass strong { color: #4ade80; }
-    .kpi-mini-pill.grade.fail strong { color: #f87171; }
+    .kpi-mini-icon { font-size: 13px; }
+    .kpi-mini-label { color: #94a3b8; font-weight: 600; font-size: 11px; text-transform: uppercase; }
+    .kpi-mini-val { color: #ffffff; font-weight: 800; }
+    .kpi-mini-pill.sgpa .kpi-mini-val { color: #fde68a; }
+    .kpi-mini-pill.credits .kpi-mini-val { color: #4ade80; }
+    .kpi-mini-pill.grade.pass { border-color: rgba(74, 222, 128, 0.4); background: rgba(34, 197, 94, 0.1); }
+    .kpi-mini-pill.grade.pass .kpi-mini-val { color: #4ade80; }
+    .kpi-mini-pill.grade.fail { border-color: rgba(239, 68, 68, 0.4); background: rgba(239, 68, 68, 0.1); }
+    .kpi-mini-pill.grade.fail .kpi-mini-val { color: #f87171; }
 
-    .student-card-actions { display: flex; align-items: center; gap: 8px; }
+    .student-card-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
     .btn-deck-action {
+      border: none;
       padding: 6px 12px;
       border-radius: 6px;
       font-size: 12px;
@@ -1110,6 +1386,24 @@ export interface StudentResult {
       background: #091024;
       color: #cbd5e1;
       border: 1px solid #1f2f54;
+    }
+    .btn-table-edit {
+      background: rgba(56, 189, 248, 0.12);
+      color: #38bdf8;
+      border: 1px solid rgba(56, 189, 248, 0.35);
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-size: 11.5px;
+      font-weight: 800;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      white-space: nowrap;
+    }
+    .btn-table-edit:hover {
+      background: #0284c7;
+      color: #ffffff;
+      border-color: #0284c7;
+      box-shadow: 0 2px 8px rgba(56, 189, 248, 0.3);
     }
     .btn-expand-chevron {
       background: #091024;
@@ -1286,6 +1580,365 @@ export interface StudentResult {
     .empty-state { text-align: center; padding: 40px 20px; background: #101b38; border: 1px dashed #1f2f54; border-radius: 12px; color: #94a3b8; }
     .btn-clear-filters { background: #18284e; color: #cbd5e1; border: 1px solid #1f2f54; padding: 8px 16px; border-radius: 6px; font-weight: 700; cursor: pointer; margin-top: 10px; }
 
+    /* ========================================================================= */
+    /* MODAL STYLES (EDIT MARKS & BULK CSV UPLOAD)                               */
+    /* ========================================================================= */
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(3, 7, 18, 0.82);
+      backdrop-filter: blur(6px);
+      z-index: 9999;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+    }
+    .modal-dialog {
+      background: #0d1527;
+      border: 1px solid #1f2f54;
+      border-radius: 16px;
+      width: 100%;
+      max-width: 580px;
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6);
+      overflow: hidden;
+      animation: modalFadeIn 0.25s ease-out;
+    }
+    .bulk-dialog {
+      max-width: 780px;
+    }
+    @keyframes modalFadeIn {
+      from { opacity: 0; transform: translateY(-12px) scale(0.98); }
+      to { opacity: 1; transform: translateY(0) scale(1); }
+    }
+    .modal-header {
+      padding: 16px 20px;
+      background: #101b38;
+      border-bottom: 1px solid #1f2f54;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .modal-title-wrap {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .modal-icon {
+      font-size: 1.8rem;
+    }
+    .modal-header h3 {
+      margin: 0;
+      color: #ffffff;
+      font-size: 1.15rem;
+      font-weight: 800;
+    }
+    .modal-header p {
+      margin: 2px 0 0;
+      color: #94a3b8;
+      font-size: 0.8rem;
+    }
+    .modal-close-btn {
+      background: transparent;
+      border: none;
+      color: #94a3b8;
+      font-size: 1.2rem;
+      cursor: pointer;
+      padding: 4px 8px;
+      border-radius: 6px;
+    }
+    .modal-close-btn:hover {
+      color: #ffffff;
+      background: #18284e;
+    }
+    .modal-body {
+      padding: 20px;
+      max-height: 75vh;
+      overflow-y: auto;
+    }
+    .modal-context-box {
+      background: #091024;
+      border: 1px solid #1f2f54;
+      border-radius: 10px;
+      padding: 12px 14px;
+      margin-bottom: 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      font-size: 13px;
+    }
+    .ctx-row {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+    .ctx-label {
+      color: #94a3b8;
+      font-weight: 600;
+      min-width: 85px;
+    }
+    .ctx-value {
+      color: #ffffff;
+    }
+    .marks-input-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin-bottom: 18px;
+    }
+    .input-field-group label {
+      display: flex;
+      justify-content: space-between;
+      font-size: 12px;
+      font-weight: 700;
+      color: #cbd5e1;
+      margin-bottom: 6px;
+    }
+    .input-field-group label small {
+      color: #fde68a;
+    }
+    .input-with-max {
+      position: relative;
+      display: flex;
+      align-items: center;
+    }
+    .marks-num-input {
+      width: 100%;
+      background: #091024;
+      border: 1px solid #1f2f54;
+      border-radius: 8px;
+      padding: 10px 48px 10px 14px;
+      color: #ffffff;
+      font-size: 16px;
+      font-weight: 800;
+      outline: none;
+      box-sizing: border-box;
+    }
+    .marks-num-input:focus {
+      border-color: #38bdf8;
+      box-shadow: 0 0 0 2px rgba(56, 189, 248, 0.25);
+    }
+    .max-badge {
+      position: absolute;
+      right: 12px;
+      color: #94a3b8;
+      font-size: 12px;
+      font-weight: 700;
+      pointer-events: none;
+    }
+
+    .live-preview-box {
+      background: linear-gradient(135deg, #101b38 0%, #162446 100%);
+      border: 1px solid rgba(212, 175, 55, 0.35);
+      border-radius: 12px;
+      padding: 14px 16px;
+    }
+    .preview-header {
+      font-size: 11.5px;
+      font-weight: 800;
+      text-transform: uppercase;
+      color: #fde68a;
+      letter-spacing: 0.5px;
+      margin-bottom: 10px;
+    }
+    .preview-metrics-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
+    }
+    .prev-item {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .prev-lbl {
+      font-size: 10.5px;
+      color: #94a3b8;
+      text-transform: uppercase;
+      font-weight: 700;
+    }
+    .prev-val {
+      font-size: 15px;
+      font-weight: 800;
+      color: #ffffff;
+    }
+
+    .modal-footer {
+      padding: 14px 20px;
+      background: #101b38;
+      border-top: 1px solid #1f2f54;
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+    }
+    .btn-cancel {
+      background: #091024;
+      color: #cbd5e1;
+      border: 1px solid #1f2f54;
+      padding: 8px 16px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    .btn-cancel:hover {
+      background: #18284e;
+    }
+    .btn-save-marks {
+      background: linear-gradient(135deg, #d4af37 0%, #b38f28 100%);
+      color: #0a1128;
+      border: none;
+      padding: 8px 20px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 800;
+      cursor: pointer;
+      box-shadow: 0 4px 14px rgba(212, 175, 55, 0.35);
+      transition: all 0.2s ease;
+    }
+    .btn-save-marks:hover:not(:disabled) {
+      transform: translateY(-1px);
+      box-shadow: 0 6px 18px rgba(212, 175, 55, 0.45);
+    }
+    .btn-save-marks:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    /* Bulk CSV Upload Modal Elements */
+    .bulk-info-banner {
+      background: #091024;
+      border: 1px solid #1f2f54;
+      border-radius: 10px;
+      padding: 14px 16px;
+      margin-bottom: 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 14px;
+      flex-wrap: wrap;
+    }
+    .bulk-info-banner strong {
+      color: #ffffff;
+      font-size: 13px;
+    }
+    .bulk-info-banner p {
+      margin: 4px 0 0;
+      font-size: 11.5px;
+      color: #94a3b8;
+    }
+    .bulk-info-banner code {
+      color: #60a5fa;
+      background: rgba(96, 165, 250, 0.1);
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-size: 11px;
+    }
+    .btn-template-download {
+      background: rgba(16, 185, 129, 0.15);
+      color: #34d399;
+      border: 1px solid rgba(16, 185, 129, 0.4);
+      padding: 7px 14px;
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: 800;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+    .btn-template-download:hover {
+      background: #10b981;
+      color: #ffffff;
+    }
+    .file-dropzone {
+      background: #091024;
+      border: 2px dashed #1f2f54;
+      border-radius: 12px;
+      padding: 30px 20px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      margin-bottom: 18px;
+    }
+    .file-dropzone:hover {
+      border-color: #38bdf8;
+      background: #0e1a38;
+    }
+    .upload-cloud-icon {
+      font-size: 2.5rem;
+      color: #38bdf8;
+      margin-bottom: 6px;
+    }
+    .file-dropzone h4 {
+      margin: 0;
+      color: #ffffff;
+      font-size: 14px;
+      font-weight: 700;
+    }
+    .file-dropzone p {
+      margin: 4px 0 0;
+      color: #94a3b8;
+      font-size: 12px;
+    }
+    .selected-filename {
+      display: inline-block;
+      margin-top: 10px;
+      background: rgba(56, 189, 248, 0.15);
+      color: #38bdf8;
+      border: 1px solid rgba(56, 189, 248, 0.35);
+      padding: 4px 12px;
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: 700;
+    }
+    .parsed-preview-wrap {
+      background: #091024;
+      border: 1px solid #1f2f54;
+      border-radius: 10px;
+      padding: 12px 14px;
+    }
+    .parsed-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+      font-size: 12.5px;
+      color: #ffffff;
+    }
+    .valid-tag {
+      background: rgba(34, 197, 94, 0.15);
+      color: #4ade80;
+      border: 1px solid rgba(74, 222, 128, 0.3);
+      padding: 1px 8px;
+      border-radius: 4px;
+      font-size: 11px;
+      font-weight: 800;
+    }
+    .parsed-table-scroll {
+      overflow-x: auto;
+      max-height: 220px;
+      overflow-y: auto;
+      border: 1px solid #1f2f54;
+      border-radius: 6px;
+    }
+    .parsed-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 12px;
+      margin-top: 0;
+    }
+    .parsed-table th {
+      background: #101b38;
+      padding: 8px 10px;
+      font-size: 11px;
+      color: #d4af37;
+      border-bottom: 1px solid #1f2f54;
+    }
+    .parsed-table td {
+      padding: 7px 10px;
+      border-bottom: 1px solid #18284e;
+      color: #cbd5e1;
+    }
+
     .print-header-details, .print-signatures-area { display: none; }
     
     @media print {
@@ -1353,7 +2006,7 @@ export interface StudentResult {
         font-weight: 700;
         color: #1e293b;
       }
-      app-navbar, app-sidebar, app-footer, .page-header, .semester-filter-toolbar, .summary-grid, .action-row, .empty-state, .sem-stats-pills, .results-deck-container, .student-picker-banner {
+      app-navbar, app-sidebar, app-footer, .page-header, .semester-filter-toolbar, .summary-grid, .action-row, .empty-state, .sem-stats-pills, .results-deck-container, .student-picker-banner, .btn-table-edit {
         display: none !important;
       }
     }
@@ -1401,6 +2054,23 @@ export class Results implements OnInit, OnDestroy {
   filterGrade: string = '';
 
   availableStudentsList: { name: string; roll: string; dept: string; email: string }[] = [];
+
+  // ==========================================
+  // MODAL STATES
+  // ==========================================
+  showEditMarksModal = false;
+  activeEditingStudent: StudentAcademicProfileGroup | null = null;
+  activeEditingRecord: SemesterCourseRecord | null = null;
+  editInternalMarks: number = 0;
+  editExternalMarks: number = 0;
+  editTotalMarks: number = 0;
+  editCalculatedGrade: string = 'O';
+  editCalculatedGradePoints: number = 10;
+  editCalculatedStatus: 'Pass' | 'Fail' = 'Pass';
+
+  showBulkUploadModal = false;
+  selectedCsvFileName: string = '';
+  parsedCsvRecords: ParsedCsvResult[] = [];
 
   private http = inject(HttpClient);
   private cdr = inject(ChangeDetectorRef);
@@ -1515,10 +2185,29 @@ export class Results implements OnInit, OnDestroy {
     });
   }
 
+  calculateGradeAndPoints(totalMarks: number): { grade: string; gradePoints: number; status: 'Pass' | 'Fail' } {
+    const status: 'Pass' | 'Fail' = totalMarks >= 40 ? 'Pass' : 'Fail';
+    if (totalMarks >= 90) return { grade: 'O', gradePoints: 10, status };
+    if (totalMarks >= 80) return { grade: 'A+', gradePoints: 9, status };
+    if (totalMarks >= 70) return { grade: 'A', gradePoints: 8, status };
+    if (totalMarks >= 60) return { grade: 'B+', gradePoints: 7, status };
+    if (totalMarks >= 55) return { grade: 'B', gradePoints: 6, status };
+    if (totalMarks >= 50) return { grade: 'C', gradePoints: 5, status };
+    if (totalMarks >= 40) return { grade: 'P', gradePoints: 4, status };
+    return { grade: 'F', gradePoints: 0, status: 'Fail' };
+  }
+
   buildCurriculumForStudent(studentName: string, dept: string, semester: string): SemesterCourseRecord[] {
     const shortDept = this.getShortDept(dept);
     const prefix = shortDept === 'CSE' ? 'CS' : shortDept;
     const deptCourses = DEFAULT_DATABASE_COURSES.filter(c => c.code.toUpperCase().startsWith(prefix));
+
+    // Load custom edited / imported marks
+    let customMap: { [key: string]: any } = {};
+    try {
+      const raw = localStorage.getItem('obslms_custom_results');
+      if (raw) customMap = JSON.parse(raw);
+    } catch {}
 
     if (deptCourses.length === 0) {
       if (semester === 'All Semesters') {
@@ -1547,24 +2236,40 @@ export class Results implements OnInit, OnDestroy {
         const isViva = c.code.includes('499') || c.title.toLowerCase().includes('viva');
         const credits = isProject ? 8 : (isLab || isViva) ? 2 : (c.code.includes('115') || c.code.includes('125')) ? 3 : 4;
 
-        const seed = Math.abs(((studentName || 'student') + c.code).split('').reduce((acc, ch) => acc + ch.charCodeAt(0), 0));
-        const internalMarks = 34 + (seed % 7);
-        const externalMarks = 50 + ((seed * 3) % 10);
-        const totalMarks = internalMarks + externalMarks;
-        const grade = totalMarks >= 90 ? 'O' : totalMarks >= 80 ? 'A+' : totalMarks >= 70 ? 'A' : totalMarks >= 60 ? 'B+' : 'B';
-        const gradePoints = grade === 'O' ? 10 : grade === 'A+' ? 9 : grade === 'A' ? 8 : grade === 'B+' ? 7 : 6;
+        const customKey = `${studentName.toLowerCase().trim()}_${c.code.toUpperCase().trim()}_${sem}`;
+        const directCustom = customMap[customKey];
 
-        result.push({
-          courseCode: c.code,
-          courseTitle: c.title,
-          credits,
-          internalMarks,
-          externalMarks,
-          totalMarks,
-          grade,
-          gradePoints,
-          status: 'Pass'
-        });
+        if (directCustom) {
+          result.push({
+            courseCode: c.code,
+            courseTitle: c.title,
+            credits,
+            internalMarks: Number(directCustom.internalMarks) || 0,
+            externalMarks: Number(directCustom.externalMarks) || 0,
+            totalMarks: Number(directCustom.totalMarks) || 0,
+            grade: directCustom.grade || 'O',
+            gradePoints: Number(directCustom.gradePoints) || 10,
+            status: directCustom.status || 'Pass'
+          });
+        } else {
+          const seed = Math.abs(((studentName || 'student') + c.code).split('').reduce((acc, ch) => acc + ch.charCodeAt(0), 0));
+          const internalMarks = 34 + (seed % 7);
+          const externalMarks = 50 + ((seed * 3) % 10);
+          const totalMarks = internalMarks + externalMarks;
+          const { grade, gradePoints, status } = this.calculateGradeAndPoints(totalMarks);
+
+          result.push({
+            courseCode: c.code,
+            courseTitle: c.title,
+            credits,
+            internalMarks,
+            externalMarks,
+            totalMarks,
+            grade,
+            gradePoints,
+            status
+          });
+        }
       });
     }
 
@@ -1580,6 +2285,12 @@ export class Results implements OnInit, OnDestroy {
       return this.semesterCurriculumData;
     }
 
+    let customMap: { [key: string]: any } = {};
+    try {
+      const raw = localStorage.getItem('obslms_custom_results');
+      if (raw) customMap = JSON.parse(raw);
+    } catch {}
+
     const sems = ['Semester 1', 'Semester 2', 'Semester 3', 'Semester 4', 'Semester 5', 'Semester 6', 'Semester 7', 'Semester 8'];
     const result: { [sem: string]: SemesterCourseRecord[] } = {};
 
@@ -1591,12 +2302,28 @@ export class Results implements OnInit, OnDestroy {
         const isViva = c.code.includes('499') || c.title.toLowerCase().includes('viva');
         const credits = isProject ? 8 : (isLab || isViva) ? 2 : (c.code.includes('115') || c.code.includes('125')) ? 3 : 4;
 
+        const customKey = `${(this.studentName || 'vamsi').toLowerCase().trim()}_${c.code.toUpperCase().trim()}_${sem}`;
+        const directCustom = customMap[customKey];
+
+        if (directCustom) {
+          return {
+            courseCode: c.code,
+            courseTitle: c.title,
+            credits,
+            internalMarks: Number(directCustom.internalMarks) || 0,
+            externalMarks: Number(directCustom.externalMarks) || 0,
+            totalMarks: Number(directCustom.totalMarks) || 0,
+            grade: directCustom.grade || 'O',
+            gradePoints: Number(directCustom.gradePoints) || 10,
+            status: directCustom.status || 'Pass'
+          };
+        }
+
         const seed = Math.abs(((this.studentName || 'student') + c.code).split('').reduce((acc, ch) => acc + ch.charCodeAt(0), 0));
         const internalMarks = 34 + (seed % 7);
         const externalMarks = 50 + ((seed * 3) % 10);
         const totalMarks = internalMarks + externalMarks;
-        const grade = totalMarks >= 90 ? 'O' : totalMarks >= 80 ? 'A+' : totalMarks >= 70 ? 'A' : 'B+';
-        const gradePoints = grade === 'O' ? 10 : grade === 'A+' ? 9 : grade === 'A' ? 8 : 7;
+        const { grade, gradePoints, status } = this.calculateGradeAndPoints(totalMarks);
 
         return {
           courseCode: c.code,
@@ -1607,7 +2334,7 @@ export class Results implements OnInit, OnDestroy {
           totalMarks,
           grade,
           gradePoints,
-          status: 'Pass'
+          status
         };
       });
     }
@@ -1847,15 +2574,6 @@ export class Results implements OnInit, OnDestroy {
   }
 
   private rebuildStudentGroups(): void {
-    let savedMarks: any[] = [];
-    try {
-      const stored = localStorage.getItem('obslmsMarkEntries');
-      if (stored) savedMarks = JSON.parse(stored) || [];
-    } catch {}
-
-    const weights = this.getObeWeights();
-    const intWeight = weights.internal;
-
     const baseGroups = this.availableStudentsList.map((stu) => {
       const shortDept = this.getShortDept(stu.dept);
       let courses = this.buildCurriculumForStudent(stu.name, stu.dept, this.selectedSemester);
@@ -1870,23 +2588,6 @@ export class Results implements OnInit, OnDestroy {
           );
         }
       }
-
-      // Overlay any customized mark entries
-      courses.forEach(c => {
-        const found = savedMarks.find(m => 
-          (m.student && m.student.toLowerCase() === stu.name.toLowerCase()) &&
-          (m.assessment && (m.assessment.includes(c.courseCode) || m.assessment.includes(c.courseTitle)))
-        );
-        if (found && found.obtained !== undefined) {
-          const ob = Number(found.obtained) || 35;
-          const mx = Number(found.maxMarks) || 40;
-          c.internalMarks = Math.min(intWeight, Math.round((ob / mx) * intWeight));
-          c.totalMarks = c.internalMarks + c.externalMarks;
-          c.grade = c.totalMarks >= 90 ? 'O' : c.totalMarks >= 80 ? 'A+' : c.totalMarks >= 70 ? 'A' : c.totalMarks >= 60 ? 'B+' : 'B';
-          c.gradePoints = c.grade === 'O' ? 10 : c.grade === 'A+' ? 9 : c.grade === 'A' ? 8 : c.grade === 'B+' ? 7 : 6;
-          c.status = 'Pass';
-        }
-      });
 
       const totalCredits = courses.reduce((sum, c) => sum + c.credits, 0);
       const earnedCredits = courses.filter(c => c.status === 'Pass').reduce((sum, c) => sum + c.credits, 0);
@@ -1980,6 +2681,234 @@ export class Results implements OnInit, OnDestroy {
     });
 
     this.cdr.detectChanges();
+  }
+
+  // ==========================================
+  // EDIT MARKS MODAL LOGIC
+  // ==========================================
+  openEditMarksModal(student: StudentAcademicProfileGroup, course: SemesterCourseRecord): void {
+    this.activeEditingStudent = student;
+    this.activeEditingRecord = course;
+    this.editInternalMarks = course.internalMarks;
+    this.editExternalMarks = course.externalMarks;
+    this.onEditMarksChange();
+    this.showEditMarksModal = true;
+  }
+
+  openEditMarksModalFromSingleView(course: SemesterCourseRecord): void {
+    const currentStudentGroup = this.studentGroups.find(s => s.studentName.toLowerCase() === this.studentName.toLowerCase()) || {
+      studentId: this.studentRoll,
+      studentName: this.studentName,
+      department: this.studentDept,
+      shortDept: this.getShortDept(this.studentDept),
+      semester: this.selectedSemester,
+      email: '',
+      courses: this.displayedCourses,
+      totalCredits: this.semesterCredits.registered,
+      earnedCredits: this.semesterCredits.earned,
+      sgpa: this.semesterSgpa,
+      cgpa: this.cumulativeCgpa,
+      totalCourses: this.displayedCourses.length,
+      passedCourses: this.displayedCourses.filter(c => c.status === 'Pass').length,
+      failedCourses: 0,
+      overallGrade: 'O',
+      standing: 'PASS'
+    };
+    this.openEditMarksModal(currentStudentGroup, course);
+  }
+
+  onEditMarksChange(): void {
+    const weights = this.getObeWeights();
+    const maxInt = weights.internal || 40;
+    const maxExt = weights.external || 60;
+    
+    const clampedInt = Math.max(0, Math.min(maxInt, Number(this.editInternalMarks) || 0));
+    const clampedExt = Math.max(0, Math.min(maxExt, Number(this.editExternalMarks) || 0));
+    
+    this.editTotalMarks = clampedInt + clampedExt;
+    const res = this.calculateGradeAndPoints(this.editTotalMarks);
+    this.editCalculatedGrade = res.grade;
+    this.editCalculatedGradePoints = res.gradePoints;
+    this.editCalculatedStatus = res.status;
+  }
+
+  closeEditMarksModal(): void {
+    this.showEditMarksModal = false;
+    this.activeEditingStudent = null;
+    this.activeEditingRecord = null;
+  }
+
+  saveEditedMarks(): void {
+    if (!this.activeEditingStudent || !this.activeEditingRecord) return;
+    
+    const sName = this.activeEditingStudent.studentName;
+    const cCode = this.activeEditingRecord.courseCode;
+    const sem = this.selectedSemester;
+
+    let customMap: { [key: string]: any } = {};
+    try {
+      const raw = localStorage.getItem('obslms_custom_results');
+      if (raw) customMap = JSON.parse(raw);
+    } catch {}
+
+    const key = `${sName.toLowerCase().trim()}_${cCode.toUpperCase().trim()}_${sem}`;
+    customMap[key] = {
+      internalMarks: Number(this.editInternalMarks) || 0,
+      externalMarks: Number(this.editExternalMarks) || 0,
+      totalMarks: this.editTotalMarks,
+      grade: this.editCalculatedGrade,
+      gradePoints: this.editCalculatedGradePoints,
+      status: this.editCalculatedStatus
+    };
+
+    localStorage.setItem('obslms_custom_results', JSON.stringify(customMap));
+    
+    this.closeEditMarksModal();
+    this.semesterCurriculumData = this.buildCurriculumForDepartment(this.studentDept);
+    this.rebuildStudentGroups();
+    this.syncService.emit('MARKS_CHANGED');
+    this.toastService.success(`Marks updated successfully for ${sName} in ${cCode}! 🎯`);
+  }
+
+  // ==========================================
+  // BULK CSV UPLOADER LOGIC
+  // ==========================================
+  openBulkUploadModal(): void {
+    this.selectedCsvFileName = '';
+    this.parsedCsvRecords = [];
+    this.showBulkUploadModal = true;
+  }
+
+  closeBulkUploadModal(): void {
+    this.showBulkUploadModal = false;
+    this.selectedCsvFileName = '';
+    this.parsedCsvRecords = [];
+  }
+
+  downloadSampleCsvTemplate(): void {
+    let template = `StudentRoll,StudentName,Department,Semester,CourseCode,CourseTitle,InternalMarks,ExternalMarks\n`;
+    template += `CUTM2026CSE042,Krishnavamsi,Computer Science & Engineering,Semester 6,CS307,Machine Learning & Neural Networks,38,56\n`;
+    template += `CUTM2026CSE042,Krishnavamsi,Computer Science & Engineering,Semester 6,CS308,Compiler Design & Language Translation,35,52\n`;
+    template += `CUTM2026CSE018,Raj Kumar,Computer Science & Engineering,Semester 6,CS307,Machine Learning & Neural Networks,36,54\n`;
+    template += `646456455,vamsi,Computer Science & Engineering,Semester 6,CS307,Machine Learning & Neural Networks,39,58\n`;
+    template += `CUTM2026CSE003,Aarav Mehta,Computer Science & Engineering,Semester 6,CS307,Machine Learning & Neural Networks,37,55\n`;
+
+    const blob = new Blob([template], { type: 'text/csv;charset=utf-8;' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `OBLMS_Semester_Results_Template.csv`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    window.URL.revokeObjectURL(url);
+    this.toastService.info('Sample CSV Template downloaded 📥');
+  }
+
+  handleCsvFileSelect(event: any): void {
+    const file = event.target?.files?.[0];
+    if (!file) return;
+
+    this.selectedCsvFileName = file.name;
+    const reader = new FileReader();
+    reader.onload = (e: any) => {
+      const text = e.target?.result as string;
+      this.parseCsvText(text);
+    };
+    reader.readAsText(file);
+  }
+
+  parseCsvText(text: string): void {
+    const lines = text.split(/\r\n|\n/).map(l => l.trim()).filter(l => l.length > 0);
+    if (lines.length <= 1) {
+      this.toastService.warning('CSV file is empty or missing data rows.');
+      return;
+    }
+
+    const parsed: ParsedCsvResult[] = [];
+    const rows = lines.slice(1);
+
+    rows.forEach(row => {
+      const cols = row.split(',').map(c => c.trim().replace(/^["']|["']$/g, ''));
+      if (cols.length >= 8) {
+        const roll = cols[0];
+        const name = cols[1];
+        const dept = cols[2];
+        const sem = cols[3];
+        const code = cols[4];
+        const title = cols[5];
+        const intMarks = Number(cols[6]) || 0;
+        const extMarks = Number(cols[7]) || 0;
+        const tot = intMarks + extMarks;
+        const { grade, gradePoints, status } = this.calculateGradeAndPoints(tot);
+
+        parsed.push({
+          studentRoll: roll,
+          studentName: name,
+          department: dept,
+          semester: sem,
+          courseCode: code,
+          courseTitle: title,
+          internalMarks: intMarks,
+          externalMarks: extMarks,
+          totalMarks: tot,
+          grade,
+          gradePoints,
+          status
+        });
+      }
+    });
+
+    this.parsedCsvRecords = parsed;
+    if (parsed.length > 0) {
+      this.toastService.success(`Successfully parsed ${parsed.length} result records from CSV! 📄`);
+    } else {
+      this.toastService.warning('Could not parse records. Please check the CSV column format.');
+    }
+  }
+
+  confirmImportBulkCsv(): void {
+    if (this.parsedCsvRecords.length === 0) return;
+
+    let customMap: { [key: string]: any } = {};
+    try {
+      const raw = localStorage.getItem('obslms_custom_results');
+      if (raw) customMap = JSON.parse(raw);
+    } catch {}
+
+    const studentMap = new Map<string, any>();
+    this.availableStudentsList.forEach(s => studentMap.set(s.name.toLowerCase(), s));
+
+    this.parsedCsvRecords.forEach(r => {
+      const key = `${r.studentName.toLowerCase().trim()}_${r.courseCode.toUpperCase().trim()}_${r.semester}`;
+      customMap[key] = {
+        internalMarks: r.internalMarks,
+        externalMarks: r.externalMarks,
+        totalMarks: r.totalMarks,
+        grade: r.grade,
+        gradePoints: r.gradePoints,
+        status: r.status
+      };
+
+      if (!studentMap.has(r.studentName.toLowerCase())) {
+        studentMap.set(r.studentName.toLowerCase(), {
+          name: r.studentName,
+          roll: r.studentRoll,
+          dept: r.department,
+          email: `${r.studentName.toLowerCase().replace(/\s+/g, '.')}@oblms.edu`
+        });
+      }
+    });
+
+    localStorage.setItem('obslms_custom_results', JSON.stringify(customMap));
+    localStorage.setItem('obslmsStudents', JSON.stringify(Array.from(studentMap.values())));
+
+    this.availableStudentsList = Array.from(studentMap.values());
+    this.closeBulkUploadModal();
+    this.semesterCurriculumData = this.buildCurriculumForDepartment(this.studentDept);
+    this.rebuildStudentGroups();
+    this.syncService.emit('MARKS_CHANGED');
+    this.toastService.success(`Imported and published ${this.parsedCsvRecords.length} student results! 🚀`);
   }
 
   // Analytics Metrics
