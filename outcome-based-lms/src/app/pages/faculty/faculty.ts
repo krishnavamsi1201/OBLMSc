@@ -63,6 +63,27 @@ interface AttendanceStudentRow {
   status: 'Present' | 'Absent';
 }
 
+export interface StudentSubjectDetail {
+  courseName: string;
+  courseCode?: string;
+  semester?: string;
+  coAttainment: number;
+  attendance: number;
+  totalAssessments: number;
+  status: 'On Track' | 'At-Risk';
+}
+
+export interface StudentGroupSummary {
+  studentId: string;
+  studentName: string;
+  enrolledCoursesCount: number;
+  avgAttainment: number;
+  avgAttendance: number;
+  totalAssessments: number;
+  status: 'On Track' | 'At-Risk';
+  subjects: StudentSubjectDetail[];
+}
+
 @Component({
   selector: 'app-faculty',
   standalone: true,
@@ -137,13 +158,35 @@ export class Faculty implements OnInit {
     ).length;
   }
 
-  // Student Progress Matrix: Filters & Smart Pagination
+  get facultyDepartment(): string {
+    return localStorage.getItem('userDepartment') || localStorage.getItem('userDept') || 'Computer Science & Engineering';
+  }
+
+  // Student Progress & Subject Matrix: Dual-Mode Filters, Drilldown & Smart Pagination
+  matrixViewMode: 'STUDENTS' | 'SUBJECTS' = 'STUDENTS';
+  groupedStudentsList: StudentGroupSummary[] = [];
+  filteredGroupedStudentsList: StudentGroupSummary[] = [];
+  filteredSubjectCardsList: Course[] = [];
+
+  // Modals for drilldowns
+  showStudentDossierModal = false;
+  selectedDossierStudent: StudentGroupSummary | null = null;
+  showSubjectRosterModal = false;
+  selectedRosterCourse: Course | null = null;
+  selectedRosterCourseStudents: StudentProgress[] = [];
+
   progressSemesterFilter = '';
   progressCourseFilter = '';
   progressStatusFilter: 'ALL' | 'ON_TRACK' | 'AT_RISK' = 'ALL';
   progressSearchQuery = '';
   progressCurrentPage = 1;
   progressPageSize = 8;
+
+  setMatrixViewMode(mode: 'STUDENTS' | 'SUBJECTS'): void {
+    this.matrixViewMode = mode;
+    this.progressCurrentPage = 1;
+    this.onProgressFilterChange();
+  }
 
   get availableProgressSemesters(): string[] {
     const set = new Set<string>();
@@ -163,21 +206,37 @@ export class Faculty implements OnInit {
     return (this.courses || []).filter(c => (c.semester || '').toLowerCase() === this.progressSemesterFilter.toLowerCase());
   }
 
-  get paginatedProgressList(): StudentProgress[] {
+  get paginatedGroupedStudents(): StudentGroupSummary[] {
     const start = (this.progressCurrentPage - 1) * this.progressPageSize;
-    return this.filteredProgressList.slice(start, start + this.progressPageSize);
+    return this.filteredGroupedStudentsList.slice(start, start + this.progressPageSize);
+  }
+
+  get paginatedSubjectCards(): Course[] {
+    const start = (this.progressCurrentPage - 1) * this.progressPageSize;
+    return this.filteredSubjectCardsList.slice(start, start + this.progressPageSize);
   }
 
   get progressTotalPages(): number {
-    return Math.ceil(this.filteredProgressList.length / this.progressPageSize) || 1;
+    const totalCount = this.matrixViewMode === 'STUDENTS' ? this.filteredGroupedStudentsList.length : this.filteredSubjectCardsList.length;
+    return Math.ceil(totalCount / this.progressPageSize) || 1;
+  }
+
+  get progressCurrentDisplayCount(): number {
+    return this.matrixViewMode === 'STUDENTS' ? this.filteredGroupedStudentsList.length : this.filteredSubjectCardsList.length;
   }
 
   get progressOnTrackCount(): number {
-    return this.studentProgressList.filter(sp => sp.coAttainment >= 60 && sp.attendance >= 75).length;
+    if (this.matrixViewMode === 'STUDENTS') {
+      return this.groupedStudentsList.filter(st => st.status === 'On Track').length;
+    }
+    return this.courses.filter(c => c.averageAttainment >= 75).length;
   }
 
   get progressAtRiskCount(): number {
-    return this.studentProgressList.filter(sp => sp.coAttainment < 60 || sp.attendance < 75).length;
+    if (this.matrixViewMode === 'STUDENTS') {
+      return this.groupedStudentsList.filter(st => st.status === 'At-Risk').length;
+    }
+    return this.courses.filter(c => c.averageAttainment > 0 && c.averageAttainment < 75).length;
   }
 
   setStatusFilter(status: 'ALL' | 'ON_TRACK' | 'AT_RISK'): void {
@@ -190,45 +249,154 @@ export class Faculty implements OnInit {
     this.onProgressFilterChange();
   }
 
+  buildGroupedStudentsList(): void {
+    const studentMap = new Map<string, StudentGroupSummary>();
+
+    (this.studentProgressList || []).forEach(sp => {
+      const name = (sp.studentName || '').trim();
+      if (!name) return;
+      const key = name.toLowerCase();
+
+      if (!studentMap.has(key)) {
+        studentMap.set(key, {
+          studentId: sp.studentId || ('STU' + Math.abs(key.split('').reduce((a, b) => ((a << 5) - a) + b.charCodeAt(0), 0) % 1000).toString().padStart(3, '0')),
+          studentName: name,
+          enrolledCoursesCount: 0,
+          avgAttainment: 0,
+          avgAttendance: 0,
+          totalAssessments: 0,
+          status: 'On Track',
+          subjects: []
+        });
+      }
+
+      const grp = studentMap.get(key)!;
+      if (!grp.subjects.some(s => s.courseName.toLowerCase() === (sp.courseName || '').toLowerCase())) {
+        grp.subjects.push({
+          courseName: sp.courseName,
+          courseCode: sp.courseId,
+          coAttainment: sp.coAttainment,
+          attendance: sp.attendance,
+          totalAssessments: sp.totalAssessments,
+          status: (sp.coAttainment >= 60 && sp.attendance >= 75) ? 'On Track' : 'At-Risk'
+        });
+      }
+    });
+
+    this.groupedStudentsList = Array.from(studentMap.values()).map(grp => {
+      const count = grp.subjects.length;
+      grp.enrolledCoursesCount = count;
+      const totalAtt = grp.subjects.reduce((sum, s) => sum + (s.coAttainment || 0), 0);
+      const totalAttn = grp.subjects.reduce((sum, s) => sum + (s.attendance || 0), 0);
+      const totalAssess = grp.subjects.reduce((sum, s) => sum + (s.totalAssessments || 0), 0);
+
+      grp.avgAttainment = count > 0 ? Math.round(totalAtt / count) : 0;
+      grp.avgAttendance = count > 0 ? Math.round(totalAttn / count) : 0;
+      grp.totalAssessments = totalAssess;
+      grp.status = (grp.avgAttainment >= 60 && grp.avgAttendance >= 75) ? 'On Track' : 'At-Risk';
+      return grp;
+    });
+
+    this.onProgressFilterChange();
+  }
+
   onProgressFilterChange(): void {
     this.progressCurrentPage = 1;
-    let list = [...this.studentProgressList];
 
-    // 1. Semester filter
-    if (this.progressSemesterFilter) {
-      const semCourses = new Set(
-        this.availableProgressCourses.map(c => c.name.toLowerCase())
-      );
-      list = list.filter(sp => 
-        semCourses.has(sp.courseName.toLowerCase()) || 
-        sp.courseName.toLowerCase().includes(this.progressSemesterFilter.toLowerCase())
-      );
+    if (this.matrixViewMode === 'STUDENTS') {
+      let studentList = [...this.groupedStudentsList];
+
+      // 1. Semester filter
+      if (this.progressSemesterFilter) {
+        const semCourses = new Set(this.availableProgressCourses.map(c => c.name.toLowerCase()));
+        studentList = studentList.filter(st =>
+          st.subjects.some(sub => semCourses.has(sub.courseName.toLowerCase()) || sub.courseName.toLowerCase().includes(this.progressSemesterFilter.toLowerCase()))
+        );
+      }
+
+      // 2. Course filter
+      if (this.progressCourseFilter) {
+        const cFilter = this.progressCourseFilter.toLowerCase();
+        studentList = studentList.filter(st =>
+          st.subjects.some(sub => sub.courseName.toLowerCase().includes(cFilter) || cFilter.includes(sub.courseName.toLowerCase()))
+        );
+      }
+
+      // 3. Status filter
+      if (this.progressStatusFilter === 'ON_TRACK') {
+        studentList = studentList.filter(st => st.status === 'On Track');
+      } else if (this.progressStatusFilter === 'AT_RISK') {
+        studentList = studentList.filter(st => st.status === 'At-Risk');
+      }
+
+      // 4. Search query
+      if (this.progressSearchQuery.trim()) {
+        const q = this.progressSearchQuery.trim().toLowerCase();
+        studentList = studentList.filter(st =>
+          st.studentName.toLowerCase().includes(q) ||
+          st.subjects.some(sub => sub.courseName.toLowerCase().includes(q))
+        );
+      }
+
+      this.filteredGroupedStudentsList = studentList;
+    } else {
+      let courseList = [...this.courses];
+
+      // 1. Semester filter
+      if (this.progressSemesterFilter) {
+        courseList = courseList.filter(c => (c.semester || '').toLowerCase() === this.progressSemesterFilter.toLowerCase());
+      }
+
+      // 2. Course filter
+      if (this.progressCourseFilter) {
+        courseList = courseList.filter(c => c.name.toLowerCase().includes(this.progressCourseFilter.toLowerCase()));
+      }
+
+      // 3. Status filter
+      if (this.progressStatusFilter === 'ON_TRACK') {
+        courseList = courseList.filter(c => c.averageAttainment >= 75);
+      } else if (this.progressStatusFilter === 'AT_RISK') {
+        courseList = courseList.filter(c => c.averageAttainment > 0 && c.averageAttainment < 75);
+      }
+
+      // 4. Search query
+      if (this.progressSearchQuery.trim()) {
+        const q = this.progressSearchQuery.trim().toLowerCase();
+        courseList = courseList.filter(c => c.name.toLowerCase().includes(q) || (c.code || '').toLowerCase().includes(q));
+      }
+
+      this.filteredSubjectCardsList = courseList;
     }
+  }
 
-    // 2. Course filter
-    if (this.progressCourseFilter) {
-      list = list.filter(sp => 
-        sp.courseName.toLowerCase().includes(this.progressCourseFilter.toLowerCase())
-      );
-    }
+  // Drilldown Modal Handlers
+  openStudentDossierModal(student: StudentGroupSummary): void {
+    this.selectedDossierStudent = student;
+    this.showStudentDossierModal = true;
+    this.cdr.detectChanges();
+  }
 
-    // 3. Status filter
-    if (this.progressStatusFilter === 'ON_TRACK') {
-      list = list.filter(sp => sp.coAttainment >= 60 && sp.attendance >= 75);
-    } else if (this.progressStatusFilter === 'AT_RISK') {
-      list = list.filter(sp => sp.coAttainment < 60 || sp.attendance < 75);
-    }
+  closeStudentDossierModal(): void {
+    this.showStudentDossierModal = false;
+    this.selectedDossierStudent = null;
+  }
 
-    // 4. Search query
-    if (this.progressSearchQuery.trim()) {
-      const q = this.progressSearchQuery.trim().toLowerCase();
-      list = list.filter(sp => 
-        sp.studentName.toLowerCase().includes(q) || 
-        sp.courseName.toLowerCase().includes(q)
-      );
-    }
+  openSubjectRosterModal(course: Course): void {
+    this.selectedRosterCourse = course;
+    const cNameLow = course.name.toLowerCase();
+    const cCodeLow = (course.code || '').toLowerCase();
+    this.selectedRosterCourseStudents = this.studentProgressList.filter(sp =>
+      sp.courseName.toLowerCase().includes(cNameLow) || cNameLow.includes(sp.courseName.toLowerCase()) ||
+      (sp.courseId && sp.courseId.toLowerCase().includes(cCodeLow))
+    );
+    this.showSubjectRosterModal = true;
+    this.cdr.detectChanges();
+  }
 
-    this.filteredProgressList = list;
+  closeSubjectRosterModal(): void {
+    this.showSubjectRosterModal = false;
+    this.selectedRosterCourse = null;
+    this.selectedRosterCourseStudents = [];
   }
 
   prevProgressPage(): void {
@@ -505,6 +673,7 @@ export class Faculty implements OnInit {
       matchedCodes.has((sp.courseId || '').toLowerCase()) || matchedNames.has((sp.courseName || '').toLowerCase())
     );
     this.filteredProgressList = [...this.studentProgressList];
+    this.buildGroupedStudentsList();
     this.atRiskStudents = (data.atRiskStudents || []).filter((ar: any) => 
       matchedCodes.has((ar.courseId || '').toLowerCase()) || matchedNames.has((ar.courseName || '').toLowerCase())
     );
@@ -998,19 +1167,29 @@ export class Faculty implements OnInit {
   }
 
   exportGradebookCsv(): void {
-    let csvContent = 'Student Name,Course,CO Attainment %,Attendance %,Assessments\n';
-    this.filteredProgressList.forEach(sp => {
-      csvContent += `"${sp.studentName}","${sp.courseName}",${sp.coAttainment}%,${sp.attendance}%,${sp.totalAssessments}\n`;
-    });
+    let csvContent = '';
+    if (this.matrixViewMode === 'STUDENTS') {
+      csvContent = 'Student ID,Student Name,Enrolled Subjects Count,Subjects,Avg CO Attainment %,Avg Attendance %,Total Assessments,Status\n';
+      this.filteredGroupedStudentsList.forEach(st => {
+        const subsStr = st.subjects.map(s => `${s.courseName} (Attainment: ${s.coAttainment}%, Attendance: ${s.attendance}%)`).join('; ');
+        csvContent += `"${st.studentId}","${st.studentName}",${st.enrolledCoursesCount},"${subsStr}",${st.avgAttainment}%,${st.avgAttendance}%,${st.totalAssessments},"${st.status}"\n`;
+      });
+    } else {
+      csvContent = 'Course Code,Course Name,Semester,Enrolled Students,Evaluated Students,Live Attainment %,Avg Attendance %,Status\n';
+      this.filteredSubjectCardsList.forEach(c => {
+        csvContent += `"${c.code}","${c.name}","${c.semester}",${c.studentCount},${this.getEvaluatedCountForCourse(c.name)},${c.averageAttainment}%,${c.averageAttendance}%,${c.averageAttainment >= 75 ? 'Achieved' : (c.averageAttainment >= 50 ? 'Partial' : 'Pending')}\n`;
+      });
+    }
 
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.setAttribute('href', url);
-    link.setAttribute('download', `OBE_Gradebook_Report_${new Date().toISOString().split('T')[0]}.csv`);
+    link.setAttribute('download', `OBE_${this.matrixViewMode}_Report_${new Date().toISOString().split('T')[0]}.csv`);
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
+    this.toast.success(`Exported ${this.matrixViewMode === 'STUDENTS' ? 'Student Academic Matrix' : 'Subject Roster'} to CSV.`);
   }
 
   // ==========================================
