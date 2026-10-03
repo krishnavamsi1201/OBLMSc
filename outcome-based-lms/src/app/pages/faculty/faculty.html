@@ -182,177 +182,8 @@
 				</div>
 			</section>
 
-			<!-- 3. Course Outcome (CO) Attainment Cards -->
-			<section class="dashboard-section">
-				<div class="section-header">
-					<div class="header-title-group">
-						<h2>Course Outcome (CO) Attainment Monitor</h2>
-						<p class="section-subtitle">Live attainment calculated from actual evaluation marks vs target benchmark (75%).</p>
-					</div>
-					<div class="header-btn-group">
-						<button class="view-all-btn" (click)="openCqiModal()">+ Log CQI Plan</button>
-						<button class="view-all-btn" (click)="goToCOAttainment()">Detailed OBE Matrix →</button>
-					</div>
-				</div>
-				<div *ngFor="let group of groupedCOAttainments" class="co-group-block" style="margin-bottom: 24px; background: #101b38; border: 1px solid #1f2f54; border-radius: 14px; padding: 18px; box-shadow: 0 8px 24px rgba(0,0,0,0.35);">
-					<h3 style="margin: 0; color: #ffffff; border-bottom: 2px solid #d4af37; padding-bottom: 10px; font-size: 1.15rem; display: flex; justify-content: space-between; align-items: center; cursor: pointer;" (click)="toggleCoGroup(group.courseName)">
-						<span style="display: flex; align-items: center; gap: 8px;">
-							<span class="material-icons" style="font-size: 1.2rem; color: #d4af37;">menu_book</span>
-							{{ group.courseName }} Outcomes
-						</span>
-						<span style="font-size: 0.85rem; color: #94a3b8; font-weight: 600; display: flex; align-items: center; gap: 4px;">
-							{{ collapsedCoGroups[group.courseName] ? 'Show' : 'Hide' }} ({{ group.cos.length }} COs)
-						</span>
-					</h3>
-					
-					<div class="co-attainment-grid" *ngIf="!collapsedCoGroups[group.courseName]" style="display: grid; gap: 16px; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); margin-top: 16px;">
-						<div *ngFor="let co of group.cos" class="co-card" style="margin-bottom: 0;">
-							<div class="co-card-header">
-								<div>
-									<span class="co-badge">{{ co.coCode }}</span>
-									<strong class="co-course">{{ co.courseName }}</strong>
-								</div>
-								<span class="status-pill" [class.achieved]="co.status === 'Achieved'" [class.partial]="co.status === 'Partial'" [class.not-achieved]="co.status === 'Not Achieved'">
-									{{ co.status }}
-								</span>
-							</div>
-							<p class="co-description">{{ co.description || 'Applies core concepts and analytical methodologies to engineering problems.' }}</p>
-							<div class="co-progress-block">
-								<div class="co-progress-labels">
-									<span>Live Attainment: <strong>{{ co.attainmentPercentage }}%</strong></span>
-									<span>Target: <strong>{{ co.targetPercentage }}%</strong></span>
-								</div>
-								<div class="co-progress-track">
-									<div class="co-progress-fill" [style.width.%]="co.attainmentPercentage"
-										[class.fill-achieved]="co.status === 'Achieved'"
-										[class.fill-partial]="co.status === 'Partial'"
-										[class.fill-failed]="co.status === 'Not Achieved'"></div>
-									<div class="co-target-marker" [style.left.%]="co.targetPercentage" title="Target Benchmark ({{co.targetPercentage}}%)"></div>
-								</div>
-							</div>
-							<div class="co-footer">
-								<span class="co-assessed-info">
-									<span class="material-icons assessed-icon">analytics</span>
-									<span>{{ co.assessedStudentsCount }} Evaluated</span>
-								</span>
-								<button *ngIf="co.status !== 'Achieved'" class="cqi-mini-btn" (click)="openCqiModal(co)" title="Plan remedial action for sub-target CO attainment">
-									<span class="cqi-btn-icon">⚡</span>
-									<span>Plan Remedial Action</span>
-								</button>
-							</div>
-						</div>
-					</div>
-				</div>
-				<p *ngIf="groupedCOAttainments.length === 0" class="empty-state">No courses currently allocated to your account. Please ask the Administrator to assign subjects in Faculty Management.</p>
-			</section>
 
-			<!-- 4. Real-Time Grade & Performance Distribution -->
-			<section class="dashboard-section">
-				<div class="section-header">
-					<div class="header-title-group">
-						<h2>Live Performance & Grade Distribution</h2>
-						<p class="section-subtitle">Real-time distribution of evaluated students across score brackets.</p>
-					</div>
-				</div>
-				<div class="grade-distribution-card">
-					<div class="distribution-bar-track" *ngIf="gradeDistribution.totalEvaluated > 0">
-						<div class="bar-segment dist" [style.width.%]="(gradeDistribution.distinction / gradeDistribution.totalEvaluated) * 100" title="Distinction (>=75%)"></div>
-						<div class="bar-segment first" [style.width.%]="(gradeDistribution.firstClass / gradeDistribution.totalEvaluated) * 100" title="First Class (60-74%)"></div>
-						<div class="bar-segment pass" [style.width.%]="(gradeDistribution.pass / gradeDistribution.totalEvaluated) * 100" title="Pass (40-59%)"></div>
-						<div class="bar-segment fail" [style.width.%]="(gradeDistribution.fail / gradeDistribution.totalEvaluated) * 100" title="Remedial / Fail (<40%)"></div>
-					</div>
-					<div class="distribution-legend">
-						<div class="legend-item">
-							<span class="legend-dot dist"></span>
-							<span>Distinction (≥75%): <strong>{{ gradeDistribution.distinction }}</strong></span>
-						</div>
-						<div class="legend-item">
-							<span class="legend-dot first"></span>
-							<span>First Class (60-74%): <strong>{{ gradeDistribution.firstClass }}</strong></span>
-						</div>
-						<div class="legend-item">
-							<span class="legend-dot pass"></span>
-							<span>Pass (40-59%): <strong>{{ gradeDistribution.pass }}</strong></span>
-						</div>
-						<div class="legend-item">
-							<span class="legend-dot fail"></span>
-							<span>Remedial (&lt;40%): <strong>{{ gradeDistribution.fail }}</strong></span>
-						</div>
-					</div>
-				</div>
-			</section>
-
-			<!-- 5. Syllabus Coverage & Lesson Plan Tracker -->
-			<section class="dashboard-section">
-				<div class="section-header">
-					<div class="header-title-group">
-						<h2>Syllabus Coverage & Lesson Plan Tracker</h2>
-						<p class="section-subtitle">Monitor unit-by-unit curriculum delivery mapped to Course Outcomes.</p>
-					</div>
-					<button class="action-btn secondary small" (click)="openAddLectureModal()">
-						+ Log Today's Lecture
-					</button>
-				</div>
-				<div class="co-attainment-grid">
-					<div *ngFor="let unit of syllabusUnits" class="co-card">
-						<div class="co-card-header">
-							<div>
-								<span class="co-badge">{{ unit.mappedCO }}</span>
-								<strong class="co-course">{{ unit.title }}</strong>
-							</div>
-							<span class="status-pill" [class.completed]="unit.status === 'Completed'" [class.ongoing]="unit.status === 'In Progress'" [class.scheduled]="unit.status === 'Planned'">
-								{{ unit.status }}
-							</span>
-						</div>
-						<div class="co-progress-block mt-3">
-							<div class="co-progress-labels">
-								<span>Lectures Delivered: <strong>{{ unit.completedLectures }} / {{ unit.plannedLectures }}</strong></span>
-								<span>Progress: <strong>{{ (unit.completedLectures / unit.plannedLectures) * 100 | number: '1.0-0' }}%</strong></span>
-							</div>
-							<div class="progress-bar">
-								<div class="progress-fill" [style.width.%]="(unit.completedLectures / unit.plannedLectures) * 100"></div>
-							</div>
-						</div>
-						<div class="co-footer mt-3">
-							<small>Planned: {{ unit.plannedLectures }} Hours</small>
-							<button class="action-btn secondary small" (click)="openAddLectureModal(unit)">+ Log Lecture</button>
-						</div>
-					</div>
-				</div>
-			</section>
-
-			<!-- 6. Assigned Classes Grid -->
-			<section class="dashboard-section">
-				<div class="section-header">
-					<div class="header-title-group">
-						<h2>Assigned Courses ({{ courses.length }})</h2>
-						<p class="section-subtitle">Real-time enrollment, attainment, and attendance per course.</p>
-					</div>
-					<button class="view-all-btn" (click)="goToCourses()">Course Manager →</button>
-				</div>
-				<div class="classes-grid">
-					<div *ngFor="let course of courses" class="class-card" (click)="openCourseFileModal(course.name)">
-						<div class="class-header">
-							<h3>{{ course.name }}</h3>
-							<span class="course-code">{{ course.code }}</span>
-						</div>
-						<div class="class-details">
-							<p><strong>Semester:</strong> {{ course.semester }}</p>
-							<p><strong>Enrolled Students:</strong> {{ course.studentCount }}</p>
-							<div class="class-quick-metrics">
-								<span>Attainment: <strong>{{ course.averageAttainment }}%</strong></span>
-								<span>Attendance: <strong>{{ course.averageAttendance }}%</strong></span>
-							</div>
-						</div>
-						<button class="class-action-btn" (click)="$event.stopPropagation(); openQuickAttendanceModal(course.name)">
-							<span class="material-icons" style="font-size: 15px; vertical-align: middle;">calendar_today</span> Take Attendance →
-						</button>
-					</div>
-				</div>
-				<p *ngIf="courses.length === 0" class="empty-state">No courses currently assigned to your faculty profile.</p>
-			</section>
-
-			<!-- 7. Active Assessments Section with Quick Marks Entry -->
+			<!-- 4. Active Assessments Section with Quick Marks Entry -->
 			<section class="dashboard-section">
 				<div class="section-header">
 					<div class="header-title-group">
@@ -399,23 +230,81 @@
 				<p *ngIf="activeAssessments.length === 0" class="empty-state">No active assessments found.</p>
 			</section>
 
-			<!-- 8. Student Progress Matrix with Course Filter & CSV Export -->
+			<!-- 8. Student Progress Matrix with Semester Filter, Quick Search & Pagination -->
 			<section class="dashboard-section">
 				<div class="section-header">
 					<div class="header-title-group">
 						<h2>Real-Time Student Progress Matrix ({{ filteredProgressList.length }})</h2>
-						<p class="section-subtitle">Live breakdown of student attainment and attendance calculated across evaluation records.</p>
+						<p class="section-subtitle">Semester-wise breakdown of student attainment and attendance with smart pagination.</p>
 					</div>
-					<div class="filter-group">
-						<select [(ngModel)]="selectedCourseFilter" (ngModelChange)="onCourseFilterChange()">
-							<option value="">All Courses</option>
-							<option *ngFor="let c of courses" [value]="c.name">{{ c.name }}</option>
-						</select>
-						<button class="action-btn secondary small" (click)="exportGradebookCsv()">
+					<div class="header-btn-group">
+						<button class="action-btn secondary small" (click)="exportGradebookCsv()" title="Export Filtered Roster CSV">
 							<span class="material-icons" style="font-size: 15px; vertical-align: middle;">download</span> Export CSV
 						</button>
 					</div>
 				</div>
+
+				<!-- Dedicated Non-Overlapping Filters & Controls Bar -->
+				<div class="progress-matrix-toolbar">
+					<!-- 1. Semester Selector -->
+					<div class="matrix-filter-item">
+						<span class="filter-icon material-icons">calendar_today</span>
+						<select [(ngModel)]="progressSemesterFilter" (ngModelChange)="onSemesterFilterChange()" class="matrix-select">
+							<option value="">All Semesters</option>
+							<option *ngFor="let sem of availableProgressSemesters" [value]="sem">{{ sem }}</option>
+						</select>
+					</div>
+
+					<!-- 2. Course Selector -->
+					<div class="matrix-filter-item">
+						<span class="filter-icon material-icons">menu_book</span>
+						<select [(ngModel)]="progressCourseFilter" (ngModelChange)="onProgressFilterChange()" class="matrix-select">
+							<option value="">All Courses ({{ availableProgressCourses.length }})</option>
+							<option *ngFor="let c of availableProgressCourses" [value]="c.name">{{ c.name }}</option>
+						</select>
+					</div>
+
+					<!-- 3. Student Search Box -->
+					<div class="matrix-search-box">
+						<span class="search-icon material-icons">search</span>
+						<input type="text" 
+							   [(ngModel)]="progressSearchQuery" 
+							   (ngModelChange)="onProgressFilterChange()" 
+							   placeholder="Search student..." 
+							   class="matrix-search-input" />
+						<button *ngIf="progressSearchQuery" 
+								type="button" 
+								class="matrix-clear-btn" 
+								(click)="progressSearchQuery=''; onProgressFilterChange()"
+								title="Clear search">✕</button>
+					</div>
+				</div>
+
+				<!-- Quick Status Filter Pills -->
+				<div class="matrix-status-pills-bar">
+					<button type="button" 
+							class="matrix-status-pill" 
+							[class.active]="progressStatusFilter === 'ALL'" 
+							(click)="setStatusFilter('ALL')">
+						<span>👥 All Students</span>
+						<span class="pill-count">{{ studentProgressList.length }}</span>
+					</button>
+					<button type="button" 
+							class="matrix-status-pill on-track" 
+							[class.active]="progressStatusFilter === 'ON_TRACK'" 
+							(click)="setStatusFilter('ON_TRACK')">
+						<span>🟢 On Track</span>
+						<span class="pill-count">{{ progressOnTrackCount }}</span>
+					</button>
+					<button type="button" 
+							class="matrix-status-pill at-risk" 
+							[class.active]="progressStatusFilter === 'AT_RISK'" 
+							(click)="setStatusFilter('AT_RISK')">
+						<span>⚠️ At Risk</span>
+						<span class="pill-count">{{ progressAtRiskCount }}</span>
+					</button>
+				</div>
+
 				<div class="progress-table">
 					<table *ngIf="filteredProgressList.length > 0" class="data-table">
 						<thead>
@@ -429,7 +318,7 @@
 							</tr>
 						</thead>
 						<tbody>
-							<tr *ngFor="let progress of filteredProgressList">
+							<tr *ngFor="let progress of paginatedProgressList">
 								<td><strong>{{ progress.studentName }}</strong></td>
 								<td>{{ progress.courseName }}</td>
 								<td>
@@ -458,6 +347,31 @@
 							</tr>
 						</tbody>
 					</table>
+
+					<!-- Pagination Footer Controls -->
+					<div class="table-pagination-bar" *ngIf="filteredProgressList.length > 0">
+						<div class="pagination-summary">
+							Showing <strong>{{ (progressCurrentPage - 1) * progressPageSize + 1 }}</strong> - 
+							<strong>{{ Math.min(progressCurrentPage * progressPageSize, filteredProgressList.length) }}</strong> of 
+							<strong>{{ filteredProgressList.length }}</strong> students
+						</div>
+						<div class="pagination-buttons">
+							<button type="button" 
+									class="page-btn" 
+									[disabled]="progressCurrentPage === 1" 
+									(click)="prevProgressPage()">
+								◀ Prev
+							</button>
+							<span class="page-chip">Page {{ progressCurrentPage }} / {{ progressTotalPages }}</span>
+							<button type="button" 
+									class="page-btn" 
+									[disabled]="progressCurrentPage >= progressTotalPages" 
+									(click)="nextProgressPage()">
+								Next ▶
+							</button>
+						</div>
+					</div>
+
 					<p *ngIf="filteredProgressList.length === 0" class="empty-state">No student progress data found for the selected filter.</p>
 				</div>
 			</section>
@@ -495,30 +409,6 @@
 						</tbody>
 					</table>
 				</div>
-			</section>
-
-			<!-- 11. Dynamic Notifications Section -->
-			<section class="dashboard-section">
-				<div class="section-header">
-					<h2>Real-Time Action Alerts ({{ notifications.length }})</h2>
-					<button class="view-all-btn" (click)="goToNotifications()">All Alerts →</button>
-				</div>
-				<div class="notifications-list">
-					<div *ngFor="let notification of notifications" class="notification-card" 
-						[class.unread]="!notification.read">
-						<div class="notification-icon">
-							<span *ngIf="notification.type === 'alert'" class="material-icons text-danger">warning</span>
-							<span *ngIf="notification.type === 'announcement'" class="material-icons text-primary">campaign</span>
-							<span *ngIf="notification.type === 'update'" class="material-icons text-info">info</span>
-						</div>
-						<div class="notification-content">
-							<h3>{{ notification.title }}</h3>
-							<p>{{ notification.message }}</p>
-							<small>{{ notification.date | date: 'medium' }}</small>
-						</div>
-					</div>
-				</div>
-				<p *ngIf="notifications.length === 0" class="empty-state">All academic tasks and thresholds are currently satisfied.</p>
 			</section>
 
 		</ng-container>
@@ -561,35 +451,55 @@
 						</label>
 					</div>
 
-					<div class="marks-table-header">
-						<h3>Student Scores ({{ markEntryRows.length }} Students)</h3>
-						<button class="add-row-btn" (click)="addMarkRow()">+ Add Student Row</button>
+					<div class="marks-table-header" style="display: flex; justify-content: space-between; align-items: center; margin-top: 16px; margin-bottom: 8px;">
+						<h3 style="margin: 0; font-size: 1.05rem; color: #ffffff;">Student Scores ({{ markEntryRows.length }} Students)</h3>
+						<button type="button" class="add-row-btn" (click)="addMarkRow()" style="background: #1e3a8a; color: #ffffff; border: 1px solid #3b82f6; padding: 6px 14px; border-radius: 6px; font-weight: 600; cursor: pointer;">+ Add Student Row</button>
 					</div>
 
-					<div class="marks-sheet-container">
-						<table class="marks-entry-table">
+					<datalist id="enrolledStudentsDatalist">
+						<option *ngFor="let s of cachedEnrolledStudents" [value]="s.name">{{ s.name }} {{ s.rollNo ? '(' + s.rollNo + ')' : '' }}</option>
+					</datalist>
+
+					<div class="marks-sheet-container" style="max-height: 380px; overflow-y: auto; border: 1px solid #1f2f54; border-radius: 8px;">
+						<table class="marks-entry-table" style="width: 100%; border-collapse: collapse;">
 							<thead>
-								<tr>
-									<th>Enrolled Student Name</th>
-									<th>Marks Obtained (Max: {{ markEntryMaxMarks }})</th>
-									<th>Action</th>
+								<tr style="background: #0f1c3f; position: sticky; top: 0; z-index: 2;">
+									<th style="width: 50px; text-align: center; padding: 10px;">#</th>
+									<th style="padding: 10px; text-align: left;">Enrolled Student Name</th>
+									<th style="width: 200px; text-align: center; padding: 10px;">Marks Obtained (Max: {{ markEntryMaxMarks }})</th>
+									<th style="width: 80px; text-align: center; padding: 10px;">Action</th>
 								</tr>
 							</thead>
 							<tbody>
-								<tr *ngFor="let row of markEntryRows; let i = index">
-									<td>
-										<select [(ngModel)]="row.studentName" class="student-select-field">
-											<option value="" disabled>-- Select Registered Student --</option>
-											<option *ngFor="let s of enrolledStudentsForSelectedCourse" [value]="s.name">
-												{{ s.name }} {{ s.rollNo ? '(' + s.rollNo + ')' : '' }}
-											</option>
-										</select>
+								<tr *ngFor="let row of markEntryRows; let i = index" style="border-bottom: 1px solid #1f2f54;">
+									<td style="text-align: center; color: #94a3b8; font-weight: 600; padding: 8px;">{{ i + 1 }}</td>
+									<td style="padding: 8px 10px;">
+										<input 
+											type="text" 
+											[(ngModel)]="row.studentName" 
+											list="enrolledStudentsDatalist" 
+											placeholder="Select or enter student name..." 
+											style="width: 100%; box-sizing: border-box; padding: 8px 12px; background: #091024; border: 1px solid #1f2f54; border-radius: 6px; color: #ffffff; font-size: 0.9rem;" 
+										/>
 									</td>
-									<td>
-										<input type="number" [(ngModel)]="row.obtained" min="0" [max]="markEntryMaxMarks" />
+									<td style="padding: 8px 10px;">
+										<input 
+											type="number" 
+											[(ngModel)]="row.obtained" 
+											min="0" 
+											[max]="markEntryMaxMarks" 
+											style="width: 100%; box-sizing: border-box; padding: 8px 12px; background: #091024; border: 1px solid #1f2f54; border-radius: 6px; color: #ffffff; font-size: 0.9rem; font-weight: 700; text-align: center;" 
+										/>
 									</td>
-									<td>
-										<button class="delete-row-btn" (click)="removeMarkRow(i)"><span class="material-icons" style="font-size: 16px;">delete</span></button>
+									<td style="text-align: center; padding: 8px 10px;">
+										<button type="button" class="delete-row-btn" (click)="removeMarkRow(i)" style="background: rgba(239, 68, 68, 0.15); border: 1px solid #ef4444; color: #ef4444; border-radius: 6px; padding: 4px 8px; cursor: pointer;" title="Remove row">
+											<span class="material-icons" style="font-size: 16px; vertical-align: middle;">delete</span>
+										</button>
+									</td>
+								</tr>
+								<tr *ngIf="markEntryRows.length === 0">
+									<td colspan="4" style="text-align: center; padding: 24px; color: #94a3b8;">
+										No student score rows added yet. Click "+ Add Student Row" or import from CSV.
 									</td>
 								</tr>
 							</tbody>

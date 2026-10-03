@@ -97,11 +97,157 @@ export class Faculty implements OnInit {
   pendingNotificationsCount = 0;
   pendingAdjustmentCount = 0;
 
+  Math = Math;
+
   // Filter
   selectedCourseFilter = '';
   selectedSubjectFilter = '';
   selectedSemesterFilter = '';
   rawDashboardData: any = null;
+
+  // Selected Course Cockpit Card
+  selectedCourseCard: Course | null = null;
+
+  selectCourseCard(course: Course): void {
+    this.selectedCourseCard = course;
+    this.progressCourseFilter = course.name;
+    if (course.semester) {
+      this.progressSemesterFilter = course.semester;
+    }
+    this.onProgressFilterChange();
+    this.cdr.detectChanges();
+  }
+
+  getEvaluatedCountForCourse(courseName: string): number {
+    const marks = this.getSafeJson('obslmsMarkEntries');
+    const cLow = (courseName || '').toLowerCase();
+    const students = new Set<string>();
+    marks.forEach((m: any) => {
+      if (m.student && m.assessment && (m.assessment.toLowerCase().includes(cLow) || cLow.includes(m.assessment.toLowerCase()) || (m.course && m.course.toLowerCase().includes(cLow)))) {
+        students.add(m.student.toLowerCase().trim());
+      }
+    });
+    return students.size;
+  }
+
+  getAtRiskCountForCourse(courseName: string): number {
+    const cLow = (courseName || '').toLowerCase();
+    return this.atRiskStudents.filter(ar => 
+      (ar.courseName || '').toLowerCase().includes(cLow) || cLow.includes((ar.courseName || '').toLowerCase())
+    ).length;
+  }
+
+  // Student Progress Matrix: Filters & Smart Pagination
+  progressSemesterFilter = '';
+  progressCourseFilter = '';
+  progressStatusFilter: 'ALL' | 'ON_TRACK' | 'AT_RISK' = 'ALL';
+  progressSearchQuery = '';
+  progressCurrentPage = 1;
+  progressPageSize = 8;
+
+  get availableProgressSemesters(): string[] {
+    const set = new Set<string>();
+    (this.courses || []).forEach(c => {
+      if (c.semester) set.add(c.semester);
+    });
+    if (set.size === 0) {
+      return ['Semester 1', 'Semester 2', 'Semester 3', 'Semester 4', 'Semester 5', 'Semester 6', 'Semester 7', 'Semester 8'];
+    }
+    return Array.from(set).sort();
+  }
+
+  get availableProgressCourses(): Course[] {
+    if (!this.progressSemesterFilter) {
+      return this.courses || [];
+    }
+    return (this.courses || []).filter(c => (c.semester || '').toLowerCase() === this.progressSemesterFilter.toLowerCase());
+  }
+
+  get paginatedProgressList(): StudentProgress[] {
+    const start = (this.progressCurrentPage - 1) * this.progressPageSize;
+    return this.filteredProgressList.slice(start, start + this.progressPageSize);
+  }
+
+  get progressTotalPages(): number {
+    return Math.ceil(this.filteredProgressList.length / this.progressPageSize) || 1;
+  }
+
+  get progressOnTrackCount(): number {
+    return this.studentProgressList.filter(sp => sp.coAttainment >= 60 && sp.attendance >= 75).length;
+  }
+
+  get progressAtRiskCount(): number {
+    return this.studentProgressList.filter(sp => sp.coAttainment < 60 || sp.attendance < 75).length;
+  }
+
+  setStatusFilter(status: 'ALL' | 'ON_TRACK' | 'AT_RISK'): void {
+    this.progressStatusFilter = status;
+    this.onProgressFilterChange();
+  }
+
+  onSemesterFilterChange(): void {
+    this.progressCourseFilter = '';
+    this.onProgressFilterChange();
+  }
+
+  onProgressFilterChange(): void {
+    this.progressCurrentPage = 1;
+    let list = [...this.studentProgressList];
+
+    // 1. Semester filter
+    if (this.progressSemesterFilter) {
+      const semCourses = new Set(
+        this.availableProgressCourses.map(c => c.name.toLowerCase())
+      );
+      list = list.filter(sp => 
+        semCourses.has(sp.courseName.toLowerCase()) || 
+        sp.courseName.toLowerCase().includes(this.progressSemesterFilter.toLowerCase())
+      );
+    }
+
+    // 2. Course filter
+    if (this.progressCourseFilter) {
+      list = list.filter(sp => 
+        sp.courseName.toLowerCase().includes(this.progressCourseFilter.toLowerCase())
+      );
+    }
+
+    // 3. Status filter
+    if (this.progressStatusFilter === 'ON_TRACK') {
+      list = list.filter(sp => sp.coAttainment >= 60 && sp.attendance >= 75);
+    } else if (this.progressStatusFilter === 'AT_RISK') {
+      list = list.filter(sp => sp.coAttainment < 60 || sp.attendance < 75);
+    }
+
+    // 4. Search query
+    if (this.progressSearchQuery.trim()) {
+      const q = this.progressSearchQuery.trim().toLowerCase();
+      list = list.filter(sp => 
+        sp.studentName.toLowerCase().includes(q) || 
+        sp.courseName.toLowerCase().includes(q)
+      );
+    }
+
+    this.filteredProgressList = list;
+  }
+
+  prevProgressPage(): void {
+    if (this.progressCurrentPage > 1) {
+      this.progressCurrentPage--;
+    }
+  }
+
+  nextProgressPage(): void {
+    if (this.progressCurrentPage < this.progressTotalPages) {
+      this.progressCurrentPage++;
+    }
+  }
+
+  goToProgressPage(page: number): void {
+    if (page >= 1 && page <= this.progressTotalPages) {
+      this.progressCurrentPage = page;
+    }
+  }
 
   get availableSemesters(): string[] {
     const courses = this.rawDashboardData?.courses || [];
@@ -222,51 +368,7 @@ export class Faculty implements OnInit {
       }
     } catch {}
 
-    const firstNames = [
-      'Aarav', 'Vivaan', 'Aditya', 'Vihaan', 'Arjun', 'Sai', 'Reyansh', 'Ayaan', 'Krishna', 'Ishaan',
-      'Shaurya', 'Atharv', 'Advik', 'Pranav', 'Advaith', 'Aarush', 'Dhruv', 'Kabir', 'Rudra', 'Ananya',
-      'Diya', 'Gauri', 'Isha', 'Kavya', 'Khushi', 'Mira', 'Navya', 'Pooja', 'Priya', 'Riya',
-      'Saanvi', 'Sara', 'Shreya', 'Sneha', 'Tanvi', 'Veda', 'Zoya', 'Rahul', 'Rohan', 'Vamsi'
-    ];
-    const lastNames = [
-      'Sharma', 'Verma', 'Patel', 'Reddy', 'Nair', 'Rao', 'Kumar', 'Mishra', 'Gupta', 'Singh',
-      'Das', 'Chatterjee', 'Mukherjee', 'Bose', 'Sen', 'Banerjee', 'Ghosh', 'Dutta', 'Roy', 'Choudhury'
-    ];
-
-    const currentCourses = this.courses.map(c => c.name);
-    const fallbackCourseNames = currentCourses.length > 0 ? currentCourses : [
-      'Database Management Systems (CS101)',
-      'Object-Oriented Programming in Java (CS103)',
-      'DBMS Practicum Laboratory',
-      'Data Structures & Algorithms (CS102)'
-    ];
-
-    if (list.length < 240) {
-      const fullList = [];
-      for (let i = 0; i < 240; i++) {
-        const existing = list[i];
-        if (existing && existing.name) {
-          fullList.push(existing);
-        } else {
-          const fn = firstNames[i % firstNames.length];
-          const ln = lastNames[(i * 3 + Math.floor(i / 10)) % lastNames.length];
-          const semNum = (i % 8) + 1;
-          const regNum = `CUTM2026CSE${String(i + 1).padStart(3, '0')}`;
-          const assignedSubj = fallbackCourseNames[i % fallbackCourseNames.length];
-          fullList.push({
-            id: `STU${i + 1}`,
-            regNo: regNum,
-            name: `${fn} ${ln}`,
-            email: `${fn.toLowerCase()}.${ln.toLowerCase()}${i + 1}@centurionuniv.edu.in`,
-            department: 'Computer Science & Engineering',
-            semester: `Semester ${semNum}`,
-            enrolledCourses: assignedSubj
-          });
-        }
-      }
-      list = fullList;
-    }
-
+    const defaultCourse = this.courses[0]?.name || 'Database Management Systems';
     this.allEnrolledStudentsRoster = list.map((s: any, idx: number) => {
       const sDept = s.department || s.dept || 'Computer Science & Engineering';
       const sSem = s.semester || `Semester ${((idx % 8) + 1)}`;
@@ -277,7 +379,7 @@ export class Faculty implements OnInit {
         email: s.email || `${(s.name || 'student').toLowerCase().replace(/\s+/g, '.')}@centurionuniv.edu.in`,
         department: sDept,
         semester: sSem,
-        enrolledCourses: s.enrolledCourses || fallbackCourseNames[idx % fallbackCourseNames.length]
+        enrolledCourses: s.enrolledCourses || s.courses || defaultCourse
       };
     });
   }
@@ -452,6 +554,10 @@ export class Faculty implements OnInit {
       courseName: cName,
       cos: groups.get(cName)!
     }));
+
+    if (!this.selectedCourseCard && this.courses.length > 0) {
+      this.selectCourseCard(this.courses[0]);
+    }
   }
 
   loadPendingClassAdjustments(): void {
@@ -659,21 +765,24 @@ export class Faculty implements OnInit {
    * Filter student progress table by selected course
    */
   onCourseFilterChange(): void {
-    if (!this.selectedCourseFilter) {
-      this.filteredProgressList = [...this.studentProgressList];
-    } else {
-      this.filteredProgressList = this.studentProgressList.filter(sp =>
-        sp.courseName.toLowerCase().includes(this.selectedCourseFilter.toLowerCase())
-      );
-    }
+    this.onProgressFilterChange();
   }
 
   // ==========================================
   // 1. QUICK MARKS ENTRY & CSV BATCH ACTIONS
   // ==========================================
+  cachedEnrolledStudents: Array<{ id?: any; name: string; rollNo?: string }> = [];
+
   get enrolledStudentsForSelectedCourse(): Array<{ id?: any; name: string; rollNo?: string }> {
+    if (this.cachedEnrolledStudents.length === 0) {
+      this.updateCachedEnrolledStudents();
+    }
+    return this.cachedEnrolledStudents;
+  }
+
+  updateCachedEnrolledStudents(): void {
     const allStudents = this.getSafeJson('obslmsStudents');
-    const courseName = this.markEntryCourse;
+    const courseName = (this.markEntryCourse || '').trim().toLowerCase();
     const studentMap = new Map<string, { id?: any; name: string; rollNo?: string }>();
 
     // 1. Check registered students in obslmsStudents
@@ -696,7 +805,7 @@ export class Faculty implements OnInit {
     if (this.rawDashboardData?.studentProgressSummary) {
       this.rawDashboardData.studentProgressSummary.forEach((sp: any) => {
         const spName = (sp.studentName || '').trim();
-        if (spName && (!courseName || (sp.courseName || '').toLowerCase().includes(courseName.toLowerCase()) || courseName.toLowerCase().includes((sp.courseName || '').toLowerCase()))) {
+        if (spName && (!courseName || (sp.courseName || '').toLowerCase().includes(courseName) || courseName.includes((sp.courseName || '').toLowerCase()))) {
           if (!studentMap.has(spName.toLowerCase())) {
             studentMap.set(spName.toLowerCase(), {
               id: sp.studentId || sp.rollNo || '',
@@ -708,9 +817,9 @@ export class Faculty implements OnInit {
       });
     }
 
-    // 3. Fallback to all registered students if specific course mapping is empty
+    // 3. Limit fallback to reasonable batch size if specific course mapping is empty
     if (studentMap.size === 0 && allStudents.length > 0) {
-      allStudents.forEach((s: any) => {
+      allStudents.slice(0, 30).forEach((s: any) => {
         const sName = (s.name || s.studentName || '').trim();
         if (sName && !studentMap.has(sName.toLowerCase())) {
           studentMap.set(sName.toLowerCase(), {
@@ -724,16 +833,16 @@ export class Faculty implements OnInit {
 
     // 4. Default fallback list if no students are registered yet
     if (studentMap.size === 0) {
-      return [
+      this.cachedEnrolledStudents = [
         { name: 'Aditya Sharma', rollNo: 'STU101' },
         { name: 'Pooja Reddy', rollNo: 'STU102' },
         { name: 'Rahul Verma', rollNo: 'STU103' },
         { name: 'Sneha Patel', rollNo: 'STU104' },
         { name: 'Kiran Kumar', rollNo: 'STU105' }
       ];
+    } else {
+      this.cachedEnrolledStudents = Array.from(studentMap.values()).slice(0, 50);
     }
-
-    return Array.from(studentMap.values());
   }
 
   openMarkEntryModal(assessment?: Assessment): void {
@@ -755,15 +864,18 @@ export class Faculty implements OnInit {
 
     this.populateMarkEntryRows();
     this.showMarkEntryModal = true;
+    this.cdr.detectChanges();
   }
 
   onMarkEntryCourseChange(): void {
+    this.updateCachedEnrolledStudents();
     this.populateMarkEntryRows();
   }
 
   populateMarkEntryRows(): void {
+    this.updateCachedEnrolledStudents();
     const existingMarks = this.getSafeJson('obslmsMarkEntries');
-    const enrolledStudents = this.enrolledStudentsForSelectedCourse;
+    const enrolledStudents = this.cachedEnrolledStudents;
 
     const assessmentMarks = existingMarks.filter((m: any) =>
       m.assessment && m.assessment.toLowerCase() === this.markEntryAssessmentTitle.toLowerCase()
@@ -794,7 +906,7 @@ export class Faculty implements OnInit {
   }
 
   addMarkRow(): void {
-    const enrolled = this.enrolledStudentsForSelectedCourse;
+    const enrolled = this.cachedEnrolledStudents;
     const existingNames = new Set(this.markEntryRows.map(r => r.studentName.toLowerCase()));
     const available = enrolled.find(s => !existingNames.has(s.name.toLowerCase()));
     const defaultName = available ? available.name : (enrolled[0]?.name || '');

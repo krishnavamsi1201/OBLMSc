@@ -186,7 +186,7 @@ export class CourseOutcomes {
       if (storedAssigned) assigned = JSON.parse(storedAssigned);
     } catch {}
 
-    if (this.role === 'student') {
+    if (this.role === 'faculty' || this.role === 'student') {
       const studentName = (localStorage.getItem('userName') || '').toLowerCase();
       try {
         const studentCourses = JSON.parse(localStorage.getItem('obslmsStudentCourses') || '[]');
