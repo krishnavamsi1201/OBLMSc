@@ -7,6 +7,7 @@ import { Footer } from '../../shared/footer/footer';
 import { ToastService } from '../../shared/services/toast.service';
 import { HttpClient } from '@angular/common/http';
 import { DEFAULT_DATABASE_COURSES } from '../../shared/services/course.service';
+import { MASTER_COURSE_OUTCOMES } from '../course-outcomes/course-outcomes';
 
 interface ProgramOutcome {
   id?: number;
@@ -90,11 +91,11 @@ export interface SubjectHierarchyGroup {
             <div class="banner-icon">👨‍🏫</div>
             <div class="banner-details">
                 <div class="banner-title-row">
-                    <strong>{{ facultyDept }}</strong>
+                    <strong>{{ facultyDept }} — {{ facultyName }}</strong>
                     <span class="banner-tag faculty-tag">Faculty Assigned Subjects & Articulation</span>
                 </div>
                 <p class="banner-sub">
-                    Showing Program Outcomes (PO1–PO12) and subject-wise CO-PO articulation for your assigned subjects: 
+                    Showing Program Outcomes (PO1–PO12) and subject-wise CO-PO articulation for your department subjects: 
                     <span class="assigned-chips">{{ facultyAssignedCoursesDisplay }}</span>.
                 </p>
             </div>
@@ -339,7 +340,7 @@ export interface SubjectHierarchyGroup {
                 </label>
                 <div class="form-actions">
                     <button type="submit" class="btn btn-primary">{{ editIndex >= 0 ? 'Update Outcome' : 'Add Outcome' }}</button>
-                    <button type="button" class="btn btn-secondary" (click)="resetForm()">Clear</button>
+                    <button type="button" class="btn-secondary" (click)="resetForm()">Clear</button>
                 </div>
             </form>
         </div>
@@ -743,7 +744,7 @@ export class ProgramOutcomes implements OnInit {
   currentPo: ProgramOutcome = { poNumber: '', program: 'Computer Science & Engineering', description: '' };
   editIndex = -1;
 
-  // Complete NBA PO & PSO Definitions per Department (Fallbacks & Local Offline Mode)
+  // Complete NBA PO & PSO Definitions per Department
   deptStandardOutcomesMap: { [key: string]: ProgramOutcome[] } = {
     'CSE': [
       { poNumber: 'PO1', attributeName: 'Engineering Knowledge', program: 'Computer Science & Engineering', description: 'Apply knowledge of mathematics, science, engineering fundamentals, and software engineering to solve complex computational problems.' },
@@ -845,30 +846,25 @@ export class ProgramOutcomes implements OnInit {
       this.facultyDept = localStorage.getItem('userDepartment') || localStorage.getItem('userDept') || 'Computer Science & Engineering';
       this.userDept = this.userRole === 'faculty' ? this.facultyDept : this.studentDept;
 
-      if (this.userRole === 'faculty') {
-        const storedCourses = localStorage.getItem('userAssignedCourses');
-        if (storedCourses) {
-          try {
-            this.assignedCourses = JSON.parse(storedCourses);
-          } catch {}
-        }
-        if (!this.assignedCourses || this.assignedCourses.length === 0) {
-          const matched = DEFAULT_DATABASE_COURSES.filter(c => 
-            c.faculty && (
-              c.faculty.toLowerCase().includes(this.facultyName.toLowerCase()) ||
-              this.facultyName.toLowerCase().includes(c.faculty.toLowerCase())
-            )
-          );
-          if (matched.length > 0) {
-            this.assignedCourses = Array.from(new Set(matched.map(m => m.code)));
-          } else {
-            const short = this.shortDept;
-            if (short === 'CSE') this.assignedCourses = ['CS102', 'CS202'];
-            else if (short === 'IT') this.assignedCourses = ['IT113', 'IT201'];
-            else if (short === 'ECE') this.assignedCourses = ['EC114', 'EC201'];
-            else if (short === 'ME') this.assignedCourses = ['ME111', 'ME201'];
-            else if (short === 'Civil') this.assignedCourses = ['CE111', 'CE201'];
-          }
+      const dept = this.shortDept;
+      const storedCourses = localStorage.getItem('userAssignedCourses');
+      if (storedCourses) {
+        try {
+          this.assignedCourses = JSON.parse(storedCourses);
+        } catch {}
+      }
+      
+      if (!this.assignedCourses || this.assignedCourses.length === 0) {
+        if (dept === 'CSE') {
+          this.assignedCourses = ['CS101', 'CS102', 'CS103', 'CS201', 'CS202', 'CS301', 'CS302', 'CS303', 'CS401', 'CS402'];
+        } else if (dept === 'IT') {
+          this.assignedCourses = ['IT113', 'IT201', 'IT211', 'IT301', 'IT305'];
+        } else if (dept === 'ECE') {
+          this.assignedCourses = ['EC114', 'EC201', 'EC202', 'EC211', 'EC301'];
+        } else if (dept === 'ME') {
+          this.assignedCourses = ['ME113', 'ME201', 'ME202', 'ME211', 'ME301'];
+        } else if (dept === 'Civil') {
+          this.assignedCourses = ['CE113', 'CE201', 'CE202', 'CE203', 'CE301'];
         }
       }
     } catch {
@@ -955,6 +951,87 @@ export class ProgramOutcomes implements OnInit {
     this.hierarchySubjects.forEach(s => s.isExpanded = this.allExpanded);
   }
 
+  getSavedOrMasterCOs(courseCode: string, courseTitle: string): { co: string; desc: string }[] {
+    const code = courseCode.toUpperCase();
+
+    // 1. Check if user created/edited customized COs in localStorage
+    try {
+      const stored = localStorage.getItem('obslmsCourseOutcomes');
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        if (Array.isArray(parsed)) {
+          const matched = parsed.filter(item => 
+            item.course && (
+              item.course.toUpperCase() === code || 
+              item.course.toUpperCase().startsWith(code) ||
+              code.startsWith(item.course.toUpperCase())
+            )
+          );
+          if (matched.length > 0) {
+            return matched.map(m => ({ co: m.co, desc: m.description }));
+          }
+        }
+      }
+    } catch {}
+
+    // 2. Check in MASTER_COURSE_OUTCOMES
+    if (MASTER_COURSE_OUTCOMES[code]) {
+      return MASTER_COURSE_OUTCOMES[code];
+    }
+
+    // 3. Realistic fallback
+    return [
+      { co: 'CO1', desc: `Understand fundamental concepts, architectures, and theoretical foundations of ${courseTitle}.` },
+      { co: 'CO2', desc: `Analyze requirements, design modular schemas, and solve engineering problems in ${courseTitle}.` },
+      { co: 'CO3', desc: `Implement practical constructs, algorithms, and automated test cases for ${courseTitle}.` },
+      { co: 'CO4', desc: `Evaluate performance metrics, system tradeoffs, and quality verification standards in ${courseTitle}.` },
+      { co: 'CO5', desc: `Develop robust applications adhering to software engineering practices and ethical standards.` }
+    ];
+  }
+
+  getMappedPosForCo(courseCode: string, coCode: string, coDesc: string, dept: string): MappedPO[] {
+    const code = courseCode.toUpperCase();
+    const co = coCode.toUpperCase();
+
+    if (co === 'CO1') {
+      return [
+        { poCode: 'PO1', attributeName: 'Engineering Knowledge', level: 3, contribution: 90, justification: `Directly assesses fundamental mathematical principles and core engineering concepts in ${code}.` },
+        { poCode: 'PO2', attributeName: 'Problem Analysis', level: 2, contribution: 60, justification: 'Identifies operational requirements, input/output boundary conditions, and problem constraints.' },
+        { poCode: 'PSO1', attributeName: 'Specialized Core Systems', level: 3, contribution: 85, justification: `Foundational core competency for accredited ${dept} engineering practice.` }
+      ];
+    }
+
+    if (co === 'CO2') {
+      return [
+        { poCode: 'PO2', attributeName: 'Problem Analysis', level: 3, contribution: 90, justification: 'Evaluates structural complexities, architectural tradeoffs, and algorithmic formulations.' },
+        { poCode: 'PO3', attributeName: 'Design & Development of Solutions', level: 3, contribution: 90, justification: `Designs modular schemas, algorithms, and system components for ${code}.` }
+      ];
+    }
+
+    if (co === 'CO3') {
+      return [
+        { poCode: 'PO3', attributeName: 'Design & Development of Solutions', level: 2, contribution: 70, justification: 'Constructs reliable, maintainable, and secure implementations according to technical specs.' },
+        { poCode: 'PO4', attributeName: 'Conduct Investigations', level: 2, contribution: 65, justification: 'Validates test datasets, benchmark edge cases, and runtime execution performance.' },
+        { poCode: 'PO5', attributeName: 'Modern Tool Usage', level: 3, contribution: 90, justification: 'Utilizes modern development IDEs, Git version control, profilers, and simulation harnesses.' }
+      ];
+    }
+
+    if (co === 'CO4') {
+      return [
+        { poCode: 'PO5', attributeName: 'Modern Tool Usage', level: 3, contribution: 80, justification: 'Applies automated build tools, container workflows, and observability frameworks.' },
+        { poCode: 'PO8', attributeName: 'Ethics & Integrity', level: 1, contribution: 40, justification: 'Maintains software license compliance, safety codes, and data privacy norms.' },
+        { poCode: 'PSO2', attributeName: 'Advanced Applied Engineering', level: 3, contribution: 85, justification: `Solves practical high-availability engineering challenges in ${dept}.` }
+      ];
+    }
+
+    // CO5
+    return [
+      { poCode: 'PO9', attributeName: 'Individual & Team Work', level: 3, contribution: 90, justification: 'Executes collaborative sprint milestones in multidisciplinary team environments.' },
+      { poCode: 'PO10', attributeName: 'Communication Skills', level: 3, contribution: 85, justification: 'Produces technical SRS blueprints, oral demonstrations, and comprehensive release docs.' },
+      { poCode: 'PO12', attributeName: 'Life-long Learning', level: 2, contribution: 75, justification: 'Adapts to evolving open-source ecosystems, emerging tools, and modern software paradigms.' }
+    ];
+  }
+
   buildHierarchyTree(): void {
     const rawCourses = DEFAULT_DATABASE_COURSES || [];
     const getDeptFromCode = (code: string): string => {
@@ -967,10 +1044,10 @@ export class ProgramOutcomes implements OnInit {
       return 'CSE';
     };
 
-    let relevantCourses: typeof DEFAULT_DATABASE_COURSES = [];
     const curDept = this.shortDept;
+    let relevantCourses: typeof DEFAULT_DATABASE_COURSES = [];
 
-    if (this.userRole === 'faculty') {
+    if (this.assignedCourses && this.assignedCourses.length > 0) {
       relevantCourses = rawCourses.filter(c => 
         this.assignedCourses.some(assigned => 
           c.code.toLowerCase() === assigned.toLowerCase() ||
@@ -978,70 +1055,35 @@ export class ProgramOutcomes implements OnInit {
           assigned.toLowerCase().includes(c.code.toLowerCase())
         )
       );
-      if (relevantCourses.length === 0) {
-        relevantCourses = rawCourses.filter(c => getDeptFromCode(c.code) === curDept).slice(0, 2);
-      }
-    } else {
+    }
+
+    if (relevantCourses.length === 0) {
       relevantCourses = rawCourses.filter(c => getDeptFromCode(c.code) === curDept);
     }
 
     if (relevantCourses.length === 0) {
-      relevantCourses = rawCourses.filter(c => getDeptFromCode(c.code) === 'CSE').slice(0, 2);
+      relevantCourses = rawCourses.filter(c => getDeptFromCode(c.code) === 'CSE');
     }
 
-    this.hierarchySubjects = relevantCourses.map(course => {
+    // Deduplicate by course code
+    const uniqueCourses = new Map<string, typeof DEFAULT_DATABASE_COURSES[0]>();
+    relevantCourses.forEach(c => {
+      if (!uniqueCourses.has(c.code)) uniqueCourses.set(c.code, c);
+    });
+
+    this.hierarchySubjects = Array.from(uniqueCourses.values()).map(course => {
       const courseDept = getDeptFromCode(course.code);
-      const cos: COItemWithPOs[] = [
-        {
-          coCode: 'CO1',
-          description: `Formulate fundamental architectural principles, data structures, and computational models for ${course.title}.`,
-          isPoExpanded: true,
-          mappedPos: [
-            { poCode: 'PO1', attributeName: 'Engineering Knowledge', level: 3, contribution: 85, justification: `Directly applies fundamental mathematics and ${course.code} domain core concepts.` },
-            { poCode: 'PO2', attributeName: 'Problem Analysis', level: 2, contribution: 60, justification: 'Identifies input/output boundary conditions and theoretical bounds.' },
-            { poCode: 'PSO1', attributeName: 'Specialized Core Systems', level: 3, contribution: 80, justification: `Essential foundational competency for ${courseDept} engineering pipelines.` }
-          ]
-        },
-        {
-          coCode: 'CO2',
-          description: `Analyze requirements, design modular schemas, and implement optimized algorithmic solutions in ${course.title}.`,
-          isPoExpanded: false,
-          mappedPos: [
-            { poCode: 'PO2', attributeName: 'Problem Analysis', level: 3, contribution: 85, justification: 'Evaluates structural complexities, tradeoffs, and problem formulations.' },
-            { poCode: 'PO3', attributeName: 'Design & Development of Solutions', level: 3, contribution: 90, justification: 'Designs modular software components, schemas, and robust algorithms.' }
-          ]
-        },
-        {
-          coCode: 'CO3',
-          description: `Construct resilient software modules and conduct test-driven verification for ${course.title}.`,
-          isPoExpanded: false,
-          mappedPos: [
-            { poCode: 'PO3', attributeName: 'Design & Development of Solutions', level: 2, contribution: 70, justification: 'Builds maintainable and secure implementations according to design specs.' },
-            { poCode: 'PO4', attributeName: 'Conduct Investigations', level: 2, contribution: 65, justification: 'Validates test datasets, benchmark edge cases, and runtime telemetry.' },
-            { poCode: 'PO5', attributeName: 'Modern Tool Usage', level: 3, contribution: 85, justification: 'Utilizes modern development IDEs, Git, profilers, and testing harnesses.' }
-          ]
-        },
-        {
-          coCode: 'CO4',
-          description: `Integrate secure network interfaces, concurrent workflows, and industry-standard protocols into ${course.title}.`,
-          isPoExpanded: false,
-          mappedPos: [
-            { poCode: 'PO5', attributeName: 'Modern Tool Usage', level: 3, contribution: 80, justification: 'Applies automated build tools, container workflows, and monitoring frameworks.' },
-            { poCode: 'PO8', attributeName: 'Ethics & Integrity', level: 1, contribution: 40, justification: 'Maintains software license compliance and user privacy protection.' },
-            { poCode: 'PSO2', attributeName: 'Advanced Applied Engineering', level: 3, contribution: 85, justification: `Solves practical high-availability engineering challenges in ${courseDept}.` }
-          ]
-        },
-        {
-          coCode: 'CO5',
-          description: `Collaborate on full-stack capstone projects, document technical blueprints, and evaluate long-term maintenance in ${course.title}.`,
-          isPoExpanded: false,
-          mappedPos: [
-            { poCode: 'PO9', attributeName: 'Individual & Team Work', level: 3, contribution: 90, justification: 'Executes collaborative sprint milestones in multidisciplinary team environments.' },
-            { poCode: 'PO10', attributeName: 'Communication Skills', level: 3, contribution: 85, justification: 'Produces technical SRS blueprints, oral demonstrations, and release docs.' },
-            { poCode: 'PO12', attributeName: 'Life-long Learning', level: 2, contribution: 75, justification: 'Adapts to evolving open-source libraries and modern software paradigms.' }
-          ]
-        }
-      ];
+      const rawCOs = this.getSavedOrMasterCOs(course.code, course.title);
+
+      const cos: COItemWithPOs[] = rawCOs.map((item, idx) => {
+        const coCode = item.co || `CO${idx + 1}`;
+        return {
+          coCode: coCode,
+          description: item.desc,
+          isPoExpanded: idx === 0, // expand first CO by default
+          mappedPos: this.getMappedPosForCo(course.code, coCode, item.desc, courseDept)
+        };
+      });
 
       return {
         courseCode: course.code,

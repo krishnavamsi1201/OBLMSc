@@ -47,7 +47,7 @@ const DEFAULT_PROGRAM_OUTCOMES: ProgramOutcome[] = [
   { id: 12, poNumber: 'PO12', description: 'Life-long Learning: Recognize the need for, and have the preparation and ability to engage in independent learning.' }
 ];
 
-const DEFAULT_INITIAL_COS: CourseOutcome[] = [
+export const DEFAULT_INITIAL_COS: CourseOutcome[] = [
   // 1. CSE
   { id: 1, course: 'CS101', co: 'CO1', description: 'Explain database architecture, schema design, and entity-relationship models.' },
   { id: 2, course: 'CS101', co: 'CO2', description: 'Formulate relational algebra queries and complex SQL queries.' },
@@ -155,7 +155,7 @@ const DEFAULT_INITIAL_COS: CourseOutcome[] = [
   { id: 75, course: 'CE301', co: 'CO2', description: 'Calculate influence line diagrams for moving live loads on bridge structures.' }
 ];
 
-const DEFAULT_INITIAL_MAPPINGS: CoMapping[] = [
+export const DEFAULT_INITIAL_MAPPINGS: CoMapping[] = [
   // CSE Mappings
   { id: 1, course: 'CS101', co: 'CO1', po: 'PO1', contribution: 90, mappingLevel: 3, status: 'Approved' },
   { id: 2, course: 'CS101', co: 'CO2', po: 'PO2', contribution: 90, mappingLevel: 3, status: 'Approved' },

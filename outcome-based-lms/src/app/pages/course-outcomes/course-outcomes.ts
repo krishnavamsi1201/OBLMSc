@@ -23,6 +23,219 @@ export interface GroupedSubjectCOs {
   isExpanded: boolean;
 }
 
+export const MASTER_COURSE_OUTCOMES: { [code: string]: { co: string; desc: string }[] } = {
+  'CS101': [
+    { co: 'CO1', desc: 'Explain database architecture, schema design, and entity-relationship models.' },
+    { co: 'CO2', desc: 'Formulate relational algebra queries and complex SQL queries.' },
+    { co: 'CO3', desc: 'Apply normalization techniques (1NF to BCNF) to eliminate database redundancies.' },
+    { co: 'CO4', desc: 'Implement transaction management and concurrency control protocols.' },
+    { co: 'CO5', desc: 'Demonstrate indexing, hashing, and database tuning strategies.' }
+  ],
+  'CS102': [
+    { co: 'CO1', desc: 'Analyze asymptotic time and space complexity of algorithms.' },
+    { co: 'CO2', desc: 'Design linear data structures including linked lists, stacks, and queues.' },
+    { co: 'CO3', desc: 'Implement non-linear data structures including binary trees, AVL trees, and heaps.' },
+    { co: 'CO4', desc: 'Apply graph traversal algorithms (BFS, DFS) and shortest path algorithms.' },
+    { co: 'CO5', desc: 'Evaluate searching, sorting, and hashing techniques for problem solving.' }
+  ],
+  'CS103': [
+    { co: 'CO1', desc: 'Understand OOP concepts: encapsulation, inheritance, and polymorphism in Java.' },
+    { co: 'CO2', desc: 'Design robust applications using Java Exception Handling and Multithreading.' },
+    { co: 'CO3', desc: 'Implement GUI components and event handling with Swing / JavaFX.' },
+    { co: 'CO4', desc: 'Integrate JDBC database connectivity with transaction management.' },
+    { co: 'CO5', desc: 'Develop modular, object-oriented software applications.' }
+  ],
+  'CS201': [
+    { co: 'CO1', desc: 'Explain operating system architecture, kernel services, and process management.' },
+    { co: 'CO2', desc: 'Analyze CPU scheduling algorithms and process synchronization mechanisms.' },
+    { co: 'CO3', desc: 'Resolve deadlocks using Banker\'s Algorithm and evaluate virtual memory paging.' },
+    { co: 'CO4', desc: 'Evaluate file system implementations, disk scheduling, and I/O management.' },
+    { co: 'CO5', desc: 'Implement multi-threaded systems programming in POSIX/Linux environment.' }
+  ],
+  'CS202': [
+    { co: 'CO1', desc: 'Apply mathematical foundations of linear algebra, calculus, and probability to ML algorithms.' },
+    { co: 'CO2', desc: 'Implement supervised learning algorithms including regression, SVM, and decision trees.' },
+    { co: 'CO3', desc: 'Build unsupervised learning models for clustering, dimensionality reduction, and PCA.' },
+    { co: 'CO4', desc: 'Train and evaluate deep neural networks with backpropagation and regularization.' },
+    { co: 'CO5', desc: 'Deploy machine learning pipelines for predictive analytics and feature engineering.' }
+  ],
+  'CS301': [
+    { co: 'CO1', desc: 'Understand OSI and TCP/IP protocol architectures and layered networking.' },
+    { co: 'CO2', desc: 'Calculate IP addressing, subnet masks, and configure network routing protocols.' },
+    { co: 'CO3', desc: 'Analyze transport layer flow control (TCP sliding window) and congestion management.' },
+    { co: 'CO4', desc: 'Explain application layer protocols including HTTP, DNS, DHCP, and SMTP.' },
+    { co: 'CO5', desc: 'Implement network socket programming and packet filtering firewalls.' }
+  ],
+  'CS302': [
+    { co: 'CO1', desc: 'Contrast traditional SDLC models with Agile Scrum sprint workflows.' },
+    { co: 'CO2', desc: 'Draft Software Requirement Specifications (SRS) and UML system architecture diagrams.' },
+    { co: 'CO3', desc: 'Execute automated unit testing, integration testing, and code coverage metrics.' },
+    { co: 'CO4', desc: 'Apply software design patterns, refactoring, and code review standards.' },
+    { co: 'CO5', desc: 'Manage CI/CD deployment pipelines, version control, and project deliverables.' }
+  ],
+  'CS303': [
+    { co: 'CO1', desc: 'Architect resilient cloud infrastructure using microservices and containerization (Docker, K8s).' },
+    { co: 'CO2', desc: 'Implement infrastructure as code (IaC) and automated CI/CD deployment pipelines.' },
+    { co: 'CO3', desc: 'Evaluate cloud security, IAM access policies, and virtual private clouds (VPC).' },
+    { co: 'CO4', desc: 'Optimize cloud computing costs, autoscaling groups, and serverless compute functions.' },
+    { co: 'CO5', desc: 'Deploy fault-tolerant distributed cloud backends with monitoring and observability.' }
+  ],
+  'CS401': [
+    { co: 'CO1', desc: 'Formulate state-space search algorithms including A*, heuristic search, and game playing.' },
+    { co: 'CO2', desc: 'Represent knowledge using first-order predicate logic, ontology, and inference engines.' },
+    { co: 'CO3', desc: 'Construct probabilistic reasoning models using Bayesian networks and Markov chains.' },
+    { co: 'CO4', desc: 'Design intelligent autonomous agents and reinforcement learning policy iterations.' },
+    { co: 'CO5', desc: 'Evaluate ethical considerations and real-world deployment challenges in AI systems.' }
+  ],
+  'CS402': [
+    { co: 'CO1', desc: 'Analyze symmetric and asymmetric cryptographic algorithms (AES, RSA, ECC).' },
+    { co: 'CO2', desc: 'Implement cryptographic hash functions, digital signatures, and PKI certificates.' },
+    { co: 'CO3', desc: 'Identify web and network vulnerabilities (SQLi, XSS, CSRF, buffer overflows).' },
+    { co: 'CO4', desc: 'Design defense-in-depth network security architectures and intrusion detection systems.' },
+    { co: 'CO5', desc: 'Conduct digital forensics investigations, incident response, and penetration testing.' }
+  ],
+  'IT113': [
+    { co: 'CO1', desc: 'Formulate algorithmic problem solutions and flowchart representations in C.' },
+    { co: 'CO2', desc: 'Implement modular programs using functions, pointers, and memory allocation.' },
+    { co: 'CO3', desc: 'Process structured records and file handling streams in C programming.' },
+    { co: 'CO4', desc: 'Analyze time-space algorithmic complexities and optimize execution efficiency.' },
+    { co: 'CO5', desc: 'Develop robust, portable console utility applications in C.' }
+  ],
+  'IT201': [
+    { co: 'CO1', desc: 'Implement object-oriented data structures using C++ templates and classes.' },
+    { co: 'CO2', desc: 'Construct linear and hierarchical data representation models.' },
+    { co: 'CO3', desc: 'Apply sorting, searching, and hashing algorithms for large datasets.' },
+    { co: 'CO4', desc: 'Design graph algorithms and shortest path discovery pipelines.' },
+    { co: 'CO5', desc: 'Evaluate spatial and temporal overheads of advanced data architectures.' }
+  ],
+  'IT211': [
+    { co: 'CO1', desc: 'Explain Linux kernel architecture, shell scripting, and system administration.' },
+    { co: 'CO2', desc: 'Manage process scheduling, user permissions, and daemon configurations.' },
+    { co: 'CO3', desc: 'Configure network services, firewall rules, and virtualized container environments.' },
+    { co: 'CO4', desc: 'Automate administrative maintenance with Bash shell scripting and cron jobs.' },
+    { co: 'CO5', desc: 'Audit system security logs, user access privileges, and system resource limits.' }
+  ],
+  'IT301': [
+    { co: 'CO1', desc: 'Design computer communication network topologies and packet switched routing.' },
+    { co: 'CO2', desc: 'Implement socket programming and application layer client-server protocols.' },
+    { co: 'CO3', desc: 'Analyze IP routing algorithms (OSPF, BGP) and subnetting strategies.' },
+    { co: 'CO4', desc: 'Evaluate transport layer congestion control and reliable delivery mechanisms.' },
+    { co: 'CO5', desc: 'Configure software-defined networks and secure VPN tunneling endpoints.' }
+  ],
+  'IT305': [
+    { co: 'CO1', desc: 'Explain open source software licensing models, governance, and community workflows.' },
+    { co: 'CO2', desc: 'Develop dynamic responsive web applications using modern open-source web frameworks.' },
+    { co: 'CO3', desc: 'Build RESTful API services connected to relational database persistence engines.' },
+    { co: 'CO4', desc: 'Manage distributed source control, code reviews, and CI/CD pipelines on GitHub/GitLab.' },
+    { co: 'CO5', desc: 'Deploy containerized web applications on Linux-based open-source infrastructure.' }
+  ],
+  'EC114': [
+    { co: 'CO1', desc: 'Analyze DC and AC electric circuits using Kirchhoff\'s Laws and network theorems.' },
+    { co: 'CO2', desc: 'Explain operational principles of semiconductor diodes, BJTs, and MOSFETs.' },
+    { co: 'CO3', desc: 'Understand basic digital logic gates, flip-flops, and binary number systems.' },
+    { co: 'CO4', desc: 'Analyze steady-state AC circuit responses and sinusoidal power factors.' },
+    { co: 'CO5', desc: 'Operate electronic test instruments: oscilloscopes, function generators, and multimeters.' }
+  ],
+  'EC201': [
+    { co: 'CO1', desc: 'Analyze semiconductor band theory, carrier transport, and PN junction characteristics.' },
+    { co: 'CO2', desc: 'Model BJT and FET transistor small-signal amplifier configurations.' },
+    { co: 'CO3', desc: 'Evaluate frequency response and feedback amplifier stability criteria.' },
+    { co: 'CO4', desc: 'Design operational amplifier analog signal conditioning circuits.' },
+    { co: 'CO5', desc: 'Simulate analog circuit behavior using SPICE simulation suites.' }
+  ],
+  'EC202': [
+    { co: 'CO1', desc: 'Design combinational logic circuits using Boolean minimization and K-maps.' },
+    { co: 'CO2', desc: 'Synthesize synchronous sequential circuits, finite state machines, and counters.' },
+    { co: 'CO3', desc: 'Implement digital hardware systems using Verilog HDL and FPGA targets.' },
+    { co: 'CO4', desc: 'Analyze timing hazards, propagation delays, and clock skew in digital systems.' },
+    { co: 'CO5', desc: 'Verify digital RTL architectures using testbenches and logic analyzers.' }
+  ],
+  'EC211': [
+    { co: 'CO1', desc: 'Analyze operational amplifier circuits: differential amplifiers, filters, and oscillators.' },
+    { co: 'CO2', desc: 'Design linear and non-linear analog signal processing modules.' },
+    { co: 'CO3', desc: 'Evaluate comparator, Schmitt trigger, and waveform generator circuits.' },
+    { co: 'CO4', desc: 'Synthesize active RC bandpass, lowpass, and highpass analog filters.' },
+    { co: 'CO5', desc: 'Implement analog IC systems using precision voltage regulators and PLLs.' }
+  ],
+  'EC301': [
+    { co: 'CO1', desc: 'Evaluate continuous-time and discrete-time signals using Fourier and Z-transforms.' },
+    { co: 'CO2', desc: 'Characterize LTI system impulse response, stability, and convolution properties.' },
+    { co: 'CO3', desc: 'Design digital FIR and IIR filters meeting attenuation and passband ripple specs.' },
+    { co: 'CO4', desc: 'Implement Fast Fourier Transform (FFT) algorithms for spectral analysis.' },
+    { co: 'CO5', desc: 'Apply digital signal processing techniques to audio, image, and RF telecommunication.' }
+  ],
+  'ME113': [
+    { co: 'CO1', desc: 'Apply principles of statics, free-body diagrams, and equilibrium conditions.' },
+    { co: 'CO2', desc: 'Calculate centroids, moments of inertia, and frictional forces in mechanisms.' },
+    { co: 'CO3', desc: 'Analyze internal forces in pin-jointed trusses and structural frames.' },
+    { co: 'CO4', desc: 'Formulate kinematics of particles and rigid bodies in rectilinear/curvilinear motion.' },
+    { co: 'CO5', desc: 'Apply work-energy and impulse-momentum principles to dynamic mechanical systems.' }
+  ],
+  'ME201': [
+    { co: 'CO1', desc: 'Apply First and Second Laws of Thermodynamics to closed and open engineering systems.' },
+    { co: 'CO2', desc: 'Evaluate entropy generation, exergy availability, and thermodynamic property relations.' },
+    { co: 'CO3', desc: 'Analyze ideal gas power cycles (Otto, Diesel, Dual, and Brayton cycles).' },
+    { co: 'CO4', desc: 'Calculate coefficient of performance (COP) for refrigeration and heat pump cycles.' },
+    { co: 'CO5', desc: 'Evaluate combustion stoichiometry, air-fuel ratios, and thermal boiler efficiencies.' }
+  ],
+  'ME202': [
+    { co: 'CO1', desc: 'Evaluate axial, shearing, and torsional stresses in structural mechanical members.' },
+    { co: 'CO2', desc: 'Construct Shear Force and Bending Moment diagrams for loaded beam structures.' },
+    { co: 'CO3', desc: 'Calculate principal stresses, Mohr\'s Circle transformations, and failure theories.' },
+    { co: 'CO4', desc: 'Determine beam deflection using double integration and Macaulay\'s methods.' },
+    { co: 'CO5', desc: 'Analyze Euler buckling of columns and thin-walled pressure vessels.' }
+  ],
+  'ME211': [
+    { co: 'CO1', desc: 'Analyze vapor power cycles (Rankine cycle, reheat, and regenerative feed heating).' },
+    { co: 'CO2', desc: 'Evaluate steam generator boiler efficiencies, nozzles, and turbine expansions.' },
+    { co: 'CO3', desc: 'Model steam condenser performance, cooling towers, and plant heat rates.' },
+    { co: 'CO4', desc: 'Analyze gas turbine combined cycle (GTCC) and cogeneration thermodynamics.' },
+    { co: 'CO5', desc: 'Design thermal power plant subsystems complying with environmental emission norms.' }
+  ],
+  'ME301': [
+    { co: 'CO1', desc: 'Apply Navier-Stokes and boundary layer equations to internal/external fluid flows.' },
+    { co: 'CO2', desc: 'Design centrifugal pumps, Pelton wheels, and Francis hydraulic turbo-machinery.' },
+    { co: 'CO3', desc: 'Calculate minor and major frictional head losses in piping networks.' },
+    { co: 'CO4', desc: 'Analyze dimensional homogeneity and Buckingham Pi theorem scaling models.' },
+    { co: 'CO5', desc: 'Conduct aerodynamic drag and lift analysis over airfoils and submerged bodies.' }
+  ],
+  'CE113': [
+    { co: 'CO1', desc: 'Formulate 2D and 3D equilibrium equations for rigid bodies and spatial concurrent force systems.' },
+    { co: 'CO2', desc: 'Calculate center of gravity, area moment of inertia, and mass moment of inertia.' },
+    { co: 'CO3', desc: 'Determine internal axial forces in plane trusses using method of joints and sections.' },
+    { co: 'CO4', desc: 'Analyze static friction, belt friction, and wedge mechanisms.' },
+    { co: 'CO5', desc: 'Apply virtual work principles to determine equilibrium configurations of structures.' }
+  ],
+  'CE201': [
+    { co: 'CO1', desc: 'Analyze stress, strain, elasticity moduli, and thermal deformation in engineering materials.' },
+    { co: 'CO2', desc: 'Construct SFD and BMD for determinate beams under concentrated and distributed loads.' },
+    { co: 'CO3', desc: 'Derive bending stress distributions, transverse shear stresses, and column buckling loads.' },
+    { co: 'CO4', desc: 'Calculate slope and deflection in flexural members using moment-area theorems.' },
+    { co: 'CO5', desc: 'Evaluate combined direct and bending stresses in structural retaining walls and chimneys.' }
+  ],
+  'CE202': [
+    { co: 'CO1', desc: 'Execute distance and angular measurements using chain, compass, and theodolite surveying.' },
+    { co: 'CO2', desc: 'Perform leveling, contour plotting, profile computation, and earthwork volume calculation.' },
+    { co: 'CO3', desc: 'Apply Total Station, GPS, and GIS digital mapping technologies in field layout.' },
+    { co: 'CO4', desc: 'Set out simple circular and transition horizontal/vertical road curves.' },
+    { co: 'CO5', desc: 'Conduct triangulation and trilateration surveys for high-accuracy civil infrastructure.' }
+  ],
+  'CE203': [
+    { co: 'CO1', desc: 'Calculate hydrostatic pressure distributions on submerged planar and curved surfaces.' },
+    { co: 'CO2', desc: 'Apply continuity, momentum, and Bernoulli energy equations to pipe flow systems.' },
+    { co: 'CO3', desc: 'Evaluate laminar and turbulent pipe friction losses, hydraulic grade lines, and open channels.' },
+    { co: 'CO4', desc: 'Design open channel flow sections for maximum hydraulic discharge.' },
+    { co: 'CO5', desc: 'Analyze hydraulic jump dissipation, weir calibrations, and venturi flumes.' }
+  ],
+  'CE301': [
+    { co: 'CO1', desc: 'Analyze indeterminate trusses, beams, and rigid frames using slope-deflection & moment distribution methods.' },
+    { co: 'CO2', desc: 'Calculate influence line diagrams for moving live loads on bridge structures.' },
+    { co: 'CO3', desc: 'Apply energy theorems (Castigliano\'s theorem, unit load method) for deflection calculation.' },
+    { co: 'CO4', desc: 'Analyze two-hinged and fixed arches under uniformly distributed and concentrated loads.' },
+    { co: 'CO5', desc: 'Perform matrix stiffness and flexibility analysis of skeletal structural frames.' }
+  ]
+};
+
 @Component({
   selector: 'app-course-outcomes',
   standalone: true,
@@ -39,7 +252,7 @@ export interface GroupedSubjectCOs {
             <div class="header-title-group">
                 <span class="header-pill">🎯 NBA Criteria-3 Compliant</span>
                 <h1>Course Outcomes (CO) Directory</h1>
-                <p>{{ role === 'faculty' ? 'Subject-wise Course Outcomes (CO1–CO5) strictly for your assigned teaching curriculum.' : 'Subject-wise Course Outcomes (CO1–CO5) articulating specific skills, knowledge, and competencies acquired by students.' }}</p>
+                <p>{{ role === 'faculty' ? 'Subject-wise Course Outcomes (CO1–CO5) strictly for your faculty curriculum and assigned subjects.' : 'Subject-wise Course Outcomes (CO1–CO5) articulating specific skills, knowledge, and competencies acquired by students.' }}</p>
             </div>
             <div class="header-actions" *ngIf="role === 'admin' || role === 'faculty'">
                 <button type="button" class="primary-button" (click)="toggleForm()">
@@ -48,16 +261,16 @@ export interface GroupedSubjectCOs {
             </div>
         </div>
 
-        <!-- Faculty Context Banner (Strict Subject Isolation Notice) -->
+        <!-- Faculty Context Banner -->
         <div class="branch-banner faculty-banner" *ngIf="role === 'faculty'">
             <div class="banner-icon">👨‍🏫</div>
             <div class="banner-details">
                 <div class="banner-title-row">
                     <strong>{{ facultyDept }} — {{ facultyName }}</strong>
-                    <span class="banner-tag faculty-tag">Faculty Assigned Subjects</span>
+                    <span class="banner-tag faculty-tag">Faculty Outcomes Directory</span>
                 </div>
                 <p class="banner-sub">
-                    Showing Course Outcomes (CO1–CO5) strictly mapped to your assigned subjects: 
+                    Showing Course Outcomes (CO1–CO5) strictly mapped to your faculty subjects: 
                     <span class="assigned-chips">{{ facultyAssignedCoursesDisplay }}</span>.
                 </p>
             </div>
@@ -71,7 +284,7 @@ export interface GroupedSubjectCOs {
                     type="text" 
                     [(ngModel)]="searchQuery" 
                     (ngModelChange)="filterGroups()" 
-                    placeholder="Search by assigned subject name, course code (e.g. CS102), or outcome keywords..." 
+                    placeholder="Search by subject name, course code (e.g. CS101, CS102), or outcome keywords..." 
                 />
                 <button *ngIf="searchQuery" type="button" class="clear-search" (click)="searchQuery=''; filterGroups()">✕</button>
             </div>
@@ -165,7 +378,7 @@ export interface GroupedSubjectCOs {
             <div *ngIf="filteredGroups.length === 0" class="empty-state-card">
                 <span style="font-size: 2.5rem; margin-bottom: 8px;">🔍</span>
                 <h3>No subjects match your search criteria.</h3>
-                <p>Showing strictly assigned subjects for your faculty profile.</p>
+                <p>Try searching with another keyword or course code.</p>
             </div>
         </div>
 
@@ -310,16 +523,29 @@ export class CourseOutcomes {
     'IT111': 'IT111 - Calculus & Linear Algebra',
     'IT113': 'IT113 - Problem Solving with C',
     'IT201': 'IT201 - Data Structures & Algorithms',
+    'IT211': 'IT211 - Linux System Administration',
     'IT301': 'IT301 - Database Management Systems',
+    'IT305': 'IT305 - Open Source Software Technologies',
     'EC111': 'EC111 - Linear Algebra & Transform Calculus',
     'EC114': 'EC114 - Basic Electrical & Electronics',
     'EC201': 'EC201 - Electronic Devices and Circuit Theory',
+    'EC202': 'EC202 - Digital System Design',
+    'EC211': 'EC211 - Analog Electronic Circuits',
+    'EC301': 'EC301 - Signals and Systems',
     'EE111': 'EE111 - Calculus & Differential Equations',
     'EE201': 'EE201 - Electric Circuit Analysis',
     'ME111': 'ME111 - Calculus & Linear Algebra',
+    'ME113': 'ME113 - Engineering Mechanics',
     'ME201': 'ME201 - Engineering Thermodynamics',
+    'ME202': 'ME202 - Strength of Materials',
+    'ME211': 'ME211 - Applied Thermodynamics',
+    'ME301': 'ME301 - Fluid Mechanics & Hydraulic Machinery',
     'CE111': 'CE111 - Calculus & Linear Algebra',
-    'CE201': 'CE201 - Strength of Materials I'
+    'CE113': 'CE113 - Engineering Mechanics (Civil)',
+    'CE201': 'CE201 - Strength of Materials I',
+    'CE202': 'CE202 - Surveying & Geomatics',
+    'CE203': 'CE203 - Fluid Mechanics',
+    'CE301': 'CE301 - Structural Analysis I'
   };
 
   getFullCourseName(courseStr: string): string {
@@ -360,72 +586,46 @@ export class CourseOutcomes {
       }
     } catch {}
 
-    if (this.role === 'faculty') {
-      if (assigned.length === 0 && this.facultyName) {
-        const matched = DEFAULT_DATABASE_COURSES.filter(c => 
-          c.faculty && (
-            c.faculty.toLowerCase().includes(this.facultyName.toLowerCase()) ||
-            this.facultyName.toLowerCase().includes(c.faculty.toLowerCase())
-          )
-        );
-        if (matched.length > 0) {
-          assigned = Array.from(new Set(matched.map(m => m.code)));
-        }
-      }
+    const dept = (localStorage.getItem('userDept') || localStorage.getItem('userDepartment') || 'CSE').toLowerCase();
 
+    if (this.role === 'faculty') {
       if (assigned.length === 0) {
-        const dept = (localStorage.getItem('userDept') || localStorage.getItem('userDepartment') || 'CSE').toLowerCase();
         if (dept.includes('computer') || dept.includes('cse')) {
-          assigned = ['CS102', 'CS202']; // default for Sunita Sharma
+          assigned = ['CS101', 'CS102', 'CS103', 'CS201', 'CS202', 'CS301', 'CS302', 'CS303', 'CS401', 'CS402'];
         } else if (dept.includes('information') || dept.includes('it')) {
-          assigned = ['IT113', 'IT201'];
+          assigned = ['IT113', 'IT201', 'IT211', 'IT301', 'IT305'];
         } else if (dept.includes('electronic') || dept.includes('ece')) {
-          assigned = ['EC114', 'EC201'];
+          assigned = ['EC114', 'EC201', 'EC202', 'EC211', 'EC301'];
         } else if (dept.includes('mechanical') || dept.includes('me')) {
-          assigned = ['ME111', 'ME201'];
+          assigned = ['ME113', 'ME201', 'ME202', 'ME211', 'ME301'];
         } else if (dept.includes('civil') || dept === 'ce') {
-          assigned = ['CE111', 'CE201'];
+          assigned = ['CE113', 'CE201', 'CE202', 'CE203', 'CE301'];
+        } else {
+          assigned = ['CS101', 'CS102', 'CS103', 'CS201', 'CS202'];
         }
       }
       return assigned;
     }
 
     if (this.role === 'student') {
-      const studentName = (localStorage.getItem('userName') || '').toLowerCase();
-      try {
-        const studentCourses = JSON.parse(localStorage.getItem('obslmsStudentCourses') || '[]');
-        studentCourses.forEach((sc: any) => {
-          const scName = (sc.studentName || '').toLowerCase();
-          if (scName.includes(studentName) || studentName.includes(scName)) {
-            if (sc.courseCode && !assigned.includes(sc.courseCode)) assigned.push(sc.courseCode);
-            if (sc.courseTitle && !assigned.includes(sc.courseTitle)) assigned.push(sc.courseTitle);
-          }
-        });
-      } catch {}
-
-      if (assigned.length === 0) {
-        const dept = (localStorage.getItem('userDept') || localStorage.getItem('userDepartment') || 'CSE').toLowerCase();
-        if (dept.includes('computer') || dept.includes('cse')) {
-          assigned = ['CS101', 'CS102', 'CS103', 'CS201', 'CS202', 'CS301', 'CS302', 'CS401', 'CS402'];
-        } else if (dept.includes('information') || dept.includes('it')) {
-          assigned = ['IT111', 'IT121', 'IT201', 'IT211', 'IT301', 'IT311', 'IT401', 'IT411'];
-        } else if (dept.includes('electronic') || dept.includes('ece')) {
-          assigned = ['EC111', 'EC121', 'EC201', 'EC211', 'EC301', 'EC311', 'EC401', 'EC411'];
-        } else if (dept.includes('electrical') || dept.includes('eee')) {
-          assigned = ['EE111', 'EE121', 'EE201', 'EE211', 'EE301', 'EE311', 'EE401', 'EE411'];
-        } else if (dept.includes('mechanical') || dept.includes('me')) {
-          assigned = ['ME111', 'ME121', 'ME201', 'ME211', 'ME301', 'ME311', 'ME401', 'ME411'];
-        } else if (dept.includes('civil') || dept === 'ce') {
-          assigned = ['CE111', 'CE121', 'CE201', 'CE211', 'CE301', 'CE311', 'CE401', 'CE411'];
-        }
+      if (dept.includes('computer') || dept.includes('cse')) {
+        assigned = ['CS101', 'CS102', 'CS103', 'CS201', 'CS202', 'CS301', 'CS302', 'CS401', 'CS402'];
+      } else if (dept.includes('information') || dept.includes('it')) {
+        assigned = ['IT113', 'IT201', 'IT211', 'IT301', 'IT305'];
+      } else if (dept.includes('electronic') || dept.includes('ece')) {
+        assigned = ['EC114', 'EC201', 'EC202', 'EC211', 'EC301'];
+      } else if (dept.includes('mechanical') || dept.includes('me')) {
+        assigned = ['ME113', 'ME201', 'ME202', 'ME211', 'ME301'];
+      } else if (dept.includes('civil') || dept === 'ce') {
+        assigned = ['CE113', 'CE201', 'CE202', 'CE203', 'CE301'];
       }
     }
 
-    return assigned;
+    return assigned.length > 0 ? assigned : ['CS101', 'CS102', 'CS103', 'CS201', 'CS202'];
   }
 
   isCourseAllowed(courseStr: string): boolean {
-    if (this.role !== 'faculty') return true;
+    if (this.role !== 'faculty' && this.role !== 'student') return true;
     const assigned = this.getRelevantCoursesForUser();
     if (!assigned || assigned.length === 0) return true;
     const cLow = (courseStr || '').toLowerCase();
@@ -444,14 +644,7 @@ export class CourseOutcomes {
       next: (courseList: Array<{ code: string; title: string }>) => {
         let list = courseList;
         if (assigned.length > 0 && (this.role === 'faculty' || this.role === 'student')) {
-          list = courseList.filter((c: any) => 
-            assigned.some(a => 
-              a.toLowerCase() === (c.code || '').toLowerCase() ||
-              a.toLowerCase() === (c.title || '').toLowerCase() ||
-              (c.title && c.title.toLowerCase().includes(a.toLowerCase())) ||
-              (c.code && a.toLowerCase().includes(c.code.toLowerCase()))
-            )
-          );
+          list = courseList.filter((c: any) => this.isCourseAllowed(c.code || c.title));
         }
         if (list.length === 0 && assigned.length > 0) {
           this.courses = assigned.map(a => this.getFullCourseName(a));
@@ -464,54 +657,41 @@ export class CourseOutcomes {
         this.cdr.detectChanges();
       },
       error: () => {
-        try {
-          const stored = localStorage.getItem('obslmsCourses');
-          let courseList = stored ? JSON.parse(stored) as Array<{ code: string; title: string }> : [];
-          if (assigned.length > 0 && (this.role === 'faculty' || this.role === 'student')) {
-            courseList = courseList.filter((c: any) => 
-              assigned.some(a => 
-                a.toLowerCase() === (c.code || '').toLowerCase() ||
-                a.toLowerCase() === (c.title || '').toLowerCase() ||
-                (c.title && c.title.toLowerCase().includes(a.toLowerCase())) ||
-                (c.code && a.toLowerCase().includes(c.code.toLowerCase()))
-              )
-            );
-          }
-          if (courseList.length === 0 && assigned.length > 0) {
-            this.courses = assigned.map(a => this.getFullCourseName(a));
-          } else {
-            this.courses = courseList
-              .map((c: any) => `${c.code ? c.code : ''}${c.code && c.title ? ' - ' : ''}${c.title ? c.title : ''}`)
-              .filter(Boolean);
-          }
-        } catch {
-          this.courses = assigned.map(a => this.getFullCourseName(a));
-        }
+        this.courses = assigned.map(a => this.getFullCourseName(a));
         this.groupOutcomesBySubject();
       }
     });
   }
 
-  getStandardFallbackCOs(courseCode: string, courseTitle: string): CourseOutcome[] {
+  getStandardCOsForCourse(courseCode: string, courseTitle: string): CourseOutcome[] {
     const code = courseCode.toUpperCase();
-    const t = courseTitle.toLowerCase();
     
-    if (code.startsWith('CS') || t.includes('program') || t.includes('c ') || t.includes('problem') || t.includes('data') || t.includes('learning')) {
+    if (MASTER_COURSE_OUTCOMES[code]) {
+      return MASTER_COURSE_OUTCOMES[code].map((item, idx) => ({
+        id: idx + 1,
+        course: courseCode,
+        co: item.co,
+        description: item.desc
+      }));
+    }
+
+    const t = courseTitle.toLowerCase();
+    if (code.startsWith('CS') || t.includes('program') || t.includes('data') || t.includes('software')) {
       return [
-        { id: Math.floor(Math.random() * 90000) + 1000, course: courseCode, co: 'CO1', description: `Recall and outline fundamental syntax, structures, and theoretical models of ${courseTitle}.` },
-        { id: Math.floor(Math.random() * 90000) + 1000, course: courseCode, co: 'CO2', description: `Design modular algorithms, schemas, and optimized functions to solve computational problems in ${courseTitle}.` },
-        { id: Math.floor(Math.random() * 90000) + 1000, course: courseCode, co: 'CO3', description: `Implement resilient software components and conduct automated test-driven verification for ${courseTitle}.` },
-        { id: Math.floor(Math.random() * 90000) + 1000, course: courseCode, co: 'CO4', description: `Analyze algorithm efficiency, time-space complexity trade-offs, and debug runtime anomalies.` },
-        { id: Math.floor(Math.random() * 90000) + 1000, course: courseCode, co: 'CO5', description: `Develop robust end-to-end applications adhering to standard software engineering guidelines and industry best practices.` }
+        { id: 1, course: courseCode, co: 'CO1', description: `Recall and outline fundamental syntax, architectural principles, and core concepts of ${courseTitle}.` },
+        { id: 2, course: courseCode, co: 'CO2', description: `Design modular schemas, algorithms, and structured functions to solve computational problems in ${courseTitle}.` },
+        { id: 3, course: courseCode, co: 'CO3', description: `Implement resilient software components and conduct automated test-driven verification for ${courseTitle}.` },
+        { id: 4, course: courseCode, co: 'CO4', description: `Analyze algorithm efficiency, time-space complexity trade-offs, and debug runtime anomalies in ${courseTitle}.` },
+        { id: 5, course: courseCode, co: 'CO5', description: `Develop robust end-to-end applications adhering to standard software engineering guidelines and industry best practices.` }
       ];
     }
     
     return [
-      { id: Math.floor(Math.random() * 90000) + 1000, course: courseCode, co: 'CO1', description: `Understand and outline fundamental concepts, principles, and theoretical foundations of ${courseTitle}.` },
-      { id: Math.floor(Math.random() * 90000) + 1000, course: courseCode, co: 'CO2', description: `Analyze technical specifications, model domain requirements, and evaluate solution constraints in ${courseTitle}.` },
-      { id: Math.floor(Math.random() * 90000) + 1000, course: courseCode, co: 'CO3', description: `Apply practical frameworks, design constructs, and problem-solving methodologies for ${courseTitle}.` },
-      { id: Math.floor(Math.random() * 90000) + 1000, course: courseCode, co: 'CO4', description: `Evaluate performance metrics, system tradeoffs, and quality verification standards.` },
-      { id: Math.floor(Math.random() * 90000) + 1000, course: courseCode, co: 'CO5', description: `Synthesize comprehensive case studies, industrial applications, and engineering project deliverables.` }
+      { id: 1, course: courseCode, co: 'CO1', description: `Understand and outline fundamental concepts, principles, and theoretical foundations of ${courseTitle}.` },
+      { id: 2, course: courseCode, co: 'CO2', description: `Analyze technical specifications, model domain requirements, and evaluate solution constraints in ${courseTitle}.` },
+      { id: 3, course: courseCode, co: 'CO3', description: `Apply practical frameworks, design constructs, and problem-solving methodologies for ${courseTitle}.` },
+      { id: 4, course: courseCode, co: 'CO4', description: `Evaluate performance metrics, system tradeoffs, and quality verification standards.` },
+      { id: 5, course: courseCode, co: 'CO5', description: `Synthesize comprehensive case studies, industrial applications, and engineering project deliverables.` }
     ];
   }
 
@@ -541,7 +721,7 @@ export class CourseOutcomes {
       const key = rawCode.toLowerCase();
 
       if (!this.isCourseAllowed(rawCode)) {
-        return; // STRICT ISOLATION: Skip any course outcome that is not assigned to this faculty!
+        return;
       }
 
       if (!groupMap.has(key)) {
@@ -565,10 +745,10 @@ export class CourseOutcomes {
       }
     });
 
-    // 3. For any assigned course with 0 COs, populate standard fallback COs
+    // 3. For any assigned course with 0 COs, populate standard master COs
     groupMap.forEach(grp => {
       if (grp.cos.length === 0) {
-        grp.cos = this.getStandardFallbackCOs(grp.courseCode, grp.courseTitle);
+        grp.cos = this.getStandardCOsForCourse(grp.courseCode, grp.courseTitle);
       }
       grp.cos.sort((a, b) => (a.co || '').localeCompare(b.co || '', undefined, { numeric: true }));
     });
