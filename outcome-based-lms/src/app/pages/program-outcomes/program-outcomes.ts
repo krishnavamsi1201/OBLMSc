@@ -845,9 +845,31 @@ export class ProgramOutcomes implements OnInit {
       this.facultyDept = localStorage.getItem('userDepartment') || localStorage.getItem('userDept') || 'Computer Science & Engineering';
       this.userDept = this.userRole === 'faculty' ? this.facultyDept : this.studentDept;
 
-      const storedCourses = localStorage.getItem('userAssignedCourses');
-      if (storedCourses) {
-        this.assignedCourses = JSON.parse(storedCourses);
+      if (this.userRole === 'faculty') {
+        const storedCourses = localStorage.getItem('userAssignedCourses');
+        if (storedCourses) {
+          try {
+            this.assignedCourses = JSON.parse(storedCourses);
+          } catch {}
+        }
+        if (!this.assignedCourses || this.assignedCourses.length === 0) {
+          const matched = DEFAULT_DATABASE_COURSES.filter(c => 
+            c.faculty && (
+              c.faculty.toLowerCase().includes(this.facultyName.toLowerCase()) ||
+              this.facultyName.toLowerCase().includes(c.faculty.toLowerCase())
+            )
+          );
+          if (matched.length > 0) {
+            this.assignedCourses = Array.from(new Set(matched.map(m => m.code)));
+          } else {
+            const short = this.shortDept;
+            if (short === 'CSE') this.assignedCourses = ['CS102', 'CS202'];
+            else if (short === 'IT') this.assignedCourses = ['IT113', 'IT201'];
+            else if (short === 'ECE') this.assignedCourses = ['EC114', 'EC201'];
+            else if (short === 'ME') this.assignedCourses = ['ME111', 'ME201'];
+            else if (short === 'Civil') this.assignedCourses = ['CE111', 'CE201'];
+          }
+        }
       }
     } catch {
       this.userRole = 'student';
@@ -948,7 +970,7 @@ export class ProgramOutcomes implements OnInit {
     let relevantCourses: typeof DEFAULT_DATABASE_COURSES = [];
     const curDept = this.shortDept;
 
-    if (this.userRole === 'faculty' && this.assignedCourses && this.assignedCourses.length > 0) {
+    if (this.userRole === 'faculty') {
       relevantCourses = rawCourses.filter(c => 
         this.assignedCourses.some(assigned => 
           c.code.toLowerCase() === assigned.toLowerCase() ||
@@ -957,14 +979,14 @@ export class ProgramOutcomes implements OnInit {
         )
       );
       if (relevantCourses.length === 0) {
-        relevantCourses = rawCourses.filter(c => getDeptFromCode(c.code) === curDept);
+        relevantCourses = rawCourses.filter(c => getDeptFromCode(c.code) === curDept).slice(0, 2);
       }
     } else {
       relevantCourses = rawCourses.filter(c => getDeptFromCode(c.code) === curDept);
     }
 
     if (relevantCourses.length === 0) {
-      relevantCourses = rawCourses.filter(c => getDeptFromCode(c.code) === 'CSE');
+      relevantCourses = rawCourses.filter(c => getDeptFromCode(c.code) === 'CSE').slice(0, 2);
     }
 
     this.hierarchySubjects = relevantCourses.map(course => {

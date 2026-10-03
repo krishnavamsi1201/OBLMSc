@@ -6,6 +6,7 @@ import { Navbar } from '../../shared/navbar/navbar';
 import { Sidebar } from '../../shared/sidebar/sidebar';
 import { Footer } from '../../shared/footer/footer';
 import { ToastService } from '../../shared/services/toast.service';
+import { DEFAULT_DATABASE_COURSES } from '../../shared/services/course.service';
 
 interface CourseOutcome {
   id: number;
@@ -38,12 +39,27 @@ export interface GroupedSubjectCOs {
             <div class="header-title-group">
                 <span class="header-pill">🎯 NBA Criteria-3 Compliant</span>
                 <h1>Course Outcomes (CO) Directory</h1>
-                <p>Subject-wise Course Outcomes (CO1–CO5) articulating specific skills, knowledge, and competencies acquired by students.</p>
+                <p>{{ role === 'faculty' ? 'Subject-wise Course Outcomes (CO1–CO5) strictly for your assigned teaching curriculum.' : 'Subject-wise Course Outcomes (CO1–CO5) articulating specific skills, knowledge, and competencies acquired by students.' }}</p>
             </div>
             <div class="header-actions" *ngIf="role === 'admin' || role === 'faculty'">
                 <button type="button" class="primary-button" (click)="toggleForm()">
                     {{ showForm ? '✕ Close Form' : '+ Define New CO' }}
                 </button>
+            </div>
+        </div>
+
+        <!-- Faculty Context Banner (Strict Subject Isolation Notice) -->
+        <div class="branch-banner faculty-banner" *ngIf="role === 'faculty'">
+            <div class="banner-icon">👨‍🏫</div>
+            <div class="banner-details">
+                <div class="banner-title-row">
+                    <strong>{{ facultyDept }} — {{ facultyName }}</strong>
+                    <span class="banner-tag faculty-tag">Faculty Assigned Subjects</span>
+                </div>
+                <p class="banner-sub">
+                    Showing Course Outcomes (CO1–CO5) strictly mapped to your assigned subjects: 
+                    <span class="assigned-chips">{{ facultyAssignedCoursesDisplay }}</span>.
+                </p>
             </div>
         </div>
 
@@ -55,7 +71,7 @@ export interface GroupedSubjectCOs {
                     type="text" 
                     [(ngModel)]="searchQuery" 
                     (ngModelChange)="filterGroups()" 
-                    placeholder="Search by subject name, course code (e.g. CS101, DSLD), or outcome keywords..." 
+                    placeholder="Search by assigned subject name, course code (e.g. CS102), or outcome keywords..." 
                 />
                 <button *ngIf="searchQuery" type="button" class="clear-search" (click)="searchQuery=''; filterGroups()">✕</button>
             </div>
@@ -149,7 +165,7 @@ export interface GroupedSubjectCOs {
             <div *ngIf="filteredGroups.length === 0" class="empty-state-card">
                 <span style="font-size: 2.5rem; margin-bottom: 8px;">🔍</span>
                 <h3>No subjects match your search criteria.</h3>
-                <p>Try searching with another keyword or course code.</p>
+                <p>Showing strictly assigned subjects for your faculty profile.</p>
             </div>
         </div>
 
@@ -160,6 +176,32 @@ export interface GroupedSubjectCOs {
   styles: [
     `.page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; flex-wrap: wrap; gap: 16px; }`,
     `.header-pill { display: inline-block; padding: 4px 10px; background: rgba(212, 175, 55, 0.15); color: #fde68a; border: 1px solid rgba(212, 175, 55, 0.3); border-radius: 6px; font-size: 0.75rem; font-weight: 700; margin-bottom: 6px; text-transform: uppercase; }`,
+    
+    `.branch-banner {
+      background: linear-gradient(135deg, #101b38 0%, #18284e 100%);
+      color: #ffffff;
+      padding: 16px 20px;
+      border-radius: 14px;
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      border: 1px solid #1f2f54;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+    }`,
+    `.faculty-banner {
+      border-left: 4px solid #d4af37;
+      background: linear-gradient(135deg, #101b38 0%, #1a2a50 100%);
+    }`,
+    `.banner-icon { font-size: 2.2rem; }`,
+    `.banner-details { flex: 1; }`,
+    `.banner-title-row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }`,
+    `.banner-title-row strong { font-size: 1.2rem; font-weight: 800; color: #ffffff; }`,
+    `.banner-tag { background: rgba(34, 197, 94, 0.15); color: #4ade80; border: 1px solid rgba(74, 222, 128, 0.3); padding: 2px 10px; border-radius: 6px; font-size: 11.5px; font-weight: 800; }`,
+    `.faculty-tag { background: rgba(212, 175, 55, 0.15); color: #d4af37; border-color: rgba(212, 175, 55, 0.4); }`,
+    `.banner-sub { margin: 4px 0 0 0; font-size: 0.88rem; color: #94a3b8; line-height: 1.4; }`,
+    `.assigned-chips { color: #facc15; font-weight: 700; }`,
+
     `.co-search-toolbar { display: flex; justify-content: space-between; align-items: center; gap: 16px; margin-bottom: 24px; flex-wrap: wrap; }`,
     `.search-box { position: relative; display: flex; align-items: center; background: #091024; border: 1px solid #1f2f54; border-radius: 10px; padding: 0 14px; flex: 1; min-width: 280px; height: 44px; }`,
     `.search-box:focus-within { border-color: #38bdf8; box-shadow: 0 0 12px rgba(56, 189, 248, 0.25); }`,
@@ -218,6 +260,7 @@ export class CourseOutcomes {
 
   role: string | null = null;
   facultyName = '';
+  facultyDept = 'Computer Science & Engineering';
   showForm = false;
   editingIndex = -1;
   courseOutcomes: CourseOutcome[] = [];
@@ -233,9 +276,18 @@ export class CourseOutcomes {
     return this.groupedSubjectOutcomes.reduce((sum, g) => sum + g.cos.length, 0);
   }
 
+  get facultyAssignedCoursesDisplay(): string {
+    const assigned = this.getRelevantCoursesForUser();
+    if (assigned && assigned.length > 0) {
+      return assigned.join(', ');
+    }
+    return 'Assigned Subjects';
+  }
+
   constructor() {
     this.role = localStorage.getItem('userRole')?.toLowerCase() || null;
     this.facultyName = localStorage.getItem('userName') || '';
+    this.facultyDept = localStorage.getItem('userDepartment') || localStorage.getItem('userDept') || 'Computer Science & Engineering';
     this.loadCourses();
     this.loadOutcomes();
   }
@@ -256,9 +308,11 @@ export class CourseOutcomes {
     'CS401': 'CS401 - Artificial Intelligence',
     'CS402': 'CS402 - Cyber Security & Cryptography',
     'IT111': 'IT111 - Calculus & Linear Algebra',
+    'IT113': 'IT113 - Problem Solving with C',
     'IT201': 'IT201 - Data Structures & Algorithms',
     'IT301': 'IT301 - Database Management Systems',
     'EC111': 'EC111 - Linear Algebra & Transform Calculus',
+    'EC114': 'EC114 - Basic Electrical & Electronics',
     'EC201': 'EC201 - Electronic Devices and Circuit Theory',
     'EE111': 'EE111 - Calculus & Differential Equations',
     'EE201': 'EE201 - Electric Circuit Analysis',
@@ -273,6 +327,16 @@ export class CourseOutcomes {
     const trimmed = courseStr.trim();
     if (this.courseFullNameMap[trimmed]) return this.courseFullNameMap[trimmed];
     
+    // Check in database courses
+    const dbMatch = DEFAULT_DATABASE_COURSES.find(c => 
+      c.code.toLowerCase() === trimmed.toLowerCase() || 
+      c.title.toLowerCase() === trimmed.toLowerCase() ||
+      trimmed.toLowerCase().startsWith(c.code.toLowerCase())
+    );
+    if (dbMatch) {
+      return `${dbMatch.code} - ${dbMatch.title}`;
+    }
+
     for (const [k, v] of Object.entries(this.courseFullNameMap)) {
       if (trimmed.toLowerCase() === k.toLowerCase() || trimmed.toLowerCase().startsWith(k.toLowerCase())) {
         return v;
@@ -288,10 +352,45 @@ export class CourseOutcomes {
     let assigned: string[] = [];
     try {
       const storedAssigned = localStorage.getItem('userAssignedCourses');
-      if (storedAssigned) assigned = JSON.parse(storedAssigned);
+      if (storedAssigned) {
+        const parsed = JSON.parse(storedAssigned);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          assigned = parsed;
+        }
+      }
     } catch {}
 
-    if (this.role === 'faculty' || this.role === 'student') {
+    if (this.role === 'faculty') {
+      if (assigned.length === 0 && this.facultyName) {
+        const matched = DEFAULT_DATABASE_COURSES.filter(c => 
+          c.faculty && (
+            c.faculty.toLowerCase().includes(this.facultyName.toLowerCase()) ||
+            this.facultyName.toLowerCase().includes(c.faculty.toLowerCase())
+          )
+        );
+        if (matched.length > 0) {
+          assigned = Array.from(new Set(matched.map(m => m.code)));
+        }
+      }
+
+      if (assigned.length === 0) {
+        const dept = (localStorage.getItem('userDept') || localStorage.getItem('userDepartment') || 'CSE').toLowerCase();
+        if (dept.includes('computer') || dept.includes('cse')) {
+          assigned = ['CS102', 'CS202']; // default for Sunita Sharma
+        } else if (dept.includes('information') || dept.includes('it')) {
+          assigned = ['IT113', 'IT201'];
+        } else if (dept.includes('electronic') || dept.includes('ece')) {
+          assigned = ['EC114', 'EC201'];
+        } else if (dept.includes('mechanical') || dept.includes('me')) {
+          assigned = ['ME111', 'ME201'];
+        } else if (dept.includes('civil') || dept === 'ce') {
+          assigned = ['CE111', 'CE201'];
+        }
+      }
+      return assigned;
+    }
+
+    if (this.role === 'student') {
       const studentName = (localStorage.getItem('userName') || '').toLowerCase();
       try {
         const studentCourses = JSON.parse(localStorage.getItem('obslmsStudentCourses') || '[]');
@@ -321,17 +420,29 @@ export class CourseOutcomes {
         }
       }
     }
+
     return assigned;
   }
 
+  isCourseAllowed(courseStr: string): boolean {
+    if (this.role !== 'faculty') return true;
+    const assigned = this.getRelevantCoursesForUser();
+    if (!assigned || assigned.length === 0) return true;
+    const cLow = (courseStr || '').toLowerCase();
+    return assigned.some(a => {
+      const aLow = a.toLowerCase();
+      return cLow === aLow || cLow.startsWith(aLow) || aLow.startsWith(cLow) || cLow.includes(aLow) || aLow.includes(cLow);
+    });
+  }
+
   loadCourses(): void {
+    const assigned = this.getRelevantCoursesForUser();
     const facultyParam = (this.role === 'faculty' && this.facultyName) ? encodeURIComponent(this.facultyName) : '';
     const url = facultyParam ? `http://localhost:8080/api/courses?faculty=${facultyParam}` : 'http://localhost:8080/api/courses';
 
     this.http.get<Array<{ code: string; title: string }>>(url).subscribe({
       next: (courseList: Array<{ code: string; title: string }>) => {
         let list = courseList;
-        const assigned = this.getRelevantCoursesForUser();
         if (assigned.length > 0 && (this.role === 'faculty' || this.role === 'student')) {
           list = courseList.filter((c: any) => 
             assigned.some(a => 
@@ -342,21 +453,39 @@ export class CourseOutcomes {
             )
           );
         }
-        this.courses = list
-          .map((c: any) => `${c.code ? c.code : ''}${c.code && c.title ? ' - ' : ''}${c.title ? c.title : ''}`)
-          .filter(Boolean);
+        if (list.length === 0 && assigned.length > 0) {
+          this.courses = assigned.map(a => this.getFullCourseName(a));
+        } else {
+          this.courses = list
+            .map((c: any) => `${c.code ? c.code : ''}${c.code && c.title ? ' - ' : ''}${c.title ? c.title : ''}`)
+            .filter(Boolean);
+        }
         this.groupOutcomesBySubject();
         this.cdr.detectChanges();
       },
       error: () => {
         try {
           const stored = localStorage.getItem('obslmsCourses');
-          const courseList = stored ? JSON.parse(stored) as Array<{ code: string; title: string }> : [];
-          this.courses = courseList
-            .map((c: any) => `${c.code ? c.code : ''}${c.code && c.title ? ' - ' : ''}${c.title ? c.title : ''}`)
-            .filter(Boolean);
+          let courseList = stored ? JSON.parse(stored) as Array<{ code: string; title: string }> : [];
+          if (assigned.length > 0 && (this.role === 'faculty' || this.role === 'student')) {
+            courseList = courseList.filter((c: any) => 
+              assigned.some(a => 
+                a.toLowerCase() === (c.code || '').toLowerCase() ||
+                a.toLowerCase() === (c.title || '').toLowerCase() ||
+                (c.title && c.title.toLowerCase().includes(a.toLowerCase())) ||
+                (c.code && a.toLowerCase().includes(c.code.toLowerCase()))
+              )
+            );
+          }
+          if (courseList.length === 0 && assigned.length > 0) {
+            this.courses = assigned.map(a => this.getFullCourseName(a));
+          } else {
+            this.courses = courseList
+              .map((c: any) => `${c.code ? c.code : ''}${c.code && c.title ? ' - ' : ''}${c.title ? c.title : ''}`)
+              .filter(Boolean);
+          }
         } catch {
-          this.courses = [];
+          this.courses = assigned.map(a => this.getFullCourseName(a));
         }
         this.groupOutcomesBySubject();
       }
@@ -367,13 +496,13 @@ export class CourseOutcomes {
     const code = courseCode.toUpperCase();
     const t = courseTitle.toLowerCase();
     
-    if (code.startsWith('CS') || t.includes('program') || t.includes('c ') || t.includes('problem')) {
+    if (code.startsWith('CS') || t.includes('program') || t.includes('c ') || t.includes('problem') || t.includes('data') || t.includes('learning')) {
       return [
-        { id: Math.floor(Math.random() * 90000) + 1000, course: courseCode, co: 'CO1', description: `Recall and outline fundamental syntax, operators, control flow constructs, and data types of ${courseTitle}.` },
-        { id: Math.floor(Math.random() * 90000) + 1000, course: courseCode, co: 'CO2', description: `Design modular algorithms, flowcharts, and structured functions to solve computational problems in ${courseTitle}.` },
-        { id: Math.floor(Math.random() * 90000) + 1000, course: courseCode, co: 'CO3', description: `Implement arrays, pointers, dynamic memory allocation, and file handling constructs effectively.` },
-        { id: Math.floor(Math.random() * 90000) + 1000, course: courseCode, co: 'CO4', description: `Analyze algorithm efficiency, time-space complexity trade-offs, and debug runtime errors.` },
-        { id: Math.floor(Math.random() * 90000) + 1000, course: courseCode, co: 'CO5', description: `Develop robust end-to-end applications adhering to standard coding guidelines and software engineering practices.` }
+        { id: Math.floor(Math.random() * 90000) + 1000, course: courseCode, co: 'CO1', description: `Recall and outline fundamental syntax, structures, and theoretical models of ${courseTitle}.` },
+        { id: Math.floor(Math.random() * 90000) + 1000, course: courseCode, co: 'CO2', description: `Design modular algorithms, schemas, and optimized functions to solve computational problems in ${courseTitle}.` },
+        { id: Math.floor(Math.random() * 90000) + 1000, course: courseCode, co: 'CO3', description: `Implement resilient software components and conduct automated test-driven verification for ${courseTitle}.` },
+        { id: Math.floor(Math.random() * 90000) + 1000, course: courseCode, co: 'CO4', description: `Analyze algorithm efficiency, time-space complexity trade-offs, and debug runtime anomalies.` },
+        { id: Math.floor(Math.random() * 90000) + 1000, course: courseCode, co: 'CO5', description: `Develop robust end-to-end applications adhering to standard software engineering guidelines and industry best practices.` }
       ];
     }
     
@@ -395,19 +524,25 @@ export class CourseOutcomes {
       const code = parts[0]?.trim() || fullCourseStr;
       const title = parts.length > 1 ? parts.slice(1).join(' - ').trim() : code;
 
-      groupMap.set(code.toLowerCase(), {
-        courseCode: code,
-        courseTitle: title,
-        fullCourseName: fullCourseStr,
-        cos: [],
-        isExpanded: true
-      });
+      if (this.isCourseAllowed(code)) {
+        groupMap.set(code.toLowerCase(), {
+          courseCode: code,
+          courseTitle: title,
+          fullCourseName: fullCourseStr,
+          cos: [],
+          isExpanded: true
+        });
+      }
     });
 
     // 2. Map existing Course Outcomes into respective subject groups
     this.courseOutcomes.forEach(co => {
       const rawCode = (co.course || '').split(' - ')[0].trim();
       const key = rawCode.toLowerCase();
+
+      if (!this.isCourseAllowed(rawCode)) {
+        return; // STRICT ISOLATION: Skip any course outcome that is not assigned to this faculty!
+      }
 
       if (!groupMap.has(key)) {
         const full = this.getFullCourseName(co.course);
@@ -477,12 +612,7 @@ export class CourseOutcomes {
         let list = data;
         const assigned = this.getRelevantCoursesForUser();
         if (assigned.length > 0 && (this.role === 'faculty' || this.role === 'student')) {
-          list = data.filter((co: CourseOutcome) => 
-            assigned.some(a => 
-              a.toLowerCase() === (co.course || '').toLowerCase() ||
-              (co.course && (co.course.toLowerCase().includes(a.toLowerCase()) || a.toLowerCase().includes(co.course.toLowerCase())))
-            )
-          );
+          list = data.filter((co: CourseOutcome) => this.isCourseAllowed(co.course));
         }
         this.courseOutcomes = list;
         try {
@@ -497,12 +627,7 @@ export class CourseOutcomes {
           let list = stored ? JSON.parse(stored) as CourseOutcome[] : [];
           const assigned = this.getRelevantCoursesForUser();
           if (assigned.length > 0 && (this.role === 'faculty' || this.role === 'student')) {
-            list = list.filter(co => 
-              assigned.some(a => 
-                a.toLowerCase() === (co.course || '').toLowerCase() ||
-                (co.course && (co.course.toLowerCase().includes(a.toLowerCase()) || a.toLowerCase().includes(co.course.toLowerCase())))
-              )
-            );
+            list = list.filter(co => this.isCourseAllowed(co.course));
           }
           this.courseOutcomes = list;
         } catch {
@@ -532,7 +657,6 @@ export class CourseOutcomes {
       return;
     }
 
-    // Extract raw course code from "CS101 - Database Management Systems"
     const rawCourse = this.currentOutcome.course.split('-')[0].trim();
 
     const payload = {
@@ -561,6 +685,7 @@ export class CourseOutcomes {
         this.saveOutcomes();
         this.resetForm();
         this.showForm = false;
+        this.groupOutcomesBySubject();
         this.cdr.detectChanges();
       }
     });
@@ -568,7 +693,6 @@ export class CourseOutcomes {
 
   editOutcome(outcome: CourseOutcome, index: number): void {
     this.editingIndex = index;
-    // Find matching dropdown string
     const match = this.courses.find(c => c.toLowerCase().includes(outcome.course.toLowerCase())) || outcome.course;
     this.currentOutcome = { ...outcome, course: match };
     this.showForm = true;
@@ -584,6 +708,7 @@ export class CourseOutcomes {
         this.courseOutcomes = this.courseOutcomes.filter(o => o.id !== id);
         this.saveOutcomes();
         this.toast.info('Course Outcome removed.');
+        this.groupOutcomesBySubject();
         this.cdr.detectChanges();
       }
     });
