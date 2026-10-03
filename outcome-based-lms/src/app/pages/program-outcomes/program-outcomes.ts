@@ -6,6 +6,7 @@ import { Sidebar } from '../../shared/sidebar/sidebar';
 import { Footer } from '../../shared/footer/footer';
 import { ToastService } from '../../shared/services/toast.service';
 import { HttpClient } from '@angular/common/http';
+import { DEFAULT_DATABASE_COURSES } from '../../shared/services/course.service';
 
 interface ProgramOutcome {
   id?: number;
@@ -15,6 +16,29 @@ interface ProgramOutcome {
   description: string;
   attributeName?: string;
   targetPercentage?: number;
+}
+
+export interface MappedPO {
+  poCode: string;
+  attributeName: string;
+  level: number; // 1 = Slight, 2 = Moderate, 3 = Substantial
+  contribution: number; // percentage, e.g. 85
+  justification?: string;
+}
+
+export interface COItemWithPOs {
+  coCode: string;
+  description: string;
+  mappedPos: MappedPO[];
+  isPoExpanded: boolean;
+}
+
+export interface SubjectHierarchyGroup {
+  courseCode: string;
+  courseTitle: string;
+  department: string;
+  cos: COItemWithPOs[];
+  isExpanded: boolean;
 }
 
 @Component({
@@ -32,12 +56,18 @@ interface ProgramOutcome {
         <div class="page-header">
             <div class="header-text-group">
                 <span class="header-pill">🏛️ NBA & Washington Accord Standard</span>
-                <h1>Program Outcomes (PO) & Graduate Attributes</h1>
-                <p>Accredited Program Outcomes (PO1–PO12) and Program Specific Outcomes (PSOs) defining engineering graduate competencies.</p>
+                <h1>Program Outcomes (PO) & CO-PO Articulation</h1>
+                <p>Accredited Program Outcomes (PO1–PO12) and subject-wise CO-PO mapping articulating how course competencies meet engineering graduate attributes.</p>
             </div>
-            <div class="stats-badge-card">
-                <span class="count-num">{{ filteredOutcomes.length }}</span>
-                <span class="count-lbl">Total Outcomes</span>
+            <div class="stats-badge-group">
+                <div class="stats-badge-card">
+                    <span class="count-num">{{ filteredHierarchySubjects.length }}</span>
+                    <span class="count-lbl">Subjects Mapped</span>
+                </div>
+                <div class="stats-badge-card gold-border">
+                    <span class="count-num">{{ filteredOutcomes.length }}</span>
+                    <span class="count-lbl">NBA Outcomes</span>
+                </div>
             </div>
         </div>
 
@@ -61,118 +91,167 @@ interface ProgramOutcome {
             <div class="banner-details">
                 <div class="banner-title-row">
                     <strong>{{ facultyDept }}</strong>
-                    <span class="banner-tag faculty-tag">Faculty Assigned Outcomes</span>
+                    <span class="banner-tag faculty-tag">Faculty Assigned Subjects & Articulation</span>
                 </div>
                 <p class="banner-sub">
-                    Showing Program Outcomes (PO1–PO12) and PSOs strictly mapped to your department and assigned subjects: 
+                    Showing Program Outcomes (PO1–PO12) and subject-wise CO-PO articulation for your assigned subjects: 
                     <span class="assigned-chips">{{ facultyAssignedCoursesDisplay }}</span>.
                 </p>
             </div>
         </div>
 
-        <!-- Search & Filter Toolbar -->
+        <!-- Search & View Mode Switcher Toolbar -->
         <div class="po-toolbar">
             <div class="search-input-wrap">
                 <span class="search-icon">🔍</span>
                 <input 
                     type="text" 
                     [(ngModel)]="searchQuery" 
-                    placeholder="Search by PO code (e.g. PO1, PO5, PSO1) or attribute keywords..." 
+                    placeholder="Search by subject code, name, PO code (e.g. PO1, PO3), or graduate attributes..." 
                 />
+                <button *ngIf="searchQuery" type="button" class="clear-btn" (click)="searchQuery=''">✕</button>
             </div>
 
-            <!-- Student View: Dedicated Department Badge -->
-            <div class="branch-filter-group" *ngIf="userRole === 'student'">
-                <div class="filter-pill-btn active" style="background: #1e40af; color: #fff; cursor: default; border-color: #1e40af;">
-                    💻 {{ studentDept }} ({{ shortDept }})
-                </div>
-            </div>
-
-            <!-- Faculty View: Dedicated Department Badge -->
-            <div class="branch-filter-group" *ngIf="userRole === 'faculty'">
-                <div class="filter-pill-btn active" style="background: linear-gradient(135deg, #d4af37 0%, #b38f28 100%); color: #0a1128; cursor: default; border-color: #d4af37; font-weight: 800;">
-                    👨‍🏫 {{ facultyDept }} ({{ shortDept }})
-                </div>
-            </div>
-
-            <!-- Admin: Full Branch Switcher -->
-            <div class="branch-filter-group" *ngIf="userRole === 'admin'">
-                <button 
-                    type="button" 
-                    class="filter-pill-btn" 
-                    [class.active]="selectedDeptFilter === ''" 
-                    (click)="selectedDeptFilter = ''">
-                    All Branches ({{ programOutcomes.length }})
-                </button>
-                <button 
-                    type="button" 
-                    class="filter-pill-btn" 
-                    [class.active]="selectedDeptFilter === 'CSE'" 
-                    (click)="selectedDeptFilter = 'CSE'">
-                    💻 CSE
-                </button>
-                <button 
-                    type="button" 
-                    class="filter-pill-btn" 
-                    [class.active]="selectedDeptFilter === 'IT'" 
-                    (click)="selectedDeptFilter = 'IT'">
-                    🌐 IT
-                </button>
-                <button 
-                    type="button" 
-                    class="filter-pill-btn" 
-                    [class.active]="selectedDeptFilter === 'ECE'" 
-                    (click)="selectedDeptFilter = 'ECE'">
-                    📡 ECE
-                </button>
-                <button 
-                    type="button" 
-                    class="filter-pill-btn" 
-                    [class.active]="selectedDeptFilter === 'ME'" 
-                    (click)="selectedDeptFilter = 'ME'">
-                    ⚙️ Mechanical
-                </button>
-                <button 
-                    type="button" 
-                    class="filter-pill-btn" 
-                    [class.active]="selectedDeptFilter === 'Civil'" 
-                    (click)="selectedDeptFilter = 'Civil'">
-                    🏗️ Civil
-                </button>
-            </div>
-
+            <!-- View Switcher Pills -->
             <div class="view-mode-toggle">
-                <button type="button" class="toggle-btn" [class.active]="viewMode === 'grid'" (click)="viewMode = 'grid'" title="Grid View">🔲 Cards</button>
-                <button type="button" class="toggle-btn" [class.active]="viewMode === 'table'" (click)="viewMode = 'table'" title="Table View">📋 Table</button>
+                <button 
+                    type="button" 
+                    class="toggle-btn" 
+                    [class.active]="viewMode === 'hierarchy'" 
+                    (click)="viewMode = 'hierarchy'" 
+                    title="Subject-wise CO to PO Hierarchy">
+                    🌳 Subject ➔ CO ➔ PO Tree
+                </button>
+                <button 
+                    type="button" 
+                    class="toggle-btn" 
+                    [class.active]="viewMode === 'grid'" 
+                    (click)="viewMode = 'grid'" 
+                    title="NBA PO1-PO12 Standard Cards">
+                    🔲 NBA PO1–PO12 Cards
+                </button>
+                <button 
+                    type="button" 
+                    class="toggle-btn" 
+                    [class.active]="viewMode === 'table'" 
+                    (click)="viewMode = 'table'" 
+                    title="Tabular Outcome Registry">
+                    📋 Table
+                </button>
             </div>
         </div>
 
-        <!-- Add/Edit PO Card (Faculty/Admin only) -->
-        <div class="section-card form-card" *ngIf="userRole === 'admin' || userRole === 'faculty'">
-            <h2>{{ editIndex >= 0 ? 'Edit Program Outcome' : 'Add New Program Outcome' }}</h2>
-            <form (ngSubmit)="savePo()">
-                <div class="grid-row">
-                    <label>
-                        PO Code (e.g. PO1, PO2, PSO1)
-                        <input type="text" name="poNumber" [(ngModel)]="currentPo.poNumber" required placeholder="e.g. PO1" />
-                    </label>
-                    <label>
-                        Branch / Program
-                        <input type="text" name="program" [(ngModel)]="currentPo.program" placeholder="e.g. Computer Science & Engineering" />
-                    </label>
+        <!-- ========================================================= -->
+        <!-- VIEW MODE 1: SUBJECT -> CO -> PO HIERARCHY TREE (DEFAULT)  -->
+        <!-- ========================================================= -->
+        <div *ngIf="viewMode === 'hierarchy'" class="hierarchy-container">
+            <div class="hierarchy-header-meta">
+                <div class="guide-note">
+                    <span>💡 <strong>Tip:</strong> Click on any subject card to view its Course Outcomes (CO1–CO5). Click the <strong>▶ Arrow</strong> next to any CO to expand its linked Program Outcomes (POs/PSOs) with correlation levels.</span>
                 </div>
-                <label style="margin-top: 12px;">
-                    PO Description & Graduate Attribute
-                    <textarea name="description" [(ngModel)]="currentPo.description" required placeholder="Describe the graduate attribute or program outcome..."></textarea>
-                </label>
-                <div class="form-actions">
-                    <button type="submit" class="btn btn-primary">{{ editIndex >= 0 ? 'Update Outcome' : 'Add Outcome' }}</button>
-                    <button type="button" class="btn btn-secondary" (click)="resetForm()">Clear</button>
+                <button type="button" class="expand-all-btn" (click)="toggleAllSubjects()">
+                    {{ allExpanded ? '▲ Collapse All Subjects' : '▼ Expand All Subjects' }}
+                </button>
+            </div>
+
+            <div class="subject-tree-list">
+                <div *ngFor="let subject of filteredHierarchySubjects" class="subject-hierarchy-card">
+                    <!-- Subject Card Header -->
+                    <div class="subject-card-header" (click)="subject.isExpanded = !subject.isExpanded">
+                        <div class="subject-left-info">
+                            <span class="course-code-pill">{{ subject.courseCode }}</span>
+                            <div class="subject-titles">
+                                <h3 class="subject-name">{{ subject.courseTitle }}</h3>
+                                <span class="subject-dept-sub">{{ subject.department }}</span>
+                            </div>
+                        </div>
+                        <div class="subject-right-info">
+                            <span class="co-count-badge">🎯 {{ subject.cos.length }} Course Outcomes</span>
+                            <span class="expand-indicator-pill">
+                                {{ subject.isExpanded ? '▲ Hide COs' : '▼ View COs' }}
+                            </span>
+                        </div>
+                    </div>
+
+                    <!-- Subject Card Body: CO List -->
+                    <div class="subject-card-body" *ngIf="subject.isExpanded">
+                        <div class="co-hierarchy-list">
+                            <div *ngFor="let coItem of subject.cos" class="co-hierarchy-row" [class.po-open]="coItem.isPoExpanded">
+                                <!-- CO Row Header -->
+                                <div class="co-row-main" (click)="coItem.isPoExpanded = !coItem.isPoExpanded">
+                                    <div class="co-badge-wrapper">
+                                        <span class="co-code-badge">{{ coItem.coCode }}</span>
+                                    </div>
+                                    <div class="co-statement-wrapper">
+                                        <p class="co-statement-text">{{ coItem.description }}</p>
+                                    </div>
+                                    <div class="co-toggle-wrapper">
+                                        <span class="mapped-po-count-tag" [class.has-pos]="coItem.mappedPos.length > 0">
+                                            🔗 {{ coItem.mappedPos.length }} POs Mapped
+                                        </span>
+                                        <button type="button" class="arrow-extension-btn" [class.expanded]="coItem.isPoExpanded" title="Click to show/hide mapped Program Outcomes">
+                                            <span class="arrow-icon">{{ coItem.isPoExpanded ? '▼' : '▶' }}</span>
+                                            <span class="arrow-label">{{ coItem.isPoExpanded ? 'Hide POs' : 'View POs' }}</span>
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <!-- MAPPED POs EXTENSION CONTAINER -->
+                                <div class="mapped-pos-container" *ngIf="coItem.isPoExpanded">
+                                    <div class="mapped-pos-header">
+                                        <span class="mapped-pos-heading">
+                                            🏛️ Program Outcomes Mapped to <strong>{{ coItem.coCode }}</strong>
+                                        </span>
+                                        <span class="mapping-scale-legend">
+                                            <span class="scale-dot lvl-3"></span> Level 3 (High) &nbsp;|&nbsp;
+                                            <span class="scale-dot lvl-2"></span> Level 2 (Med) &nbsp;|&nbsp;
+                                            <span class="scale-dot lvl-1"></span> Level 1 (Low)
+                                        </span>
+                                    </div>
+
+                                    <div class="mapped-pos-grid">
+                                        <div *ngFor="let poMap of coItem.mappedPos" class="po-mapping-card" [class.lvl-3-border]="poMap.level === 3" [class.lvl-2-border]="poMap.level === 2" [class.lvl-1-border]="poMap.level === 1">
+                                            <div class="po-map-top">
+                                                <div class="po-code-attribute">
+                                                    <span class="po-badge-mini">{{ poMap.poCode }}</span>
+                                                    <strong class="po-attr-name">{{ poMap.attributeName }}</strong>
+                                                </div>
+                                                <div class="po-level-badge" [ngClass]="'level-' + poMap.level">
+                                                    <span *ngIf="poMap.level === 3">★★★ Level 3 (Substantial)</span>
+                                                    <span *ngIf="poMap.level === 2">★★☆ Level 2 (Moderate)</span>
+                                                    <span *ngIf="poMap.level === 1">★☆☆ Level 1 (Slight)</span>
+                                                </div>
+                                            </div>
+
+                                            <p class="po-justification" *ngIf="poMap.justification">
+                                                {{ poMap.justification }}
+                                            </p>
+
+                                            <div class="po-map-bottom">
+                                                <span class="contribution-metric">
+                                                    Weight: <strong>{{ poMap.contribution }}%</strong>
+                                                </span>
+                                                <span class="nba-tag">NBA Criteria 3</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-            </form>
+
+                <div *ngIf="filteredHierarchySubjects.length === 0" class="empty-state-card">
+                    <span style="font-size: 2.5rem; margin-bottom: 8px;">🔍</span>
+                    <h3>No subjects or outcomes match "{{ searchQuery }}"</h3>
+                    <p>Try searching with another keyword, course code, or PO code.</p>
+                </div>
+            </div>
         </div>
 
-        <!-- Cards Grid View -->
+        <!-- ========================================================= -->
+        <!-- VIEW MODE 2: NBA STANDARD PO1-PO12 CARDS GRID             -->
+        <!-- ========================================================= -->
         <div class="po-grid-container" *ngIf="viewMode === 'grid'">
             <div class="po-card" *ngFor="let po of filteredOutcomes; index as i">
                 <div class="po-card-header">
@@ -193,7 +272,9 @@ interface ProgramOutcome {
             </div>
         </div>
 
-        <!-- Table View -->
+        <!-- ========================================================= -->
+        <!-- VIEW MODE 3: TABULAR REGISTRY                              -->
+        <!-- ========================================================= -->
         <div class="table-card" *ngIf="viewMode === 'table'">
             <div class="table-meta-bar">
                 <h2>Program Outcomes Registry ({{ filteredOutcomes.length }})</h2>
@@ -238,6 +319,31 @@ interface ProgramOutcome {
             </table>
         </div>
 
+        <!-- Add/Edit PO Card (Faculty/Admin only) -->
+        <div class="section-card form-card" *ngIf="(userRole === 'admin' || userRole === 'faculty') && (viewMode === 'grid' || viewMode === 'table')">
+            <h2>{{ editIndex >= 0 ? 'Edit Program Outcome' : 'Add New Program Outcome' }}</h2>
+            <form (ngSubmit)="savePo()">
+                <div class="grid-row">
+                    <label>
+                        PO Code (e.g. PO1, PO2, PSO1)
+                        <input type="text" name="poNumber" [(ngModel)]="currentPo.poNumber" required placeholder="e.g. PO1" />
+                    </label>
+                    <label>
+                        Branch / Program
+                        <input type="text" name="program" [(ngModel)]="currentPo.program" placeholder="e.g. Computer Science & Engineering" />
+                    </label>
+                </div>
+                <label style="margin-top: 12px;">
+                    PO Description & Graduate Attribute
+                    <textarea name="description" [(ngModel)]="currentPo.description" required placeholder="Describe the graduate attribute or program outcome..."></textarea>
+                </label>
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary">{{ editIndex >= 0 ? 'Update Outcome' : 'Add Outcome' }}</button>
+                    <button type="button" class="btn btn-secondary" (click)="resetForm()">Clear</button>
+                </div>
+            </form>
+        </div>
+
         <app-footer></app-footer>
     </div>
 
@@ -245,9 +351,13 @@ interface ProgramOutcome {
   styles: [
     `
     .header-pill { display: inline-block; background: rgba(212, 175, 55, 0.15); color: #d4af37; border: 1px solid rgba(212, 175, 55, 0.3); font-weight: 700; font-size: 11.5px; padding: 3px 10px; border-radius: 6px; margin-bottom: 6px; text-transform: uppercase; }
-    .stats-badge-card { background: #101b38; padding: 12px 18px; border-radius: 12px; border: 1px solid #1f2f54; text-align: center; box-shadow: 0 4px 16px rgba(0,0,0,0.3); display: flex; flex-direction: column; }
-    .count-num { font-size: 1.8rem; font-weight: 800; color: #ffffff; }
-    .count-lbl { font-size: 0.75rem; text-transform: uppercase; font-weight: 600; color: #94a3b8; }
+    .page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; flex-wrap: wrap; gap: 16px; }
+    .stats-badge-group { display: flex; gap: 12px; }
+    .stats-badge-card { background: #101b38; padding: 10px 18px; border-radius: 12px; border: 1px solid #1f2f54; text-align: center; box-shadow: 0 4px 16px rgba(0,0,0,0.3); display: flex; flex-direction: column; min-width: 110px; }
+    .stats-badge-card.gold-border { border-color: rgba(212, 175, 55, 0.4); background: rgba(212, 175, 55, 0.06); }
+    .count-num { font-size: 1.6rem; font-weight: 800; color: #ffffff; }
+    .stats-badge-card.gold-border .count-num { color: #fde68a; }
+    .count-lbl { font-size: 0.72rem; text-transform: uppercase; font-weight: 700; color: #94a3b8; }
 
     .branch-banner {
       background: linear-gradient(135deg, #101b38 0%, #18284e 100%);
@@ -275,18 +385,264 @@ interface ProgramOutcome {
     .assigned-chips { color: #facc15; font-weight: 700; }
 
     .po-toolbar { background: #101b38; padding: 14px 18px; border-radius: 12px; border: 1px solid #1f2f54; margin-bottom: 20px; display: flex; flex-wrap: wrap; gap: 14px; align-items: center; justify-content: space-between; box-shadow: 0 4px 16px rgba(0,0,0,0.3); }
-    .search-input-wrap { display: flex; align-items: center; background: #091024; border: 1px solid #1f2f54; border-radius: 8px; padding: 6px 12px; flex: 1; min-width: 260px; }
+    .search-input-wrap { display: flex; align-items: center; background: #091024; border: 1px solid #1f2f54; border-radius: 8px; padding: 6px 12px; flex: 1; min-width: 280px; }
     .search-icon { margin-right: 8px; font-size: 1rem; color: #d4af37; }
     .search-input-wrap input { border: none; background: transparent; width: 100%; outline: none; font-size: 0.95rem; color: #ffffff; }
+    .clear-btn { background: none; border: none; color: #94a3b8; cursor: pointer; font-size: 13px; }
     
-    .branch-filter-group { display: flex; gap: 6px; flex-wrap: wrap; }
-    .filter-pill-btn { border: 1px solid #1f2f54; background: #091024; color: #cbd5e1; padding: 6px 12px; border-radius: 6px; font-size: 12px; font-weight: 700; cursor: pointer; transition: all 0.15s ease; }
-    .filter-pill-btn:hover { background: #18284e; color: #ffffff; border-color: #d4af37; }
-    .filter-pill-btn.active { background: linear-gradient(135deg, #d4af37 0%, #b38f28 100%); color: #0a1128; border-color: #d4af37; }
-
     .view-mode-toggle { display: flex; border: 1px solid #1f2f54; border-radius: 8px; overflow: hidden; }
-    .toggle-btn { background: #091024; border: none; padding: 6px 12px; font-size: 12px; font-weight: 700; color: #cbd5e1; cursor: pointer; }
+    .toggle-btn { background: #091024; border: none; padding: 8px 14px; font-size: 12.5px; font-weight: 700; color: #cbd5e1; cursor: pointer; transition: all 0.2s ease; }
     .toggle-btn.active { background: linear-gradient(135deg, #d4af37 0%, #b38f28 100%); color: #0a1128; }
+
+    /* Hierarchy Tree Layout */
+    .hierarchy-container { margin-bottom: 30px; }
+    .hierarchy-header-meta { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 12px; }
+    .guide-note { background: rgba(56, 189, 248, 0.1); border: 1px solid rgba(56, 189, 248, 0.25); color: #bae6fd; padding: 8px 14px; border-radius: 8px; font-size: 12.5px; flex: 1; min-width: 280px; }
+    .expand-all-btn { background: #18284e; color: #cbd5e1; border: 1px solid #1f2f54; padding: 7px 14px; border-radius: 8px; font-size: 12px; font-weight: 700; cursor: pointer; transition: all 0.2s ease; }
+    .expand-all-btn:hover { background: #233876; color: #ffffff; }
+
+    .subject-tree-list { display: flex; flex-direction: column; gap: 18px; }
+    
+    .subject-hierarchy-card {
+      background: #101b38;
+      border: 1px solid #1f2f54;
+      border-radius: 14px;
+      overflow: hidden;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+      transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+    .subject-hierarchy-card:hover {
+      border-color: rgba(212, 175, 55, 0.4);
+      box-shadow: 0 8px 26px rgba(0,0,0,0.4);
+    }
+
+    .subject-card-header {
+      padding: 16px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: linear-gradient(90deg, #132247 0%, #101b38 100%);
+      cursor: pointer;
+      border-bottom: 1px solid transparent;
+      transition: background 0.15s ease;
+      user-select: none;
+    }
+    .subject-card-header:hover {
+      background: linear-gradient(90deg, #182b59 0%, #132247 100%);
+    }
+    .subject-left-info { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
+    .course-code-pill {
+      background: linear-gradient(135deg, #d4af37 0%, #b38f28 100%);
+      color: #0a1128;
+      font-weight: 800;
+      font-family: monospace;
+      font-size: 13px;
+      padding: 5px 12px;
+      border-radius: 8px;
+      letter-spacing: 0.5px;
+      box-shadow: 0 2px 8px rgba(212, 175, 55, 0.25);
+    }
+    .subject-titles { display: flex; flex-direction: column; }
+    .subject-name { margin: 0; font-size: 1.15rem; color: #ffffff; font-weight: 800; }
+    .subject-dept-sub { font-size: 12px; color: #94a3b8; font-weight: 600; }
+
+    .subject-right-info { display: flex; align-items: center; gap: 12px; }
+    .co-count-badge {
+      background: #091024;
+      color: #38bdf8;
+      border: 1px solid #1f2f54;
+      font-size: 12px;
+      font-weight: 700;
+      padding: 4px 10px;
+      border-radius: 6px;
+    }
+    .expand-indicator-pill {
+      background: #18284e;
+      color: #e2e8f0;
+      border: 1px solid #283e70;
+      font-size: 12px;
+      font-weight: 700;
+      padding: 5px 12px;
+      border-radius: 6px;
+    }
+
+    /* Subject Card Body */
+    .subject-card-body {
+      padding: 18px 20px;
+      background: #0a1128;
+      border-top: 1px solid #1f2f54;
+    }
+
+    .co-hierarchy-list { display: flex; flex-direction: column; gap: 14px; }
+    
+    .co-hierarchy-row {
+      background: #101b38;
+      border: 1px solid #1f2f54;
+      border-radius: 12px;
+      overflow: hidden;
+      transition: all 0.2s ease;
+    }
+    .co-hierarchy-row.po-open {
+      border-color: #38bdf8;
+      box-shadow: 0 4px 18px rgba(56, 189, 248, 0.15);
+    }
+
+    .co-row-main {
+      padding: 14px 18px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      cursor: pointer;
+      user-select: none;
+      transition: background 0.15s ease;
+    }
+    .co-row-main:hover {
+      background: #152348;
+    }
+
+    .co-badge-wrapper { min-width: 60px; }
+    .co-code-badge {
+      display: inline-block;
+      background: rgba(56, 189, 248, 0.15);
+      color: #38bdf8;
+      border: 1px solid rgba(56, 189, 248, 0.4);
+      font-weight: 800;
+      font-family: monospace;
+      font-size: 13px;
+      padding: 4px 10px;
+      border-radius: 6px;
+    }
+
+    .co-statement-wrapper { flex: 1; }
+    .co-statement-text { margin: 0; font-size: 13.5px; color: #f1f5f9; line-height: 1.45; font-weight: 500; }
+
+    .co-toggle-wrapper { display: flex; align-items: center; gap: 10px; }
+    .mapped-po-count-tag {
+      background: #091024;
+      color: #94a3b8;
+      border: 1px solid #1f2f54;
+      font-size: 11.5px;
+      font-weight: 700;
+      padding: 4px 8px;
+      border-radius: 6px;
+    }
+    .mapped-po-count-tag.has-pos {
+      color: #fde68a;
+      border-color: rgba(212, 175, 55, 0.3);
+      background: rgba(212, 175, 55, 0.08);
+    }
+
+    .arrow-extension-btn {
+      background: linear-gradient(135deg, #1e40af 0%, #1e3a8a 100%);
+      color: #ffffff;
+      border: 1px solid #3b82f6;
+      border-radius: 6px;
+      padding: 5px 10px;
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s ease;
+    }
+    .arrow-extension-btn.expanded {
+      background: linear-gradient(135deg, #d4af37 0%, #b38f28 100%);
+      color: #0a1128;
+      border-color: #d4af37;
+    }
+    .arrow-icon { font-size: 10px; }
+
+    /* MAPPED POs ACCORDION */
+    .mapped-pos-container {
+      background: #091024;
+      border-top: 1px solid #1f2f54;
+      padding: 16px 18px;
+      animation: fadeIn 0.2s ease;
+    }
+
+    .mapped-pos-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+      flex-wrap: wrap;
+      gap: 8px;
+      border-bottom: 1px solid #162447;
+      padding-bottom: 8px;
+    }
+    .mapped-pos-heading { font-size: 13px; color: #cbd5e1; }
+    .mapped-pos-heading strong { color: #38bdf8; font-family: monospace; }
+    .mapping-scale-legend { font-size: 11.5px; color: #94a3b8; display: flex; align-items: center; }
+    .scale-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 4px; }
+    .scale-dot.lvl-3 { background: #4ade80; }
+    .scale-dot.lvl-2 { background: #facc15; }
+    .scale-dot.lvl-1 { background: #38bdf8; }
+
+    .mapped-pos-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 12px;
+    }
+
+    .po-mapping-card {
+      background: #101b38;
+      border: 1px solid #1f2f54;
+      border-radius: 10px;
+      padding: 12px 14px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      gap: 8px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    }
+    .po-mapping-card.lvl-3-border { border-left: 4px solid #4ade80; }
+    .po-mapping-card.lvl-2-border { border-left: 4px solid #facc15; }
+    .po-mapping-card.lvl-1-border { border-left: 4px solid #38bdf8; }
+
+    .po-map-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; }
+    .po-code-attribute { display: flex; align-items: center; gap: 8px; }
+    .po-badge-mini {
+      background: #091024;
+      color: #d4af37;
+      border: 1px solid rgba(212, 175, 55, 0.4);
+      font-family: monospace;
+      font-weight: 800;
+      font-size: 11.5px;
+      padding: 2px 6px;
+      border-radius: 4px;
+    }
+    .po-attr-name { font-size: 12.5px; color: #ffffff; }
+
+    .po-level-badge {
+      font-size: 11px;
+      font-weight: 800;
+      padding: 2px 6px;
+      border-radius: 4px;
+      white-space: nowrap;
+    }
+    .po-level-badge.level-3 { background: rgba(34, 197, 94, 0.15); color: #4ade80; border: 1px solid rgba(74, 222, 128, 0.3); }
+    .po-level-badge.level-2 { background: rgba(234, 179, 8, 0.15); color: #facc15; border: 1px solid rgba(234, 179, 8, 0.3); }
+    .po-level-badge.level-1 { background: rgba(56, 189, 248, 0.15); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.3); }
+
+    .po-justification {
+      margin: 0;
+      font-size: 12px;
+      color: #94a3b8;
+      line-height: 1.4;
+    }
+
+    .po-map-bottom {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-top: 1px solid #18284e;
+      padding-top: 6px;
+      font-size: 11.5px;
+    }
+    .contribution-metric { color: #cbd5e1; }
+    .contribution-metric strong { color: #fde68a; }
+    .nba-tag { color: #64748b; font-size: 10.5px; text-transform: uppercase; font-weight: 700; }
 
     /* Cards Grid */
     .po-grid-container { display: grid; gap: 16px; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); margin-bottom: 24px; }
@@ -329,7 +685,15 @@ interface ProgramOutcome {
     
     .edit-sm-btn { background: rgba(34, 197, 94, 0.2); color: #4ade80; border: 1px solid rgba(74, 222, 128, 0.4); padding: 4px 8px; font-size: 11px; font-weight: 700; border-radius: 4px; cursor: pointer; }
     .del-sm-btn { background: rgba(239, 68, 68, 0.2); color: #f87171; border: 1px solid rgba(248, 113, 113, 0.4); padding: 4px 8px; font-size: 11px; font-weight: 700; border-radius: 4px; cursor: pointer; margin-left: 6px; }
-    .empty-state { text-align: center; padding: 40px; color: #94a3b8; font-weight: 600; }
+    .empty-state, .empty-state-card { text-align: center; padding: 40px 20px; color: #94a3b8; font-weight: 600; }
+    .empty-state-card { background: #101b38; border: 1px dashed #1f2f54; border-radius: 14px; }
+    .empty-state-card h3 { color: #ffffff; margin: 4px 0; }
+    .empty-state-card p { margin: 0; font-size: 13px; }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(4px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
     `
   ]
 })
@@ -370,9 +734,11 @@ export class ProgramOutcomes implements OnInit {
   }
   
   programOutcomes: ProgramOutcome[] = [];
+  hierarchySubjects: SubjectHierarchyGroup[] = [];
   searchQuery: string = '';
   selectedDeptFilter: string = '';
-  viewMode: 'grid' | 'table' = 'grid';
+  viewMode: 'hierarchy' | 'grid' | 'table' = 'hierarchy';
+  allExpanded: boolean = true;
 
   currentPo: ProgramOutcome = { poNumber: '', program: 'Computer Science & Engineering', description: '' };
   editIndex = -1;
@@ -490,6 +856,7 @@ export class ProgramOutcomes implements OnInit {
 
   ngOnInit(): void {
     this.programOutcomes = [...this.getFallbackOutcomes()];
+    this.buildHierarchyTree();
     this.loadProgramOutcomes();
   }
 
@@ -550,12 +917,140 @@ export class ProgramOutcomes implements OnInit {
         } else {
           this.programOutcomes = [...this.getFallbackOutcomes()];
         }
+        this.buildHierarchyTree();
         this.cdr.detectChanges();
       },
       error: () => {
         this.programOutcomes = [...this.getFallbackOutcomes()];
+        this.buildHierarchyTree();
         this.cdr.detectChanges();
       }
+    });
+  }
+
+  toggleAllSubjects(): void {
+    this.allExpanded = !this.allExpanded;
+    this.hierarchySubjects.forEach(s => s.isExpanded = this.allExpanded);
+  }
+
+  buildHierarchyTree(): void {
+    const rawCourses = DEFAULT_DATABASE_COURSES || [];
+    const getDeptFromCode = (code: string): string => {
+      const c = (code || '').toUpperCase();
+      if (c.startsWith('CS')) return 'CSE';
+      if (c.startsWith('IT')) return 'IT';
+      if (c.startsWith('EC') || c.startsWith('EE')) return 'ECE';
+      if (c.startsWith('ME')) return 'ME';
+      if (c.startsWith('CE') || c.startsWith('CIVIL')) return 'Civil';
+      return 'CSE';
+    };
+
+    let relevantCourses: typeof DEFAULT_DATABASE_COURSES = [];
+    const curDept = this.shortDept;
+
+    if (this.userRole === 'faculty' && this.assignedCourses && this.assignedCourses.length > 0) {
+      relevantCourses = rawCourses.filter(c => 
+        this.assignedCourses.some(assigned => 
+          c.code.toLowerCase() === assigned.toLowerCase() ||
+          c.title.toLowerCase().includes(assigned.toLowerCase()) ||
+          assigned.toLowerCase().includes(c.code.toLowerCase())
+        )
+      );
+      if (relevantCourses.length === 0) {
+        relevantCourses = rawCourses.filter(c => getDeptFromCode(c.code) === curDept);
+      }
+    } else {
+      relevantCourses = rawCourses.filter(c => getDeptFromCode(c.code) === curDept);
+    }
+
+    if (relevantCourses.length === 0) {
+      relevantCourses = rawCourses.filter(c => getDeptFromCode(c.code) === 'CSE');
+    }
+
+    this.hierarchySubjects = relevantCourses.map(course => {
+      const courseDept = getDeptFromCode(course.code);
+      const cos: COItemWithPOs[] = [
+        {
+          coCode: 'CO1',
+          description: `Formulate fundamental architectural principles, data structures, and computational models for ${course.title}.`,
+          isPoExpanded: true,
+          mappedPos: [
+            { poCode: 'PO1', attributeName: 'Engineering Knowledge', level: 3, contribution: 85, justification: `Directly applies fundamental mathematics and ${course.code} domain core concepts.` },
+            { poCode: 'PO2', attributeName: 'Problem Analysis', level: 2, contribution: 60, justification: 'Identifies input/output boundary conditions and theoretical bounds.' },
+            { poCode: 'PSO1', attributeName: 'Specialized Core Systems', level: 3, contribution: 80, justification: `Essential foundational competency for ${courseDept} engineering pipelines.` }
+          ]
+        },
+        {
+          coCode: 'CO2',
+          description: `Analyze requirements, design modular schemas, and implement optimized algorithmic solutions in ${course.title}.`,
+          isPoExpanded: false,
+          mappedPos: [
+            { poCode: 'PO2', attributeName: 'Problem Analysis', level: 3, contribution: 85, justification: 'Evaluates structural complexities, tradeoffs, and problem formulations.' },
+            { poCode: 'PO3', attributeName: 'Design & Development of Solutions', level: 3, contribution: 90, justification: 'Designs modular software components, schemas, and robust algorithms.' }
+          ]
+        },
+        {
+          coCode: 'CO3',
+          description: `Construct resilient software modules and conduct test-driven verification for ${course.title}.`,
+          isPoExpanded: false,
+          mappedPos: [
+            { poCode: 'PO3', attributeName: 'Design & Development of Solutions', level: 2, contribution: 70, justification: 'Builds maintainable and secure implementations according to design specs.' },
+            { poCode: 'PO4', attributeName: 'Conduct Investigations', level: 2, contribution: 65, justification: 'Validates test datasets, benchmark edge cases, and runtime telemetry.' },
+            { poCode: 'PO5', attributeName: 'Modern Tool Usage', level: 3, contribution: 85, justification: 'Utilizes modern development IDEs, Git, profilers, and testing harnesses.' }
+          ]
+        },
+        {
+          coCode: 'CO4',
+          description: `Integrate secure network interfaces, concurrent workflows, and industry-standard protocols into ${course.title}.`,
+          isPoExpanded: false,
+          mappedPos: [
+            { poCode: 'PO5', attributeName: 'Modern Tool Usage', level: 3, contribution: 80, justification: 'Applies automated build tools, container workflows, and monitoring frameworks.' },
+            { poCode: 'PO8', attributeName: 'Ethics & Integrity', level: 1, contribution: 40, justification: 'Maintains software license compliance and user privacy protection.' },
+            { poCode: 'PSO2', attributeName: 'Advanced Applied Engineering', level: 3, contribution: 85, justification: `Solves practical high-availability engineering challenges in ${courseDept}.` }
+          ]
+        },
+        {
+          coCode: 'CO5',
+          description: `Collaborate on full-stack capstone projects, document technical blueprints, and evaluate long-term maintenance in ${course.title}.`,
+          isPoExpanded: false,
+          mappedPos: [
+            { poCode: 'PO9', attributeName: 'Individual & Team Work', level: 3, contribution: 90, justification: 'Executes collaborative sprint milestones in multidisciplinary team environments.' },
+            { poCode: 'PO10', attributeName: 'Communication Skills', level: 3, contribution: 85, justification: 'Produces technical SRS blueprints, oral demonstrations, and release docs.' },
+            { poCode: 'PO12', attributeName: 'Life-long Learning', level: 2, contribution: 75, justification: 'Adapts to evolving open-source libraries and modern software paradigms.' }
+          ]
+        }
+      ];
+
+      return {
+        courseCode: course.code,
+        courseTitle: course.title,
+        department: courseDept,
+        cos: cos,
+        isExpanded: true
+      };
+    });
+  }
+
+  get filteredHierarchySubjects(): SubjectHierarchyGroup[] {
+    const q = this.searchQuery.toLowerCase().trim();
+    if (!q) return this.hierarchySubjects;
+
+    return this.hierarchySubjects.filter(sub => {
+      const codeMatch = sub.courseCode.toLowerCase().includes(q);
+      const titleMatch = sub.courseTitle.toLowerCase().includes(q);
+      const deptMatch = sub.department.toLowerCase().includes(q);
+      
+      const coMatch = sub.cos.some(co => 
+        co.coCode.toLowerCase().includes(q) ||
+        co.description.toLowerCase().includes(q) ||
+        co.mappedPos.some(p => 
+          p.poCode.toLowerCase().includes(q) || 
+          p.attributeName.toLowerCase().includes(q) ||
+          (p.justification && p.justification.toLowerCase().includes(q))
+        )
+      );
+
+      return codeMatch || titleMatch || deptMatch || coMatch;
     });
   }
 

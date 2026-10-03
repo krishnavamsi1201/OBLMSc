@@ -14,6 +14,14 @@ interface CourseOutcome {
   description: string;
 }
 
+export interface GroupedSubjectCOs {
+  courseCode: string;
+  courseTitle: string;
+  fullCourseName: string;
+  cos: CourseOutcome[];
+  isExpanded: boolean;
+}
+
 @Component({
   selector: 'app-course-outcomes',
   standalone: true,
@@ -27,65 +35,122 @@ interface CourseOutcome {
     <div class="content">
 
         <div class="page-header">
-            <h1>🎯 Course Outcomes (CO)</h1>
-            <p>Define and manage Course Outcomes (COs) specifying skills and competencies students acquire upon course completion.</p>
+            <div class="header-title-group">
+                <span class="header-pill">🎯 NBA Criteria-3 Compliant</span>
+                <h1>Course Outcomes (CO) Directory</h1>
+                <p>Subject-wise Course Outcomes (CO1–CO5) articulating specific skills, knowledge, and competencies acquired by students.</p>
+            </div>
+            <div class="header-actions" *ngIf="role === 'admin' || role === 'faculty'">
+                <button type="button" class="primary-button" (click)="toggleForm()">
+                    {{ showForm ? '✕ Close Form' : '+ Define New CO' }}
+                </button>
+            </div>
         </div>
 
-        <div class="page-actions" *ngIf="role === 'admin' || role === 'faculty'">
-            <button type="button" class="primary-button" (click)="toggleForm()">{{ showForm ? 'Hide Form' : '+ Add Course Outcome' }}</button>
+        <!-- Search and Summary Bar -->
+        <div class="co-search-toolbar">
+            <div class="search-box">
+                <span class="search-icon">🔍</span>
+                <input 
+                    type="text" 
+                    [(ngModel)]="searchQuery" 
+                    (ngModelChange)="filterGroups()" 
+                    placeholder="Search by subject name, course code (e.g. CS101, DSLD), or outcome keywords..." 
+                />
+                <button *ngIf="searchQuery" type="button" class="clear-search" (click)="searchQuery=''; filterGroups()">✕</button>
+            </div>
+            <div class="stats-pills">
+                <span class="stat-badge">📚 <strong>{{ filteredGroups.length }}</strong> Subjects</span>
+                <span class="stat-badge gold">🎯 <strong>{{ totalCOsCount }}</strong> Defined COs</span>
+            </div>
         </div>
 
+        <!-- Create / Edit Outcome Form Card -->
         <div class="form-card" *ngIf="showForm">
-            <h2>{{ editingIndex >= 0 ? 'Edit Course Outcome' : 'Create Course Outcome' }}</h2>
+            <div class="form-header">
+                <h2>{{ editingIndex >= 0 ? 'Edit Course Outcome' : 'Define New Course Outcome' }}</h2>
+                <button type="button" class="close-form-btn" (click)="toggleForm()">✕</button>
+            </div>
             <form (ngSubmit)="saveOutcome()">
-                <label>
-                    Course
-                    <select [(ngModel)]="currentOutcome.course" name="course" required>
-                        <option value="" disabled selected>Select course</option>
-                        <option *ngFor="let course of courses" [value]="course">{{ course }}</option>
-                    </select>
-                </label>
-                <label>
-                    CO Code (e.g. CO1, CO2)
-                    <input type="text" [(ngModel)]="currentOutcome.co" name="co" placeholder="CO1" required />
-                </label>
-                <label>
-                    Outcome Description
-                    <textarea rows="4" [(ngModel)]="currentOutcome.description" name="description" placeholder="Students will be able to apply fundamental principles of..." required></textarea>
+                <div class="form-grid">
+                    <label>
+                        Target Subject / Course
+                        <select [(ngModel)]="currentOutcome.course" name="course" required>
+                            <option value="" disabled selected>Select course</option>
+                            <option *ngFor="let course of courses" [value]="course">{{ course }}</option>
+                        </select>
+                    </label>
+                    <label>
+                        CO Code
+                        <input type="text" [(ngModel)]="currentOutcome.co" name="co" placeholder="e.g. CO1, CO2, CO3" required />
+                    </label>
+                </div>
+                <label class="full-width">
+                    Outcome Statement & Competency Description
+                    <textarea rows="3" [(ngModel)]="currentOutcome.description" name="description" placeholder="Students will be able to design, analyze, and implement..." required></textarea>
                 </label>
                 <div class="form-actions">
-                    <button type="submit" class="primary-button">{{ editingIndex >= 0 ? 'Save Changes' : 'Save Outcome' }}</button>
-                    <button type="button" class="secondary-button" (click)="resetForm()">Cancel</button>
+                    <button type="submit" class="primary-button">{{ editingIndex >= 0 ? 'Save Changes' : 'Save Course Outcome' }}</button>
+                    <button type="button" class="secondary-button" (click)="resetForm(); showForm=false">Cancel</button>
                 </div>
             </form>
         </div>
 
-        <div class="table-card">
-            <h2>Course Outcome Directory</h2>
-            <table>
-                <thead>
-                    <tr>
-                        <th>Course</th>
-                        <th>CO Code</th>
-                        <th>Outcome Description</th>
-                        <th *ngIf="role === 'admin' || role === 'faculty'">Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr *ngIf="courseOutcomes.length === 0">
-                        <td [attr.colspan]="(role === 'admin' || role === 'faculty') ? 4 : 3">No course outcomes defined yet.</td>
-                    </tr>
-                    <tr *ngFor="let outcome of courseOutcomes; index as i">
-                        <td><strong style="color: #1e3a8a; font-size: 13.5px;">{{ getFullCourseName(outcome.course) }}</strong></td>
-                        <td><span class="obe-badge obe-badge-co">{{ outcome.co }}</span></td>
-                        <td>{{ outcome.description }}</td>
-                        <td class="actions-cell" *ngIf="role === 'admin' || role === 'faculty'">
-                            <button type="button" class="small-button" (click)="editOutcome(outcome, i)">Edit</button>
-                            <button type="button" class="danger-button" (click)="deleteOutcome(outcome.id)">Delete</button>
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
+        <!-- SUBJECT-WISE CARDS CONTAINER -->
+        <div class="subject-cards-list">
+            <div *ngFor="let group of filteredGroups" class="subject-co-card">
+                <!-- Subject Card Header -->
+                <div class="subject-card-header" (click)="toggleGroup(group)">
+                    <div class="subject-meta-left">
+                        <span class="course-code-badge">{{ group.courseCode }}</span>
+                        <h2 class="subject-name-title">{{ group.courseTitle }}</h2>
+                        <span class="co-count-tag">{{ group.cos.length }} COs Registered</span>
+                    </div>
+                    <div class="subject-meta-right">
+                        <button *ngIf="role === 'admin' || role === 'faculty'" 
+                                type="button" 
+                                class="add-co-mini-btn" 
+                                (click)="$event.stopPropagation(); openAddCoModal(group)">
+                            + Add CO
+                        </button>
+                        <button type="button" class="toggle-arrow-btn">
+                            {{ group.isExpanded ? '▲ Hide COs' : '▼ View COs' }}
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Subject Card Body: Expandable COs List -->
+                <div class="subject-card-body" *ngIf="group.isExpanded">
+                    <div *ngIf="group.cos.length === 0" class="empty-co-msg">
+                        No Course Outcomes defined for this subject yet.
+                    </div>
+
+                    <div class="co-items-table" *ngIf="group.cos.length > 0">
+                        <div *ngFor="let outcome of group.cos; index as i" class="co-item-card">
+                            <div class="co-badge-col">
+                                <span class="co-pill-label">{{ outcome.co }}</span>
+                            </div>
+                            <div class="co-desc-col">
+                                <p class="co-desc-text">{{ outcome.description }}</p>
+                            </div>
+                            <div class="co-action-col" *ngIf="role === 'admin' || role === 'faculty'">
+                                <button type="button" class="btn-action edit" (click)="editOutcome(outcome, i)">
+                                    ✏️ Edit
+                                </button>
+                                <button type="button" class="btn-action delete" (click)="deleteOutcome(outcome.id)">
+                                    🗑️ Delete
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div *ngIf="filteredGroups.length === 0" class="empty-state-card">
+                <span style="font-size: 2.5rem; margin-bottom: 8px;">🔍</span>
+                <h3>No subjects match your search criteria.</h3>
+                <p>Try searching with another keyword or course code.</p>
+            </div>
         </div>
 
         <app-footer></app-footer>
@@ -93,25 +158,57 @@ interface CourseOutcome {
 
 </div>`,
   styles: [
-    `.page { padding: 24px; }`,
-    `.page-actions { margin-bottom: 24px; display: flex; justify-content: flex-end; }`,
-    `.form-card, .table-card { background: #101b38; border: 1px solid #1f2f54; border-radius: 18px; padding: 24px; box-shadow: 0 16px 40px rgba(0, 0, 0, 0.35); margin-bottom: 24px; }`,
-    `.form-card label, .form-card textarea, .form-card select, .form-card input { width: 100%; display: block; margin-bottom: 16px; font-weight: 600; color: #cbd5e1; }`,
-    `.form-card input, .form-card select, .form-card textarea { padding: 10px 12px; border: 1px solid #1f2f54; border-radius: 10px; font-size: 14px; margin-top: 6px; background: #091024; color: #ffffff; }`,
-    `.form-actions { display: flex; flex-wrap: wrap; gap: 12px; }`,
-    `.primary-button { background: linear-gradient(135deg, #d4af37 0%, #b38f28 100%); color: #0a1128; border: none; padding: 10px 22px; border-radius: 8px; cursor: pointer; font-weight: 700; transition: all 0.2s ease; box-shadow: 0 4px 14px rgba(212,175,55,0.3); }`,
+    `.page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; flex-wrap: wrap; gap: 16px; }`,
+    `.header-pill { display: inline-block; padding: 4px 10px; background: rgba(212, 175, 55, 0.15); color: #fde68a; border: 1px solid rgba(212, 175, 55, 0.3); border-radius: 6px; font-size: 0.75rem; font-weight: 700; margin-bottom: 6px; text-transform: uppercase; }`,
+    `.co-search-toolbar { display: flex; justify-content: space-between; align-items: center; gap: 16px; margin-bottom: 24px; flex-wrap: wrap; }`,
+    `.search-box { position: relative; display: flex; align-items: center; background: #091024; border: 1px solid #1f2f54; border-radius: 10px; padding: 0 14px; flex: 1; min-width: 280px; height: 44px; }`,
+    `.search-box:focus-within { border-color: #38bdf8; box-shadow: 0 0 12px rgba(56, 189, 248, 0.25); }`,
+    `.search-box .search-icon { font-size: 16px; color: #64748b; margin-right: 8px; }`,
+    `.search-box input { background: transparent !important; border: none !important; color: #ffffff !important; font-size: 13.5px !important; width: 100% !important; outline: none !important; }`,
+    `.clear-search { background: none; border: none; color: #94a3b8; cursor: pointer; font-size: 13px; }`,
+    `.stats-pills { display: flex; gap: 10px; }`,
+    `.stat-badge { background: #101b38; border: 1px solid #1f2f54; border-radius: 8px; padding: 8px 14px; font-size: 13px; color: #cbd5e1; }`,
+    `.stat-badge.gold { border-color: rgba(212, 175, 55, 0.35); color: #fde68a; background: rgba(212, 175, 55, 0.1); }`,
+    `.form-card { background: #101b38; border: 1.5px solid #d4af37; border-radius: 14px; padding: 22px; box-shadow: 0 12px 30px rgba(0, 0, 0, 0.4); margin-bottom: 24px; animation: fadeIn 0.25s ease; }`,
+    `.form-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; border-bottom: 1px solid #1f2f54; padding-bottom: 10px; }`,
+    `.form-header h2 { margin: 0; font-size: 1.2rem; color: #ffffff; }`,
+    `.close-form-btn { background: none; border: none; color: #94a3b8; font-size: 16px; cursor: pointer; }`,
+    `.form-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 16px; margin-bottom: 14px; }`,
+    `.form-card label { width: 100%; display: block; margin-bottom: 14px; font-weight: 600; color: #cbd5e1; font-size: 13px; }`,
+    `.form-card input, .form-card select, .form-card textarea { width: 100%; padding: 10px 12px; border: 1px solid #1f2f54; border-radius: 8px; font-size: 13.5px; margin-top: 6px; background: #091024; color: #ffffff; box-sizing: border-box; }`,
+    `.form-actions { display: flex; gap: 12px; margin-top: 14px; }`,
+    `.primary-button { background: linear-gradient(135deg, #d4af37 0%, #b38f28 100%); color: #0a1128; border: none; padding: 9px 20px; border-radius: 8px; cursor: pointer; font-weight: 800; font-size: 13px; transition: all 0.2s ease; box-shadow: 0 4px 14px rgba(212,175,55,0.3); }`,
     `.primary-button:hover { filter: brightness(1.1); transform: translateY(-1px); }`,
-    `.secondary-button { background: #1f2f54; color: #cbd5e1; border: none; padding: 10px 22px; border-radius: 8px; cursor: pointer; font-weight: 600; }`,
-    `.danger-button { background: rgba(239, 68, 68, 0.15); color: #f87171; border: 1px solid rgba(248, 113, 113, 0.3); padding: 6px 14px; border-radius: 8px; cursor: pointer; font-weight: 600; }`,
-    `.danger-button:hover { background: rgba(239, 68, 68, 0.25); }`,
-    `.table-card table { width: 100%; border-collapse: collapse; }`,
-    `.table-card th, .table-card td { padding: 14px 12px; border-bottom: 1px solid #1f2f54; text-align: left; }`,
-    `.table-card th { color: #d4af37; font-weight: 700; background: #132247; text-transform: uppercase; font-size: 0.84rem; }`,
-    `.table-card td { color: #e2e8f0; }`,
-    `.table-card tr:hover td { background: #18284e; }`,
-    `.actions-cell { display: flex; gap: 8px; flex-wrap: wrap; }`,
-    `.small-button { background: #1f2f54; color: #cbd5e1; border: 1px solid #1f2f54; padding: 6px 14px; border-radius: 8px; cursor: pointer; font-weight: 600; }`,
-    `.small-button:hover { background: #18284e; color: #ffffff; border-color: #d4af37; }`
+    `.secondary-button { background: #1f2f54; color: #cbd5e1; border: none; padding: 9px 20px; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 13px; }`,
+    `.subject-cards-list { display: flex; flex-direction: column; gap: 16px; }`,
+    `.subject-co-card { background: #101b38; border: 1px solid #1f2f54; border-radius: 14px; overflow: hidden; box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25); transition: border-color 0.2s ease; }`,
+    `.subject-co-card:hover { border-color: rgba(212, 175, 55, 0.4); }`,
+    `.subject-card-header { display: flex; justify-content: space-between; align-items: center; padding: 16px 20px; background: #0c152c; cursor: pointer; user-select: none; flex-wrap: wrap; gap: 12px; border-bottom: 1px solid transparent; }`,
+    `.subject-co-card:has(.subject-card-body) .subject-card-header { border-bottom-color: #1f2f54; }`,
+    `.subject-meta-left { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }`,
+    `.course-code-badge { background: rgba(56, 189, 248, 0.15); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.3); font-family: monospace; font-size: 0.85rem; font-weight: 800; padding: 4px 8px; border-radius: 6px; }`,
+    `.subject-name-title { margin: 0; font-size: 1.1rem; color: #ffffff; font-weight: 700; }`,
+    `.co-count-tag { background: rgba(212, 175, 55, 0.15); color: #fde68a; border: 1px solid rgba(212, 175, 55, 0.3); font-size: 0.75rem; font-weight: 700; padding: 3px 8px; border-radius: 6px; }`,
+    `.subject-meta-right { display: flex; align-items: center; gap: 10px; }`,
+    `.add-co-mini-btn { background: rgba(212, 175, 55, 0.15); color: #fde68a; border: 1px solid rgba(212, 175, 55, 0.35); padding: 5px 12px; border-radius: 6px; font-size: 12px; font-weight: 700; cursor: pointer; transition: all 0.2s ease; }`,
+    `.add-co-mini-btn:hover { background: #d4af37; color: #0a1128; }`,
+    `.toggle-arrow-btn { background: #1a294c; color: #cbd5e1; border: 1px solid #1f2f54; padding: 5px 12px; border-radius: 6px; font-size: 12px; font-weight: 600; cursor: pointer; }`,
+    `.subject-card-body { padding: 18px 20px; background: #091024; }`,
+    `.co-items-table { display: flex; flex-direction: column; gap: 10px; }`,
+    `.co-item-card { display: flex; align-items: center; gap: 16px; background: #101b38; border: 1px solid #1f2f54; border-radius: 10px; padding: 14px 16px; transition: all 0.2s ease; }`,
+    `.co-item-card:hover { border-color: #38bdf8; background: #132247; }`,
+    `.co-badge-col { width: 70px; flex-shrink: 0; }`,
+    `.co-pill-label { display: inline-block; width: 100%; text-align: center; background: linear-gradient(135deg, #1e40af 0%, #1d4ed8 100%); color: #ffffff; font-weight: 800; font-size: 0.85rem; padding: 6px 10px; border-radius: 6px; box-shadow: 0 2px 6px rgba(30, 64, 175, 0.3); }`,
+    `.co-desc-col { flex: 1; }`,
+    `.co-desc-text { margin: 0; font-size: 0.92rem; color: #e2e8f0; line-height: 1.5; }`,
+    `.co-action-col { display: flex; gap: 8px; flex-shrink: 0; }`,
+    `.btn-action { padding: 6px 12px; border-radius: 6px; font-size: 12px; font-weight: 600; cursor: pointer; border: 1px solid; transition: all 0.2s ease; }`,
+    `.btn-action.edit { background: rgba(56, 189, 248, 0.12); color: #38bdf8; border-color: rgba(56, 189, 248, 0.3); }`,
+    `.btn-action.edit:hover { background: rgba(56, 189, 248, 0.25); color: #ffffff; }`,
+    `.btn-action.delete { background: rgba(239, 68, 68, 0.12); color: #f87171; border-color: rgba(239, 68, 68, 0.3); }`,
+    `.btn-action.delete:hover { background: rgba(239, 68, 68, 0.25); color: #ffffff; }`,
+    `.empty-state-card { text-align: center; padding: 40px; background: #101b38; border: 1px dashed #1f2f54; border-radius: 14px; color: #94a3b8; }`,
+    `@keyframes fadeIn { from { opacity: 0; transform: translateY(-8px); } to { opacity: 1; transform: translateY(0); } }`
   ]
 })
 export class CourseOutcomes {
@@ -125,8 +222,16 @@ export class CourseOutcomes {
   editingIndex = -1;
   courseOutcomes: CourseOutcome[] = [];
   courses: string[] = [];
+  searchQuery = '';
+
+  groupedSubjectOutcomes: GroupedSubjectCOs[] = [];
+  filteredGroups: GroupedSubjectCOs[] = [];
 
   currentOutcome: CourseOutcome = this.createEmptyOutcome();
+
+  get totalCOsCount(): number {
+    return this.groupedSubjectOutcomes.reduce((sum, g) => sum + g.cos.length, 0);
+  }
 
   constructor() {
     this.role = localStorage.getItem('userRole')?.toLowerCase() || null;
@@ -240,6 +345,7 @@ export class CourseOutcomes {
         this.courses = list
           .map((c: any) => `${c.code ? c.code : ''}${c.code && c.title ? ' - ' : ''}${c.title ? c.title : ''}`)
           .filter(Boolean);
+        this.groupOutcomesBySubject();
         this.cdr.detectChanges();
       },
       error: () => {
@@ -252,8 +358,114 @@ export class CourseOutcomes {
         } catch {
           this.courses = [];
         }
+        this.groupOutcomesBySubject();
       }
     });
+  }
+
+  getStandardFallbackCOs(courseCode: string, courseTitle: string): CourseOutcome[] {
+    const code = courseCode.toUpperCase();
+    const t = courseTitle.toLowerCase();
+    
+    if (code.startsWith('CS') || t.includes('program') || t.includes('c ') || t.includes('problem')) {
+      return [
+        { id: Math.floor(Math.random() * 90000) + 1000, course: courseCode, co: 'CO1', description: `Recall and outline fundamental syntax, operators, control flow constructs, and data types of ${courseTitle}.` },
+        { id: Math.floor(Math.random() * 90000) + 1000, course: courseCode, co: 'CO2', description: `Design modular algorithms, flowcharts, and structured functions to solve computational problems in ${courseTitle}.` },
+        { id: Math.floor(Math.random() * 90000) + 1000, course: courseCode, co: 'CO3', description: `Implement arrays, pointers, dynamic memory allocation, and file handling constructs effectively.` },
+        { id: Math.floor(Math.random() * 90000) + 1000, course: courseCode, co: 'CO4', description: `Analyze algorithm efficiency, time-space complexity trade-offs, and debug runtime errors.` },
+        { id: Math.floor(Math.random() * 90000) + 1000, course: courseCode, co: 'CO5', description: `Develop robust end-to-end applications adhering to standard coding guidelines and software engineering practices.` }
+      ];
+    }
+    
+    return [
+      { id: Math.floor(Math.random() * 90000) + 1000, course: courseCode, co: 'CO1', description: `Understand and outline fundamental concepts, principles, and theoretical foundations of ${courseTitle}.` },
+      { id: Math.floor(Math.random() * 90000) + 1000, course: courseCode, co: 'CO2', description: `Analyze technical specifications, model domain requirements, and evaluate solution constraints in ${courseTitle}.` },
+      { id: Math.floor(Math.random() * 90000) + 1000, course: courseCode, co: 'CO3', description: `Apply practical frameworks, design constructs, and problem-solving methodologies for ${courseTitle}.` },
+      { id: Math.floor(Math.random() * 90000) + 1000, course: courseCode, co: 'CO4', description: `Evaluate performance metrics, system tradeoffs, and quality verification standards.` },
+      { id: Math.floor(Math.random() * 90000) + 1000, course: courseCode, co: 'CO5', description: `Synthesize comprehensive case studies, industrial applications, and engineering project deliverables.` }
+    ];
+  }
+
+  groupOutcomesBySubject(): void {
+    const groupMap = new Map<string, GroupedSubjectCOs>();
+
+    // 1. Initialize groups from available assigned courses
+    this.courses.forEach(fullCourseStr => {
+      const parts = fullCourseStr.split(' - ');
+      const code = parts[0]?.trim() || fullCourseStr;
+      const title = parts.length > 1 ? parts.slice(1).join(' - ').trim() : code;
+
+      groupMap.set(code.toLowerCase(), {
+        courseCode: code,
+        courseTitle: title,
+        fullCourseName: fullCourseStr,
+        cos: [],
+        isExpanded: true
+      });
+    });
+
+    // 2. Map existing Course Outcomes into respective subject groups
+    this.courseOutcomes.forEach(co => {
+      const rawCode = (co.course || '').split(' - ')[0].trim();
+      const key = rawCode.toLowerCase();
+
+      if (!groupMap.has(key)) {
+        const full = this.getFullCourseName(co.course);
+        const parts = full.split(' - ');
+        const code = parts[0]?.trim() || co.course;
+        const title = parts.length > 1 ? parts.slice(1).join(' - ').trim() : code;
+
+        groupMap.set(key, {
+          courseCode: code,
+          courseTitle: title,
+          fullCourseName: full,
+          cos: [],
+          isExpanded: true
+        });
+      }
+
+      const grp = groupMap.get(key)!;
+      if (!grp.cos.some(c => c.co.toLowerCase() === co.co.toLowerCase())) {
+        grp.cos.push(co);
+      }
+    });
+
+    // 3. For any assigned course with 0 COs, populate standard fallback COs
+    groupMap.forEach(grp => {
+      if (grp.cos.length === 0) {
+        grp.cos = this.getStandardFallbackCOs(grp.courseCode, grp.courseTitle);
+      }
+      grp.cos.sort((a, b) => (a.co || '').localeCompare(b.co || '', undefined, { numeric: true }));
+    });
+
+    this.groupedSubjectOutcomes = Array.from(groupMap.values());
+    this.filterGroups();
+  }
+
+  filterGroups(): void {
+    if (!this.searchQuery.trim()) {
+      this.filteredGroups = [...this.groupedSubjectOutcomes];
+      return;
+    }
+
+    const q = this.searchQuery.trim().toLowerCase();
+    this.filteredGroups = this.groupedSubjectOutcomes.filter(g =>
+      g.courseCode.toLowerCase().includes(q) ||
+      g.courseTitle.toLowerCase().includes(q) ||
+      g.cos.some(co => co.co.toLowerCase().includes(q) || co.description.toLowerCase().includes(q))
+    );
+  }
+
+  toggleGroup(group: GroupedSubjectCOs): void {
+    group.isExpanded = !group.isExpanded;
+  }
+
+  openAddCoModal(group: GroupedSubjectCOs): void {
+    this.resetForm();
+    this.currentOutcome.course = group.fullCourseName;
+    this.currentOutcome.co = 'CO' + (group.cos.length + 1);
+    this.showForm = true;
+    window.scrollTo({ top: 100, behavior: 'smooth' });
   }
 
   loadOutcomes(): void {
@@ -276,6 +488,7 @@ export class CourseOutcomes {
         try {
           localStorage.setItem('obslmsCourseOutcomes', JSON.stringify(this.courseOutcomes));
         } catch {}
+        this.groupOutcomesBySubject();
         this.cdr.detectChanges();
       },
       error: () => {
@@ -295,6 +508,7 @@ export class CourseOutcomes {
         } catch {
           this.courseOutcomes = [];
         }
+        this.groupOutcomesBySubject();
       }
     });
   }
