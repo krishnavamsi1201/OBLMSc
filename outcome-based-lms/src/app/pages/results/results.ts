@@ -66,7 +66,9 @@ export interface StudentResult {
         <div class="page-header">
             <div class="header-text-block">
                 <h1>📋 Student Semester Results & Marksheet Deck</h1>
-                <p>{{ role === 'student' ? 'Official semester performance transcript, SGPA/CGPA breakdown, and complete marksheet download.' : 'Master academic results deck: Expandable student profiles, departmental performance matrix, and official semester transcripts.' }}</p>
+                <p *ngIf="role === 'student'">Official semester performance transcript, SGPA/CGPA breakdown, and complete marksheet download.</p>
+                <p *ngIf="role === 'faculty'">Faculty Subject Evaluation Deck: Restricted to your assigned subjects and courses.</p>
+                <p *ngIf="role === 'admin'">Master academic results deck: Expandable student profiles, departmental performance matrix, and official semester transcripts.</p>
             </div>
             
             <!-- View Mode Switcher for Faculty and Admin -->
@@ -75,14 +77,29 @@ export interface StudentResult {
                         class="mode-btn" 
                         [class.active]="viewMode === 'class'" 
                         (click)="setViewMode('class')">
-                    <span class="material-icons">view_agenda</span> Student Results Deck
+                    <span class="material-icons">view_agenda</span> {{ role === 'faculty' ? 'Student Subject Results' : 'Student Results Deck' }}
                 </button>
                 <button type="button" 
                         class="mode-btn" 
                         [class.active]="viewMode === 'student'" 
                         (click)="setViewMode('student')">
-                    <span class="material-icons">description</span> Official Marksheet View
+                    <span class="material-icons">description</span> {{ role === 'faculty' ? 'Course Marksheet View' : 'Official Marksheet View' }}
                 </button>
+            </div>
+        </div>
+
+        <!-- Faculty Context Banner (Strict Subject Isolation Notice) -->
+        <div class="branch-banner faculty-banner" *ngIf="role === 'faculty'">
+            <div class="banner-icon">👨‍🏫</div>
+            <div class="banner-details">
+                <div class="banner-title-row">
+                    <strong>{{ facultyDept }} — {{ facultyName }}</strong>
+                    <span class="banner-tag faculty-tag">Subject-Isolated Evaluation View</span>
+                </div>
+                <p class="banner-sub">
+                    Displaying student evaluation records strictly for your assigned subjects: 
+                    <span class="assigned-chips">{{ facultyAssignedCoursesDisplay }}</span>.
+                </p>
             </div>
         </div>
 
@@ -125,8 +142,44 @@ export interface StudentResult {
             </div>
         </div>
 
-        <!-- Summary Statistics (Faculty/Admin Class Overview) -->
-        <div class="summary-grid" *ngIf="role !== 'student' && viewMode === 'class'">
+        <!-- Summary Statistics (Faculty View Overview) -->
+        <div class="summary-grid" *ngIf="role === 'faculty' && viewMode === 'class'">
+            <div class="section-card kpi-card-lux">
+                <div class="kpi-icon-badge" style="background: rgba(56, 189, 248, 0.15); color: #38bdf8;">👨‍🎓</div>
+                <div class="kpi-text-block">
+                    <span class="kpi-tag">Enrolled In My Subjects</span>
+                    <strong class="kpi-num">{{ filteredStudentGroups.length }} <small style="font-size: 0.9rem; color: #94a3b8;">/ {{ studentGroups.length }}</small></strong>
+                    <p>Students evaluated in {{ facultyAssignedCoursesDisplay }}.</p>
+                </div>
+            </div>
+            <div class="section-card kpi-card-lux">
+                <div class="kpi-icon-badge" style="background: rgba(212, 175, 55, 0.15); color: #fde68a;">⭐</div>
+                <div class="kpi-text-block">
+                    <span class="kpi-tag">Subject Average Marks</span>
+                    <strong class="kpi-num" style="color: #fde68a;">{{ facultyClassAverageMarks }} <small style="font-size: 0.9rem; color: #94a3b8;">/ 100</small></strong>
+                    <p>Mean score across your assigned course evaluations.</p>
+                </div>
+            </div>
+            <div class="section-card kpi-card-lux">
+                <div class="kpi-icon-badge" style="background: rgba(16, 185, 129, 0.15); color: #34d399;">🏆</div>
+                <div class="kpi-text-block">
+                    <span class="kpi-tag">Subject Pass Rate</span>
+                    <strong class="kpi-num" style="color: #4ade80;">{{ classPassRate }}%</strong>
+                    <p>Students cleared in your course curriculum.</p>
+                </div>
+            </div>
+            <div class="section-card kpi-card-lux">
+                <div class="kpi-icon-badge" style="background: rgba(96, 165, 250, 0.15); color: #60a5fa;">🎯</div>
+                <div class="kpi-text-block">
+                    <span class="kpi-tag">Highest Course Mark</span>
+                    <strong class="kpi-num" style="color: #60a5fa;">{{ facultySubjectHighestScore }} <small style="font-size: 0.9rem; color: #94a3b8;">/ 100</small></strong>
+                    <p>Top score achieved in your assigned subject.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Summary Statistics (Admin View Overview) -->
+        <div class="summary-grid" *ngIf="role === 'admin' && viewMode === 'class'">
             <div class="section-card kpi-card-lux">
                 <div class="kpi-icon-badge" style="background: rgba(56, 189, 248, 0.15); color: #38bdf8;">👨‍🎓</div>
                 <div class="kpi-text-block">
@@ -209,14 +262,21 @@ export interface StudentResult {
                         type="text" 
                         [(ngModel)]="searchQuery" 
                         (input)="onSearchChange()" 
-                        placeholder="Search student name (e.g. Krishnavamsi), Roll / ID (e.g. CUTM2026CSE042, STU004), department, or subject..."
+                        placeholder="Search student name (e.g. Krishnavamsi), Roll / ID (e.g. CUTM2026CSE042), department, or subject..."
                         class="results-search-input"
                     />
                     <button class="clear-search-btn" *ngIf="searchQuery" (click)="clearSearch()" title="Clear search">✕</button>
                 </div>
 
                 <div class="search-filter-wrap">
-                    <select [(ngModel)]="filterDept" (change)="onSearchChange()" class="filter-dropdown-select">
+                    <!-- Faculty Specific Assigned Course Filter -->
+                    <select *ngIf="role === 'faculty'" [(ngModel)]="selectedFacultyCourseFilter" (change)="onSearchChange()" class="filter-dropdown-select gold-select">
+                        <option value="">All My Assigned Subjects ({{ facultyAssignedCourses.length }})</option>
+                        <option *ngFor="let c of facultyAssignedCourses" [value]="c">📖 {{ c }}</option>
+                    </select>
+
+                    <!-- Admin Branch Filter -->
+                    <select *ngIf="role === 'admin'" [(ngModel)]="filterDept" (change)="onSearchChange()" class="filter-dropdown-select">
                         <option value="">All Departments (6 Branches)</option>
                         <option value="CSE">Computer Science & Engineering (CSE)</option>
                         <option value="IT">Information Technology (IT)</option>
@@ -228,7 +288,7 @@ export interface StudentResult {
 
                     <select [(ngModel)]="filterGrade" (change)="onSearchChange()" class="filter-dropdown-select">
                         <option value="">All Academic Grades</option>
-                        <option value="O">Grade O (Outstanding ≥ 9.0 SGPA)</option>
+                        <option value="O">Grade O (Outstanding ≥ 9.0)</option>
                         <option value="A+">Grade A+ (Excellent 8.0 - 8.9)</option>
                         <option value="A">Grade A (Very Good 7.0 - 7.9)</option>
                         <option value="B+">Grade B+ (Good 6.0 - 6.9)</option>
@@ -253,7 +313,7 @@ export interface StudentResult {
 
             <!-- Empty Results State -->
             <div *ngIf="filteredStudentGroups.length === 0" class="empty-state">
-                <p>📭 No student academic records found matching your filters in {{ selectedSemester }}.</p>
+                <p>📭 No student academic records found for {{ role === 'faculty' ? 'your assigned subject(s)' : 'your filters' }} in {{ selectedSemester }}.</p>
                 <button type="button" class="btn-clear-filters" (click)="clearSearch()">Reset Search & Filters</button>
             </div>
 
@@ -288,28 +348,22 @@ export interface StudentResult {
 
                         <!-- Performance Metric KPI Badges -->
                         <div class="student-kpi-deck">
-                            <div class="kpi-mini-pill" title="Total Subjects Evaluated">
+                            <div class="kpi-mini-pill" title="Subject Status">
                                 <span class="kpi-mini-icon">📚</span>
-                                <span class="kpi-mini-label">Subjects:</span>
+                                <span class="kpi-mini-label">{{ role === 'faculty' ? 'My Subject:' : 'Subjects:' }}</span>
                                 <strong class="kpi-mini-val">{{ s.passedCourses }}/{{ s.totalCourses }}</strong>
                             </div>
 
-                            <div class="kpi-mini-pill credits" title="Academic Credits Completed">
+                            <div class="kpi-mini-pill credits" title="Academic Credits">
                                 <span class="kpi-mini-icon">⭐</span>
                                 <span class="kpi-mini-label">Credits:</span>
                                 <strong class="kpi-mini-val">{{ s.earnedCredits }}/{{ s.totalCredits }} CR</strong>
                             </div>
 
-                            <div class="kpi-mini-pill sgpa" title="Semester SGPA">
+                            <div class="kpi-mini-pill sgpa" [title]="role === 'faculty' ? 'Course Score' : 'Semester SGPA'">
                                 <span class="kpi-mini-icon">🏆</span>
-                                <span class="kpi-mini-label">SGPA:</span>
+                                <span class="kpi-mini-label">{{ role === 'faculty' ? 'Score:' : 'SGPA:' }}</span>
                                 <strong class="kpi-mini-val">{{ s.sgpa }}</strong>
-                            </div>
-
-                            <div class="kpi-mini-pill cgpa" title="Cumulative CGPA">
-                                <span class="kpi-mini-icon">📈</span>
-                                <span class="kpi-mini-label">CGPA:</span>
-                                <strong class="kpi-mini-val">{{ s.cgpa }}</strong>
                             </div>
 
                             <div class="kpi-mini-pill grade" [class.pass]="s.standing === 'PASS'" [class.fail]="s.standing !== 'PASS'">
@@ -324,7 +378,7 @@ export interface StudentResult {
                                 type="button" 
                                 class="btn-deck-action view-btn" 
                                 (click)="viewSpecificStudent(s.studentName)"
-                                title="Open full official marksheet for {{ s.studentName }}"
+                                title="Open official marksheet for {{ s.studentName }}"
                             >
                                 👁️ View Marksheet
                             </button>
@@ -405,25 +459,21 @@ export interface StudentResult {
                                 <strong class="val" style="color: #fde68a;">{{ selectedSemester }}</strong>
                             </div>
                             <div class="nested-kpi-item">
-                                <span class="lbl">Registered Credits:</span>
+                                <span class="lbl">{{ role === 'faculty' ? 'Subject Credits:' : 'Registered Credits:' }}</span>
                                 <strong class="val">{{ s.totalCredits }} CR</strong>
                             </div>
                             <div class="nested-kpi-item">
                                 <span class="lbl">Credits Earned:</span>
                                 <strong class="val" style="color: #4ade80;">{{ s.earnedCredits }} CR</strong>
                             </div>
-                            <div class="nested-kpi-item">
+                            <div class="nested-kpi-item" *ngIf="role !== 'faculty'">
                                 <span class="lbl">Semester SGPA:</span>
                                 <strong class="val" style="color: #d4af37;">{{ s.sgpa }} / 10.00</strong>
                             </div>
                             <div class="nested-kpi-item">
-                                <span class="lbl">Cumulative CGPA:</span>
-                                <strong class="val" style="color: #60a5fa;">{{ s.cgpa }} / 10.00</strong>
-                            </div>
-                            <div class="nested-kpi-item">
                                 <span class="lbl">Academic Standing:</span>
                                 <strong class="val standing-badge" [class.pass]="s.standing === 'PASS'" [class.fail]="s.standing !== 'PASS'">
-                                    {{ s.standing === 'PASS' ? 'PASS (FIRST CLASS WITH DISTINCTION)' : 'RE-APPEAR / BACKLOG' }}
+                                    {{ s.standing === 'PASS' ? 'PASS (FIRST CLASS)' : 'RE-APPEAR / BACKLOG' }}
                                 </strong>
                             </div>
                             <div class="nested-kpi-actions">
@@ -446,7 +496,9 @@ export interface StudentResult {
                 <div class="inst-banner">
                     <h2 style="margin: 0; color: #1e3a8a; font-size: 1.6rem; text-transform: uppercase;">Centurion University of Technology and Management</h2>
                     <p style="margin: 4px 0 0; color: #475569; font-size: 0.95rem; font-weight: 700;">Department of {{ studentDept }} | OBE Examination Cell</p>
-                    <p style="margin: 2px 0 0; color: #0d9488; font-size: 1.1rem; font-weight: 800;">OFFICIAL NOTIFICATION OF SEMESTER MARKS & TRANSCRIPT</p>
+                    <p style="margin: 2px 0 0; color: #0d9488; font-size: 1.1rem; font-weight: 800;">
+                        {{ role === 'faculty' ? 'COURSE EVALUATION NOTIFICATION & MARKSHEET' : 'OFFICIAL NOTIFICATION OF SEMESTER MARKS & TRANSCRIPT' }}
+                    </p>
                 </div>
                 <div class="student-meta-box">
                     <div><strong>Student Name:</strong> {{ studentName }}</div>
@@ -459,11 +511,11 @@ export interface StudentResult {
             </div>
             
             <div class="table-header-row">
-                <h2>{{ studentName }} — {{ selectedSemester }} Official Grade Sheet</h2>
+                <h2>{{ studentName }} — {{ role === 'faculty' ? facultyAssignedCoursesDisplay + ' Grade Sheet' : selectedSemester + ' Official Grade Sheet' }}</h2>
                 <div class="sem-stats-pills">
                     <span class="stat-badge">Student: <strong>{{ studentName }}</strong></span>
                     <span class="stat-badge">Semester: <strong>{{ selectedSemester }}</strong></span>
-                    <span class="stat-badge">SGPA: <strong>{{ semesterSgpa }}</strong></span>
+                    <span class="stat-badge" *ngIf="role !== 'faculty'">SGPA: <strong>{{ semesterSgpa }}</strong></span>
                     <span class="stat-badge">Credits: <strong>{{ semesterCredits.earned }} CR</strong></span>
                     <span class="stat-badge status-pass">Result: <strong>PASS</strong></span>
                 </div>
@@ -485,6 +537,11 @@ export interface StudentResult {
                     </tr>
                 </thead>
                 <tbody>
+                    <tr *ngIf="displayedCourses.length === 0">
+                        <td colspan="9" class="empty-cell" style="text-align: center; padding: 30px; color: #94a3b8;">
+                            📭 No courses found matching {{ role === 'faculty' ? 'your assigned subject in this semester' : 'the criteria' }}.
+                        </td>
+                    </tr>
                     <tr *ngFor="let c of displayedCourses">
                         <td><strong style="color: #60a5fa; font-family: monospace;">{{ c.courseCode }}</strong></td>
                         <td>{{ c.courseTitle }}</td>
@@ -506,23 +563,23 @@ export interface StudentResult {
             <!-- Semester Summary Footer for Student View -->
             <div class="student-sem-summary-footer">
                 <div class="summary-metric-item">
-                    <span>Total Courses:</span>
+                    <span>Evaluated Courses:</span>
                     <strong>{{ displayedCourses.length }}</strong>
                 </div>
                 <div class="summary-metric-item">
-                    <span>Total Credits:</span>
+                    <span>Course Credits:</span>
                     <strong>{{ semesterCredits.registered }} Credits</strong>
                 </div>
-                <div class="summary-metric-item">
+                <div class="summary-metric-item" *ngIf="role !== 'faculty'">
                     <span>Semester SGPA:</span>
                     <strong style="color: #d4af37;">{{ semesterSgpa }} / 10.00</strong>
                 </div>
-                <div class="summary-metric-item">
+                <div class="summary-metric-item" *ngIf="role !== 'faculty'">
                     <span>Overall CGPA:</span>
                     <strong style="color: #60a5fa;">{{ cumulativeCgpa }} / 10.00</strong>
                 </div>
                 <div class="summary-metric-item">
-                    <span>Semester Grade:</span>
+                    <span>Standing:</span>
                     <strong style="color: #4ade80;">{{ getAcademicStandingGrade() }}</strong>
                 </div>
             </div>
@@ -530,8 +587,8 @@ export interface StudentResult {
             <!-- Signatures for Printed Marksheet -->
             <div class="print-signatures-area">
                 <div class="sig-col">
-                    <div class="sig-line">Prepared & Verified By</div>
-                    <small>Office of the Examination Section</small>
+                    <div class="sig-line">Course Faculty & Evaluator</div>
+                    <small>{{ role === 'faculty' ? facultyName : 'Faculty in Charge' }}</small>
                 </div>
                 <div class="sig-col">
                     <div class="sig-line">Head of Department ({{ getShortDept(studentDept) }})</div>
@@ -599,23 +656,43 @@ export interface StudentResult {
       color: #0a1128;
       box-shadow: 0 4px 12px rgba(212, 175, 55, 0.3);
     }
-    .mode-btn:not(.active):hover {
-      background: #18284e;
+
+    .branch-banner {
+      background: linear-gradient(135deg, #101b38 0%, #18284e 100%);
       color: #ffffff;
+      padding: 16px 20px;
+      border-radius: 14px;
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      border: 1px solid #1f2f54;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
     }
+    .faculty-banner {
+      border-left: 4px solid #d4af37;
+      background: linear-gradient(135deg, #101b38 0%, #1a2a50 100%);
+    }
+    .banner-icon { font-size: 2.2rem; }
+    .banner-details { flex: 1; }
+    .banner-title-row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+    .banner-title-row strong { font-size: 1.2rem; font-weight: 800; color: #ffffff; }
+    .banner-tag { background: rgba(34, 197, 94, 0.15); color: #4ade80; border: 1px solid rgba(74, 222, 128, 0.3); padding: 2px 10px; border-radius: 6px; font-size: 11.5px; font-weight: 800; }
+    .faculty-tag { background: rgba(212, 175, 55, 0.15); color: #d4af37; border-color: rgba(212, 175, 55, 0.4); }
+    .banner-sub { margin: 4px 0 0 0; font-size: 0.88rem; color: #94a3b8; line-height: 1.4; }
+    .assigned-chips { color: #facc15; font-weight: 700; }
 
     .student-picker-banner {
-      background: linear-gradient(135deg, #101f42 0%, #0d1733 100%);
-      border: 1px solid #2a4175;
+      background: #101b38;
+      border: 1px solid #1f2f54;
       border-radius: 12px;
-      padding: 14px 20px;
+      padding: 12px 18px;
       margin-bottom: 20px;
       display: flex;
       justify-content: space-between;
       align-items: center;
       flex-wrap: wrap;
       gap: 14px;
-      box-shadow: 0 4px 18px rgba(0, 0, 0, 0.3);
     }
     .picker-label-wrap {
       display: flex;
@@ -623,69 +700,66 @@ export interface StudentResult {
       gap: 12px;
     }
     .picker-icon {
-      font-size: 32px;
+      font-size: 2rem;
       color: #d4af37;
     }
     .picker-sub {
       display: block;
       font-size: 11px;
-      color: #94a3b8;
       text-transform: uppercase;
+      color: #94a3b8;
       font-weight: 700;
     }
     .picker-name {
+      font-size: 14px;
       color: #ffffff;
-      font-size: 1.05rem;
     }
     .picker-controls {
       display: flex;
       align-items: center;
-      gap: 12px;
-      flex-wrap: wrap;
+      gap: 10px;
     }
     .picker-select-label {
+      font-size: 12.5px;
       color: #cbd5e1;
-      font-weight: 700;
-      font-size: 13px;
+      font-weight: 600;
     }
     .student-dropdown {
-      padding: 8px 14px;
-      border-radius: 8px;
-      border: 1px solid #1f2f54;
       background: #091024;
       color: #ffffff;
-      font-weight: 600;
-      font-size: 13.5px;
+      border: 1px solid #1f2f54;
+      padding: 6px 12px;
+      border-radius: 6px;
+      font-size: 13px;
       outline: none;
-      min-width: 260px;
-      cursor: pointer;
     }
     .btn-switch-back {
-      padding: 8px 14px;
-      border-radius: 8px;
       background: #18284e;
       color: #cbd5e1;
-      border: 1px solid #2a4175;
-      font-size: 12.5px;
+      border: 1px solid #1f2f54;
+      padding: 6px 14px;
+      border-radius: 6px;
+      font-size: 12px;
       font-weight: 700;
       cursor: pointer;
-      transition: all 0.2s ease;
     }
     .btn-switch-back:hover {
-      background: #243b70;
+      background: #233876;
       color: #ffffff;
     }
 
+    /* Semester Filter Toolbar */
     .semester-filter-toolbar {
       background: #101b38;
       border: 1px solid #1f2f54;
-      border-radius: 14px;
-      padding: 16px 20px;
-      margin-bottom: 22px;
-      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.35);
+      border-radius: 12px;
+      padding: 12px 16px;
+      margin-bottom: 20px;
       display: flex;
-      flex-direction: column;
-      gap: 12px;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 14px;
     }
     .semester-header-info {
       display: flex;
@@ -693,519 +767,334 @@ export interface StudentResult {
       gap: 10px;
     }
     .toolbar-title {
-      color: #cbd5e1;
+      font-size: 13px;
       font-weight: 700;
-      font-size: 14px;
+      color: #cbd5e1;
     }
     .active-sem-tag {
-      background: rgba(212, 175, 55, 0.2);
-      color: #d4af37;
+      background: rgba(212, 175, 55, 0.15);
+      color: #fde68a;
       border: 1px solid rgba(212, 175, 55, 0.4);
       padding: 3px 10px;
       border-radius: 6px;
-      font-weight: 800;
       font-size: 12px;
-      text-transform: uppercase;
+      font-weight: 800;
     }
     .semester-pills {
       display: flex;
       flex-wrap: wrap;
-      gap: 8px;
+      gap: 6px;
     }
     .sem-pill {
       background: #091024;
       color: #94a3b8;
       border: 1px solid #1f2f54;
-      padding: 8px 14px;
-      border-radius: 8px;
-      font-size: 13px;
+      padding: 5px 12px;
+      border-radius: 6px;
+      font-size: 12px;
       font-weight: 700;
       cursor: pointer;
-      transition: all 0.2s ease;
+      transition: all 0.15s ease;
     }
     .sem-pill:hover {
       background: #18284e;
       color: #ffffff;
-      border-color: #d4af37;
-      transform: translateY(-1px);
     }
     .sem-pill.active {
       background: linear-gradient(135deg, #d4af37 0%, #b38f28 100%);
       color: #0a1128;
       border-color: #d4af37;
-      box-shadow: 0 4px 14px rgba(212, 175, 55, 0.3);
     }
 
+    /* Summary KPI Grid */
     .summary-grid {
       display: grid;
-      gap: 16px;
       grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-      margin-bottom: 24px;
-    }
-    .section-card, .table-card {
-      padding: 22px;
-      background: #101b38;
-      border: 1px solid #1f2f54;
-      border-radius: 14px;
-      box-shadow: 0 8px 24px rgba(0,0,0,.35);
-      margin-bottom: 24px;
+      gap: 16px;
+      margin-bottom: 22px;
     }
     .kpi-card-lux {
+      background: #101b38;
+      border: 1px solid #1f2f54;
+      border-radius: 12px;
+      padding: 16px;
       display: flex;
       align-items: center;
-      gap: 18px;
-      padding: 20px;
-      margin-bottom: 0;
+      gap: 14px;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.3);
     }
     .kpi-icon-badge {
-      font-size: 28px;
-      width: 54px;
-      height: 54px;
+      width: 44px;
+      height: 44px;
+      border-radius: 10px;
       display: flex;
       align-items: center;
       justify-content: center;
-      border-radius: 12px;
-      flex-shrink: 0;
+      font-size: 20px;
     }
     .kpi-text-block {
-      flex: 1;
+      display: flex;
+      flex-direction: column;
     }
     .kpi-tag {
       font-size: 11px;
       text-transform: uppercase;
       font-weight: 700;
       color: #94a3b8;
-      display: block;
-      margin-bottom: 4px;
     }
     .kpi-num {
-      display: block;
-      font-size: 1.8rem;
+      font-size: 1.5rem;
       font-weight: 800;
       color: #ffffff;
-      line-height: 1.1;
-      margin-bottom: 4px;
+      margin: 2px 0;
     }
     .kpi-text-block p {
       margin: 0;
-      font-size: 12px;
+      font-size: 11.5px;
       color: #64748b;
     }
 
-    .section-card h3, .table-card h2 {
-      margin-top: 0;
-      font-size: 1.1rem;
-      color: #ffffff;
-      font-weight: 800;
+    .section-card {
+      background: #101b38;
+      border: 1px solid #1f2f54;
+      border-radius: 12px;
+      padding: 16px;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.3);
+    }
+    .section-card h3 {
+      margin: 0 0 4px 0;
+      font-size: 12px;
+      text-transform: uppercase;
+      color: #94a3b8;
+      font-weight: 700;
     }
     .section-card strong {
+      font-size: 1.5rem;
+      font-weight: 800;
       display: block;
-      font-size: 2rem;
-      margin-top: 8px;
-      margin-bottom: 8px;
-      color: #ffffff;
+      margin-bottom: 4px;
+    }
+    .section-card p {
+      margin: 0;
+      font-size: 11.5px;
+      color: #64748b;
     }
     .pass-standing {
       color: #4ade80 !important;
-      font-size: 1.4rem !important;
+      font-size: 1.2rem !important;
     }
-    
+
     .action-row {
       display: flex;
-      align-items: center;
-      gap: 14px;
+      gap: 12px;
+      margin-bottom: 20px;
       flex-wrap: wrap;
-      margin-bottom: 22px;
+      align-items: center;
     }
-    .btn-download {
-      padding: 12px 22px;
-      border: none;
+    .btn-download, .btn-print {
+      padding: 9px 18px;
       border-radius: 8px;
-      background: linear-gradient(135deg, #d4af37 0%, #b38f28 100%);
-      color: #0a1128;
+      font-size: 13px;
+      font-weight: 700;
       cursor: pointer;
-      font-weight: 800;
-      font-size: 14px;
-      box-shadow: 0 4px 14px rgba(212,175,55,0.3);
+      border: none;
       transition: all 0.2s ease;
     }
-    .btn-download:hover {
-      filter: brightness(1.1);
-      transform: translateY(-1px);
+    .btn-download {
+      background: linear-gradient(135deg, #d4af37 0%, #b38f28 100%);
+      color: #0a1128;
     }
     .btn-print {
-      background: #10b981 !important;
-      color: white !important;
-      padding: 12px 20px;
-      border: none;
-      border-radius: 8px;
-      cursor: pointer;
-      font-weight: 700;
-      font-size: 13.5px;
-    }
-    .btn-print:hover {
-      filter: brightness(1.1);
+      background: #18284e;
+      color: #cbd5e1;
+      border: 1px solid #1f2f54;
     }
     .status-message {
       color: #4ade80;
       font-weight: 700;
-      background: rgba(34, 197, 94, 0.15);
-      border: 1px solid rgba(74, 222, 128, 0.3);
-      padding: 8px 14px;
-      border-radius: 8px;
       font-size: 13px;
     }
-    
-    .table-header-row {
+
+    /* Deck Container */
+    .results-deck-container { margin-bottom: 30px; }
+    .results-search-toolbar {
+      background: #101b38;
+      border: 1px solid #1f2f54;
+      border-radius: 12px;
+      padding: 12px 16px;
+      margin-bottom: 18px;
       display: flex;
       justify-content: space-between;
       align-items: center;
       flex-wrap: wrap;
       gap: 12px;
-      margin-bottom: 16px;
-    }
-    .sem-stats-pills {
-      display: flex;
-      gap: 8px;
-      flex-wrap: wrap;
-    }
-    .stat-badge {
-      background: #091024;
-      border: 1px solid #1f2f54;
-      color: #cbd5e1;
-      padding: 4px 10px;
-      border-radius: 6px;
-      font-size: 12px;
-    }
-    .stat-badge strong {
-      color: #ffffff;
-      margin-left: 4px;
-    }
-    .stat-badge.status-pass {
-      background: rgba(34, 197, 94, 0.15);
-      border-color: rgba(74, 222, 128, 0.3);
-      color: #4ade80;
-    }
-    .stat-badge.status-pass strong {
-      color: #4ade80;
-    }
-
-    /* Results Search Toolbar */
-    .results-search-toolbar {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 14px;
-      margin-bottom: 20px;
-      padding: 14px 18px;
-      background: #101b38;
-      border: 1px solid #1f2f54;
-      border-radius: 12px;
-      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
-      flex-wrap: wrap;
     }
     .search-input-wrap {
-      flex: 1;
-      min-width: 280px;
       display: flex;
       align-items: center;
       background: #091024;
       border: 1px solid #1f2f54;
       border-radius: 8px;
-      padding: 0 12px;
-      transition: all 0.2s ease;
-    }
-    .search-input-wrap:focus-within {
-      border-color: #d4af37;
-      box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.2);
+      padding: 6px 12px;
+      flex: 1;
+      min-width: 260px;
     }
     .search-icon {
-      font-size: 14px;
       margin-right: 8px;
-      opacity: 0.8;
+      font-size: 1rem;
+      color: #d4af37;
     }
     .results-search-input {
-      width: 100%;
-      padding: 10px 0;
-      background: transparent;
       border: none;
-      color: #ffffff;
-      font-size: 13.5px;
+      background: transparent;
+      width: 100%;
       outline: none;
-    }
-    .results-search-input::placeholder {
-      color: #64748b;
+      font-size: 0.92rem;
+      color: #ffffff;
     }
     .clear-search-btn {
       background: none;
       border: none;
       color: #94a3b8;
       cursor: pointer;
-      font-size: 14px;
-      padding: 4px;
-    }
-    .clear-search-btn:hover {
-      color: #f87171;
     }
     .search-filter-wrap {
       display: flex;
       align-items: center;
-      gap: 12px;
+      gap: 8px;
       flex-wrap: wrap;
     }
     .filter-dropdown-select {
-      padding: 9px 14px;
       background: #091024;
+      color: #cbd5e1;
       border: 1px solid #1f2f54;
-      border-radius: 8px;
-      color: #fde68a;
-      font-size: 13px;
-      font-weight: 600;
-      outline: none;
-      cursor: pointer;
-    }
-    .accordion-global-buttons {
-      display: flex;
-      gap: 6px;
-    }
-    .btn-toggle-accordion {
-      background: #091024;
-      color: #94a3b8;
-      border: 1px solid #1f2f54;
-      padding: 8px 12px;
+      padding: 6px 10px;
       border-radius: 6px;
-      font-size: 12px;
+      font-size: 12.5px;
+      outline: none;
+    }
+    .gold-select {
+      border-color: rgba(212, 175, 55, 0.4);
+      color: #fde68a;
+    }
+    .accordion-global-buttons { display: flex; gap: 6px; }
+    .btn-toggle-accordion {
+      background: #18284e;
+      color: #cbd5e1;
+      border: 1px solid #1f2f54;
+      padding: 6px 10px;
+      border-radius: 6px;
+      font-size: 11.5px;
       font-weight: 700;
       cursor: pointer;
-      transition: all 0.2s ease;
-    }
-    .btn-toggle-accordion:hover {
-      background: #18284e;
-      color: #ffffff;
-      border-color: #d4af37;
     }
     .match-count-badge {
-      font-size: 12.5px;
+      font-size: 12px;
       color: #94a3b8;
-      white-space: nowrap;
     }
     .match-count-badge strong {
-      color: #d4af37;
+      color: #38bdf8;
     }
 
-    /* ========================================================================= */
-    /* STUDENT RESULTS ACCORDION DECK STYLES                                     */
-    /* ========================================================================= */
+    /* Student Accordion Deck */
     .student-accordion-deck {
       display: flex;
       flex-direction: column;
-      gap: 16px;
-      margin-bottom: 24px;
+      gap: 14px;
     }
     .student-accordion-card {
       background: #101b38;
       border: 1px solid #1f2f54;
-      border-radius: 14px;
+      border-radius: 12px;
       overflow: hidden;
-      transition: all 0.25s ease;
-      box-shadow: 0 4px 18px rgba(0, 0, 0, 0.25);
-    }
-    .student-accordion-card:hover {
-      border-color: #3b82f6;
-      box-shadow: 0 6px 24px rgba(0, 0, 0, 0.35);
+      box-shadow: 0 4px 16px rgba(0,0,0,0.25);
+      transition: all 0.2s ease;
     }
     .student-accordion-card.expanded {
-      border-color: #d4af37;
-      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.45);
+      border-color: rgba(212, 175, 55, 0.4);
     }
-
-    /* Master Card Header */
     .student-card-header {
-      padding: 16px 20px;
+      padding: 14px 18px;
       display: flex;
-      align-items: center;
       justify-content: space-between;
+      align-items: center;
       flex-wrap: wrap;
-      gap: 16px;
+      gap: 14px;
       cursor: pointer;
-      background: #101b38;
       user-select: none;
-      transition: background 0.2s ease;
-    }
-    .student-accordion-card.expanded .student-card-header {
-      background: #132247;
-      border-bottom: 1px solid #1f2f54;
+      background: linear-gradient(90deg, #132247 0%, #101b38 100%);
     }
     .student-main-profile {
       display: flex;
       align-items: center;
       gap: 14px;
-      min-width: 260px;
     }
     .student-avatar {
-      width: 46px;
-      height: 46px;
-      border-radius: 50%;
-      background: linear-gradient(135deg, #1e3a8a, #3b82f6);
+      width: 42px;
+      height: 42px;
+      border-radius: 10px;
+      background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%);
       color: #ffffff;
       font-weight: 800;
-      font-size: 16px;
       display: flex;
       align-items: center;
       justify-content: center;
-      box-shadow: 0 3px 10px rgba(0, 0, 0, 0.3);
-      flex-shrink: 0;
+      font-size: 14px;
     }
-    .student-avatar.cse { background: linear-gradient(135deg, #3730a3, #6366f1); }
-    .student-avatar.it { background: linear-gradient(135deg, #0e7490, #06b6d4); }
-    .student-avatar.ece { background: linear-gradient(135deg, #b45309, #f59e0b); }
-    .student-avatar.me { background: linear-gradient(135deg, #c2410c, #f97316); }
-    .student-avatar.ce { background: linear-gradient(135deg, #15803d, #22c55e); }
-    .student-avatar.eee { background: linear-gradient(135deg, #7e22ce, #a855f7); }
-
-    .student-meta-details {
-      display: flex;
-      flex-direction: column;
-      gap: 4px;
-    }
-    .student-name-row {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      flex-wrap: wrap;
-    }
-    .student-heading {
-      margin: 0;
-      color: #ffffff;
-      font-size: 1.15rem;
-      font-weight: 800;
-    }
+    .student-meta-details { display: flex; flex-direction: column; gap: 2px; }
+    .student-name-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+    .student-heading { margin: 0; font-size: 1.05rem; color: #ffffff; font-weight: 800; }
     .stu-id-tag {
-      background: rgba(212, 175, 55, 0.15);
-      color: #fde68a;
-      border: 1px solid rgba(212, 175, 55, 0.35);
       font-family: monospace;
-      font-weight: 700;
-      padding: 2px 8px;
-      border-radius: 6px;
-      font-size: 12px;
+      font-size: 11.5px;
+      color: #cbd5e1;
+      background: #091024;
+      border: 1px solid #1f2f54;
+      padding: 2px 6px;
+      border-radius: 4px;
     }
     .badge-dept-tag {
-      padding: 2px 8px;
-      border-radius: 6px;
-      font-size: 11px;
+      font-size: 10.5px;
       font-weight: 800;
-      text-transform: uppercase;
+      padding: 2px 6px;
+      border-radius: 4px;
       background: rgba(99, 102, 241, 0.2);
       color: #a5b4fc;
       border: 1px solid rgba(99, 102, 241, 0.4);
     }
-    .badge-dept-tag.cse { background: rgba(99, 102, 241, 0.2); color: #a5b4fc; border-color: rgba(99, 102, 241, 0.4); }
-    .badge-dept-tag.it { background: rgba(6, 182, 212, 0.2); color: #67e8f9; border-color: rgba(6, 182, 212, 0.4); }
-    .badge-dept-tag.ece { background: rgba(245, 158, 11, 0.2); color: #fcd34d; border-color: rgba(245, 158, 11, 0.4); }
-    .badge-dept-tag.me { background: rgba(249, 115, 22, 0.2); color: #fdba74; border-color: rgba(249, 115, 22, 0.4); }
-    .badge-dept-tag.ce { background: rgba(34, 197, 94, 0.2); color: #86efac; border-color: rgba(34, 197, 94, 0.4); }
-    .badge-dept-tag.eee { background: rgba(168, 85, 247, 0.2); color: #d8b4fe; border-color: rgba(168, 85, 247, 0.4); }
-
     .student-sub-row {
       display: flex;
       align-items: center;
       gap: 8px;
-      flex-wrap: wrap;
       font-size: 12px;
       color: #94a3b8;
     }
-    .student-dept-name {
-      color: #cbd5e1;
-      font-weight: 600;
-    }
-    .student-dot-separator {
-      opacity: 0.5;
-    }
-    .student-sem-tag {
-      color: #d4af37;
-      font-weight: 700;
-    }
-    .student-email-link {
-      color: #64748b;
-      font-family: monospace;
-      font-size: 11.5px;
-    }
+    .student-sem-tag { color: #d4af37; font-weight: 700; }
+    .student-dot-separator { opacity: 0.5; }
+    .student-email-link { color: #64748b; font-family: monospace; }
 
-    /* KPI Summary Pills */
-    .student-kpi-deck {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      flex-wrap: wrap;
-    }
+    .student-kpi-deck { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
     .kpi-mini-pill {
       background: #091024;
       border: 1px solid #1f2f54;
       border-radius: 8px;
-      padding: 6px 12px;
+      padding: 5px 10px;
       display: flex;
       align-items: center;
       gap: 6px;
       font-size: 12px;
     }
-    .kpi-mini-icon {
-      font-size: 13px;
-    }
-    .kpi-mini-label {
-      color: #94a3b8;
-      font-size: 11px;
-      text-transform: uppercase;
-      font-weight: 700;
-    }
-    .kpi-mini-val {
-      color: #ffffff;
-      font-weight: 800;
-      font-size: 13px;
-    }
-    .kpi-mini-pill.credits strong {
-      color: #fde68a;
-    }
-    .kpi-mini-pill.sgpa {
-      background: rgba(212, 175, 55, 0.12);
-      border-color: rgba(212, 175, 55, 0.35);
-    }
-    .kpi-mini-pill.sgpa strong {
-      color: #d4af37;
-      font-size: 14px;
-    }
-    .kpi-mini-pill.cgpa {
-      background: rgba(96, 165, 250, 0.12);
-      border-color: rgba(96, 165, 250, 0.35);
-    }
-    .kpi-mini-pill.cgpa strong {
-      color: #60a5fa;
-      font-size: 14px;
-    }
-    .kpi-mini-pill.grade.pass {
-      background: rgba(34, 197, 94, 0.15);
-      border-color: rgba(74, 222, 128, 0.35);
-    }
-    .kpi-mini-pill.grade.pass strong {
-      color: #4ade80;
-    }
-    .kpi-mini-pill.grade.fail {
-      background: rgba(239, 68, 68, 0.15);
-      border-color: rgba(248, 113, 113, 0.35);
-    }
-    .kpi-mini-pill.grade.fail strong {
-      color: #f87171;
-    }
+    .kpi-mini-label { color: #94a3b8; font-size: 10.5px; text-transform: uppercase; font-weight: 700; }
+    .kpi-mini-val { color: #ffffff; font-weight: 800; font-size: 12.5px; }
+    .kpi-mini-pill.credits strong { color: #fde68a; }
+    .kpi-mini-pill.sgpa strong { color: #d4af37; }
+    .kpi-mini-pill.grade.pass strong { color: #4ade80; }
+    .kpi-mini-pill.grade.fail strong { color: #f87171; }
 
-    /* Actions */
-    .student-card-actions {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
+    .student-card-actions { display: flex; align-items: center; gap: 8px; }
     .btn-deck-action {
-      padding: 7px 12px;
-      border-radius: 8px;
+      padding: 6px 12px;
+      border-radius: 6px;
       font-size: 12px;
       font-weight: 700;
       cursor: pointer;
@@ -1216,57 +1105,36 @@ export interface StudentResult {
       color: #fde68a;
       border: 1px solid rgba(212, 175, 55, 0.35);
     }
-    .btn-deck-action.view-btn:hover {
-      background: #d4af37;
-      color: #0a1128;
-      transform: translateY(-1px);
-    }
+    .btn-deck-action.view-btn:hover { background: #d4af37; color: #0a1128; }
     .btn-deck-action.csv-btn {
       background: #091024;
       color: #cbd5e1;
       border: 1px solid #1f2f54;
     }
-    .btn-deck-action.csv-btn:hover {
-      background: #18284e;
-      color: #ffffff;
-    }
     .btn-expand-chevron {
       background: #091024;
       border: 1px solid #1f2f54;
       color: #94a3b8;
-      border-radius: 8px;
-      width: 36px;
-      height: 36px;
+      border-radius: 6px;
+      width: 32px;
+      height: 32px;
       display: flex;
       align-items: center;
       justify-content: center;
       cursor: pointer;
-      transition: all 0.2s ease;
-    }
-    .btn-expand-chevron:hover {
-      background: #18284e;
-      color: #d4af37;
-      border-color: #d4af37;
-    }
-    .chevron-icon {
-      font-size: 22px;
     }
 
     /* Nested Table & Body */
     .student-card-body {
-      padding: 18px 20px;
+      padding: 16px 18px;
       background: #091024;
-      animation: fadeIn 0.2s ease-in-out;
-    }
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(-4px); }
-      to { opacity: 1; transform: translateY(0); }
+      border-top: 1px solid #1f2f54;
     }
     .nested-table-wrap {
       overflow-x: auto;
-      border-radius: 10px;
+      border-radius: 8px;
       border: 1px solid #1f2f54;
-      margin-bottom: 14px;
+      margin-bottom: 12px;
     }
     .nested-results-table {
       width: 100%;
@@ -1278,18 +1146,15 @@ export interface StudentResult {
       color: #d4af37;
       font-weight: 700;
       text-transform: uppercase;
-      font-size: 0.78rem;
-      padding: 10px 14px;
+      font-size: 0.76rem;
+      padding: 9px 12px;
       border-bottom: 1px solid #1f2f54;
       text-align: left;
     }
     .nested-results-table td {
-      padding: 10px 14px;
+      padding: 9px 12px;
       border-bottom: 1px solid #18284e;
       color: #cbd5e1;
-    }
-    .nested-results-table tbody tr:hover {
-      background: #101b38;
     }
     .sub-code-badge {
       font-family: monospace;
@@ -1298,156 +1163,111 @@ export interface StudentResult {
       background: rgba(96, 165, 250, 0.1);
       padding: 2px 6px;
       border-radius: 4px;
-      border: 1px solid rgba(96, 165, 250, 0.25);
     }
-    .sub-title-text {
-      color: #ffffff;
-    }
+    .sub-title-text { color: #ffffff; }
     .sub-cr-pill {
       background: rgba(212, 175, 55, 0.15);
       color: #fde68a;
-      border: 1px solid rgba(212, 175, 55, 0.3);
-      padding: 2px 8px;
-      border-radius: 12px;
+      padding: 2px 6px;
+      border-radius: 10px;
       font-size: 11px;
-      font-weight: 800;
-    }
-    .mark-val {
-      color: #e2e8f0;
       font-weight: 700;
     }
-    .mark-total-val {
-      color: #ffffff;
-      font-size: 14px;
-    }
+    .mark-val { color: #e2e8f0; font-weight: 700; }
+    .mark-total-val { color: #ffffff; font-size: 13.5px; }
 
-    /* Nested Summary Footer */
     .nested-summary-footer {
       display: flex;
       align-items: center;
       justify-content: space-between;
       flex-wrap: wrap;
-      gap: 14px;
-      padding: 12px 16px;
+      gap: 12px;
+      padding: 10px 14px;
       background: #101b38;
       border: 1px solid #1f2f54;
-      border-radius: 10px;
+      border-radius: 8px;
     }
-    .nested-kpi-item {
-      display: flex;
-      flex-direction: column;
-      gap: 2px;
-    }
-    .nested-kpi-item .lbl {
-      font-size: 11px;
-      color: #94a3b8;
-      text-transform: uppercase;
-      font-weight: 700;
-    }
-    .nested-kpi-item .val {
-      font-size: 13.5px;
-      color: #ffffff;
-      font-weight: 800;
-    }
-    .standing-badge.pass {
-      color: #4ade80 !important;
-    }
-    .standing-badge.fail {
-      color: #f87171 !important;
-    }
+    .nested-kpi-item { display: flex; flex-direction: column; gap: 2px; }
+    .nested-kpi-item .lbl { font-size: 10.5px; color: #94a3b8; text-transform: uppercase; font-weight: 700; }
+    .nested-kpi-item .val { font-size: 13px; color: #ffffff; font-weight: 800; }
+    .standing-badge.pass { color: #4ade80 !important; }
+    .standing-badge.fail { color: #f87171 !important; }
     .btn-micro-print {
       background: #10b981;
       color: #ffffff;
       border: none;
-      padding: 6px 14px;
+      padding: 5px 12px;
       border-radius: 6px;
       font-weight: 700;
-      font-size: 12px;
+      font-size: 11.5px;
       cursor: pointer;
-      transition: all 0.2s ease;
-    }
-    .btn-micro-print:hover {
-      filter: brightness(1.1);
     }
 
-    /* Standard Table */
-    .table-card table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-top: 12px;
+    /* Single Marksheet Table */
+    .table-card {
+      background: #101b38;
+      border: 1px solid #1f2f54;
+      border-radius: 14px;
+      padding: 20px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+      overflow-x: auto;
+      margin-bottom: 24px;
     }
-    .table-card th, .table-card td {
+    .table-header-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+    .table-header-row h2 { margin: 0; font-size: 1.25rem; color: #ffffff; font-weight: 800; }
+    .sem-stats-pills { display: flex; gap: 8px; flex-wrap: wrap; }
+    .stat-badge {
+      background: #091024;
+      border: 1px solid #1f2f54;
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-size: 12px;
+      color: #cbd5e1;
+    }
+    .stat-badge.status-pass {
+      border-color: rgba(74, 222, 128, 0.4);
+      color: #4ade80;
+      background: rgba(34, 197, 94, 0.1);
+    }
+    table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+    th {
+      background: #132247;
       padding: 12px 14px;
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: #d4af37;
+      font-weight: 700;
       border-bottom: 1px solid #1f2f54;
       text-align: left;
     }
-    .table-card th {
-      font-weight: 700;
-      color: #d4af37;
-      background: #132247;
-      text-transform: uppercase;
-      font-size: 0.82rem;
-    }
-    .table-card td {
-      color: #e2e8f0;
-      font-size: 13.5px;
-    }
-    .table-card tbody tr:hover {
-      background: #18284e;
-    }
-    
+    td { padding: 12px 14px; border-bottom: 1px solid #1f2f54; font-size: 13.5px; color: #e2e8f0; }
+    tr:hover td { background: #18284e; }
     .grade-badge {
       background: #091024;
-      color: #d4af37;
-      border: 1px solid #1f2f54;
-      padding: 4px 8px;
-      border-radius: 8px;
-      font-size: 0.85rem;
-      font-weight: 800;
-      font-family: monospace;
-    }
-    .grade-badge.excellent {
-      background: rgba(34, 197, 94, 0.15);
-      color: #4ade80;
-      border: 1px solid rgba(74, 222, 128, 0.3);
-    }
-    
-    .status-pill {
-      font-size: 0.8rem;
-      font-weight: 800;
-      padding: 3px 8px;
+      color: #cbd5e1;
+      padding: 2px 8px;
       border-radius: 4px;
-      text-transform: uppercase;
-    }
-    .status-pill.pass {
-      background: rgba(34, 197, 94, 0.15);
-      color: #4ade80;
-      border: 1px solid rgba(74, 222, 128, 0.3);
-    }
-    .status-pill.fail {
-      background: rgba(239, 68, 68, 0.15);
-      color: #f87171;
-      border: 1px solid rgba(248, 113, 113, 0.3);
-    }
-    .empty-state {
-      text-align: center;
-      color: #94a3b8;
-      padding: 40px 20px;
-      background: #101b38;
+      font-weight: 800;
+      font-size: 11.5px;
       border: 1px solid #1f2f54;
-      border-radius: 12px;
     }
-    .btn-clear-filters {
-      margin-top: 12px;
-      padding: 8px 18px;
-      background: #18284e;
-      color: #fde68a;
-      border: 1px solid #d4af37;
-      border-radius: 8px;
-      cursor: pointer;
-      font-weight: 700;
-      font-size: 13px;
+    .grade-badge.excellent { color: #fde68a; border-color: rgba(212, 175, 55, 0.4); background: rgba(212, 175, 55, 0.1); }
+    .status-pill {
+      font-size: 11.5px;
+      font-weight: 800;
+      padding: 2px 8px;
+      border-radius: 4px;
     }
+    .status-pill.pass { background: rgba(34, 197, 94, 0.15); color: #4ade80; border: 1px solid rgba(74, 222, 128, 0.3); }
+    .status-pill.fail { background: rgba(239, 68, 68, 0.15); color: #f87171; border: 1px solid rgba(248, 113, 113, 0.3); }
 
     .student-sem-summary-footer {
       display: flex;
@@ -1455,35 +1275,22 @@ export interface StudentResult {
       gap: 16px;
       justify-content: space-between;
       margin-top: 20px;
-      padding-top: 16px;
-      border-top: 1px solid #1f2f54;
+      padding: 14px 18px;
       background: #091024;
       border-radius: 10px;
-      padding: 14px 18px;
+      border: 1px solid #1f2f54;
     }
-    .summary-metric-item {
-      display: flex;
-      flex-direction: column;
-      font-size: 12px;
-      color: #94a3b8;
-    }
-    .summary-metric-item strong {
-      font-size: 15px;
-      color: #ffffff;
-      margin-top: 2px;
-    }
+    .summary-metric-item { display: flex; flex-direction: column; font-size: 12px; color: #94a3b8; }
+    .summary-metric-item strong { font-size: 15px; color: #ffffff; margin-top: 2px; }
 
-    .print-header-details { display: none; }
-    .print-signatures-area { display: none; }
+    .empty-state { text-align: center; padding: 40px 20px; background: #101b38; border: 1px dashed #1f2f54; border-radius: 12px; color: #94a3b8; }
+    .btn-clear-filters { background: #18284e; color: #cbd5e1; border: 1px solid #1f2f54; padding: 8px 16px; border-radius: 6px; font-weight: 700; cursor: pointer; margin-top: 10px; }
+
+    .print-header-details, .print-signatures-area { display: none; }
     
     @media print {
-      body * {
-        visibility: hidden;
-      }
-      .table-card, 
-      .table-card * {
-        visibility: visible;
-      }
+      body * { visibility: hidden; }
+      .table-card, .table-card * { visibility: visible; }
       .table-card {
         position: absolute;
         left: 0;
@@ -1492,8 +1299,6 @@ export interface StudentResult {
         box-shadow: none !important;
         border: 2px solid #1e3a8a !important;
         padding: 30px !important;
-        border-radius: 10px !important;
-        margin: 0 !important;
         background: #ffffff !important;
         color: #1e293b !important;
       }
@@ -1503,10 +1308,7 @@ export interface StudentResult {
         border-bottom: 2px solid #1e3a8a;
         padding-bottom: 12px;
       }
-      .inst-banner {
-        text-align: center;
-        margin-bottom: 14px;
-      }
+      .inst-banner { text-align: center; margin-bottom: 14px; }
       .student-meta-box {
         display: grid;
         grid-template-columns: 1fr 1fr;
@@ -1518,33 +1320,24 @@ export interface StudentResult {
         font-size: 12px;
         color: #1e293b;
       }
-      table {
-        border-collapse: collapse;
-        width: 100%;
-        margin-top: 15px;
-      }
+      table { border-collapse: collapse; width: 100%; margin-top: 15px; }
       th {
         background: #1e40af !important;
         color: #ffffff !important;
         border: 1px solid #1e40af !important;
         padding: 8px 10px !important;
-        font-size: 11px !important;
       }
       td {
         border: 1px solid #cbd5e1 !important;
         color: #1e293b !important;
         padding: 8px 10px !important;
-        font-size: 11px !important;
       }
       .student-sem-summary-footer {
         background: #f8fafc !important;
         border: 1px solid #cbd5e1 !important;
         color: #1e293b !important;
-        margin-top: 15px !important;
       }
-      .summary-metric-item strong {
-        color: #1e3a8a !important;
-      }
+      .summary-metric-item strong { color: #1e3a8a !important; }
       .print-signatures-area {
         display: flex !important;
         justify-content: space-between;
@@ -1574,6 +1367,12 @@ export class Results implements OnInit, OnDestroy {
   studentRoll = '646456455';
   studentDept = 'Computer Science & Engineering';
   currentDate = new Date();
+
+  // Faculty Specific Isolation Properties
+  facultyName: string = '';
+  facultyDept: string = 'Computer Science & Engineering';
+  facultyAssignedCourses: string[] = [];
+  selectedFacultyCourseFilter: string = '';
 
   viewMode: 'class' | 'student' = 'class';
 
@@ -1608,6 +1407,13 @@ export class Results implements OnInit, OnDestroy {
   private syncService = inject(SyncService);
   private toastService = inject(ToastService);
   private syncSub?: Subscription;
+
+  get facultyAssignedCoursesDisplay(): string {
+    if (this.facultyAssignedCourses && this.facultyAssignedCourses.length > 0) {
+      return this.facultyAssignedCourses.join(', ');
+    }
+    return 'Assigned Department Subjects';
+  }
 
   // Complete 8-Semester Academic Curriculum with Official Grades
   semesterCurriculumData: { [sem: string]: SemesterCourseRecord[] } = {
@@ -1696,6 +1502,17 @@ export class Results implements OnInit, OnDestroy {
     const parts = name.trim().split(/\s+/);
     if (parts.length === 1) return parts[0].substring(0, 2).toUpperCase();
     return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+  }
+
+  isCourseAssignedToFaculty(courseCode: string, courseTitle: string): boolean {
+    if (this.role !== 'faculty') return true;
+    if (!this.facultyAssignedCourses || this.facultyAssignedCourses.length === 0) return true;
+    const code = (courseCode || '').toLowerCase();
+    const title = (courseTitle || '').toLowerCase();
+    return this.facultyAssignedCourses.some(assigned => {
+      const a = assigned.toLowerCase();
+      return code === a || code.includes(a) || a.includes(code) || title.includes(a) || a.includes(title);
+    });
   }
 
   buildCurriculumForStudent(studentName: string, dept: string, semester: string): SemesterCourseRecord[] {
@@ -1808,6 +1625,32 @@ export class Results implements OnInit, OnDestroy {
         this.studentRoll = localStorage.getItem('userRoll') || localStorage.getItem('userId') || '646456455';
         this.studentDept = localStorage.getItem('userDept') || localStorage.getItem('userDepartment') || 'Computer Science & Engineering';
         this.viewMode = 'student';
+      } else if (this.role === 'faculty') {
+        this.facultyName = this.userName || 'Prof. Sunita Sharma';
+        this.facultyDept = localStorage.getItem('userDepartment') || localStorage.getItem('userDept') || 'Computer Science & Engineering';
+        this.studentName = 'vamsi';
+        this.studentRoll = '646456455';
+        this.studentDept = this.facultyDept;
+        this.viewMode = 'class';
+
+        const stored = localStorage.getItem('userAssignedCourses');
+        if (stored) {
+          try {
+            this.facultyAssignedCourses = JSON.parse(stored);
+          } catch {}
+        }
+        if (!this.facultyAssignedCourses || this.facultyAssignedCourses.length === 0) {
+          const matched = DEFAULT_DATABASE_COURSES.filter(c => 
+            c.faculty && c.faculty.toLowerCase().includes(this.facultyName.toLowerCase())
+          );
+          if (matched.length > 0) {
+            this.facultyAssignedCourses = Array.from(new Set(matched.map(m => m.code)));
+          } else {
+            const deptShort = this.getShortDept(this.facultyDept);
+            const prefix = deptShort === 'CSE' ? 'CS' : deptShort;
+            this.facultyAssignedCourses = DEFAULT_DATABASE_COURSES.filter(c => c.code.startsWith(prefix)).slice(0, 3).map(c => c.code);
+          }
+        }
       } else {
         this.studentName = 'vamsi';
         this.studentRoll = '646456455';
@@ -2004,7 +1847,6 @@ export class Results implements OnInit, OnDestroy {
   }
 
   private rebuildStudentGroups(): void {
-    // Check if marks are recorded in localStorage
     let savedMarks: any[] = [];
     try {
       const stored = localStorage.getItem('obslmsMarkEntries');
@@ -2013,11 +1855,21 @@ export class Results implements OnInit, OnDestroy {
 
     const weights = this.getObeWeights();
     const intWeight = weights.internal;
-    const extWeight = weights.external;
 
-    this.studentGroups = this.availableStudentsList.map((stu) => {
+    const baseGroups = this.availableStudentsList.map((stu) => {
       const shortDept = this.getShortDept(stu.dept);
-      const courses = this.buildCurriculumForStudent(stu.name, stu.dept, this.selectedSemester);
+      let courses = this.buildCurriculumForStudent(stu.name, stu.dept, this.selectedSemester);
+
+      // STRICT SUBJECT ISOLATION FOR FACULTY:
+      if (this.role === 'faculty') {
+        courses = courses.filter(c => this.isCourseAssignedToFaculty(c.courseCode, c.courseTitle));
+        if (this.selectedFacultyCourseFilter) {
+          courses = courses.filter(c => 
+            c.courseCode.toLowerCase() === this.selectedFacultyCourseFilter.toLowerCase() ||
+            c.courseTitle.toLowerCase().includes(this.selectedFacultyCourseFilter.toLowerCase())
+          );
+        }
+      }
 
       // Overlay any customized mark entries
       courses.forEach(c => {
@@ -2055,7 +1907,7 @@ export class Results implements OnInit, OnDestroy {
       if (sgpa < 6.0) overallGrade = 'B';
       if (failedCourses > 0) overallGrade = 'F';
 
-      const standing = failedCourses === 0 ? 'PASS' : 'FAIL';
+      const standing = (totalCourses > 0 && failedCourses === 0) ? 'PASS' : (totalCourses === 0 ? 'NOT_ENROLLED' : 'FAIL');
 
       return {
         studentId: stu.roll || 'CUTM2026CSE001',
@@ -2077,25 +1929,35 @@ export class Results implements OnInit, OnDestroy {
       };
     });
 
-    // Expand the top 3 students by default
+    if (this.role === 'faculty') {
+      this.studentGroups = baseGroups.filter(s => s.courses.length > 0);
+    } else {
+      this.studentGroups = baseGroups;
+    }
+
+    // Expand top student by default
     this.expandedStudentIds.clear();
     if (this.studentGroups.length > 0) {
       this.expandedStudentIds.add(this.studentGroups[0].studentId);
-      if (this.studentGroups[1]) this.expandedStudentIds.add(this.studentGroups[1].studentId);
     }
 
     this.applyResultsFilter();
   }
 
   onSearchChange(): void {
-    this.applyResultsFilter();
+    if (this.role === 'faculty' && this.selectedFacultyCourseFilter) {
+      this.rebuildStudentGroups();
+    } else {
+      this.applyResultsFilter();
+    }
   }
 
   clearSearch(): void {
     this.searchQuery = '';
     this.filterDept = '';
     this.filterGrade = '';
-    this.applyResultsFilter();
+    this.selectedFacultyCourseFilter = '';
+    this.rebuildStudentGroups();
   }
 
   applyResultsFilter(): void {
@@ -2121,6 +1983,28 @@ export class Results implements OnInit, OnDestroy {
   }
 
   // Analytics Metrics
+  get facultyClassAverageMarks(): number {
+    let totalMarks = 0;
+    let count = 0;
+    this.filteredStudentGroups.forEach(s => {
+      s.courses.forEach(c => {
+        totalMarks += c.totalMarks;
+        count++;
+      });
+    });
+    return count > 0 ? Number((totalMarks / count).toFixed(1)) : 88.5;
+  }
+
+  get facultySubjectHighestScore(): number {
+    let max = 0;
+    this.filteredStudentGroups.forEach(s => {
+      s.courses.forEach(c => {
+        if (c.totalMarks > max) max = c.totalMarks;
+      });
+    });
+    return max > 0 ? max : 98;
+  }
+
   get classAverageSgpa(): number {
     if (!this.filteredStudentGroups.length) return 0;
     const total = this.filteredStudentGroups.reduce((sum, s) => sum + s.sgpa, 0);
@@ -2143,14 +2027,26 @@ export class Results implements OnInit, OnDestroy {
     const cur = (this.semesterCurriculumData && Object.keys(this.semesterCurriculumData).length > 0)
       ? this.semesterCurriculumData
       : this.buildCurriculumForDepartment(this.studentDept);
+    let all: SemesterCourseRecord[] = [];
     if (this.selectedSemester === 'All Semesters') {
-      const all: SemesterCourseRecord[] = [];
       for (const sem of ['Semester 1', 'Semester 2', 'Semester 3', 'Semester 4', 'Semester 5', 'Semester 6', 'Semester 7', 'Semester 8']) {
         if (cur[sem]) all.push(...cur[sem]);
       }
-      return all;
+    } else {
+      all = cur[this.selectedSemester] || [];
     }
-    return cur[this.selectedSemester] || [];
+
+    if (this.role === 'faculty') {
+      all = all.filter(c => this.isCourseAssignedToFaculty(c.courseCode, c.courseTitle));
+      if (this.selectedFacultyCourseFilter) {
+        all = all.filter(c => 
+          c.courseCode.toLowerCase() === this.selectedFacultyCourseFilter.toLowerCase() ||
+          c.courseTitle.toLowerCase().includes(this.selectedFacultyCourseFilter.toLowerCase())
+        );
+      }
+    }
+
+    return all;
   }
 
   get semesterSgpa(): number {
@@ -2168,7 +2064,10 @@ export class Results implements OnInit, OnDestroy {
       ? this.semesterCurriculumData
       : this.buildCurriculumForDepartment(this.studentDept);
     for (const sem of ['Semester 1', 'Semester 2', 'Semester 3', 'Semester 4', 'Semester 5', 'Semester 6', 'Semester 7', 'Semester 8']) {
-      const list = cur[sem] || [];
+      let list = cur[sem] || [];
+      if (this.role === 'faculty') {
+        list = list.filter(c => this.isCourseAssignedToFaculty(c.courseCode, c.courseTitle));
+      }
       list.forEach(c => {
         totalCredits += c.credits;
         weightedPoints += (c.credits * c.gradePoints);
@@ -2215,12 +2114,15 @@ export class Results implements OnInit, OnDestroy {
 
   downloadSingleStudentCsv(s: StudentAcademicProfileGroup): void {
     let csv = `CENTURION UNIVERSITY OF TECHNOLOGY & MANAGEMENT\n`;
-    csv += `OUTCOME-BASED EDUCATION (OBE) CELL - OFFICIAL ACADEMIC TRANSCRIPT\n`;
+    csv += `OUTCOME-BASED EDUCATION (OBE) CELL - ${this.role === 'faculty' ? 'FACULTY COURSE EVALUATION' : 'OFFICIAL ACADEMIC TRANSCRIPT'}\n`;
     csv += `Student Name,${s.studentName}\n`;
     csv += `Roll Number,${s.studentId}\n`;
     csv += `Department,${s.department}\n`;
     csv += `Academic Program,Bachelor of Technology (${s.shortDept})\n`;
     csv += `Semester,${s.semester}\n`;
+    if (this.role === 'faculty') {
+      csv += `Evaluator,${this.facultyName} (${this.facultyAssignedCoursesDisplay})\n`;
+    }
     csv += `Date Generated,${new Date().toLocaleDateString('en-IN')}\n\n`;
 
     csv += `Course Code,Course Title,Credits,Internal Marks (40),External Marks (60),Total Marks (100),Grade,Grade Points,Status\n`;
@@ -2233,8 +2135,7 @@ export class Results implements OnInit, OnDestroy {
     csv += `Total Registered Credits,${s.totalCredits}\n`;
     csv += `Total Credits Earned,${s.earnedCredits}\n`;
     csv += `Semester Grade Point Average (SGPA),${s.sgpa}\n`;
-    csv += `Cumulative Grade Point Average (CGPA),${s.cgpa}\n`;
-    csv += `Overall Academic Standing,${s.standing === 'PASS' ? 'PASS (FIRST CLASS WITH DISTINCTION)' : 'RE-APPEAR'}\n`;
+    csv += `Overall Academic Standing,${s.standing === 'PASS' ? 'PASS (FIRST CLASS)' : 'RE-APPEAR'}\n`;
     csv += `Status,OFFICIAL NOTIFICATION OF RESULTS\n`;
 
     const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
@@ -2266,12 +2167,15 @@ export class Results implements OnInit, OnDestroy {
     const courses = this.displayedCourses;
 
     let csv = `CENTURION UNIVERSITY OF TECHNOLOGY & MANAGEMENT\n`;
-    csv += `OUTCOME-BASED EDUCATION (OBE) CELL - OFFICIAL ACADEMIC TRANSCRIPT\n`;
+    csv += `OUTCOME-BASED EDUCATION (OBE) CELL - ${this.role === 'faculty' ? 'FACULTY COURSE EVALUATION' : 'OFFICIAL ACADEMIC TRANSCRIPT'}\n`;
     csv += `Student Name,${studentName}\n`;
     csv += `Roll Number,${roll}\n`;
     csv += `Department,${dept}\n`;
     csv += `Academic Program,Bachelor of Technology (B.Tech)\n`;
     csv += `Semester,${sem}\n`;
+    if (this.role === 'faculty') {
+      csv += `Evaluator,${this.facultyName} (${this.facultyAssignedCoursesDisplay})\n`;
+    }
     csv += `Date Generated,${new Date().toLocaleDateString('en-IN')}\n\n`;
 
     csv += `Course Code,Course Title,Credits,Internal Marks (40),External Marks (60),Total Marks (100),Grade,Grade Points,Status\n`;
