@@ -4,6 +4,14 @@
 	<app-sidebar></app-sidebar>
 	<div class="content">
 		<div class="page-header">
+			<div class="page-back-nav-bar">
+				<button type="button" class="btn-page-back" (click)="goBack()">
+					<span class="material-icons">arrow_back</span>
+					<span>Back to Dashboard</span>
+				</button>
+				<span class="nav-sep">|</span>
+				<span class="page-category-hint">Examinations & Schedules</span>
+			</div>
 			<h1>📝 Examinations</h1>
 			<p>Manage and view examination schedules, results, and related information.</p>
 		</div>
@@ -18,49 +26,57 @@
 				<button class="btn btn-primary" (click)="openExamForm()">➕ Schedule New Exam</button>
 			</div>
 
-			<!-- Add/Edit Exam Form -->
-			<div class="form-card" *ngIf="showExamForm">
-				<h2>{{ editIndex >= 0 ? 'Edit Exam Schedule' : 'Schedule New Examination' }}</h2>
-				<form (ngSubmit)="saveExam()">
-					<div class="grid-row">
-						<label>
-							Exam Title
-							<input type="text" name="title" [(ngModel)]="currentExam.title" placeholder="e.g. End Semester Theory" required />
-						</label>
-						<label>
-							Course / Subject
-							<input type="text" name="course" [(ngModel)]="currentExam.course" placeholder="e.g. Computer Networks" required />
-						</label>
+			<!-- Add/Edit Exam Modal Dialog Overlay -->
+			<div class="modal-overlay" *ngIf="showExamForm" (click)="onBackdropClick($event)">
+				<div class="modal-card exam-modal-card" (click)="$event.stopPropagation()">
+					<div class="modal-header-row">
+						<h2>
+							<span class="modal-icon">📝</span>
+							{{ editIndex >= 0 ? 'Edit Examination Schedule' : 'Schedule New Examination' }}
+						</h2>
+						<button type="button" class="btn-close-modal" (click)="closeExamForm()" title="Close">✕</button>
 					</div>
-					<div class="grid-row">
-						<label>
-							Date & Time
-							<input type="datetime-local" name="date" [(ngModel)]="currentExam.date" required />
-						</label>
-						<label>
-							Room / Venue
-							<input type="text" name="room" [(ngModel)]="currentExam.room" placeholder="e.g. LH-205 or Online" required />
-						</label>
-					</div>
-					<div class="grid-row">
-						<label>
-							Max Marks
-							<input type="number" name="marks" [(ngModel)]="currentExam.marks" required />
-						</label>
-						<label>
-							Status
-							<select name="status" [(ngModel)]="currentExam.status" required>
-								<option value="Scheduled">Scheduled</option>
-								<option value="Ongoing">Ongoing</option>
-								<option value="Completed">Completed</option>
-							</select>
-						</label>
-					</div>
-					<div class="form-actions">
-						<button type="submit" class="btn btn-success">{{ editIndex >= 0 ? 'Update Exam' : 'Publish Exam' }}</button>
-						<button type="button" class="btn btn-secondary" (click)="closeExamForm()">Cancel</button>
-					</div>
-				</form>
+					<form (ngSubmit)="saveExam()" class="modal-exam-form">
+						<div class="grid-row">
+							<label>
+								Exam Title *
+								<input type="text" name="title" [(ngModel)]="currentExam.title" placeholder="e.g. Java & OOPs Programming Assessment" required />
+							</label>
+							<label>
+								Course / Subject *
+								<input type="text" name="course" [(ngModel)]="currentExam.course" placeholder="e.g. CS102" required />
+							</label>
+						</div>
+						<div class="grid-row">
+							<label>
+								Date & Time *
+								<input type="datetime-local" name="date" [(ngModel)]="currentExam.date" required />
+							</label>
+							<label>
+								Room / Venue *
+								<input type="text" name="room" [(ngModel)]="currentExam.room" placeholder="e.g. Hall 2 or LH-205" required />
+							</label>
+						</div>
+						<div class="grid-row">
+							<label>
+								Max Marks *
+								<input type="number" name="marks" [(ngModel)]="currentExam.marks" min="1" max="200" required />
+							</label>
+							<label>
+								Status *
+								<select name="status" [(ngModel)]="currentExam.status" required>
+									<option value="Scheduled">Scheduled</option>
+									<option value="Ongoing">Ongoing</option>
+									<option value="Completed">Completed</option>
+								</select>
+							</label>
+						</div>
+						<div class="form-actions">
+							<button type="button" class="btn btn-secondary" (click)="closeExamForm()">Cancel</button>
+							<button type="submit" class="btn btn-primary">{{ editIndex >= 0 ? '💾 Save Changes' : '➕ Publish Exam' }}</button>
+						</div>
+					</form>
+				</div>
 			</div>
 
 			<!-- Filters Bar -->

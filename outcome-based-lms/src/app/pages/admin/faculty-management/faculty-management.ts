@@ -8,6 +8,7 @@ import { ToastService } from '../../../shared/services/toast.service';
 import { CourseService, AppCourse } from '../../../shared/services/course.service';
 import { SyncService } from '../../../shared/services/sync.service';
 import { HttpClient } from '@angular/common/http';
+import { NavigationService } from '../../../shared/services/navigation.service';
 
 export interface Faculty {
   id: string;
@@ -179,6 +180,19 @@ export class FacultyManagement implements OnInit {
   private syncService = inject(SyncService);
   private http = inject(HttpClient);
   private cdr = inject(ChangeDetectorRef);
+  private navService = inject(NavigationService);
+
+  goBack(): void {
+    if (this.showForm) {
+      this.closeForm();
+      return;
+    }
+    if (this.showAllotModal) {
+      this.closeAllotModal();
+      return;
+    }
+    this.navService.goBack();
+  }
 
   facultyList: Faculty[] = [];
   filteredFacultyList: Faculty[] = [];

@@ -8,6 +8,7 @@ import { Sidebar } from '../../shared/sidebar/sidebar';
 import { Footer } from '../../shared/footer/footer';
 import { ToastService } from '../../shared/services/toast.service';
 import { DEFAULT_DATABASE_COURSES } from '../../shared/services/course.service';
+import { NavigationService } from '../../shared/services/navigation.service';
 
 interface SubjectRecord {
   id: number;
@@ -33,7 +34,14 @@ interface SubjectRecord {
       <div class="content">
         <div class="page-header">
           <div class="header-text-group">
-            <span class="header-pill">📚 Master Curriculum Registry</span>
+            <div class="page-back-nav-bar" style="margin-bottom: 8px;">
+              <button type="button" class="btn-page-back" (click)="goBack()">
+                <span class="material-icons">arrow_back</span>
+                <span>Back to Dashboard</span>
+              </button>
+              <span class="nav-sep">|</span>
+              <span class="header-pill" style="margin: 0;">📚 Master Curriculum Registry</span>
+            </div>
             <h1>Curriculum Subjects Repository</h1>
             <p>Accredited syllabus subjects tailored to student registered courses and academic branch.</p>
           </div>
@@ -125,7 +133,7 @@ interface SubjectRecord {
               <span class="branch-chip">{{ userDept }}</span>
             </div>
             <p class="context-sub">
-              Showing curriculum subjects registered for your profile across <strong>{{ userDept }}</strong> (Semester 6).
+              Showing curriculum subjects allocated exclusively for <strong>{{ userDept }}</strong> ({{ getStudentSemester() }}).
             </p>
           </div>
           <div class="context-actions">
@@ -242,6 +250,13 @@ interface SubjectRecord {
               (click)="selectedType = 'Lab'">
               🔬 Lab / Practical
             </button>
+          </div>
+
+          <div class="filter-group">
+            <select [(ngModel)]="selectedSemesterFilter" style="padding: 7px 12px; background: #091024; border: 1px solid #1f2f54; border-radius: 8px; color: #cbd5e1; font-size: 0.88rem; font-weight: 700; outline: none; cursor: pointer;">
+              <option value="">{{ userRole === 'student' ? '🏛️ All ' + shortDept + ' Semesters' : 'All Semesters' }}</option>
+              <option *ngFor="let sem of availableSemesters" [value]="sem">{{ sem }}</option>
+            </select>
           </div>
         </div>
 
@@ -517,6 +532,15 @@ export class Subjects implements OnInit {
   private http = inject(HttpClient);
   private toast = inject(ToastService);
   private cdr = inject(ChangeDetectorRef);
+  private navService = inject(NavigationService);
+
+  goBack(): void {
+    if (this.showSubjectModal) {
+      this.closeSubjectModal();
+      return;
+    }
+    this.navService.goBack();
+  }
 
   userRole: string = 'student';
   userName: string = 'Student';
@@ -529,6 +553,11 @@ export class Subjects implements OnInit {
   searchQuery = '';
   selectedType = '';
   selectedDeptFilter = '';
+  availableSemesters: string[] = [
+    'Semester 1', 'Semester 2', 'Semester 3', 'Semester 4',
+    'Semester 5', 'Semester 6', 'Semester 7', 'Semester 8'
+  ];
+  selectedSemesterFilter: string = '';
   viewMode: 'registered' | 'branch' | 'all' = 'branch';
   currentPage = 1;
   pageSize = 25;
@@ -620,8 +649,8 @@ export class Subjects implements OnInit {
   }
 
   get shortDept(): string {
-    const d = this.userDept.toLowerCase();
-    if (d.includes('computer') || d.includes('cse') || d.includes('cs')) return 'CSE';
+    const d = (this.userDept || '').toLowerCase().trim();
+    if (d.includes('computer') || d.includes('cse') || d.startsWith('cs')) return 'CSE';
     if (d.includes('information') || d.includes('it')) return 'IT';
     if (d.includes('electronic') || d.includes('ece') || d.includes('electrical') || d.includes('eee') || d === 'ee') return 'ECE';
     if (d.includes('mechanical') || d.includes('mech')) return 'ME';
@@ -654,6 +683,11 @@ export class Subjects implements OnInit {
         this.selectedDeptFilter = this.shortDept;
       }
 
+      const storedEnrolled = localStorage.getItem('userEnrolledCourses');
+      if (storedEnrolled) {
+        this.enrolledCourseCodes = storedEnrolled.split(',').map((s: string) => s.trim().toUpperCase());
+      }
+
       const studentId = localStorage.getItem('userId') || this.userEmail;
       if (studentId) {
         this.http.get<any>(`http://localhost:8080/api/users/${encodeURIComponent(studentId)}`).subscribe({
@@ -667,9 +701,7 @@ export class Subjects implements OnInit {
             if (u && u.enrolledCourses && u.enrolledCourses.trim().length > 0) {
               this.enrolledCourseCodes = u.enrolledCourses.split(',').map((s: string) => s.trim().toUpperCase());
               this.viewMode = 'registered';
-            } else {
-              this.enrolledCourseCodes = [];
-              // If student has 0 registered subjects, immediately show branch curriculum so they can enroll!
+            } else if (this.enrolledCourseCodes.length === 0) {
               this.viewMode = 'branch';
             }
             this.cdr.detectChanges();
@@ -680,7 +712,7 @@ export class Subjects implements OnInit {
           }
         });
       } else {
-        this.viewMode = 'branch';
+        this.viewMode = this.enrolledCourseCodes.length > 0 ? 'registered' : 'branch';
       }
 
       if (this.userRole !== 'student') {
@@ -936,28 +968,55 @@ export class Subjects implements OnInit {
     return 'Semester 6';
   }
 
+  getSubjectBranch(code: string, dept?: string): string {
+    const c = (code || '').toUpperCase().trim();
+    if (c.startsWith('CS')) return 'CSE';
+    if (c.startsWith('IT')) return 'IT';
+    if (c.startsWith('EC')) return 'ECE';
+    if (c.startsWith('EE')) return 'EEE';
+    if (c.startsWith('ME')) return 'ME';
+    if (c.startsWith('CE')) return 'Civil';
+
+    const d = (dept || '').toLowerCase().trim();
+    if (d.includes('computer') || d.includes('cse') || d.startsWith('cs')) return 'CSE';
+    if (d.includes('information') || d === 'it') return 'IT';
+    if (d.includes('electronic') || d.includes('ece')) return 'ECE';
+    if (d.includes('electrical') || d.includes('eee')) return 'EEE';
+    if (d.includes('mechanical') || d.includes('mech')) return 'ME';
+    if (d.includes('civil')) return 'Civil';
+
+    return 'OTHER';
+  }
+
+  getStudentBranch(): string {
+    const d = (this.userDept || localStorage.getItem('userDepartment') || localStorage.getItem('userDept') || '').toLowerCase().trim();
+    if (d.includes('computer') || d.includes('cse') || d.startsWith('cs')) return 'CSE';
+    if (d.includes('information') || d === 'it') return 'IT';
+    if (d.includes('electronic') || d.includes('ece') || d.includes('electrical') || d.includes('eee') || d === 'ee') return 'ECE';
+    if (d.includes('mechanical') || d.includes('mech')) return 'ME';
+    if (d.includes('civil') || d === 'ce') return 'Civil';
+    return 'CSE';
+  }
+
+  isSubjectMatchingStudentBranch(subject: SubjectRecord): boolean {
+    const studentBranch = this.getStudentBranch();
+    const subjectBranch = this.getSubjectBranch(subject.code, subject.department || this.getDepartmentName(subject.code, subject.name));
+    return subjectBranch === studentBranch;
+  }
+
+  isSubjectMatchingSemester(subject: SubjectRecord, targetSem: string): boolean {
+    if (!targetSem) return true;
+    const sSem = (subject.semester || '').toLowerCase().trim();
+    const tSem = targetSem.toLowerCase().trim();
+    if (sSem === tSem) return true;
+    const sNum = sSem.replace(/[^0-9]/g, '');
+    const tNum = tSem.replace(/[^0-9]/g, '');
+    return !!(sNum && tNum && sNum === tNum);
+  }
+
   isSubjectMatchingStudentSemester(subject: SubjectRecord): boolean {
     const studentSem = this.getStudentSemester();
-    const subSem = (subject.semester || '').trim();
-
-    if (!subSem) return true;
-
-    if (subSem.toLowerCase() === studentSem.toLowerCase()) {
-      return true;
-    }
-
-    const sNum = studentSem.replace(/[^0-9]/g, '');
-    const cNum = subSem.replace(/[^0-9]/g, '');
-
-    if (sNum && cNum && sNum === cNum) {
-      return true;
-    }
-
-    if (sNum && (subSem.toLowerCase().includes(`sem ${sNum}`) || subSem.toLowerCase().includes(`semester ${sNum}`) || subSem.toLowerCase().includes(`sem-${sNum}`))) {
-      return true;
-    }
-
-    return false;
+    return this.isSubjectMatchingSemester(subject, studentSem);
   }
 
   get filteredSubjects(): SubjectRecord[] {
@@ -966,35 +1025,20 @@ export class Subjects implements OnInit {
     return this.subjects.filter(s => {
       const sDept = (s.department || this.getDepartmentName(s.code, s.name)).toLowerCase();
 
-      // Student Role: strictly restricted to their department and registered courses/semester
+      // Student Role: strictly restricted to subjects allocated to their academic branch!
       if (this.userRole === 'student') {
+        // STRICT BRANCH ISOLATION: Subject MUST match the student's branch
+        if (!this.isSubjectMatchingStudentBranch(s)) {
+          return false;
+        }
+
         if (this.viewMode === 'registered') {
           if (!this.isCourseEnrolled(s.code, s.name)) {
             return false;
           }
         } else {
-          // Branch curriculum mode: only student's department subjects for their registered semester
-          const uDept = this.userDept.toLowerCase();
-          let matchesStudentDept = false;
-          if (uDept.includes('comp') || uDept.includes('cse') || uDept.includes('cs')) {
-            matchesStudentDept = sDept.includes('comp') || sDept.includes('cse') || sDept.includes('cs');
-          } else if (uDept.includes('info') || uDept.includes('it')) {
-            matchesStudentDept = sDept.includes('info') || sDept.includes('it');
-          } else if (uDept.includes('elect') || uDept.includes('ece') || uDept.includes('electrical') || uDept.includes('eee') || uDept === 'ee') {
-            matchesStudentDept = sDept.includes('elect') || sDept.includes('ece') || sDept.includes('electrical') || sDept.includes('eee') || sDept === 'ee';
-          } else if (uDept.includes('mech') || uDept.includes('me')) {
-            matchesStudentDept = sDept.includes('mech') || sDept.includes('me') || sDept.includes('auto');
-          } else if (uDept.includes('civil') || uDept === 'ce') {
-            matchesStudentDept = sDept.includes('civil') || sDept.includes('ce');
-          } else {
-            matchesStudentDept = sDept.includes('comp') || sDept.includes('cse');
-          }
-          if (!matchesStudentDept && !this.isCourseEnrolled(s.code, s.name)) {
-            return false;
-          }
-
-          // Strict semester match for student
-          if (!this.isSubjectMatchingStudentSemester(s) && !this.isCourseEnrolled(s.code, s.name)) {
+          // Branch Curriculum Mode: filter by semester dropdown if chosen by user
+          if (this.selectedSemesterFilter && !this.isSubjectMatchingSemester(s, this.selectedSemesterFilter)) {
             return false;
           }
         }
@@ -1002,21 +1046,15 @@ export class Subjects implements OnInit {
         // Admin / Faculty Role: filter by chosen department pill
         if (this.selectedDeptFilter) {
           const filt = this.selectedDeptFilter.toLowerCase();
-          let matches = false;
-          if (filt === 'cse' || filt === 'computer') {
-            matches = sDept.includes('computer') || sDept.includes('cse');
-          } else if (filt === 'it' || filt === 'information') {
-            matches = sDept.includes('information') || sDept.includes('it');
-          } else if (filt === 'ece' || filt === 'electronics') {
-            matches = sDept.includes('electronic') || sDept.includes('ece') || sDept.includes('electrical');
-          } else if (filt === 'me' || filt === 'mechanical') {
-            matches = sDept.includes('mechanical') || sDept.includes('me') || sDept.includes('auto');
-          } else if (filt === 'civil' || filt === 'ce') {
-            matches = sDept.includes('civil') || sDept.includes('ce') || sDept.includes('structural');
-          } else {
-            matches = sDept.includes(filt);
-          }
-          if (!matches) return false;
+          const subBranch = this.getSubjectBranch(s.code, s.department);
+          if (filt === 'cse' && subBranch !== 'CSE') return false;
+          if (filt === 'it' && subBranch !== 'IT') return false;
+          if (filt === 'ece' && subBranch !== 'ECE') return false;
+          if (filt === 'me' && subBranch !== 'ME') return false;
+          if (filt === 'civil' && subBranch !== 'Civil') return false;
+        }
+        if (this.selectedSemesterFilter && !this.isSubjectMatchingSemester(s, this.selectedSemesterFilter)) {
+          return false;
         }
       }
 

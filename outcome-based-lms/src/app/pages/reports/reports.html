@@ -6,6 +6,14 @@
   <div class="content">
     <div class="page-header">
       <div class="header-title">
+        <div class="page-back-nav-bar">
+          <button type="button" class="btn-page-back" (click)="goBack()">
+            <span class="material-icons">arrow_back</span>
+            <span>{{ selectedReportId ? 'Back to Reports Catalog' : 'Back to Dashboard' }}</span>
+          </button>
+          <span class="nav-sep">|</span>
+          <span class="page-category-hint">Institutional Accreditation & Compliance</span>
+        </div>
         <h1>📊 Accreditation & Institutional Reports Generator</h1>
         <p>Generate, filter, and export comprehensive NBA Criterion 3, NAAC 2.6, and departmental performance registries.</p>
       </div>

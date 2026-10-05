@@ -7,6 +7,7 @@ import { Sidebar } from '../../shared/sidebar/sidebar';
 import { Footer } from '../../shared/footer/footer';
 import { HttpClient } from '@angular/common/http';
 import { ToastService } from '../../shared/services/toast.service';
+import { NavigationService } from '../../shared/services/navigation.service';
 
 interface ExamSchedule {
   id: number;
@@ -26,6 +27,16 @@ interface ExamSchedule {
   styleUrls: ['./examination.css'],
 })
 export class Examination implements OnInit {
+  private navService = inject(NavigationService);
+
+  goBack(): void {
+    if (this.showExamForm) {
+      this.closeExamForm();
+      return;
+    }
+    this.navService.goBack();
+  }
+
   role: string | null = null;
   examinationItems: ExamSchedule[] = [];
   filteredExams: ExamSchedule[] = [];
@@ -97,6 +108,31 @@ export class Examination implements OnInit {
     this.filteredExams = results;
   }
 
+  formatForDateTimeLocal(dateStr: string): string {
+    if (!dateStr) {
+      const d = new Date();
+      d.setDate(d.getDate() + 1);
+      const pad = (n: number) => n.toString().padStart(2, '0');
+      return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T09:00`;
+    }
+    const trimmed = String(dateStr).trim();
+    if (/^\d{4}-\d{2}-\d{2}$/.test(trimmed)) {
+      return `${trimmed}T09:00`;
+    }
+    if (trimmed.includes('T')) {
+      return trimmed.substring(0, 16);
+    }
+    if (/^\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}/.test(trimmed)) {
+      return trimmed.replace(' ', 'T').substring(0, 16);
+    }
+    const d = new Date(trimmed);
+    if (!isNaN(d.getTime())) {
+      const pad = (n: number) => n.toString().padStart(2, '0');
+      return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+    }
+    return trimmed;
+  }
+
   private toastService = inject(ToastService);
 
   openExamForm(): void {
@@ -104,56 +140,100 @@ export class Examination implements OnInit {
       this.toastService.warning('Only admins and faculty can manage examinations.');
       return;
     }
-    this.showExamForm = true;
     this.editIndex = -1;
     this.currentExam = this.createEmptyExam();
+    this.currentExam.date = this.formatForDateTimeLocal('');
+    this.showExamForm = true;
+    this.cdr.detectChanges();
   }
 
   saveExam(): void {
-    if (!this.currentExam.title || !this.currentExam.course || !this.currentExam.date || !this.currentExam.room) {
+    if (!this.currentExam.title?.trim() || !this.currentExam.course?.trim() || !this.currentExam.date || !this.currentExam.room?.trim()) {
       this.toastService.warning('Please fill in all required exam details.');
       return;
     }
 
     const payload = {
-      id: this.currentExam.id > 0 ? this.currentExam.id : null,
-      title: this.currentExam.title,
-      course: this.currentExam.course,
+      id: this.currentExam.id && Number(this.currentExam.id) > 0 ? Number(this.currentExam.id) : null,
+      title: this.currentExam.title.trim(),
+      course: this.currentExam.course.trim(),
       date: this.currentExam.date,
-      room: this.currentExam.room,
+      room: this.currentExam.room.trim(),
       status: this.currentExam.status,
-      marks: this.currentExam.marks
+      marks: Number(this.currentExam.marks) || 100
     };
 
     this.http.post<ExamSchedule>('http://localhost:8080/api/exams', payload).subscribe({
       next: () => {
         this.loadData();
         this.closeExamForm();
-        this.toastService.success('Examination schedule saved successfully! 📝');
+        this.toastService.success(this.editIndex >= 0 ? 'Examination schedule updated successfully! 📝' : 'Examination scheduled successfully! 🎉');
       },
       error: () => {
-        this.toastService.error('Failed to save examination schedule.');
+        // Fallback for offline / local updates
+        if (this.editIndex >= 0 && this.currentExam.id) {
+          const idx = this.examinationItems.findIndex(e => String(e.id) === String(this.currentExam.id));
+          if (idx >= 0) {
+            this.examinationItems[idx] = { ...this.currentExam };
+            this.applyFilters();
+          }
+        } else {
+          this.examinationItems.unshift({ ...this.currentExam, id: Date.now() });
+          this.applyFilters();
+        }
+        try {
+          localStorage.setItem('obslmsExams', JSON.stringify(this.examinationItems));
+        } catch {}
+        this.closeExamForm();
+        this.toastService.success('Examination schedule saved locally! 📝');
+        this.cdr.detectChanges();
       }
     });
   }
 
   editExam(exam: ExamSchedule): void {
-    const idx = this.examinationItems.findIndex(e => e.id === exam.id);
-    if (idx >= 0) {
-      this.editIndex = idx;
-      this.currentExam = { ...exam };
-      this.showExamForm = true;
+    if (this.role !== 'admin' && this.role !== 'faculty') {
+      this.toastService.warning('Only admins and faculty can edit examinations.');
+      return;
     }
+    const idx = this.examinationItems.findIndex(e => String(e.id) === String(exam.id));
+    this.editIndex = idx >= 0 ? idx : 0;
+    this.currentExam = {
+      id: exam.id,
+      title: exam.title || '',
+      course: exam.course || '',
+      date: this.formatForDateTimeLocal(exam.date),
+      room: exam.room || '',
+      status: exam.status || 'Scheduled',
+      marks: exam.marks || 100
+    };
+    this.showExamForm = true;
+    this.cdr.detectChanges();
   }
 
   deleteExam(exam: ExamSchedule): void {
+    if (this.role !== 'admin' && this.role !== 'faculty') {
+      this.toastService.warning('Only admins and faculty can delete examinations.');
+      return;
+    }
+    if (!confirm(`Are you sure you want to delete the examination schedule for "${exam.title}"?`)) {
+      return;
+    }
     this.http.delete('http://localhost:8080/api/exams/' + exam.id).subscribe({
       next: () => {
-        this.loadData();
+        this.examinationItems = this.examinationItems.filter(e => String(e.id) !== String(exam.id));
+        this.applyFilters();
         this.toastService.info('Examination schedule deleted.');
+        this.cdr.detectChanges();
       },
       error: () => {
-        this.toastService.error('Failed to delete examination.');
+        this.examinationItems = this.examinationItems.filter(e => String(e.id) !== String(exam.id));
+        this.applyFilters();
+        try {
+          localStorage.setItem('obslmsExams', JSON.stringify(this.examinationItems));
+        } catch {}
+        this.toastService.info('Examination schedule deleted locally.');
+        this.cdr.detectChanges();
       }
     });
   }
@@ -162,5 +242,10 @@ export class Examination implements OnInit {
     this.showExamForm = false;
     this.editIndex = -1;
     this.currentExam = this.createEmptyExam();
+    this.cdr.detectChanges();
+  }
+
+  onBackdropClick(event: MouseEvent): void {
+    this.closeExamForm();
   }
 }

@@ -9,6 +9,7 @@ import { HttpClient } from '@angular/common/http';
 import { ToastService } from '../../shared/services/toast.service';
 import { CourseService, AppCourse, DEFAULT_DATABASE_COURSES } from '../../shared/services/course.service';
 import { SyncService } from '../../shared/services/sync.service';
+import { NavigationService } from '../../shared/services/navigation.service';
 import { Subscription } from 'rxjs';
 
 interface Course {
@@ -30,8 +31,21 @@ export class Courses implements OnInit, OnDestroy {
   private toast = inject(ToastService);
   private courseService = inject(CourseService);
   private syncService = inject(SyncService);
+  private navService = inject(NavigationService);
   private syncSub?: Subscription;
   courses: Course[] = [];
+
+  goBack(): void {
+    if (this.selectedSyllabusCourse) {
+      this.selectedSyllabusCourse = null;
+      return;
+    }
+    if (this.showCourseForm) {
+      this.showCourseForm = false;
+      return;
+    }
+    this.navService.goBack();
+  }
 
   role: string | null = null;
   showCourseForm = false;
@@ -699,7 +713,7 @@ export class Courses implements OnInit, OnDestroy {
     const isCivilCode = code.startsWith('CE');
 
     // 1. Computer Science & Engineering (CSE)
-    if (dept.includes('comp') || dept.includes('cse') || dept.includes('cs')) {
+    if (dept.includes('comp') || dept.includes('cse') || dept.startsWith('cs')) {
       if (isITCode || isECECode || isMECode || isCivilCode) return false;
       return isCSECode || title.includes('data structure') || title.includes('database') || title.includes('algorithm') || title.includes('compiler') || title.includes('networks') || title.includes('computer') || title.includes('machine learning') || title.includes('artificial intelligence') || title.includes('software engineering');
     }

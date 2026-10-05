@@ -7,6 +7,7 @@ import { Footer } from '../../../shared/footer/footer';
 import { ToastService } from '../../../shared/services/toast.service';
 import { SyncService } from '../../../shared/services/sync.service';
 import { HttpClient } from '@angular/common/http';
+import { NavigationService } from '../../../shared/services/navigation.service';
 
 interface Student {
   id: string;
@@ -39,6 +40,15 @@ export class StudentManagement implements OnInit {
   private syncService = inject(SyncService);
   private http = inject(HttpClient);
   private cdr = inject(ChangeDetectorRef);
+  private navService = inject(NavigationService);
+
+  goBack(): void {
+    if (this.showForm) {
+      this.closeForm();
+      return;
+    }
+    this.navService.goBack();
+  }
 
   activeTab: 'students' | 'requests' = 'students';
 

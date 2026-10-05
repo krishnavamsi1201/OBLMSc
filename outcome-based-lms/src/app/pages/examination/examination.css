@@ -245,16 +245,137 @@ input[type=text], input[type=number], input[type=datetime-local], select {
     background: rgba(34, 197, 94, 0.2);
     color: #4ade80;
     border: 1px solid rgba(74, 222, 128, 0.4);
-    font-size: 0.8rem;
-    padding: 6px 12px;
+    font-size: 0.82rem;
+    padding: 6px 14px;
+    cursor: pointer;
+    font-weight: 700;
+    border-radius: 6px;
+    transition: all 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.btn-edit:hover {
+    background: rgba(34, 197, 94, 0.35);
+    color: #ffffff;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(34, 197, 94, 0.25);
 }
 
 .btn-delete {
     background: rgba(239, 68, 68, 0.2);
     color: #f87171;
     border: 1px solid rgba(248, 113, 113, 0.4);
-    font-size: 0.8rem;
-    padding: 6px 12px;
+    font-size: 0.82rem;
+    padding: 6px 14px;
+    cursor: pointer;
+    font-weight: 700;
+    border-radius: 6px;
+    transition: all 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.btn-delete:hover {
+    background: rgba(239, 68, 68, 0.35);
+    color: #ffffff;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(239, 68, 68, 0.25);
+}
+
+/* Modal Overlay & Card for Examination */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(10, 17, 40, 0.75);
+    backdrop-filter: blur(6px);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 99999;
+    padding: 20px;
+    box-sizing: border-box;
+}
+
+.modal-card.exam-modal-card {
+    background: #101b38;
+    border: 1px solid #1f2f54;
+    border-radius: 16px;
+    padding: 28px;
+    width: 100%;
+    max-width: 580px;
+    box-shadow: 0 25px 60px rgba(0, 0, 0, 0.6);
+    animation: modalPopIn 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+    box-sizing: border-box;
+}
+
+@keyframes modalPopIn {
+    from {
+        opacity: 0;
+        transform: scale(0.92) translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
+}
+
+.modal-header-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    border-bottom: 1px solid #1f2f54;
+    padding-bottom: 14px;
+}
+
+.modal-header-row h2 {
+    margin: 0;
+    font-size: 1.35rem;
+    color: #ffffff;
+    font-weight: 800;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.modal-icon {
+    font-size: 1.4rem;
+}
+
+.btn-close-modal {
+    background: transparent;
+    border: none;
+    color: #94a3b8;
+    font-size: 1.4rem;
+    cursor: pointer;
+    line-height: 1;
+    padding: 4px 8px;
+    border-radius: 6px;
+    transition: all 0.2s;
+}
+
+.btn-close-modal:hover {
+    color: #ffffff;
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.modal-exam-form {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.modal-exam-form .form-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    margin-top: 10px;
 }
 
 .empty-state {

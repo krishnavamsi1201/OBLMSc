@@ -9,6 +9,7 @@ import { SyncService } from '../../shared/services/sync.service';
 import { ToastService } from '../../shared/services/toast.service';
 import { Subscription } from 'rxjs';
 import { DEFAULT_DATABASE_COURSES } from '../../shared/services/course.service';
+import { NavigationService } from '../../shared/services/navigation.service';
 
 export interface SemesterCourseRecord {
   courseCode: string;
@@ -70,6 +71,14 @@ export interface ParsedCsvResult {
 
         <div class="page-header">
             <div class="header-text-block">
+                <div class="page-back-nav-bar" style="margin-bottom: 8px;">
+                    <button type="button" class="btn-page-back" (click)="goBack()">
+                        <span class="material-icons">arrow_back</span>
+                        <span>Back to Dashboard</span>
+                    </button>
+                    <span class="nav-sep">|</span>
+                    <span class="page-category-hint">Semester Results & Transcripts</span>
+                </div>
                 <h1>📋 Student Semester Results & Marksheet Deck</h1>
                 <p *ngIf="role === 'student'">Official semester performance transcript, SGPA/CGPA breakdown, and complete marksheet download.</p>
                 <p *ngIf="role === 'faculty'">Faculty Subject Evaluation Deck: Restricted to your assigned subjects. Enter and update student assessment marks.</p>
@@ -2076,7 +2085,20 @@ export class Results implements OnInit, OnDestroy {
   private cdr = inject(ChangeDetectorRef);
   private syncService = inject(SyncService);
   private toastService = inject(ToastService);
+  private navService = inject(NavigationService);
   private syncSub?: Subscription;
+
+  goBack(): void {
+    if (this.showEditMarksModal) {
+      this.closeEditMarksModal();
+      return;
+    }
+    if (this.showBulkUploadModal) {
+      this.closeBulkUploadModal();
+      return;
+    }
+    this.navService.goBack();
+  }
 
   get facultyAssignedCoursesDisplay(): string {
     if (this.facultyAssignedCourses && this.facultyAssignedCourses.length > 0) {
