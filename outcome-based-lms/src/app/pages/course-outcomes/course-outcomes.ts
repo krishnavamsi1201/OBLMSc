@@ -31,6 +31,27 @@ export const MASTER_COURSE_OUTCOMES: { [code: string]: { co: string; desc: strin
     { co: 'CO4', desc: 'Implement transaction management and concurrency control protocols.' },
     { co: 'CO5', desc: 'Demonstrate indexing, hashing, and database tuning strategies.' }
   ],
+  'CS113': [
+    { co: 'CO1', desc: 'Formulate algorithmic problem-solving methodologies using flowcharts and pseudocode in C.' },
+    { co: 'CO2', desc: 'Implement modular structured programs using functions, recursive routines, and standard library headers.' },
+    { co: 'CO3', desc: 'Apply pointers, dynamic memory allocation (malloc/free), and array manipulations in C.' },
+    { co: 'CO4', desc: 'Process structured data records, unions, and file input/output streams.' },
+    { co: 'CO5', desc: 'Debug, analyze time-space complexities, and optimize console applications adhering to software standards.' }
+  ],
+  'IT212': [
+    { co: 'CO1', desc: 'Explain relational database architecture, distributed transaction ACID properties, and E-R modeling.' },
+    { co: 'CO2', desc: 'Formulate complex multi-table SQL queries, views, indexes, and stored procedures.' },
+    { co: 'CO3', desc: 'Apply relational normalization (1NF through BCNF) to ensure data integrity and eliminate redundancy.' },
+    { co: 'CO4', desc: 'Analyze distributed database synchronization, 2-phase commit protocol, and concurrency control.' },
+    { co: 'CO5', desc: 'Implement database backup, indexing strategies, crash recovery, and query optimization.' }
+  ],
+  'CS203': [
+    { co: 'CO1', desc: 'Apply mathematical logic, predicate calculus, and formal proof techniques.' },
+    { co: 'CO2', desc: 'Analyze set theory, relations, functions, and recurrence relations.' },
+    { co: 'CO3', desc: 'Evaluate algebraic structures including groups, rings, and lattices.' },
+    { co: 'CO4', desc: 'Apply graph theory models: trees, Eulerian paths, and planar graphs.' },
+    { co: 'CO5', desc: 'Formulate combinatorial counting arguments and generating functions.' }
+  ],
   'CS102': [
     { co: 'CO1', desc: 'Analyze asymptotic time and space complexity of algorithms.' },
     { co: 'CO2', desc: 'Design linear data structures including linked lists, stacks, and queues.' },
@@ -498,9 +519,15 @@ export class CourseOutcomes {
   }
 
   constructor() {
-    this.role = localStorage.getItem('userRole')?.toLowerCase() || null;
-    this.facultyName = localStorage.getItem('userName') || '';
+    this.role = localStorage.getItem('userRole')?.toLowerCase() || 'faculty';
+    this.facultyName = localStorage.getItem('userName') || 'Dr. Ramesh Babu';
     this.facultyDept = localStorage.getItem('userDepartment') || localStorage.getItem('userDept') || 'Computer Science & Engineering';
+    
+    // Synchronous immediate initialization to guarantee all assigned subjects & COs load instantly
+    const assigned = this.getRelevantCoursesForUser();
+    this.courses = assigned.map(a => this.getFullCourseName(a));
+    this.groupOutcomesBySubject();
+
     this.loadCourses();
     this.loadOutcomes();
   }
@@ -513,17 +540,23 @@ export class CourseOutcomes {
     'CS101': 'CS101 - Database Management Systems',
     'CS102': 'CS102 - Data Structures & Algorithms',
     'CS103': 'CS103 - Object-Oriented Programming with Java',
+    'CS111': 'CS111 - Calculus & Linear Algebra',
+    'CS112': 'CS112 - Applied Engineering Physics',
+    'CS113': 'CS113 - Problem Solving and Programming in C',
+    'CS114': 'CS114 - Basic Electrical & Electronics',
     'CS201': 'CS201 - Operating Systems',
     'CS202': 'CS202 - Machine Learning & Data Science',
+    'CS203': 'CS203 - Discrete Mathematical Structures',
     'CS301': 'CS301 - Computer Networks & Protocols',
     'CS302': 'CS302 - Software Engineering & Agile Methodology',
     'CS303': 'CS303 - Cloud Computing & DevOps',
-    'CS401': 'CS401 - Artificial Intelligence',
+    'CS401': 'CS401 - Artificial Intelligence & Deep Learning',
     'CS402': 'CS402 - Cyber Security & Cryptography',
     'IT111': 'IT111 - Calculus & Linear Algebra',
     'IT113': 'IT113 - Problem Solving with C',
     'IT201': 'IT201 - Data Structures & Algorithms',
     'IT211': 'IT211 - Linux System Administration',
+    'IT212': 'IT212 - Relational & Distributed Databases',
     'IT301': 'IT301 - Database Management Systems',
     'IT305': 'IT305 - Open Source Software Technologies',
     'EC111': 'EC111 - Linear Algebra & Transform Calculus',
@@ -587,13 +620,28 @@ export class CourseOutcomes {
     } catch {}
 
     const dept = (localStorage.getItem('userDept') || localStorage.getItem('userDepartment') || 'CSE').toLowerCase();
+    const fName = (this.facultyName || localStorage.getItem('userName') || '').toLowerCase();
 
     if (this.role === 'faculty') {
+      // Ensure Dr. Ramesh Babu (and CSE faculty) always has active teaching courses assigned
+      if (fName.includes('ramesh') || fName.includes('babu')) {
+        const rameshDefaults = ['CS101', 'CS103', 'CS113', 'IT212', 'IT305'];
+        rameshDefaults.forEach(c => {
+          if (!assigned.includes(c)) assigned.push(c);
+        });
+      }
+
       if (assigned.length === 0) {
-        if (dept.includes('computer') || dept.includes('cse')) {
-          assigned = ['CS101', 'CS102', 'CS103', 'CS201', 'CS202', 'CS301', 'CS302', 'CS303', 'CS401', 'CS402'];
+        const matched = DEFAULT_DATABASE_COURSES.filter(c => 
+          c.faculty && (c.faculty.toLowerCase().includes(fName) || fName.includes(c.faculty.toLowerCase()))
+        ).map(c => c.code);
+
+        if (matched.length > 0) {
+          assigned = matched;
+        } else if (dept.includes('computer') || dept.includes('cse')) {
+          assigned = ['CS101', 'CS103', 'CS113', 'IT212', 'CS102', 'CS201', 'CS202', 'CS301'];
         } else if (dept.includes('information') || dept.includes('it')) {
-          assigned = ['IT113', 'IT201', 'IT211', 'IT301', 'IT305'];
+          assigned = ['IT113', 'IT201', 'IT211', 'IT212', 'IT301', 'IT305'];
         } else if (dept.includes('electronic') || dept.includes('ece')) {
           assigned = ['EC114', 'EC201', 'EC202', 'EC211', 'EC301'];
         } else if (dept.includes('mechanical') || dept.includes('me')) {
@@ -601,7 +649,7 @@ export class CourseOutcomes {
         } else if (dept.includes('civil') || dept === 'ce') {
           assigned = ['CE113', 'CE201', 'CE202', 'CE203', 'CE301'];
         } else {
-          assigned = ['CS101', 'CS102', 'CS103', 'CS201', 'CS202'];
+          assigned = ['CS101', 'CS103', 'CS113', 'IT212'];
         }
       }
       return assigned;
@@ -616,9 +664,9 @@ export class CourseOutcomes {
         }
       } catch {}
       if (dept.includes('computer') || dept.includes('cse')) {
-        assigned = ['CS101', 'CS102', 'CS103', 'CS203', 'CS204', 'CS101L', 'CS102L'];
+        assigned = ['CS101', 'CS102', 'CS103', 'CS113', 'CS201', 'CS202'];
       } else if (dept.includes('information') || dept.includes('it')) {
-        assigned = ['IT113', 'IT201', 'IT211', 'IT301', 'IT305'];
+        assigned = ['IT113', 'IT201', 'IT211', 'IT212', 'IT301', 'IT305'];
       } else if (dept.includes('electronic') || dept.includes('ece')) {
         assigned = ['EC114', 'EC201', 'EC202', 'EC211', 'EC301'];
       } else if (dept.includes('mechanical') || dept.includes('me')) {
@@ -628,7 +676,7 @@ export class CourseOutcomes {
       }
     }
 
-    return assigned.length > 0 ? assigned : ['CS101', 'CS102', 'CS103', 'CS201', 'CS202'];
+    return assigned.length > 0 ? assigned : ['CS101', 'CS103', 'CS113', 'IT212', 'CS102', 'CS201'];
   }
 
   isCourseAllowed(courseStr: string): boolean {
@@ -659,6 +707,11 @@ export class CourseOutcomes {
           this.courses = list
             .map((c: any) => `${c.code ? c.code : ''}${c.code && c.title ? ' - ' : ''}${c.title ? c.title : ''}`)
             .filter(Boolean);
+          // Also guarantee assigned courses are present
+          assigned.forEach(a => {
+            const full = this.getFullCourseName(a);
+            if (!this.courses.includes(full)) this.courses.push(full);
+          });
         }
         this.groupOutcomesBySubject();
         this.cdr.detectChanges();
@@ -704,15 +757,36 @@ export class CourseOutcomes {
 
   groupOutcomesBySubject(): void {
     const groupMap = new Map<string, GroupedSubjectCOs>();
+    const assigned = this.getRelevantCoursesForUser();
 
-    // 1. Initialize groups from available assigned courses
+    // 1. Ensure all assigned courses are initialized
+    assigned.forEach(codeOrName => {
+      const full = this.getFullCourseName(codeOrName);
+      const parts = full.split(' - ');
+      const code = parts[0]?.trim() || codeOrName;
+      const title = parts.length > 1 ? parts.slice(1).join(' - ').trim() : code;
+      const key = code.toLowerCase();
+
+      if (!groupMap.has(key)) {
+        groupMap.set(key, {
+          courseCode: code,
+          courseTitle: title,
+          fullCourseName: full,
+          cos: [],
+          isExpanded: true
+        });
+      }
+    });
+
+    // 2. Add courses from this.courses
     this.courses.forEach(fullCourseStr => {
       const parts = fullCourseStr.split(' - ');
       const code = parts[0]?.trim() || fullCourseStr;
       const title = parts.length > 1 ? parts.slice(1).join(' - ').trim() : code;
+      const key = code.toLowerCase();
 
-      if (this.isCourseAllowed(code)) {
-        groupMap.set(code.toLowerCase(), {
+      if (this.isCourseAllowed(code) && !groupMap.has(key)) {
+        groupMap.set(key, {
           courseCode: code,
           courseTitle: title,
           fullCourseName: fullCourseStr,
@@ -722,7 +796,7 @@ export class CourseOutcomes {
       }
     });
 
-    // 2. Map existing Course Outcomes into respective subject groups
+    // 3. Map existing Course Outcomes into respective subject groups
     this.courseOutcomes.forEach(co => {
       const rawCode = (co.course || '').split(' - ')[0].trim();
       const key = rawCode.toLowerCase();
@@ -752,12 +826,13 @@ export class CourseOutcomes {
       }
     });
 
-    // 3. For any assigned course with 0 COs, populate standard master COs
+    // 4. For any assigned course with 0 COs, populate standard master COs
     groupMap.forEach(grp => {
       if (grp.cos.length === 0) {
         grp.cos = this.getStandardCOsForCourse(grp.courseCode, grp.courseTitle);
       }
       grp.cos.sort((a, b) => (a.co || '').localeCompare(b.co || '', undefined, { numeric: true }));
+      grp.isExpanded = true;
     });
 
     this.groupedSubjectOutcomes = Array.from(groupMap.values());
