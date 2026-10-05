@@ -183,53 +183,6 @@
 			</section>
 
 
-			<!-- 4. Active Assessments Section with Quick Marks Entry -->
-			<section class="dashboard-section">
-				<div class="section-header">
-					<div class="header-title-group">
-						<h2>Active Assessments & Grading ({{ activeAssessments.length }})</h2>
-						<p class="section-subtitle">Manage ongoing submissions and enter evaluation scores directly.</p>
-					</div>
-					<div class="header-btn-group">
-						<button class="action-btn primary small" (click)="openMarkEntryModal()">+ Quick Marks Sheet</button>
-						<button class="view-all-btn" (click)="goToAssessments()">View All →</button>
-					</div>
-				</div>
-				<div class="assessments-list">
-					<div *ngFor="let assessment of activeAssessments" class="assessment-card">
-						<div class="assessment-header">
-							<div>
-								<h3>{{ assessment.title }}</h3>
-								<span class="course-tag">{{ assessment.courseName }}</span>
-							</div>
-							<span class="assessment-type" [style.background-color]="getStatusColor(assessment.status)">
-								{{ assessment.status }}
-							</span>
-						</div>
-						<div class="assessment-meta">
-							<p><strong>Max Marks:</strong> {{ assessment.maxMarks }}</p>
-							<p><strong>Due Date:</strong> {{ assessment.dueDate ? (assessment.dueDate | date: 'mediumDate') : 'Open' }}</p>
-							<p><strong>Average Score:</strong> {{ assessment.averageScore }}%</p>
-						</div>
-						<div class="submission-progress">
-							<div class="progress-label">
-								<span>Evaluated Submissions: {{ assessment.submittedCount }} / {{ assessment.totalCount }}</span>
-								<span class="percentage">{{ getSubmissionPercentage(assessment) }}%</span>
-							</div>
-							<div class="progress-bar">
-								<div class="progress-fill" [style.width.%]="getSubmissionPercentage(assessment)"></div>
-							</div>
-						</div>
-						<div class="assessment-card-actions">
-							<button class="assessment-action-btn" (click)="openMarkEntryModal(assessment)">
-								<span class="material-icons" style="font-size: 15px; vertical-align: middle;">edit</span> Enter / Edit Marks →
-							</button>
-						</div>
-					</div>
-				</div>
-				<p *ngIf="activeAssessments.length === 0" class="empty-state">No active assessments found.</p>
-			</section>
-
 			<!-- 8. Real-Time Academic Matrix with Dual Mode (By Student / By Subject) -->
 			<section class="dashboard-section">
 				<div class="section-header">
