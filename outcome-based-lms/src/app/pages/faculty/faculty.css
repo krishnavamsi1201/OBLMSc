@@ -1759,42 +1759,50 @@
     position: relative;
     display: flex;
     align-items: center;
-    background: #091024;
-    border: 1px solid #1f2f54;
+    background: #091024 !important;
+    border: 1px solid #1f2f54 !important;
     border-radius: 8px;
-    padding: 0 12px;
-    height: 40px;
-    min-width: 240px;
+    padding: 0 10px;
+    height: 38px;
+    width: 260px;
+    max-width: 100%;
     box-sizing: border-box;
+    overflow: hidden;
+    transition: all 0.2s ease;
 }
 
 .matrix-search-box:focus-within {
-    border-color: #38bdf8;
-    box-shadow: 0 0 10px rgba(56, 189, 248, 0.25);
+    border-color: #38bdf8 !important;
+    box-shadow: 0 0 10px rgba(56, 189, 248, 0.25) !important;
 }
 
 .matrix-search-box .search-icon {
-    font-size: 17px;
+    font-size: 18px;
     color: #64748b;
     margin-right: 6px;
     display: flex;
     align-items: center;
+    flex-shrink: 0;
 }
 
-.matrix-search-input {
+.matrix-search-box input.matrix-search-input {
     background: transparent !important;
+    background-color: transparent !important;
     border: none !important;
+    outline: none !important;
     box-shadow: none !important;
     color: #ffffff !important;
     font-size: 13px !important;
-    padding: 6px 0 !important;
-    width: 100% !important;
-    outline: none !important;
+    padding: 0 !important;
     margin: 0 !important;
+    width: 100% !important;
+    height: 100% !important;
+    flex: 1;
+    min-width: 0;
 }
 
-.matrix-search-input::placeholder {
-    color: #64748b;
+.matrix-search-box input.matrix-search-input::placeholder {
+    color: #64748b !important;
 }
 
 .matrix-clear-btn {
@@ -1802,8 +1810,12 @@
     border: none;
     color: #94a3b8;
     cursor: pointer;
-    font-size: 12px;
-    padding: 2px 4px;
+    font-size: 14px;
+    padding: 0 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
 }
 
 .matrix-clear-btn:hover {

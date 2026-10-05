@@ -590,11 +590,14 @@ body, html {
 .content .search-input-wrapper input,
 .content .student-search-input,
 .content .results-search-input,
+.content .matrix-search-input,
+.content .matrix-search-box input,
 .content .search-box .search-input {
     background: transparent !important;
     border: none !important;
     box-shadow: none !important;
-    padding: 12px 0 12px 8px !important;
+    padding: 6px 0 !important;
+    border-radius: 0 !important;
 }
 
 .filter-select {
