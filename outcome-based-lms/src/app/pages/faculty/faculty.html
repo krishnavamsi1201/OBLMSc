@@ -246,7 +246,7 @@
 							<input type="text" 
 								   [(ngModel)]="progressSearchQuery" 
 								   (ngModelChange)="onProgressFilterChange()" 
-								   [placeholder]="matrixViewMode === 'STUDENTS' ? 'Search student name or ID...' : 'Search subject name or code...'" 
+								   placeholder="Search student name or ID..." 
 								   class="matrix-search-input" />
 							<button *ngIf="progressSearchQuery" 
 									type="button" 
@@ -255,25 +255,7 @@
 									title="Clear search">✕</button>
 						</div>
 
-						<!-- View Mode Toggle Bar -->
-						<div class="matrix-view-toggle-bar">
-							<button type="button" 
-									class="matrix-toggle-btn" 
-									[class.active]="matrixViewMode === 'STUDENTS'" 
-									(click)="setMatrixViewMode('STUDENTS')">
-								<span>👤 By Student</span>
-								<span class="toggle-count">({{ groupedStudentsList.length }})</span>
-							</button>
-							<button type="button" 
-									class="matrix-toggle-btn" 
-									[class.active]="matrixViewMode === 'SUBJECTS'" 
-									(click)="setMatrixViewMode('SUBJECTS')">
-								<span>📖 By Subject</span>
-								<span class="toggle-count">({{ courses.length }})</span>
-							</button>
-						</div>
-
-						<button class="action-btn secondary small" (click)="exportGradebookCsv()" [title]="'Export ' + (matrixViewMode === 'STUDENTS' ? 'Students' : 'Subjects') + ' CSV'">
+						<button class="action-btn secondary small" (click)="exportGradebookCsv()" title="Export Student Gradebook CSV">
 							<span class="material-icons" style="font-size: 15px; vertical-align: middle;">download</span> Export CSV
 						</button>
 					</div>
