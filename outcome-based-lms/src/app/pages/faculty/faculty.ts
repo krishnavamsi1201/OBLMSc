@@ -1286,8 +1286,45 @@ export class Faculty implements OnInit {
     }
   }
 
+  get facultyAssignedModalCourses(): Course[] {
+    const fName = (this.facultyName || '').toLowerCase().trim();
+    let assigned: string[] = [];
+    try {
+      const storedAssigned = localStorage.getItem('userAssignedCourses');
+      if (storedAssigned) assigned = JSON.parse(storedAssigned);
+    } catch {}
+
+    const activeSem = (this.selectedSemesterFilter || this.progressSemesterFilter || '').toLowerCase().trim();
+
+    let list = this.courses || [];
+
+    // Filter strictly to courses where faculty matches or assigned matches
+    list = list.filter(c => {
+      const cFac = (c.faculty || '').toLowerCase().trim();
+      const nameMatch = !cFac || cFac.includes(fName) || fName.includes(cFac);
+      const assignedMatch = assigned.length > 0 && (assigned.includes(c.name) || assigned.includes(c.code));
+      return nameMatch || assignedMatch;
+    });
+
+    if (activeSem) {
+      const semMatches = list.filter(c => (c.semester && c.semester.toLowerCase().trim() === activeSem));
+      if (semMatches.length > 0) {
+        return semMatches;
+      }
+    }
+
+    // Default to Semester 1 courses for this faculty
+    const sem1Matches = list.filter(c => (c.semester || '').toLowerCase().includes('semester 1'));
+    if (sem1Matches.length > 0) {
+      return sem1Matches;
+    }
+
+    return list.length > 0 ? list : this.courses.slice(0, 2);
+  }
+
   openMarkEntryModal(assessment?: Assessment): void {
     this.storedAssessmentsList = this.getSafeJson('obslmsAssessments');
+    const available = this.facultyAssignedModalCourses;
 
     if (assessment) {
       this.markEntryCourse = assessment.courseName;
@@ -1297,6 +1334,10 @@ export class Faculty implements OnInit {
       this.markEntryCourse = this.activeAssessments[0].courseName;
       this.markEntryAssessmentTitle = this.activeAssessments[0].title;
       this.markEntryMaxMarks = this.activeAssessments[0].maxMarks || 100;
+    } else if (available.length > 0) {
+      this.markEntryCourse = available[0].name;
+      this.markEntryAssessmentTitle = 'Midterm Assessment 1';
+      this.markEntryMaxMarks = 100;
     } else {
       this.markEntryCourse = this.courses[0]?.name || '';
       this.markEntryAssessmentTitle = 'Midterm Assessment 1';

@@ -614,7 +614,7 @@
 						<div class="form-field">
 							<label>Course Name</label>
 							<select [(ngModel)]="markEntryCourse" (ngModelChange)="onMarkEntryCourseChange()">
-								<option *ngFor="let c of courses" [value]="c.name">{{ c.name }}</option>
+								<option *ngFor="let c of facultyAssignedModalCourses" [value]="c.name">{{ c.name }} ({{ c.code }})</option>
 							</select>
 						</div>
 						<div class="form-field">
@@ -714,7 +714,7 @@
 						<div class="form-field">
 							<label>Select Course</label>
 							<select [(ngModel)]="attendanceCourse" (ngModelChange)="onQuickAttendanceCourseChanged()">
-								<option *ngFor="let c of courses" [value]="c.name">{{ c.name }}</option>
+								<option *ngFor="let c of facultyAssignedModalCourses" [value]="c.name">{{ c.name }} ({{ c.code }})</option>
 							</select>
 						</div>
 						<div class="form-field">
@@ -810,7 +810,7 @@
 						<div class="form-field">
 							<label>Course</label>
 							<select [(ngModel)]="lectureCourse">
-								<option *ngFor="let c of courses" [value]="c.name">{{ c.name }}</option>
+								<option *ngFor="let c of facultyAssignedModalCourses" [value]="c.name">{{ c.name }} ({{ c.code }})</option>
 							</select>
 						</div>
 						<div class="form-field">
@@ -865,7 +865,7 @@
 							<div class="form-field">
 								<label>Subject</label>
 								<select [(ngModel)]="qpSubject">
-									<option *ngFor="let sub of allSubjectsList" [value]="sub">{{ sub }}</option>
+									<option *ngFor="let c of facultyAssignedModalCourses" [value]="c.name">{{ c.name }} ({{ c.code }})</option>
 								</select>
 							</div>
 							<div class="form-field">
