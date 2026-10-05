@@ -300,34 +300,162 @@ export class Faculty implements OnInit {
     this.onProgressFilterChange();
   }
 
-  buildGroupedStudentsList(): void {
-    const studentNamesSet = new Set<string>();
+  generateAllDefaultStudents(): any[] {
+    const list: any[] = [];
+    const branches = [
+      { code: 'CSE', name: 'Computer Science & Engineering' },
+      { code: 'IT', name: 'Information Technology' },
+      { code: 'ECE', name: 'Electronics & Communication Engineering' },
+      { code: 'ME', name: 'Mechanical Engineering' },
+      { code: 'CE', name: 'Civil Engineering' },
+      { code: 'EEE', name: 'Electrical & Electronics Engineering' }
+    ];
 
-    // 1. Collect student names from studentProgressList
-    (this.studentProgressList || []).forEach(sp => {
-      if (sp.studentName && sp.studentName.trim()) {
-        studentNamesSet.add(sp.studentName.trim());
+    const firstNames = [
+      'Rahul', 'Priya', 'Amit', 'Sneha', 'Vikram', 'Ananya', 'Rohan', 'Divya', 
+      'Aditya', 'Meera', 'Karthik', 'Pooja', 'Suresh', 'Harish', 'Aarav', 'Bhavya', 
+      'Chaitanya', 'Deepak', 'Gautam', 'Ishaan', 'Kalyan', 'Kavya', 'Keerthi', 'Madhuri', 
+      'Manoj', 'Naveen', 'Neha', 'Nikhil', 'Pranav', 'Prashanth', 'Rajesh', 'Rakesh', 
+      'Riya', 'Rohit', 'Sai', 'Sameer', 'Sanjay', 'Santosh', 'Shreya', 'Sowmya', 
+      'Srikanth', 'Surya', 'Swathi', 'Tarun', 'Varun', 'Venkatesh', 'Vikas', 'Vinay'
+    ];
+
+    const lastNames = [
+      'Sharma', 'Patel', 'Reddy', 'Nair', 'Singh', 'Roy', 'Gupta', 'Sri',
+      'Verma', 'Hegde', 'Rao', 'Kalyan', 'Pillai', 'Mishra', 'Joshi', 'Bhat',
+      'Choudhury', 'Das', 'Menon', 'Prasad', 'Naidu', 'Babu', 'Sundaram', 'Sen'
+    ];
+
+    let nameIndex = 0;
+    let globalCounter = 1;
+
+    for (const b of branches) {
+      for (let sem = 1; sem <= 8; sem++) {
+        const semName = `Semester ${sem}`;
+        for (let stuNum = 1; stuNum <= 5; stuNum++) {
+          let stuId = '';
+          let fullName = '';
+          let email = '';
+
+          if (b.code === 'CSE' && sem === 3 && stuNum === 1) {
+            stuId = 'STU004';
+            fullName = 'Krishna Vamsi';
+            email = 'krishnavamsi1201@gmail.com';
+          } else {
+            if (globalCounter === 4) {
+              globalCounter++; // Reserve STU004 for Krishna Vamsi
+            }
+            stuId = `STU${String(globalCounter).padStart(3, '0')}`;
+            globalCounter++;
+
+            const f = firstNames[nameIndex % firstNames.length];
+            const l = lastNames[Math.floor(nameIndex / firstNames.length) % lastNames.length];
+            nameIndex++;
+            fullName = `${f} ${l}`;
+            email = `${f.toLowerCase()}.${l.toLowerCase()}.${b.code.toLowerCase()}.s${sem}@oblms.edu`;
+          }
+
+          list.push({
+            id: stuId,
+            regNo: stuId,
+            name: fullName,
+            email: email,
+            password: 'password',
+            department: b.name,
+            semester: semName
+          });
+        }
+      }
+    }
+
+    list.push({
+      id: 'STU241',
+      regNo: 'CUTM2026CSE042',
+      name: 'vamsi',
+      email: 'vamsi1201@gmail.com',
+      password: 'password',
+      department: 'Computer Science & Engineering',
+      semester: 'Semester 3'
+    });
+    list.push({
+      id: 'STU242',
+      regNo: '4444444556',
+      name: 'zing',
+      email: 'zing@gmail.com',
+      password: 'password',
+      department: 'Civil Engineering',
+      semester: 'Semester 2'
+    });
+
+    return list;
+  }
+
+  buildGroupedStudentsList(): void {
+    const studentMap = new Map<string, any>();
+
+    // 1. Initialize with all 242 master default students
+    const defaults = this.generateAllDefaultStudents();
+    defaults.forEach(s => {
+      if (s.name && s.name.trim()) {
+        studentMap.set(s.name.trim().toLowerCase(), s);
       }
     });
 
-    // 2. Also collect from registered students database
+    // 2. Merge with registered students database in localStorage
+    let storedStudentsList: any[] = [];
     try {
       const stored = localStorage.getItem('obslmsStudents');
       if (stored) {
         const parsed = JSON.parse(stored);
-        parsed.forEach((s: any) => {
-          if (s.name && s.name.trim()) studentNamesSet.add(s.name.trim());
-        });
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          storedStudentsList = parsed;
+          parsed.forEach((s: any) => {
+            if (s.name && s.name.trim()) {
+              const key = s.name.trim().toLowerCase();
+              const existing = studentMap.get(key) || {};
+              studentMap.set(key, {
+                ...existing,
+                id: s.id || s.regNo || existing.id,
+                regNo: s.regNo || s.id || existing.regNo,
+                name: s.name.trim(),
+                email: s.email || existing.email,
+                department: s.department || s.dept || existing.department || 'Computer Science & Engineering',
+                semester: s.semester || existing.semester || 'Semester 1',
+                enrolledCourses: s.enrolledCourses || s.courses || existing.enrolledCourses
+              });
+            }
+          });
+        }
       }
     } catch {}
 
-    // Fallback if none found
-    if (studentNamesSet.size === 0) {
-      ['Sneha Sharma', 'Rahul Verma', 'Priya Patel', 'Amit Kumar', 'Ananya Sen', 'Vikram Singh', 'Rohan Gupta', 'Neha Joshi'].forEach(n => studentNamesSet.add(n));
+    // 3. Ensure master database has at least 242 students in storage
+    if (storedStudentsList.length < 240) {
+      try {
+        localStorage.setItem('obslmsStudents', JSON.stringify(Array.from(studentMap.values())));
+      } catch {}
     }
 
-    this.groupedStudentsList = Array.from(studentNamesSet).map(name => {
-      return this.getStudentFullDossierFromDatabase(name);
+    // 4. Also collect any from studentProgressList
+    (this.studentProgressList || []).forEach(sp => {
+      if (sp.studentName && sp.studentName.trim()) {
+        const key = sp.studentName.trim().toLowerCase();
+        if (!studentMap.has(key)) {
+          studentMap.set(key, {
+            id: sp.studentId || 'STU' + Math.floor(Math.random() * 900 + 100),
+            regNo: sp.studentId || 'STU' + Math.floor(Math.random() * 900 + 100),
+            name: sp.studentName.trim(),
+            department: this.facultyDepartment || 'Computer Science & Engineering',
+            semester: 'Semester 1'
+          });
+        }
+      }
+    });
+
+    const allStudentsList = Array.from(studentMap.values());
+
+    this.groupedStudentsList = allStudentsList.map(stu => {
+      return this.getStudentFullDossierFromDatabase(stu.name, stu.id || stu.regNo);
     });
 
     this.onProgressFilterChange();
