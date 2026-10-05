@@ -1,6 +1,44 @@
 <router-outlet></router-outlet>
 
-<!-- Global Toast Notifications -->
+<!-- ========================================================================= -->
+<!-- GLOBAL CENTER POPUP CONFIRMATION & NOTIFICATION MODAL DIALOG              -->
+<!-- ========================================================================= -->
+<div class="global-center-popup-backdrop" *ngIf="(activePopup$ | async) as popup" (click)="closePopup(popup.id)">
+  <div class="global-center-popup-card" [ngClass]="'popup-' + popup.type" (click)="$event.stopPropagation()">
+    <!-- Top Glowing Accent Bar -->
+    <div class="popup-top-glow"></div>
+
+    <!-- Close Button -->
+    <button class="popup-close-btn" (click)="closePopup(popup.id)" aria-label="Close popup">✕</button>
+
+    <!-- Animated Central Icon -->
+    <div class="popup-icon-container">
+      <div class="popup-icon-ring"></div>
+      <span class="material-icons popup-material-icon">{{ popup.icon }}</span>
+    </div>
+
+    <!-- Content -->
+    <div class="popup-content-body">
+      <h3 class="popup-title">{{ popup.title }}</h3>
+      <p class="popup-message">{{ popup.message }}</p>
+    </div>
+
+    <!-- Action Button -->
+    <div class="popup-action-row">
+      <button class="popup-confirm-btn" (click)="closePopup(popup.id)">
+        <span>Done / Got It</span>
+        <span class="material-icons" style="font-size: 16px;">arrow_forward</span>
+      </button>
+    </div>
+
+    <!-- Auto-Dismiss Animated Progress Bar -->
+    <div class="popup-timer-progress">
+      <div class="popup-timer-bar" [style.animation-duration.ms]="popup.duration"></div>
+    </div>
+  </div>
+</div>
+
+<!-- Global Corner Toast Notifications (Fallback / Multi) -->
 <div class="toast-container" *ngIf="(toasts$ | async) as toasts">
   <div *ngFor="let toast of toasts" class="toast-item" [ngClass]="'toast-' + toast.type">
     <span class="toast-icon">
@@ -8,6 +46,7 @@
         <span *ngSwitchCase="'success'">✅</span>
         <span *ngSwitchCase="'error'">❌</span>
         <span *ngSwitchCase="'warning'">⚠️</span>
+        <span *ngSwitchCase="'delete'">🗑️</span>
         <span *ngSwitchDefault>ℹ️</span>
       </ng-container>
     </span>

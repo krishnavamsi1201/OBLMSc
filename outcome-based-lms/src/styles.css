@@ -463,7 +463,248 @@ body, html {
 }
 
 /* ==========================================================================
-   Global Toast Notifications
+   Global Center Popup Notification & Confirmation Dialog Modal
+   ========================================================================== */
+.global-center-popup-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 999999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(3, 7, 18, 0.72);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    animation: popupFadeIn 0.25s ease-out;
+    padding: 20px;
+}
+
+.global-center-popup-card {
+    position: relative;
+    background: linear-gradient(145deg, #0f172a 0%, #090d1a 100%);
+    border: 1.5px solid rgba(255, 255, 255, 0.14);
+    border-radius: 22px;
+    padding: 28px 28px 22px;
+    max-width: 440px;
+    width: 100%;
+    text-align: center;
+    box-shadow: 0 25px 60px -10px rgba(0, 0, 0, 0.8), 0 0 40px rgba(56, 189, 248, 0.15);
+    overflow: hidden;
+    animation: popupBounceIn 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.popup-top-glow {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, #38bdf8, #2563eb, #d4af37);
+}
+
+.popup-success .popup-top-glow {
+    background: linear-gradient(90deg, #10b981, #34d399, #d4af37);
+}
+
+.popup-delete .popup-top-glow, .popup-error .popup-top-glow {
+    background: linear-gradient(90deg, #ef4444, #f43f5e, #fb7185);
+}
+
+.popup-warning .popup-top-glow {
+    background: linear-gradient(90deg, #f59e0b, #fbbf24, #d4af37);
+}
+
+.popup-close-btn {
+    position: absolute;
+    top: 14px;
+    right: 14px;
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: #94a3b8;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.popup-close-btn:hover {
+    background: rgba(255, 255, 255, 0.15);
+    color: #ffffff;
+    transform: rotate(90deg);
+}
+
+.popup-icon-container {
+    position: relative;
+    width: 68px;
+    height: 68px;
+    margin: 0 auto 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.popup-icon-ring {
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    background: rgba(56, 189, 248, 0.12);
+    border: 1.5px solid rgba(56, 189, 248, 0.35);
+    animation: iconRingPulse 2s infinite ease-in-out;
+}
+
+.popup-success .popup-icon-ring {
+    background: rgba(16, 185, 129, 0.15);
+    border-color: rgba(16, 185, 129, 0.45);
+}
+
+.popup-delete .popup-icon-ring, .popup-error .popup-icon-ring {
+    background: rgba(239, 68, 68, 0.15);
+    border-color: rgba(239, 68, 68, 0.45);
+}
+
+.popup-warning .popup-icon-ring {
+    background: rgba(245, 158, 11, 0.15);
+    border-color: rgba(245, 158, 11, 0.45);
+}
+
+.popup-material-icon {
+    font-size: 38px;
+    position: relative;
+    z-index: 1;
+    color: #38bdf8;
+    animation: iconPop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.popup-success .popup-material-icon { color: #34d399; }
+.popup-delete .popup-material-icon, .popup-error .popup-material-icon { color: #f87171; }
+.popup-warning .popup-material-icon { color: #fbbf24; }
+
+.popup-content-body {
+    margin-bottom: 20px;
+}
+
+.popup-title {
+    margin: 0 0 8px;
+    font-size: 1.22rem;
+    font-weight: 800;
+    color: #ffffff;
+    letter-spacing: -0.01em;
+}
+
+.popup-message {
+    margin: 0;
+    font-size: 0.92rem;
+    color: #cbd5e1;
+    line-height: 1.5;
+}
+
+.popup-action-row {
+    display: flex;
+    justify-content: center;
+}
+
+.popup-confirm-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+    border: 1px solid #3b82f6;
+    color: #ffffff;
+    font-size: 0.88rem;
+    font-weight: 700;
+    padding: 9px 24px;
+    border-radius: 10px;
+    cursor: pointer;
+    box-shadow: 0 4px 14px rgba(37, 99, 235, 0.35);
+    transition: all 0.2s ease;
+}
+
+.popup-success .popup-confirm-btn {
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    border-color: #10b981;
+    box-shadow: 0 4px 14px rgba(16, 185, 129, 0.35);
+}
+
+.popup-delete .popup-confirm-btn, .popup-error .popup-confirm-btn {
+    background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+    border-color: #ef4444;
+    box-shadow: 0 4px 14px rgba(239, 68, 68, 0.35);
+}
+
+.popup-warning .popup-confirm-btn {
+    background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+    border-color: #f59e0b;
+    box-shadow: 0 4px 14px rgba(245, 158, 11, 0.35);
+}
+
+.popup-confirm-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.4);
+}
+
+.popup-timer-progress {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: rgba(255, 255, 255, 0.08);
+}
+
+.popup-timer-bar {
+    height: 100%;
+    width: 100%;
+    background: #38bdf8;
+    animation: popupTimerShrink linear forwards;
+}
+
+.popup-success .popup-timer-bar { background: #34d399; }
+.popup-delete .popup-timer-bar, .popup-error .popup-timer-bar { background: #f87171; }
+.popup-warning .popup-timer-bar { background: #fbbf24; }
+
+@keyframes popupFadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes popupBounceIn {
+    0% {
+        opacity: 0;
+        transform: scale(0.85) translateY(20px);
+    }
+    60% {
+        opacity: 1;
+        transform: scale(1.02) translateY(-4px);
+    }
+    100% {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
+}
+
+@keyframes iconPop {
+    0% { transform: scale(0.5); opacity: 0; }
+    70% { transform: scale(1.15); }
+    100% { transform: scale(1); opacity: 1; }
+}
+
+@keyframes iconRingPulse {
+    0%, 100% { transform: scale(1); opacity: 0.8; }
+    50% { transform: scale(1.12); opacity: 0.4; }
+}
+
+@keyframes popupTimerShrink {
+    from { width: 100%; }
+    to { width: 0%; }
+}
+
+/* ==========================================================================
+   Corner Toast Notifications (Fallback / Multi)
    ========================================================================== */
 .toast-container {
     position: fixed;
@@ -499,7 +740,7 @@ body, html {
     border-color: rgba(16, 185, 129, 0.3);
 }
 
-.toast-error {
+.toast-delete, .toast-error {
     background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
     border-color: rgba(239, 68, 68, 0.3);
 }

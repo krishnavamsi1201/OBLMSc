@@ -15,6 +15,11 @@ export class App implements OnInit {
   private toastService = inject(ToastService);
   private courseService = inject(CourseService);
   toasts$ = this.toastService.getToasts();
+  activePopup$ = this.toastService.getActivePopup();
+
+  closePopup(id?: string): void {
+    this.toastService.closePopup(id);
+  }
 
   ngOnInit(): void {
     this.courseService.ensureCoursesInitialized();
