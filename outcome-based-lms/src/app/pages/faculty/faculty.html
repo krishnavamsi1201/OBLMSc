@@ -300,6 +300,25 @@
 					</div>
 				</div>
 
+				<!-- Quick Semester Navigation Tabs Strip -->
+				<div class="matrix-semesters-tab-bar">
+					<button type="button" 
+							class="matrix-sem-tab" 
+							[class.active]="!progressSemesterFilter" 
+							(click)="selectSemesterTab('')">
+						<span>✨ All Semesters</span>
+						<span class="tab-badge">{{ groupedStudentsList.length }}</span>
+					</button>
+					<button *ngFor="let sem of availableProgressSemesters" 
+							type="button" 
+							class="matrix-sem-tab" 
+							[class.active]="progressSemesterFilter === sem" 
+							(click)="selectSemesterTab(sem)">
+						<span>📅 {{ sem }}</span>
+						<span class="tab-badge">{{ getSemesterStudentCount(sem) }}</span>
+					</button>
+				</div>
+
 				<!-- Quick Status Filter Pills -->
 				<div class="matrix-status-pills-bar">
 					<button type="button" 
@@ -307,7 +326,7 @@
 							[class.active]="progressStatusFilter === 'ALL'" 
 							(click)="setStatusFilter('ALL')">
 						<span>{{ matrixViewMode === 'STUDENTS' ? '👥 All Students' : '📚 All Subjects' }}</span>
-						<span class="pill-count">{{ matrixViewMode === 'STUDENTS' ? groupedStudentsList.length : courses.length }}</span>
+						<span class="pill-count">{{ matrixViewMode === 'STUDENTS' ? filteredGroupedStudentsList.length : courses.length }}</span>
 					</button>
 					<button type="button" 
 							class="matrix-status-pill on-track" 
@@ -325,97 +344,122 @@
 					</button>
 				</div>
 
-				<!-- MODE 1: BY STUDENT TABLE -->
+				<!-- MODE 1: BY STUDENT TABLE (SEMESTER-WISE GROUPED) -->
 				<div class="progress-table" *ngIf="matrixViewMode === 'STUDENTS'">
-					<table *ngIf="filteredGroupedStudentsList.length > 0" class="data-table interactive-table">
-						<thead>
-							<tr>
-								<th>Student Name</th>
-								<th>Overall CO Attainment</th>
-								<th>Overall Attendance</th>
-								<th>Evaluations</th>
-								<th>Status</th>
-								<th style="text-align: right;">Action</th>
-							</tr>
-						</thead>
-						<tbody>
-							<tr *ngFor="let student of paginatedGroupedStudents" 
-								(click)="openStudentDossierModal(student)" 
-								class="clickable-matrix-row" 
-								title="Click to view full subject scorecard for {{ student.studentName }}">
-								<td>
-									<div style="display: flex; align-items: center; gap: 8px;">
-										<div class="student-avatar-mini">{{ student.studentName.charAt(0) }}</div>
-										<div>
-											<strong style="color: #ffffff; font-size: 0.95rem;">{{ student.studentName }}</strong>
-											<div style="font-size: 0.75rem; color: #64748b;">ID: {{ student.studentId }}</div>
+					<div *ngIf="semesterStudentGroups.length > 0" class="semester-groups-container">
+						<div *ngFor="let grp of semesterStudentGroups" class="semester-group-card">
+							<!-- Semester Header Banner -->
+							<div class="semester-group-header" (click)="toggleSemesterCollapse(grp.semesterName)">
+								<div class="sem-header-left">
+									<div class="sem-icon-wrap">🎓</div>
+									<div>
+										<div class="sem-title-row">
+											<h3 class="sem-title">{{ grp.semesterName }}</h3>
+											<span class="sem-badge-pill">{{ grp.coursesCount }} Registered Courses</span>
 										</div>
+										<span class="sem-subtitle">{{ facultyDepartment }} • {{ grp.studentCount }} Students Enrolled</span>
 									</div>
-								</td>
-								<td>
-									<span class="attainment-badge" 
-										  [class.good]="student.avgAttainment >= 75"
-										  [class.fair]="student.avgAttainment >= 60 && student.avgAttainment < 75"
-										  [class.poor]="student.avgAttainment < 60">
-										{{ student.avgAttainment }}%
-									</span>
-								</td>
-								<td>
-									<span class="attendance-badge" 
-										  [class.good]="student.avgAttendance >= 80" 
-										  [class.fair]="student.avgAttendance >= 75 && student.avgAttendance < 80"
-										  [class.poor]="student.avgAttendance < 75">
-										{{ student.avgAttendance }}%
-									</span>
-								</td>
-								<td>
-									<span style="color: #cbd5e1; font-weight: 600;">{{ student.totalAssessments }}</span>
-									<small style="color: #64748b; font-size: 0.75rem;"> recorded</small>
-								</td>
-								<td>
-									<span *ngIf="student.status === 'At-Risk'" class="status-pill open">
-										At-Risk
-									</span>
-									<span *ngIf="student.status === 'On Track'" class="status-pill completed">
-										On Track
-									</span>
-								</td>
-								<td style="text-align: right;">
-									<button type="button" 
-											class="drilldown-action-btn" 
-											(click)="$event.stopPropagation(); openStudentDossierModal(student)">
-										View Subjects →
-									</button>
-								</td>
-							</tr>
-						</tbody>
-					</table>
+								</div>
 
-					<!-- Pagination Footer Controls for Students -->
-					<div class="table-pagination-bar" *ngIf="filteredGroupedStudentsList.length > 0">
-						<div class="pagination-summary">
-							Showing <strong>{{ (progressCurrentPage - 1) * progressPageSize + 1 }}</strong> - 
-							<strong>{{ Math.min(progressCurrentPage * progressPageSize, filteredGroupedStudentsList.length) }}</strong> of 
-							<strong>{{ filteredGroupedStudentsList.length }}</strong> students
-						</div>
-						<div class="pagination-buttons">
-							<button type="button" 
-									class="page-btn" 
-									[disabled]="progressCurrentPage === 1" 
-									(click)="prevProgressPage()">
-								◀ Prev
-							</button>
-							<span class="page-chip">Page {{ progressCurrentPage }} / {{ progressTotalPages }}</span>
-							<button type="button" 
-									class="page-btn" 
-									[disabled]="progressCurrentPage >= progressTotalPages" 
-									(click)="nextProgressPage()">
-								Next ▶
-							</button>
+								<div class="sem-header-stats">
+									<div class="sem-stat-item">
+										<span class="stat-lbl">Avg Attainment</span>
+										<strong class="stat-val" [style.color]="grp.avgAttainment >= 75 ? '#34d399' : (grp.avgAttainment >= 60 ? '#facc15' : '#ef4444')">
+											{{ grp.avgAttainment }}%
+										</strong>
+									</div>
+									<div class="sem-stat-item">
+										<span class="stat-lbl">Avg Attendance</span>
+										<strong class="stat-val" style="color: #38bdf8;">{{ grp.avgAttendance }}%</strong>
+									</div>
+									<div class="sem-stat-item">
+										<span class="stat-lbl">On Track</span>
+										<strong class="stat-val" style="color: #4ade80;">{{ grp.onTrackCount }}</strong>
+									</div>
+									<button type="button" class="sem-collapse-toggle">
+										{{ isSemesterCollapsed(grp.semesterName) ? '▼ Expand Roster' : '▲ Collapse Roster' }}
+									</button>
+								</div>
+							</div>
+
+							<!-- Student Roster Table for this Semester -->
+							<div *ngIf="!isSemesterCollapsed(grp.semesterName)" class="sem-table-wrap">
+								<table class="data-table interactive-table" style="margin: 0; width: 100%;">
+									<thead>
+										<tr>
+											<th>Student Name & Roll No</th>
+											<th>Semester</th>
+											<th>Enrolled Subjects</th>
+											<th>Overall CO Attainment</th>
+											<th>Overall Attendance</th>
+											<th>Evaluations</th>
+											<th>Status</th>
+											<th style="text-align: right;">Action</th>
+										</tr>
+									</thead>
+									<tbody>
+										<tr *ngFor="let student of grp.students" 
+											(click)="openStudentDossierModal(student)" 
+											class="clickable-matrix-row" 
+											title="Click to view full subject scorecard for {{ student.studentName }}">
+											<td>
+												<div style="display: flex; align-items: center; gap: 8px;">
+													<div class="student-avatar-mini">{{ student.studentName.charAt(0) }}</div>
+													<div>
+														<strong style="color: #ffffff; font-size: 0.95rem;">{{ student.studentName }}</strong>
+														<div style="font-size: 0.75rem; color: #64748b;">ID: {{ student.studentId }}</div>
+													</div>
+												</div>
+											</td>
+											<td>
+												<span class="sem-tag">📅 {{ student.semester }}</span>
+											</td>
+											<td>
+												<span class="enrolled-count-chip">📚 {{ student.enrolledCoursesCount }} Subjects</span>
+											</td>
+											<td>
+												<span class="attainment-badge" 
+													  [class.good]="student.avgAttainment >= 75"
+													  [class.fair]="student.avgAttainment >= 60 && student.avgAttainment < 75"
+													  [class.poor]="student.avgAttainment < 60">
+													{{ student.avgAttainment }}%
+												</span>
+											</td>
+											<td>
+												<span class="attendance-badge" 
+													  [class.good]="student.avgAttendance >= 80" 
+													  [class.fair]="student.avgAttendance >= 75 && student.avgAttendance < 80"
+													  [class.poor]="student.avgAttendance < 75">
+													{{ student.avgAttendance }}%
+												</span>
+											</td>
+											<td>
+												<span style="color: #cbd5e1; font-weight: 600;">{{ student.totalAssessments }}</span>
+												<small style="color: #64748b; font-size: 0.75rem;"> recorded</small>
+											</td>
+											<td>
+												<span *ngIf="student.status === 'At-Risk'" class="status-pill open">
+													At-Risk
+												</span>
+												<span *ngIf="student.status === 'On Track'" class="status-pill completed">
+													On Track
+												</span>
+											</td>
+											<td style="text-align: right;">
+												<button type="button" 
+														class="drilldown-action-btn" 
+														(click)="$event.stopPropagation(); openStudentDossierModal(student)">
+													View Subjects →
+												</button>
+											</td>
+										</tr>
+									</tbody>
+								</table>
+							</div>
 						</div>
 					</div>
 
-					<p *ngIf="filteredGroupedStudentsList.length === 0" class="empty-state">No student data found for the selected filter.</p>
+					<p *ngIf="semesterStudentGroups.length === 0" class="empty-state">No student data found for the selected filter.</p>
 				</div>
 
 				<!-- MODE 2: BY SUBJECT TABLE -->

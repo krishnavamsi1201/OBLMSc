@@ -78,12 +78,27 @@ export interface StudentSubjectDetail {
 export interface StudentGroupSummary {
   studentId: string;
   studentName: string;
+  semester: string;
+  department?: string;
   enrolledCoursesCount: number;
   avgAttainment: number;
   avgAttendance: number;
   totalAssessments: number;
   status: 'On Track' | 'At-Risk';
   subjects: StudentSubjectDetail[];
+}
+
+export interface SemesterStudentGroup {
+  semesterName: string;
+  studentCount: number;
+  avgAttainment: number;
+  avgAttendance: number;
+  onTrackCount: number;
+  atRiskCount: number;
+  coursesCount: number;
+  coursesList: string[];
+  students: StudentGroupSummary[];
+  isCollapsed?: boolean;
 }
 
 @Component({
@@ -168,6 +183,8 @@ export class Faculty implements OnInit {
   matrixViewMode: 'STUDENTS' | 'SUBJECTS' = 'STUDENTS';
   groupedStudentsList: StudentGroupSummary[] = [];
   filteredGroupedStudentsList: StudentGroupSummary[] = [];
+  semesterStudentGroups: SemesterStudentGroup[] = [];
+  collapsedSemesters: { [semName: string]: boolean } = {};
   filteredSubjectCardsList: Course[] = [];
 
   // Modals for drilldowns
@@ -190,15 +207,47 @@ export class Faculty implements OnInit {
     this.onProgressFilterChange();
   }
 
+  toggleSemesterCollapse(semName: string): void {
+    this.collapsedSemesters[semName] = !this.collapsedSemesters[semName];
+  }
+
+  isSemesterCollapsed(semName: string): boolean {
+    return !!this.collapsedSemesters[semName];
+  }
+
+  selectSemesterTab(sem: string): void {
+    this.progressSemesterFilter = sem;
+    this.onSemesterFilterChange();
+  }
+
+  getSemesterStudentCount(sem: string): number {
+    if (!sem) return this.groupedStudentsList.length;
+    const semLow = sem.toLowerCase().trim();
+    return this.groupedStudentsList.filter(st => 
+      (st.semester && st.semester.toLowerCase().trim() === semLow) ||
+      st.subjects.some(sub => sub.semester && sub.semester.toLowerCase().trim() === semLow)
+    ).length;
+  }
+
   get availableProgressSemesters(): string[] {
     const set = new Set<string>();
     (this.courses || []).forEach(c => {
       if (c.semester) set.add(c.semester);
     });
+    (this.groupedStudentsList || []).forEach(s => {
+      if (s.semester) set.add(s.semester);
+    });
+    DEFAULT_DATABASE_COURSES.forEach(c => {
+      if (c.semester) set.add(c.semester);
+    });
     if (set.size === 0) {
       return ['Semester 1', 'Semester 2', 'Semester 3', 'Semester 4', 'Semester 5', 'Semester 6', 'Semester 7', 'Semester 8'];
     }
-    return Array.from(set).sort();
+    return Array.from(set).sort((a, b) => {
+      const numA = parseInt(a.replace(/\D/g, ''), 10) || 0;
+      const numB = parseInt(b.replace(/\D/g, ''), 10) || 0;
+      return numA - numB;
+    });
   }
 
   get availableProgressCourses(): Course[] {
@@ -454,6 +503,8 @@ export class Faculty implements OnInit {
     return {
       studentId: sId,
       studentName: sName,
+      semester: sSem,
+      department: sDept,
       enrolledCoursesCount: count,
       avgAttainment,
       avgAttendance,
@@ -461,6 +512,56 @@ export class Faculty implements OnInit {
       status,
       subjects
     };
+  }
+
+  buildSemesterStudentGroups(): void {
+    const semMap = new Map<string, StudentGroupSummary[]>();
+
+    this.filteredGroupedStudentsList.forEach(st => {
+      const sem = st.semester || 'Semester 1';
+      if (!semMap.has(sem)) {
+        semMap.set(sem, []);
+      }
+      semMap.get(sem)!.push(st);
+    });
+
+    // Sort semesters in natural order (Semester 1, Semester 2, etc.)
+    const sortedSemKeys = Array.from(semMap.keys()).sort((a, b) => {
+      const numA = parseInt(a.replace(/\D/g, ''), 10) || 0;
+      const numB = parseInt(b.replace(/\D/g, ''), 10) || 0;
+      return numA - numB;
+    });
+
+    this.semesterStudentGroups = sortedSemKeys.map(semKey => {
+      const stuList = semMap.get(semKey)!;
+      const count = stuList.length;
+      const totalAtt = stuList.reduce((sum, s) => sum + (s.avgAttainment || 0), 0);
+      const totalAttn = stuList.reduce((sum, s) => sum + (s.avgAttendance || 0), 0);
+      const onTrack = stuList.filter(s => s.status === 'On Track').length;
+      const atRisk = stuList.filter(s => s.status === 'At-Risk').length;
+
+      // Collect all unique courses in this semester group
+      const coursesSet = new Set<string>();
+      stuList.forEach(s => {
+        s.subjects.forEach(sub => {
+          if (sub.courseCode) coursesSet.add(`${sub.courseCode} - ${sub.courseName}`);
+          else coursesSet.add(sub.courseName);
+        });
+      });
+
+      return {
+        semesterName: semKey,
+        studentCount: count,
+        avgAttainment: count > 0 ? Math.round(totalAtt / count) : 0,
+        avgAttendance: count > 0 ? Math.round(totalAttn / count) : 0,
+        onTrackCount: onTrack,
+        atRiskCount: atRisk,
+        coursesCount: coursesSet.size,
+        coursesList: Array.from(coursesSet),
+        students: stuList,
+        isCollapsed: this.collapsedSemesters[semKey] || false
+      };
+    });
   }
 
   onProgressFilterChange(): void {
@@ -471,9 +572,10 @@ export class Faculty implements OnInit {
 
       // 1. Semester filter
       if (this.progressSemesterFilter) {
-        const semFilter = this.progressSemesterFilter.toLowerCase();
+        const semFilter = this.progressSemesterFilter.toLowerCase().trim();
         studentList = studentList.filter(st =>
-          st.subjects.some(sub => (sub.semester && sub.semester.toLowerCase() === semFilter) || (sub.semester && sub.semester.toLowerCase().includes(semFilter)))
+          (st.semester && st.semester.toLowerCase().trim() === semFilter) ||
+          st.subjects.some(sub => (sub.semester && sub.semester.toLowerCase().trim() === semFilter))
         );
       }
 
@@ -501,11 +603,13 @@ export class Faculty implements OnInit {
         const q = this.progressSearchQuery.trim().toLowerCase();
         studentList = studentList.filter(st =>
           st.studentName.toLowerCase().includes(q) ||
+          (st.studentId && st.studentId.toLowerCase().includes(q)) ||
           st.subjects.some(sub => sub.courseName.toLowerCase().includes(q) || (sub.courseCode && sub.courseCode.toLowerCase().includes(q)))
         );
       }
 
       this.filteredGroupedStudentsList = studentList;
+      this.buildSemesterStudentGroups();
     } else {
       let courseList = [...this.courses];
 
