@@ -1,7 +1,8 @@
-import { AfterViewInit, Component, ElementRef, ViewChild, inject } from '@angular/core';
+import { AfterViewInit, Component, ElementRef, OnInit, ViewChild, inject } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { RouterModule, Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
+import { SidebarService } from '../services/sidebar.service';
 
 export interface NavItem {
   icon: string;
@@ -22,12 +23,13 @@ export interface NavGroup {
   templateUrl: './sidebar.html',
   styleUrls: ['./sidebar.css']
 })
-export class Sidebar implements AfterViewInit {
-  @ViewChild('sidebarRef') sidebarRef!: ElementRef<HTMLDivElement>;
+export class Sidebar implements OnInit, AfterViewInit {
+  @ViewChild('navScrollRef') navScrollRef!: ElementRef<HTMLDivElement>;
 
   private router = inject(Router);
+  private sidebarService = inject(SidebarService);
 
-  collapsed = localStorage.getItem('sidebarCollapsed') === 'true';
+  collapsed = this.sidebarService.isCollapsed;
 
   role = 'faculty';
   userName = 'Faculty Member';
@@ -176,10 +178,15 @@ export class Sidebar implements AfterViewInit {
     this.applySidebarState();
   }
 
+  ngOnInit(): void {
+    this.sidebarService.collapsed$.subscribe(c => {
+      this.collapsed = c;
+      this.applySidebarState();
+    });
+  }
+
   toggleCollapse(): void {
-    this.collapsed = !this.collapsed;
-    localStorage.setItem('sidebarCollapsed', String(this.collapsed));
-    this.applySidebarState();
+    this.sidebarService.toggle();
   }
 
   logout(): void {
@@ -190,7 +197,6 @@ export class Sidebar implements AfterViewInit {
     this.router.navigate(['/login']);
   }
 
-
   private applySidebarState(): void {
     document.body.classList.toggle('sidebar-collapsed', this.collapsed);
   }
@@ -200,16 +206,18 @@ export class Sidebar implements AfterViewInit {
   }
 
   saveScrollPosition(): void {
-    if (this.sidebarRef?.nativeElement) {
-      localStorage.setItem('sidebarScrollTop', String(this.sidebarRef.nativeElement.scrollTop));
+    if (this.navScrollRef?.nativeElement) {
+      localStorage.setItem('sidebarScrollTop', String(this.navScrollRef.nativeElement.scrollTop));
     }
   }
 
   private restoreScrollPosition(): void {
     const savedScroll = Number(localStorage.getItem('sidebarScrollTop') || '0');
-    if (this.sidebarRef?.nativeElement && savedScroll >= 0) {
+    if (this.navScrollRef?.nativeElement && savedScroll >= 0) {
       setTimeout(() => {
-        this.sidebarRef.nativeElement.scrollTop = savedScroll;
+        if (this.navScrollRef?.nativeElement) {
+          this.navScrollRef.nativeElement.scrollTop = savedScroll;
+        }
       }, 0);
     }
   }

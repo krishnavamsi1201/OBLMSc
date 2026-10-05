@@ -10,6 +10,7 @@ import { SyncService } from '../../shared/services/sync.service';
 import { CourseService, AppCourse } from '../../shared/services/course.service';
 import { Subscription } from 'rxjs';
 import { Router } from '@angular/router';
+import { NavigationService } from '../../shared/services/navigation.service';
 
 interface AttendanceRecord {
   id: number;
@@ -68,6 +69,14 @@ interface DayLectureEntry {
     <ng-container *ngIf="role === 'student'">
       <div class="page-header">
         <div class="header-title">
+          <div class="page-back-nav-bar">
+            <button type="button" class="btn-page-back" (click)="goBack()">
+              <span class="material-icons">arrow_back</span>
+              <span>Back to Dashboard</span>
+            </button>
+            <span class="nav-sep">|</span>
+            <span class="page-category-hint">Academic Attendance Records</span>
+          </div>
           <h1>📋 My Attendance</h1>
           <p>Track your overall academic attendance, day-wise lecture check-ins, and subject-wise 75% examination eligibility.</p>
         </div>
@@ -376,6 +385,14 @@ interface DayLectureEntry {
         <div class="page-header">
             <div class="header-main-row">
                 <div>
+                    <div class="page-back-nav-bar">
+                        <button type="button" class="btn-page-back" (click)="goBack()">
+                            <span class="material-icons">arrow_back</span>
+                            <span>Back to Dashboard</span>
+                        </button>
+                        <span class="nav-sep">|</span>
+                        <span class="page-category-hint">Institutional Attendance Governance</span>
+                    </div>
                     <h1>Course Attendance Management</h1>
                     <p>Select a course to view enrolled students. Click Present or Absent on the right of each student to instantly increase or decrease their attendance percentage.</p>
                 </div>
@@ -387,26 +404,36 @@ interface DayLectureEntry {
             
             <!-- Top Controls Toolbar -->
             <div class="toolbar-header">
-                <div class="toolbar-field">
+                <div class="toolbar-field course-select-field">
                     <label>Select Course</label>
                     <select [(ngModel)]="selectedCourse" (ngModelChange)="onCourseChanged()" class="styled-select">
                         <option *ngFor="let c of coursesList" [value]="c.title">{{ c.code ? c.code + ' - ' : '' }}{{ c.title }}</option>
                     </select>
                 </div>
 
-                <div class="toolbar-field">
+                <div class="toolbar-field date-select-field">
                     <label>Date</label>
                     <input type="date" [(ngModel)]="attendanceDate" (change)="onDateChanged()" class="styled-input" />
                 </div>
 
                 <div class="toolbar-actions">
                     <label>Batch Actions</label>
-                    <div class="action-btn-row">
-                        <button type="button" class="btn-quick present-all" (click)="markAll('Present')">
-                            Mark All Present
+                    <div class="attendance-btn-pair">
+                        <button type="button" 
+                                class="btn-attend present-btn" 
+                                [class.active]="areAllPresent"
+                                (click)="markAll('Present')"
+                                title="Mark all students Present">
+                            <span class="btn-icon">✅</span>
+                            <span class="btn-lbl">Present</span>
                         </button>
-                        <button type="button" class="btn-quick absent-all" (click)="markAll('Absent')">
-                            Mark All Absent
+                        <button type="button" 
+                                class="btn-attend absent-btn" 
+                                [class.active]="areAllAbsent"
+                                (click)="markAll('Absent')"
+                                title="Mark all students Absent">
+                            <span class="btn-icon">❌</span>
+                            <span class="btn-lbl">Absent</span>
                         </button>
                     </div>
                 </div>
@@ -482,14 +509,18 @@ interface DayLectureEntry {
                                     <button type="button" 
                                             class="btn-attend present-btn" 
                                             [class.active]="s.status === 'Present'"
-                                            (click)="toggleAttendance(s, 'Present')">
-                                        ✅ Present
+                                            (click)="toggleAttendance(s, 'Present')"
+                                            title="Mark Present">
+                                        <span class="btn-icon">✅</span>
+                                        <span class="btn-lbl">Present</span>
                                     </button>
                                     <button type="button" 
                                             class="btn-attend absent-btn" 
                                             [class.active]="s.status === 'Absent'"
-                                            (click)="toggleAttendance(s, 'Absent')">
-                                        ❌ Absent
+                                            (click)="toggleAttendance(s, 'Absent')"
+                                            title="Mark Absent">
+                                        <span class="btn-icon">❌</span>
+                                        <span class="btn-lbl">Absent</span>
                                     </button>
                                 </div>
                             </td>
@@ -606,18 +637,14 @@ interface DayLectureEntry {
     .attendance-card { background: #101b38; border-radius: 14px; border: 1px solid #1f2f54; box-shadow: 0 8px 30px rgba(0,0,0,0.35); margin-bottom: 28px; overflow: hidden; }
     
     /* Toolbar */
-    .toolbar-header { display: grid; grid-template-columns: 2fr 1.2fr 1.6fr; gap: 20px; padding: 22px 24px; background: #091024; border-bottom: 1px solid #1f2f54; align-items: flex-end; }
+    .toolbar-header { display: flex; align-items: flex-end; justify-content: space-between; gap: 16px; padding: 18px 24px; background: #091024; border-bottom: 1px solid #1f2f54; flex-wrap: wrap; }
     .toolbar-field { display: flex; flex-direction: column; }
+    .toolbar-field.course-select-field { flex: 1 1 260px; min-width: 200px; }
+    .toolbar-field.date-select-field { flex: 0 1 180px; min-width: 140px; }
+    .toolbar-actions { display: flex; flex-direction: column; flex: 0 0 auto; }
     .toolbar-field label, .toolbar-actions label { font-size: 0.88rem; font-weight: 700; color: #cbd5e1; margin-bottom: 6px; }
-    .styled-select, .styled-input { padding: 10px 14px; border: 1px solid #1f2f54; border-radius: 8px; font-size: 0.95rem; background: #101b38; color: #ffffff; outline: none; }
+    .styled-select, .styled-input { padding: 9px 14px; border: 1px solid #1f2f54; border-radius: 8px; font-size: 0.95rem; background: #101b38; color: #ffffff; outline: none; height: 52px; box-sizing: border-box; }
     .styled-select:focus, .styled-input:focus { border-color: #d4af37; box-shadow: 0 0 0 3px rgba(212,175,55,0.2); }
-
-    .action-btn-row { display: flex; gap: 10px; }
-    .btn-quick { padding: 9px 14px; border-radius: 8px; border: 1px solid #1f2f54; font-size: 0.85rem; font-weight: 700; cursor: pointer; transition: all 0.15s ease; }
-    .btn-quick.present-all { background: rgba(34, 197, 94, 0.15); color: #4ade80; border-color: rgba(74, 222, 128, 0.3); }
-    .btn-quick.present-all:hover { background: rgba(34, 197, 94, 0.25); }
-    .btn-quick.absent-all { background: rgba(239, 68, 68, 0.15); color: #f87171; border-color: rgba(248, 113, 113, 0.3); }
-    .btn-quick.absent-all:hover { background: rgba(239, 68, 68, 0.25); }
 
     /* Stats Ribbon */
     .stats-ribbon { display: flex; gap: 14px; padding: 14px 24px; background: #0d162f; border-bottom: 1px solid #1f2f54; flex-wrap: wrap; }
@@ -652,15 +679,45 @@ interface DayLectureEntry {
     .pct-val { font-size: 1.05rem; font-weight: 800; }
     .pct-sub { font-size: 0.74rem; opacity: 0.88; margin-top: 2px; }
 
-    /* 2 Interactive Buttons */
-    .attendance-btn-pair { display: inline-flex; gap: 8px; justify-content: center; }
-    .btn-attend { padding: 9px 18px; border: 1.5px solid #1f2f54; border-radius: 8px; font-size: 0.88rem; font-weight: 700; cursor: pointer; background: #091024; color: #94a3b8; transition: all 0.15s ease; outline: none; }
+    /* 2 Interactive Buttons - Matching Image 2 */
+    .attendance-btn-pair { display: inline-flex; gap: 8px; justify-content: center; align-items: center; }
+    .btn-attend {
+        min-width: 68px;
+        height: 52px;
+        padding: 6px 12px;
+        border: 1.5px solid #1f2f54;
+        border-radius: 8px;
+        font-weight: 700;
+        cursor: pointer;
+        background: #091024;
+        color: #94a3b8;
+        display: inline-flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 3px;
+        transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+        outline: none;
+        user-select: none;
+        box-sizing: border-box;
+    }
+    .btn-attend .btn-icon {
+        font-size: 15px;
+        line-height: 1;
+        display: block;
+    }
+    .btn-attend .btn-lbl {
+        font-size: 0.82rem;
+        font-weight: 700;
+        line-height: 1.1;
+        display: block;
+    }
     
-    .btn-attend.present-btn:hover, .btn-attend-mini.present-btn:hover { background: rgba(34, 197, 94, 0.2); border-color: #4ade80; color: #4ade80; }
-    .btn-attend.present-btn.active, .btn-attend-mini.present-btn.active { background: #16a34a; border-color: #4ade80; color: #ffffff; box-shadow: 0 2px 10px rgba(22,163,74,0.4); }
+    .btn-attend.present-btn:hover, .btn-attend-mini.present-btn:hover { background: rgba(34, 197, 94, 0.2); border-color: #4ade80; color: #4ade80; transform: translateY(-2px); }
+    .btn-attend.present-btn.active, .btn-attend-mini.present-btn.active { background: #16a34a !important; border-color: #4ade80 !important; color: #ffffff !important; box-shadow: 0 4px 14px rgba(22,163,74,0.45); transform: scale(1.04); }
 
-    .btn-attend.absent-btn:hover, .btn-attend-mini.absent-btn:hover { background: rgba(239, 68, 68, 0.2); border-color: #f87171; color: #f87171; }
-    .btn-attend.absent-btn.active, .btn-attend-mini.absent-btn.active { background: #dc2626; border-color: #f87171; color: #ffffff; box-shadow: 0 2px 10px rgba(220,38,38,0.4); }
+    .btn-attend.absent-btn:hover, .btn-attend-mini.absent-btn:hover { background: rgba(239, 68, 68, 0.2); border-color: #f87171; color: #f87171; transform: translateY(-2px); }
+    .btn-attend.absent-btn.active, .btn-attend-mini.absent-btn.active { background: #dc2626 !important; border-color: #f87171 !important; color: #ffffff !important; box-shadow: 0 4px 14px rgba(220,38,38,0.45); transform: scale(1.04); }
 
     .btn-attend-mini { padding: 6px 12px; border: 1.5px solid #1f2f54; border-radius: 6px; font-size: 0.82rem; font-weight: 700; cursor: pointer; background: #091024; color: #94a3b8; transition: all 0.15s ease; outline: none; }
 
@@ -911,7 +968,12 @@ export class AttendancePage implements OnInit, OnDestroy {
   private http = inject(HttpClient);
   private cdr = inject(ChangeDetectorRef);
   private router = inject(Router);
+  private navService = inject(NavigationService);
   private syncSub?: Subscription;
+
+  goBack(): void {
+    this.navService.goBack();
+  }
 
   constructor() {
     this.refreshUserRole();
@@ -961,6 +1023,9 @@ export class AttendancePage implements OnInit, OnDestroy {
     }
 
     this.syncSub = this.syncService.events$.subscribe((e) => {
+      if (this.isLocalChange) {
+        return; // Prevent clobbering optimistic UI updates from local actions
+      }
       if (e.type === 'ATTENDANCE_CHANGED' || e.type === 'COURSES_CHANGED') {
         this.refreshUserRole();
         this.loadAllLogs();
@@ -968,9 +1033,7 @@ export class AttendancePage implements OnInit, OnDestroy {
           this.calculateSubjectSummaries();
           this.loadDaySchedule();
         } else {
-          if (!this.isLocalChange) {
-            this.loadEnrolledStudents();
-          }
+          this.loadEnrolledStudents();
         }
         this.cdr.detectChanges();
       }
@@ -1130,17 +1193,31 @@ export class AttendancePage implements OnInit, OnDestroy {
     this.http.get<any[]>('http://localhost:8080/api/attendance').subscribe({
       next: (backendLogs) => {
         if (Array.isArray(backendLogs)) {
-          const mapped: AttendanceRecord[] = backendLogs.map((b, idx) => ({
-            id: b.id || (Date.now() + idx),
-            student: b.student,
-            regNo: b.regNo || '240101120001',
-            course: b.courseCode || b.course || '',
-            date: b.date || this.attendanceDate,
-            status: (b.status === 'Absent' ? 'Absent' : 'Present') as 'Present' | 'Absent',
-            period: b.period,
-            topic: b.topic
-          }));
-          this.allLogs = mapped;
+          const seen = new Set<string>();
+          const cleanLogs: AttendanceRecord[] = [];
+          for (const b of backendLogs) {
+            const cCode = (b.courseCode || b.course || '').split(' - ')[0].trim().toLowerCase();
+            const sName = (b.student || '').trim().toLowerCase();
+            const d = (b.date || '').trim();
+            const key = `${sName}_${d}_${cCode}`;
+            if (!seen.has(key)) {
+              seen.add(key);
+              cleanLogs.push({
+                id: b.id || (Date.now() + cleanLogs.length),
+                student: b.student,
+                regNo: b.regNo || '240101120001',
+                course: b.courseCode || b.course || '',
+                date: b.date || this.attendanceDate,
+                status: (b.status === 'Absent' ? 'Absent' : 'Present') as 'Present' | 'Absent',
+                period: b.period,
+                topic: b.topic
+              });
+            }
+          }
+          this.allLogs = cleanLogs;
+          try {
+            localStorage.setItem('obslmsAttendance', JSON.stringify(this.allLogs));
+          } catch {}
           this.filterLogs();
           if (this.isStudent) {
             this.calculateSubjectSummaries();
@@ -1281,9 +1358,9 @@ export class AttendancePage implements OnInit, OnDestroy {
 
             const todayLog = studentCourseLogs.find(l => l.date === this.attendanceDate);
             const status: 'Present' | 'Absent' | 'Unmarked' = todayLog ? todayLog.status : 'Unmarked';
-            const totalLectures = studentCourseLogs.length;
-            const totalPresent = studentCourseLogs.filter(l => l.status === 'Present').length;
-            const pct = totalLectures > 0 ? Math.round((totalPresent / totalLectures) * 100) : 0;
+            const totalLectures = studentCourseLogs.length > 0 ? studentCourseLogs.length : (s.totalLectures || 0);
+            const totalPresent = studentCourseLogs.length > 0 ? studentCourseLogs.filter(l => l.status === 'Present').length : (s.totalPresent || 0);
+            const pct = totalLectures > 0 ? Math.round((totalPresent / totalLectures) * 100) : (s.attendancePercentage !== undefined ? s.attendancePercentage : 0);
 
             return {
               id: s.id,
@@ -1369,29 +1446,19 @@ export class AttendancePage implements OnInit, OnDestroy {
    * Toggle attendance for a student in the top Roster table
    */
   toggleAttendance(student: EnrolledStudent, newStatus: 'Present' | 'Absent'): void {
-    const oldStatus = student.status;
-    student.status = newStatus;
+    const courseTokens = this.selectedCourse.split(' - ');
+    const searchParam = courseTokens.length > 1 ? courseTokens[0].trim() : this.selectedCourse.trim();
 
-    if (oldStatus === 'Unmarked') {
-      student.totalLectures += 1;
-      if (newStatus === 'Present') {
-        student.totalPresent += 1;
-      }
-    } else if (oldStatus === 'Absent' && newStatus === 'Present') {
-      student.totalPresent += 1;
-    } else if (oldStatus === 'Present' && newStatus === 'Absent') {
-      student.totalPresent = Math.max(0, student.totalPresent - 1);
-    }
-    student.attendancePercentage = Math.round((student.totalPresent / student.totalLectures) * 100);
-
+    // 1. Update or create the log in this.allLogs for today's date
     const recordIndex = this.allLogs.findIndex(l =>
       l.student && l.student.toLowerCase() === student.name.toLowerCase() &&
-      l.course && l.course.toLowerCase() === this.selectedCourse.toLowerCase() &&
+      l.course && (l.course.toLowerCase().includes(searchParam.toLowerCase()) || searchParam.toLowerCase().includes(l.course.toLowerCase())) &&
       l.date === this.attendanceDate
     );
 
     if (recordIndex !== -1) {
       this.allLogs[recordIndex].status = newStatus;
+      this.allLogs[recordIndex].course = this.selectedCourse;
     } else {
       this.allLogs.unshift({
         id: Date.now() + Math.floor(Math.random() * 10000),
@@ -1403,22 +1470,62 @@ export class AttendancePage implements OnInit, OnDestroy {
       });
     }
 
+    // Deduplicate any repeated logs for this student + course + date in this.allLogs
+    const seen = new Set<string>();
+    this.allLogs = this.allLogs.filter(l => {
+      const cCode = (l.course || '').split(' - ')[0].trim().toLowerCase();
+      const sName = (l.student || '').trim().toLowerCase();
+      const d = (l.date || '').trim();
+      const key = `${sName}_${d}_${cCode}`;
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    });
+
     try {
       localStorage.setItem('obslmsAttendance', JSON.stringify(this.allLogs));
     } catch {}
 
-    // Immediate background push to MySQL database
+    // 2. Accurately recalculate attendance from this.allLogs for this course
+    const studentCourseLogs = this.allLogs.filter(l =>
+      l.student && l.student.toLowerCase() === student.name.toLowerCase() &&
+      l.course && (l.course.toLowerCase().includes(searchParam.toLowerCase()) || searchParam.toLowerCase().includes(l.course.toLowerCase()))
+    );
+
+    const totalLectures = Math.max(1, studentCourseLogs.length);
+    const totalPresent = studentCourseLogs.filter(l => l.status === 'Present').length;
+    const pct = Math.round((totalPresent / totalLectures) * 100);
+
+    // Update the student model directly so UI table is immediate and exact
+    student.status = newStatus;
+    student.totalPresent = totalPresent;
+    student.totalLectures = totalLectures;
+    student.attendancePercentage = pct;
+
+    // 3. Background sync to backend
     this.http.post('http://localhost:8080/api/attendance', {
       student: student.name,
       courseCode: this.selectedCourse,
       date: this.attendanceDate,
       status: newStatus
-    }).subscribe({ error: () => {} });
+    }).subscribe({
+      next: (saved: any) => {
+        if (saved && saved.id) {
+          const rec = this.allLogs.find(l =>
+            l.student && l.student.toLowerCase() === student.name.toLowerCase() &&
+            l.date === this.attendanceDate
+          );
+          if (rec) rec.id = saved.id;
+        }
+      },
+      error: () => {}
+    });
 
     this.isLocalChange = true;
     this.syncService.emit('ATTENDANCE_CHANGED');
     this.isLocalChange = false;
 
+    // 4. Toast notification strictly matching the updated attendance percentage
     if (newStatus === 'Present') {
       this.toast.success(`${student.name} marked Present. (Attendance: ${student.attendancePercentage}%) 📈`);
     } else {
@@ -1435,6 +1542,14 @@ export class AttendancePage implements OnInit, OnDestroy {
   toggleLogStatus(log: AttendanceRecord, newStatus: 'Present' | 'Absent'): void {
     if (log.status === newStatus) return;
     log.status = newStatus;
+
+    this.http.post('http://localhost:8080/api/attendance', {
+      id: log.id,
+      student: log.student,
+      courseCode: log.course,
+      date: log.date,
+      status: newStatus
+    }).subscribe({ error: () => {} });
 
     try {
       localStorage.setItem('obslmsAttendance', JSON.stringify(this.allLogs));
@@ -1541,6 +1656,14 @@ export class AttendancePage implements OnInit, OnDestroy {
 
   get countAbsentToday(): number {
     return this.students.filter(s => s.status === 'Absent').length;
+  }
+
+  get areAllPresent(): boolean {
+    return this.students.length > 0 && this.students.every(s => s.status === 'Present');
+  }
+
+  get areAllAbsent(): boolean {
+    return this.students.length > 0 && this.students.every(s => s.status === 'Absent');
   }
 
   get todayRate(): number {

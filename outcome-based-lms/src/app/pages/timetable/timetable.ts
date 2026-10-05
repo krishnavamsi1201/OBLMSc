@@ -6,6 +6,7 @@ import { Sidebar } from '../../shared/sidebar/sidebar';
 import { Footer } from '../../shared/footer/footer';
 import { HttpClient } from '@angular/common/http';
 import { ToastService } from '../../shared/services/toast.service';
+import { NavigationService } from '../../shared/services/navigation.service';
 
 export interface ScheduleEntry {
   id: number;
@@ -38,6 +39,14 @@ export interface ScheduleEntry {
         <!-- Page Header -->
         <div class="page-header">
             <div class="header-text-group">
+                <div class="page-back-nav-bar" style="margin-bottom: 8px;">
+                    <button type="button" class="btn-page-back" (click)="goBack()">
+                        <span class="material-icons">arrow_back</span>
+                        <span>Back to Dashboard</span>
+                    </button>
+                    <span class="nav-sep">|</span>
+                    <span class="page-category-hint">Academic Schedules</span>
+                </div>
                 <div class="header-tag-line">
                     <span class="pulse-dot"></span>
                     <span>OUTCOME-BASED ACADEMIC TIMETABLE SYSTEM</span>
@@ -1316,6 +1325,11 @@ export class Timetable implements OnInit {
 
   approvedAdjustments: any[] = [];
   extraClasses: any[] = [];
+  private navService = inject(NavigationService);
+
+  goBack(): void {
+    this.navService.goBack();
+  }
 
   constructor(private http: HttpClient) {
     try {

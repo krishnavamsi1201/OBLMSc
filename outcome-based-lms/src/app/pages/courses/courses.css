@@ -29,6 +29,96 @@
     color: #f8fafc;
 }
 
+/* Search & Filter Toolbar */
+.table-filter-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+}
+
+.search-box-wrapper,
+.search-input-wrap {
+    position: relative;
+    flex: 1;
+    min-width: 240px;
+    max-width: 420px;
+    height: 44px;
+    display: flex;
+    align-items: center;
+    background: #091024;
+    border: 1px solid #1f2f54;
+    border-radius: 10px;
+    padding: 0 14px;
+    box-sizing: border-box;
+    transition: all 0.2s ease;
+}
+
+.search-box-wrapper:focus-within,
+.search-input-wrap:focus-within {
+    border-color: #d4af37 !important;
+    box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.2) !important;
+}
+
+.search-box-icon {
+    font-size: 20px !important;
+    color: #94a3b8 !important;
+    margin-right: 10px !important;
+    flex-shrink: 0 !important;
+    pointer-events: none !important;
+    line-height: 1 !important;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.search-box-input,
+.content .search-box-wrapper input,
+.content input.search-box-input {
+    flex: 1 !important;
+    width: 100% !important;
+    border: none !important;
+    background: transparent !important;
+    box-shadow: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    font-size: 0.92rem !important;
+    color: #ffffff !important;
+    outline: none !important;
+    height: 100% !important;
+    line-height: normal !important;
+    box-sizing: border-box !important;
+}
+
+.search-box-input::placeholder {
+    color: #64748b !important;
+}
+
+.filter-controls {
+    display: flex;
+    align-items: center;
+}
+
+.filter-select {
+    padding: 11px 16px !important;
+    border-radius: 10px !important;
+    border: 1px solid #1f2f54 !important;
+    background: #091024 !important;
+    font-size: 0.92rem !important;
+    color: #ffffff !important;
+    outline: none !important;
+    cursor: pointer !important;
+    margin-bottom: 0 !important;
+    box-sizing: border-box !important;
+}
+
+.filter-select:focus {
+    border-color: #d4af37 !important;
+    box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.2) !important;
+}
+
 .courses-table-card table {
     width: 100%;
     border-collapse: collapse;

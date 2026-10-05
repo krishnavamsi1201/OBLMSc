@@ -7,6 +7,7 @@ import { Sidebar } from '../../../shared/sidebar/sidebar';
 import { Footer } from '../../../shared/footer/footer';
 import { ToastService } from '../../../shared/services/toast.service';
 import { DEFAULT_DATABASE_COURSES } from '../../../shared/services/course.service';
+import { NavigationService } from '../../../shared/services/navigation.service';
 
 export type SubjectCategory = 'PC' | 'BS' | 'ES' | 'PE' | 'OE' | 'LC' | 'PR' | 'HS' | 'MC';
 
@@ -45,6 +46,15 @@ export class CourseSubjectAssignment implements OnInit {
   private toast = inject(ToastService);
   private http = inject(HttpClient);
   private cdr = inject(ChangeDetectorRef);
+  private navService = inject(NavigationService);
+
+  goBack(): void {
+    if ((this as any).showAddModal) {
+      (this as any).closeModal();
+      return;
+    }
+    this.navService.goBack();
+  }
 
   // Available Degree Programs
   programs: AcademicProgram[] = [

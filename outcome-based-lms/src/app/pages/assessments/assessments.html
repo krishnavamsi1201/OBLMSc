@@ -9,6 +9,14 @@
         <!-- Page Header -->
         <div class="page-header">
             <div class="header-titles">
+                <div class="page-back-nav-bar" style="margin-bottom: 8px;">
+                    <button type="button" class="btn-page-back" (click)="goBack()">
+                        <span class="material-icons">arrow_back</span>
+                        <span>Back to Dashboard</span>
+                    </button>
+                    <span class="nav-sep">|</span>
+                    <span class="page-category-hint">Assessments & Evaluations</span>
+                </div>
                 <h1>{{ role === 'student' ? 'Online Assessments & Examination Portal' : 'Assessments & Online Examination Hub' }}</h1>
                 <p>{{ role === 'student' ? 'Take scheduled online quizzes, review instant auto-graded scorecards, and check semester assessment timelines.' : 'Design subject-targeted online exams with automated tallying, share secure student links, and monitor live submission rosters.' }}</p>
             </div>

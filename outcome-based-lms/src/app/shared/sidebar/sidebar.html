@@ -1,15 +1,23 @@
 <div class="sidebar" [class.collapsed]="collapsed" #sidebarRef>
 
-    <!-- Sidebar Header Category Badge -->
+    <!-- Floating Edge Slide Handle on the right border -->
+    <button type="button" 
+            class="sidebar-edge-toggle" 
+            (click)="toggleCollapse()" 
+            [title]="collapsed ? 'Slide Out Sidebar (Expand)' : 'Slide In Sidebar (Collapse)'">
+        <span class="material-icons">{{ collapsed ? 'chevron_right' : 'chevron_left' }}</span>
+    </button>
+
+    <!-- Sidebar Header Category Badge (Always pinned at top) -->
     <div class="sidebar-header-badge">
         <span class="portal-category-label" *ngIf="!collapsed">{{ portalTitle }}</span>
-        <button type="button" class="collapse-toggle" (click)="toggleCollapse()" [title]="collapsed ? 'Expand Sidebar' : 'Collapse Sidebar'">
+        <button type="button" class="collapse-toggle" (click)="toggleCollapse()" [title]="collapsed ? 'Expand / Slide Out' : 'Collapse / Slide In'">
             <span class="material-icons collapse-icon">{{ collapsed ? 'chevron_right' : 'chevron_left' }}</span>
         </button>
     </div>
 
-    <!-- Categorized Navigation Groups -->
-    <div class="nav-groups-container">
+    <!-- Categorized Navigation Groups (Smooth scrollable list) -->
+    <div class="nav-groups-container" #navScrollRef>
         <div *ngFor="let group of navGroups" class="nav-group-block">
             <span class="group-title" *ngIf="!collapsed">{{ group.title }}</span>
             <div class="group-items">

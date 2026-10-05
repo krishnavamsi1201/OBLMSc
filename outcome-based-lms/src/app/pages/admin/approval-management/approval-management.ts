@@ -7,6 +7,7 @@ import { Sidebar } from '../../../shared/sidebar/sidebar';
 import { Footer } from '../../../shared/footer/footer';
 import { ToastService } from '../../../shared/services/toast.service';
 import { SyncService } from '../../../shared/services/sync.service';
+import { NavigationService } from '../../../shared/services/navigation.service';
 
 export interface ApprovalItem {
   id: string;
@@ -35,6 +36,19 @@ export class ApprovalManagement implements OnInit {
   private syncService = inject(SyncService);
   private http = inject(HttpClient);
   private cdr = inject(ChangeDetectorRef);
+  private navService = inject(NavigationService);
+
+  goBack(): void {
+    if (this.showRejectReason) {
+      this.showRejectReason = false;
+      return;
+    }
+    if (this.selectedApprovalId) {
+      this.selectedApprovalId = '';
+      return;
+    }
+    this.navService.goBack();
+  }
 
   approvalItems: ApprovalItem[] = [];
   filteredItems: ApprovalItem[] = [];

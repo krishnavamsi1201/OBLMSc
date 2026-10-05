@@ -32,6 +32,12 @@ export class Login implements OnInit {
   };
 
   ngOnInit(): void {
+    const existingRole = (localStorage.getItem('userRole') || '').toLowerCase();
+    if (existingRole === 'admin' || existingRole === 'faculty' || existingRole === 'student') {
+      const target = existingRole === 'admin' ? '/admin' : existingRole === 'faculty' ? '/faculty' : '/students';
+      this.router.navigateByUrl(target, { replaceUrl: true });
+      return;
+    }
     this.loadStats();
     this.syncDatabaseToLocalStorage();
   }
@@ -319,7 +325,7 @@ export class Login implements OnInit {
           localStorage.setItem('userDepartment', dept);
 
           const dLow = dept.toLowerCase();
-          const shortDept = (dLow.includes('computer') || dLow.includes('cse') || dLow.includes('cs')) ? 'CSE' :
+          const shortDept = (dLow.includes('computer') || dLow.includes('cse') || dLow.startsWith('cs')) ? 'CSE' :
                             (dLow.includes('information') || dLow.includes('it')) ? 'IT' :
                             (dLow.includes('electronic') || dLow.includes('ece') || dLow.includes('electrical') || dLow.includes('eee') || dLow === 'ee') ? 'ECE' :
                             (dLow.includes('mechanical') || dLow.includes('mech')) ? 'ME' :
@@ -358,7 +364,7 @@ export class Login implements OnInit {
           targetRoute = '/students';
         }
 
-        this.router.navigateByUrl(targetRoute);
+        this.router.navigateByUrl(targetRoute, { replaceUrl: true });
       },
       error: (err) => {
         this.isLoading = false;
@@ -459,13 +465,8 @@ export class Login implements OnInit {
           } catch (e) {}
 
           this.toast.success(`Welcome back, ${matchedUser.name}! 🎉`);
-          if (this.role === 'admin') {
-            this.router.navigate(['/admin']);
-          } else if (this.role === 'faculty') {
-            this.router.navigate(['/faculty']);
-          } else {
-            this.router.navigate(['/students']);
-          }
+          const dest = this.role === 'admin' ? '/admin' : this.role === 'faculty' ? '/faculty' : '/students';
+          this.router.navigateByUrl(dest, { replaceUrl: true });
         } else {
           this.toast.error(`❌ No account found with Email/ID '${cleanId}'. Please check your credentials.`);
         }

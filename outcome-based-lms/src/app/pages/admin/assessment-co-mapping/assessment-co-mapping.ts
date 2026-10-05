@@ -6,6 +6,7 @@ import { Sidebar } from '../../../shared/sidebar/sidebar';
 import { Footer } from '../../../shared/footer/footer';
 import { ToastService } from '../../../shared/services/toast.service';
 import { HttpClient } from '@angular/common/http';
+import { NavigationService } from '../../../shared/services/navigation.service';
 
 interface AssessmentCOMappingModel {
   id: string;
@@ -46,6 +47,16 @@ interface CourseOutcome {
 })
 export class AssessmentCOMapping implements OnInit {
   private toast = inject(ToastService);
+  private navService = inject(NavigationService);
+
+  goBack(): void {
+    if (this.showForm) {
+      this.closeForm();
+      return;
+    }
+    this.navService.goBack();
+  }
+
   mappingList: AssessmentCOMappingModel[] = [];
   filteredMappingList: AssessmentCOMappingModel[] = [];
   

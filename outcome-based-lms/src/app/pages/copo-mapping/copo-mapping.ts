@@ -8,6 +8,7 @@ import { ToastService } from '../../shared/services/toast.service';
 import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { DEFAULT_DATABASE_COURSES } from '../../shared/services/course.service';
+import { NavigationService } from '../../shared/services/navigation.service';
 
 interface ProgramOutcome {
   id: number;
@@ -259,6 +260,15 @@ export class CopoMapping implements OnInit {
   private http = inject(HttpClient);
   private cdr = inject(ChangeDetectorRef);
   private router = inject(Router);
+  private navService = inject(NavigationService);
+
+  goBack(): void {
+    if ((this as any).showEditModal) {
+      (this as any).closeModal();
+      return;
+    }
+    this.navService.goBack();
+  }
 
   role: string | null = null;
 

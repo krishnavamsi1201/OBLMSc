@@ -7,6 +7,7 @@ import { Footer } from '../../../shared/footer/footer';
 import { ToastService } from '../../../shared/services/toast.service';
 import { CourseService, AppCourse, DEFAULT_DATABASE_COURSES } from '../../../shared/services/course.service';
 import { HttpClient } from '@angular/common/http';
+import { NavigationService } from '../../../shared/services/navigation.service';
 
 export interface FacultyAllocation {
   id: string;
@@ -111,6 +112,15 @@ export class FacultyCourseAllocation implements OnInit {
   private courseService = inject(CourseService);
   private http = inject(HttpClient);
   private cdr = inject(ChangeDetectorRef);
+  private navService = inject(NavigationService);
+
+  goBack(): void {
+    if ((this as any).showModal) {
+      (this as any).closeModal();
+      return;
+    }
+    this.navService.goBack();
+  }
 
   // Dual View Mode: 'faculty' = Faculty Workload Deck, 'matrix' = Branch & Semester Matrix
   currentView: 'faculty' | 'matrix' = 'faculty';

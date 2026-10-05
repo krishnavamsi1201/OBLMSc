@@ -1,9 +1,10 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Navbar } from '../../shared/navbar/navbar';
 import { Sidebar } from '../../shared/sidebar/sidebar';
 import { Footer } from '../../shared/footer/footer';
+import { NavigationService } from '../../shared/services/navigation.service';
 
 interface ReportType {
   id: string;
@@ -104,12 +105,22 @@ export class Reports implements OnInit {
   courses: any[] = [];
   assessmentTypes = ['Assignment', 'Quiz', 'Midterm 1', 'Midterm 2', 'Practical Lab', 'Semester Final Exam'];
 
+  private navService = inject(NavigationService);
+
   constructor() {
     this.loadCourses();
     this.loadReportStatistics();
   }
 
   ngOnInit(): void {}
+
+  goBack(): void {
+    if (this.selectedReportId) {
+      this.selectedReportId = '';
+      return;
+    }
+    this.navService.goBack();
+  }
 
   loadCourses(): void {
     try {

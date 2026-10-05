@@ -9,6 +9,7 @@ import { HttpClient } from '@angular/common/http';
 import { ToastService } from '../../shared/services/toast.service';
 import { CourseService } from '../../shared/services/course.service';
 import { SyncService } from '../../shared/services/sync.service';
+import { NavigationService } from '../../shared/services/navigation.service';
 import { Subscription } from 'rxjs';
 
 export interface ExamQuestion {
@@ -139,7 +140,26 @@ export class Assessments implements OnInit, OnDestroy {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private cdr = inject(ChangeDetectorRef);
+  private navService = inject(NavigationService);
   private syncSub?: Subscription;
+
+  goBack(): void {
+    if (this.activeExamToTake) {
+      if (confirm('Are you sure you want to exit the current online exam? Your progress will be discarded.')) {
+        this.exitExamView();
+      }
+      return;
+    }
+    if (this.showCreateExamModal) {
+      this.closeCreateExamModal();
+      return;
+    }
+    if (this.showAnalyticsModal) {
+      this.closeAnalyticsModal();
+      return;
+    }
+    this.navService.goBack();
+  }
 
   constructor() {
     try {

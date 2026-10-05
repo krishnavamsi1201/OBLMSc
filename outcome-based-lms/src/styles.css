@@ -194,13 +194,13 @@ select {
     min-height: 0;
     padding: 28px 28px 60px;
     overflow-y: auto;
-    overflow-x: hidden;
+    overflow-x: auto;
     position: relative;
     background: #0a1128;
     background-image: 
         radial-gradient(at 10% 10%, rgba(30, 58, 138, 0.4) 0px, transparent 50%),
         radial-gradient(at 90% 90%, rgba(15, 29, 64, 0.7) 0px, transparent 50%);
-    transition: margin-left 0.25s ease;
+    transition: margin-left 0.28s cubic-bezier(0.16, 1, 0.3, 1);
     display: flex;
     flex-direction: column;
     scroll-behavior: smooth;
@@ -212,7 +212,7 @@ select {
 }
 
 body.sidebar-collapsed .content {
-    margin-left: 90px;
+    margin-left: 80px;
 }
 
 app-footer {
@@ -322,8 +322,8 @@ app-footer {
 }
 
 /* Global Form Inputs, Selects, and Textareas */
-.content input:not([type="checkbox"]):not([type="radio"]):not([type="submit"]):not([type="button"]),
-.content select,
+.content input:not([type="checkbox"]):not([type="radio"]):not([type="submit"]):not([type="button"]):not(.search-box-input):not(.student-search-input):not(.dir-search-input):not(.table-search-input),
+.content select:not(.filter-select),
 .content textarea {
     background: #091024 !important;
     border: 1px solid #1f2f54 !important;
@@ -333,6 +333,21 @@ app-footer {
     font-size: 0.92rem !important;
     outline: none !important;
     transition: all 0.2s ease !important;
+}
+
+/* Allow transparent embedded inputs inside search containers */
+.content .search-box input,
+.content .search-box-wrapper input,
+.content .search-input-wrap input,
+.content .search-input-wrapper input,
+.content .search-input-group input,
+.content input.search-box-input {
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    outline: none !important;
 }
 
 .content input::placeholder,
@@ -550,29 +565,76 @@ body, html {
 }
 
 .content .search-input-wrap,
+.search-box-wrapper,
 .search-input-wrap {
     position: relative;
     flex: 1;
     min-width: 240px;
     max-width: 450px;
+    height: 44px;
+    display: flex;
+    align-items: center;
+    background: #091024;
+    border: 1px solid #1f2f54;
+    border-radius: 10px;
+    padding: 0 14px;
+    box-sizing: border-box;
+    transition: all 0.2s ease;
 }
 
-.content .search-input-wrap input,
-.search-input-wrap input {
-    width: 100%;
-    padding: 10px 16px 10px 44px !important;
+.search-box-wrapper:focus-within,
+.search-input-wrap:focus-within {
+    border-color: #d4af37 !important;
+    box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.2) !important;
+}
+
+.search-box-icon {
+    font-size: 20px !important;
+    color: #94a3b8 !important;
+    margin-right: 10px !important;
+    flex-shrink: 0 !important;
+    pointer-events: none !important;
+    line-height: 1 !important;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.search-box-input,
+.content .search-box-wrapper input,
+.content input.search-box-input {
+    flex: 1 !important;
+    width: 100% !important;
+    border: none !important;
+    background: transparent !important;
+    box-shadow: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    font-size: 0.92rem !important;
+    color: #ffffff !important;
+    outline: none !important;
+    height: 100% !important;
+    line-height: normal !important;
+    box-sizing: border-box !important;
+}
+
+.search-input-wrap input,
+.content .search-input-wrap input {
+    width: 100% !important;
+    padding: 11px 16px 11px 44px !important;
     border-radius: 10px !important;
     border: 1px solid #1f2f54 !important;
     background: #091024 !important;
     font-size: 0.92rem !important;
     color: #ffffff !important;
     outline: none !important;
-    box-sizing: border-box !important;
     transition: all 0.2s ease !important;
+    margin-bottom: 0 !important;
+    box-sizing: border-box !important;
 }
 
-.content .search-input-wrap input:focus,
-.search-input-wrap input:focus {
+.search-input-wrap input:focus,
+.content .search-input-wrap input:focus {
     border-color: #d4af37 !important;
     box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.2) !important;
 }
@@ -583,8 +645,8 @@ body, html {
     left: 14px;
     top: 50%;
     transform: translateY(-50%);
-    font-size: 20px;
-    color: #94a3b8;
+    font-size: 20px !important;
+    color: #94a3b8 !important;
     pointer-events: none;
     z-index: 2;
     display: flex;
@@ -592,34 +654,42 @@ body, html {
     justify-content: center;
     height: 20px;
     width: 20px;
+    line-height: 1;
 }
 
 /* Prevent global input styling from breaking nested flex search inputs */
 .content .search-input-wrapper input,
 .content .student-search-input,
 .content .results-search-input,
+.content .matrix-search-input,
+.content .matrix-search-box input,
 .content .search-box .search-input {
     background: transparent !important;
     border: none !important;
     box-shadow: none !important;
-    padding: 12px 0 12px 8px !important;
+    padding: 6px 0 !important;
+    border-radius: 0 !important;
 }
 
-.filter-select {
-    padding: 10px 14px;
-    border-radius: 10px;
-    border: 1px solid #1f2f54;
-    background: #091024;
-    font-size: 0.92rem;
-    color: #ffffff;
-    outline: none;
-    cursor: pointer;
-    transition: all 0.2s ease;
+.filter-select,
+.content select.filter-select {
+    padding: 11px 16px !important;
+    border-radius: 10px !important;
+    border: 1px solid #1f2f54 !important;
+    background: #091024 !important;
+    font-size: 0.92rem !important;
+    color: #ffffff !important;
+    outline: none !important;
+    cursor: pointer !important;
+    margin-bottom: 0 !important;
+    box-sizing: border-box !important;
+    transition: all 0.2s ease !important;
 }
 
-.filter-select:focus {
-    border-color: #d4af37;
-    box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.2);
+.filter-select:focus,
+.content select.filter-select:focus {
+    border-color: #d4af37 !important;
+    box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.2) !important;
 }
 
 /* ==========================================================================
@@ -925,5 +995,67 @@ select:-webkit-autofill {
     background-color: #091024 !important;
     transition: background-color 500000s ease-in-out 0s, color 500000s ease-in-out 0s !important;
 }
+
+/* ==========================================================================
+   Global In-App Back Navigation Styles
+   ========================================================================== */
+.btn-page-back {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 7px 14px;
+    background: rgba(212, 175, 55, 0.12);
+    border: 1px solid rgba(212, 175, 55, 0.35);
+    border-radius: 8px;
+    color: #fde68a;
+    font-size: 0.84rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    user-select: none;
+    text-decoration: none;
+}
+
+.btn-page-back:hover {
+    background: rgba(212, 175, 55, 0.25);
+    border-color: #d4af37;
+    color: #ffffff;
+    transform: translateX(-3px);
+    box-shadow: 0 4px 14px rgba(212, 175, 55, 0.25);
+}
+
+.btn-page-back:active {
+    transform: scale(0.97) translateX(-3px);
+}
+
+.btn-page-back .material-icons {
+    font-size: 18px;
+    transition: transform 0.2s ease;
+}
+
+.btn-page-back:hover .material-icons {
+    transform: translateX(-2px);
+}
+
+.page-back-nav-bar {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 12px;
+}
+
+.page-back-nav-bar .nav-sep {
+    color: #475569;
+    font-size: 0.9rem;
+}
+
+.page-back-nav-bar .page-category-hint {
+    color: #94a3b8;
+    font-size: 0.82rem;
+    font-weight: 600;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+}
+
 
 

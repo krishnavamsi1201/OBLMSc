@@ -17,6 +17,88 @@
     gap: 12px;
 }
 
+.nav-sidebar-toggle-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 38px;
+    height: 38px;
+    border-radius: 9px;
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    color: #cbd5e1;
+    cursor: pointer;
+    transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+    margin-right: 2px;
+}
+
+.nav-sidebar-toggle-btn:hover {
+    background: rgba(212, 175, 55, 0.2);
+    color: #fde68a;
+    border-color: #d4af37;
+    transform: scale(1.08);
+    box-shadow: 0 0 12px rgba(212, 175, 55, 0.3);
+}
+
+.nav-sidebar-toggle-btn:active {
+    transform: scale(0.96);
+}
+
+.nav-sidebar-toggle-btn .material-icons {
+    font-size: 22px;
+}
+
+.nav-back-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    height: 38px;
+    padding: 0 14px 0 10px;
+    border-radius: 9px;
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.16);
+    color: #cbd5e1;
+    font-size: 0.85rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+    user-select: none;
+    margin-right: 4px;
+}
+
+.nav-back-btn:hover {
+    background: rgba(212, 175, 55, 0.2);
+    color: #fde68a;
+    border-color: #d4af37;
+    transform: translateX(-2px);
+    box-shadow: 0 0 12px rgba(212, 175, 55, 0.35);
+}
+
+.nav-back-btn:active {
+    transform: scale(0.96) translateX(-2px);
+}
+
+.nav-back-btn.active-back {
+    background: rgba(212, 175, 55, 0.15);
+    border-color: rgba(212, 175, 55, 0.4);
+    color: #fde68a;
+}
+
+.nav-back-btn .back-arrow-icon {
+    font-size: 19px;
+    transition: transform 0.2s ease;
+}
+
+.nav-back-btn:hover .back-arrow-icon {
+    transform: translateX(-3px);
+}
+
+.nav-back-text {
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+    font-size: 0.78rem;
+}
+
 .brand-logo-badge {
     width: 42px;
     height: 42px;

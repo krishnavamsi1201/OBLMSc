@@ -3,6 +3,8 @@ import { Router } from '@angular/router';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatButtonModule } from '@angular/material/button';
 import { CommonModule } from '@angular/common';
+import { SidebarService } from '../services/sidebar.service';
+import { NavigationService } from '../services/navigation.service';
 
 @Component({
   selector: 'app-navbar',
@@ -19,6 +21,24 @@ export class Navbar {
   role: string | null = null;
   userName: string | null = null;
   private router = inject(Router);
+  private sidebarService = inject(SidebarService);
+  private navService = inject(NavigationService);
+
+  get canGoBack(): boolean {
+    return this.navService.canGoBack();
+  }
+
+  get isRootDashboard(): boolean {
+    return this.navService.isAtRootDashboard();
+  }
+
+  goBack(): void {
+    this.navService.goBack();
+  }
+
+  toggleSidebar(): void {
+    this.sidebarService.toggle();
+  }
 
   constructor() {
     try {

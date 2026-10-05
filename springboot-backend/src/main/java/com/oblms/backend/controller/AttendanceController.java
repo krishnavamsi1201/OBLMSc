@@ -64,7 +64,9 @@ public class AttendanceController {
         return students.stream().map(s -> {
             List<AttendanceRecord> studentCourseLogs = allLogs.stream()
                 .filter(l -> l.getStudent() != null && l.getStudent().equalsIgnoreCase(s.getName()))
-                .filter(l -> l.getCourseCode() != null && (l.getCourseCode().equalsIgnoreCase(target) || l.getCourseCode().toLowerCase().contains(target)))
+                .filter(l -> l.getCourseCode() != null && (l.getCourseCode().equalsIgnoreCase(target) || 
+                                                            l.getCourseCode().toLowerCase().contains(target) ||
+                                                            target.contains(l.getCourseCode().toLowerCase())))
                 .toList();
 
             long presentCount = studentCourseLogs.stream().filter(l -> "Present".equalsIgnoreCase(l.getStatus())).count();
@@ -88,13 +90,45 @@ public class AttendanceController {
 
     @PostMapping
     public AttendanceRecord saveAttendance(@RequestBody AttendanceRecord record) {
+        if (record.getStudent() != null && record.getDate() != null && record.getCourseCode() != null) {
+            String student = record.getStudent().trim();
+            String date = record.getDate().trim();
+            String course = record.getCourseCode().trim();
+
+            List<AttendanceRecord> matches = attendanceRepository.findAll().stream()
+                .filter(a -> a.getStudent() != null && a.getStudent().equalsIgnoreCase(student))
+                .filter(a -> a.getDate() != null && a.getDate().equalsIgnoreCase(date))
+                .filter(a -> a.getCourseCode() != null && (a.getCourseCode().equalsIgnoreCase(course) || 
+                              a.getCourseCode().toLowerCase().contains(course.toLowerCase()) || 
+                              course.toLowerCase().contains(a.getCourseCode().toLowerCase())))
+                .toList();
+
+            if (!matches.isEmpty()) {
+                AttendanceRecord primary = matches.get(0);
+                primary.setStatus(record.getStatus());
+
+                // Clean up any extra duplicates if they exist
+                if (matches.size() > 1) {
+                    for (int i = 1; i < matches.size(); i++) {
+                        attendanceRepository.deleteById(matches.get(i).getId());
+                    }
+                }
+                return attendanceRepository.save(primary);
+            }
+        }
         return attendanceRepository.save(record);
     }
 
     @PostMapping("/bulk")
     @Transactional
     public List<AttendanceRecord> saveAllAttendance(@RequestBody List<AttendanceRecord> records) {
-        return attendanceRepository.saveAll(records);
+        List<AttendanceRecord> result = new ArrayList<>();
+        if (records != null) {
+            for (AttendanceRecord record : records) {
+                result.add(saveAttendance(record));
+            }
+        }
+        return result;
     }
 
     @DeleteMapping("/{id}")
