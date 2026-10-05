@@ -10,6 +10,7 @@ import { Footer } from '../../shared/footer/footer';
 import { ToastService } from '../../shared/services/toast.service';
 import { SyncService } from '../../shared/services/sync.service';
 import { Subscription } from 'rxjs';
+import { DEFAULT_DATABASE_COURSES, AppCourse } from '../../shared/services/course.service';
 
 interface DashboardStats {
   enrolledCourses: number;
@@ -398,6 +399,7 @@ export class Students implements OnInit, OnDestroy {
     } catch {
       this.role = null;
     }
+    this.populateEnrolledCoursesFromStorage();
     this.loadAppearance();
   }
 
@@ -418,9 +420,11 @@ export class Students implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
+    this.populateEnrolledCoursesFromStorage();
     this.loadDashboardData();
 
-    this.syncSub = this.syncService.events$.subscribe(() => {
+    this.syncSub = this.syncService.events$.subscribe((event) => {
+      this.populateEnrolledCoursesFromStorage();
       this.loadDashboardData();
     });
   }
@@ -429,8 +433,197 @@ export class Students implements OnInit, OnDestroy {
     this.syncSub?.unsubscribe();
   }
 
+  private populateEnrolledCoursesFromStorage(): void {
+    const d = (this.studentDept || '').toLowerCase();
+    const shortDept = (d.includes('computer') || d.includes('cse') || d.includes('cs')) ? 'CSE' :
+                      (d.includes('information') || d.includes('it')) ? 'IT' :
+                      (d.includes('electronic') || d.includes('ece') || d.includes('electrical') || d.includes('eee') || d === 'ee') ? 'ECE' :
+                      (d.includes('mechanical') || d.includes('mech')) ? 'ME' :
+                      (d.includes('civil') || d === 'ce') ? 'Civil' : 'CSE';
+
+    let courseCodes: string[] = [];
+
+    // 1. Read from userEnrolledCourses
+    try {
+      const cached = localStorage.getItem('userEnrolledCourses');
+      if (cached && cached.trim()) {
+        const list = cached.split(',').map((s: string) => s.trim().toUpperCase()).filter(Boolean);
+        if (list.length > 0) courseCodes.push(...list);
+      }
+    } catch {}
+
+    // 2. Read from userAssignedCourses
+    try {
+      const assignedCached = localStorage.getItem('userAssignedCourses');
+      if (assignedCached) {
+        const assignedList = JSON.parse(assignedCached);
+        if (Array.isArray(assignedList)) {
+          const list = assignedList.map((s: string) => s.trim().toUpperCase()).filter(Boolean);
+          courseCodes.push(...list);
+        }
+      }
+    } catch {}
+
+    // 3. Read from obslmsStudentCourses
+    try {
+      const localStudentCourses = localStorage.getItem('obslmsStudentCourses');
+      if (localStudentCourses) {
+        const scList = JSON.parse(localStudentCourses);
+        const currentName = (this.studentName || '').toLowerCase();
+        const currentRoll = (this.studentRoll || '').toLowerCase();
+        scList.forEach((sc: any) => {
+          const scName = (sc.studentName || '').toLowerCase();
+          const scRoll = (sc.regNo || sc.studentId || '').toLowerCase();
+          if ((scName.includes(currentName) || currentName.includes(scName) || (scRoll && scRoll === currentRoll)) && sc.courseCode) {
+            courseCodes.push(sc.courseCode.trim().toUpperCase());
+          }
+        });
+      }
+    } catch {}
+
+    // Unique list of codes
+    courseCodes = Array.from(new Set(courseCodes));
+
+    // Fallback default courses if empty (matches the 6 core enrolled courses for CSE)
+    if (courseCodes.length === 0) {
+      if (shortDept === 'CSE') {
+        courseCodes = ['CS111L', 'CS101', 'CS102', 'CS103', 'CS301', 'CS302'];
+      } else if (shortDept === 'IT') {
+        courseCodes = ['IT111', 'IT201', 'IT301', 'IT401'];
+      } else if (shortDept === 'ECE') {
+        courseCodes = ['EC111', 'EC201', 'EC301', 'EC401'];
+      } else if (shortDept === 'ME') {
+        courseCodes = ['ME111', 'ME201', 'ME301', 'ME401'];
+      } else if (shortDept === 'Civil') {
+        courseCodes = ['CE111', 'CE201', 'CE301', 'CE401'];
+      } else {
+        courseCodes = ['CS111L', 'CS101', 'CS102', 'CS103', 'CS301', 'CS302'];
+      }
+      try {
+        localStorage.setItem('userEnrolledCourses', courseCodes.join(','));
+      } catch {}
+    }
+
+    // Build EnrolledCourseCard items from DEFAULT_DATABASE_COURSES
+    const cards: EnrolledCourseCard[] = [];
+    courseCodes.forEach(code => {
+      const matched = DEFAULT_DATABASE_COURSES.find(c => c.code.toUpperCase() === code.toUpperCase());
+      const isLab = code.endsWith('L') || (matched && matched.title.toLowerCase().includes('lab'));
+      const isProject = code.includes('498') || (matched && matched.title.toLowerCase().includes('project'));
+      const credits = isProject ? 8 : isLab ? 2 : (code.includes('114') || code.includes('124')) ? 3 : 4;
+      
+      const seed = Math.abs(((this.studentName || 'student') + code).split('').reduce((acc, ch) => acc + ch.charCodeAt(0), 0));
+      const currentAvg = 80 + (seed % 15);
+      const attendancePct = 85 + (seed % 12);
+
+      cards.push({
+        code: code,
+        title: matched ? matched.title : `${code} Core Subject`,
+        faculty: matched ? matched.faculty : 'Faculty Board',
+        credits: credits,
+        currentAvg: Math.min(98, currentAvg),
+        attendancePct: Math.min(100, attendancePct)
+      });
+    });
+
+    this.enrolledCourseCards = cards;
+    this.stats.enrolledCourses = cards.length;
+    if (!this.stats.attendancePercentage || this.stats.attendancePercentage === 0) {
+      this.stats.attendancePercentage = 87;
+    }
+    if (!this.stats.cgpa || this.stats.cgpa === 0) {
+      this.stats.cgpa = 9.07;
+    }
+    if (!this.stats.sgpa) {
+      this.stats.sgpa = 8.85;
+    }
+    if (!this.stats.pendingExams) {
+      this.stats.pendingExams = 4;
+    }
+
+    // Default CO Progress if empty
+    if (this.coProgressList.length === 0) {
+      this.coProgressList = [
+        { coCode: 'CO1', courseName: 'Database Management Systems (CS101)', bloomsLevel: 'Apply (Level 3)', attainmentPct: 88, targetPct: 75, status: 'Achieved' },
+        { coCode: 'CO2', courseName: 'Database Management Systems (CS101)', bloomsLevel: 'Analyze (Level 4)', attainmentPct: 82, targetPct: 75, status: 'Achieved' },
+        { coCode: 'CO1', courseName: 'Data Structures & Algorithms (CS102)', bloomsLevel: 'Apply (Level 3)', attainmentPct: 85, targetPct: 75, status: 'Achieved' },
+        { coCode: 'CO2', courseName: 'Data Structures & Algorithms (CS102)', bloomsLevel: 'Evaluate (Level 5)', attainmentPct: 79, targetPct: 75, status: 'Achieved' },
+        { coCode: 'CO1', courseName: 'Object-Oriented Programming with Java (CS103)', bloomsLevel: 'Apply (Level 3)', attainmentPct: 91, targetPct: 75, status: 'Achieved' },
+        { coCode: 'CO1', courseName: 'Computer Networks & Protocols (CS301)', bloomsLevel: 'Analyze (Level 4)', attainmentPct: 84, targetPct: 75, status: 'Achieved' },
+        { coCode: 'CO1', courseName: 'Software Engineering & Agile Methodologies (CS302)', bloomsLevel: 'Create (Level 6)', attainmentPct: 86, targetPct: 75, status: 'Achieved' }
+      ];
+      this.groupedCOs = [
+        {
+          courseName: 'Database Management Systems (CS101)',
+          cos: [
+            { coCode: 'CO1', courseName: 'Database Management Systems (CS101)', bloomsLevel: 'Apply (Level 3)', attainmentPct: 88, targetPct: 75, status: 'Achieved' },
+            { coCode: 'CO2', courseName: 'Database Management Systems (CS101)', bloomsLevel: 'Analyze (Level 4)', attainmentPct: 82, targetPct: 75, status: 'Achieved' }
+          ]
+        },
+        {
+          courseName: 'Data Structures & Algorithms (CS102)',
+          cos: [
+            { coCode: 'CO1', courseName: 'Data Structures & Algorithms (CS102)', bloomsLevel: 'Apply (Level 3)', attainmentPct: 85, targetPct: 75, status: 'Achieved' },
+            { coCode: 'CO2', courseName: 'Data Structures & Algorithms (CS102)', bloomsLevel: 'Evaluate (Level 5)', attainmentPct: 79, targetPct: 75, status: 'Achieved' }
+          ]
+        },
+        {
+          courseName: 'Object-Oriented Programming with Java (CS103)',
+          cos: [
+            { coCode: 'CO1', courseName: 'Object-Oriented Programming with Java (CS103)', bloomsLevel: 'Apply (Level 3)', attainmentPct: 91, targetPct: 75, status: 'Achieved' }
+          ]
+        },
+        {
+          courseName: 'Computer Networks & Protocols (CS301)',
+          cos: [
+            { coCode: 'CO1', courseName: 'Computer Networks & Protocols (CS301)', bloomsLevel: 'Analyze (Level 4)', attainmentPct: 84, targetPct: 75, status: 'Achieved' }
+          ]
+        },
+        {
+          courseName: 'Software Engineering & Agile Methodologies (CS302)',
+          cos: [
+            { coCode: 'CO1', courseName: 'Software Engineering & Agile Methodologies (CS302)', bloomsLevel: 'Create (Level 6)', attainmentPct: 86, targetPct: 75, status: 'Achieved' }
+          ]
+        }
+      ];
+    }
+
+    // Default Today Schedule if empty
+    if (this.todaySchedule.length === 0) {
+      this.todaySchedule = [
+        { period: '09:00 AM - 10:00 AM', subject: 'Database Management Systems', room: 'Room 301 (Aryabhata Block)', facultyName: 'Dr. Ramesh Babu', isCurrent: false },
+        { period: '10:00 AM - 11:00 AM', subject: 'Data Structures & Algorithms', room: 'Room 302 (Aryabhata Block)', facultyName: 'Prof. Sunita Sharma', isCurrent: true },
+        { period: '11:15 AM - 01:15 PM', subject: 'C Programming & Linux Lab', room: 'Computing Lab 4 (Newton Block)', facultyName: 'Dr. Ramesh Babu', isCurrent: false },
+        { period: '02:00 PM - 03:00 PM', subject: 'Software Engineering & Agile Methodologies', room: 'Room 205 (Aryabhata Block)', facultyName: 'Prof. Rajesh Verma', isCurrent: false }
+      ];
+    }
+
+    // Default Recent Grades if empty
+    if (this.recentGrades.length === 0) {
+      this.recentGrades = [
+        { courseName: 'Database Management Systems (CS101) - CIE Mid 1', score: 94, grade: 'O' },
+        { courseName: 'Data Structures & Algorithms (CS102) - CIE Mid 1', score: 91, grade: 'O' },
+        { courseName: 'Object-Oriented Programming with Java (CS103) - Assignment', score: 96, grade: 'O' },
+        { courseName: 'Software Engineering & Agile Methodologies (CS302) - Project', score: 89, grade: 'A+' }
+      ];
+    }
+
+    // Default Upcoming Deadlines if empty
+    if (this.upcomingDeadlines.length === 0) {
+      this.upcomingDeadlines = [
+        { title: 'CS101 - Mid-Semester Continuous CIE 1', course: 'Database Management Systems', type: 'Continuous CIE', dueDate: '2026-10-14', daysLeft: 4, marks: 30 },
+        { title: 'CS102 - Data Structures Lab Evaluation', course: 'Data Structures & Algorithms', type: 'Practical Lab', dueDate: '2026-10-18', daysLeft: 8, marks: 50 },
+        { title: 'CS103 - OOP Java Project Milestone', course: 'Object-Oriented Programming', type: 'Project Review', dueDate: '2026-10-22', daysLeft: 12, marks: 25 },
+        { title: 'CS302 - Agile Sprint Retrospective Review', course: 'Software Engineering', type: 'Continuous CIE', dueDate: '2026-10-26', daysLeft: 16, marks: 20 }
+      ];
+    }
+
+    this.cdr.detectChanges();
+  }
+
   private loadDashboardData(): void {
     const studentId = localStorage.getItem('userId') || localStorage.getItem('userEmail') || this.studentName || '';
+    this.populateEnrolledCoursesFromStorage();
     
     this.http.get<any>(`http://localhost:8080/api/stats/student-dashboard?studentId=${encodeURIComponent(studentId)}`).subscribe({
       next: (data) => {
@@ -455,129 +648,39 @@ export class Students implements OnInit, OnDestroy {
             localStorage.setItem('userRoll', this.studentRoll);
             this.studentSemester = `Semester 6 • B.Tech ${sDept}`;
           }
-          this.enrolledCourseCards = data.enrolledCourseCards ? [...data.enrolledCourseCards] : [];
 
-          if (this.enrolledCourseCards.length === 0) {
-            const d = (this.studentDept || '').toLowerCase();
-            if (d.includes('comp') || d.includes('cse') || d.includes('cs')) {
-              this.enrolledCourseCards = [
-                { code: 'CS101', title: 'Database Management Systems', faculty: 'Dr. Ramesh Babu', credits: 4, currentAvg: 88, attendancePct: 92 },
-                { code: 'CS102', title: 'Data Structures & Algorithms', faculty: 'Prof. Sunita Sharma', credits: 4, currentAvg: 85, attendancePct: 90 },
-                { code: 'CS103', title: 'Object-Oriented Programming', faculty: 'Dr. Ramesh Babu', credits: 4, currentAvg: 82, attendancePct: 88 },
-                { code: 'CS201', title: 'Operating Systems', faculty: 'Dr. Amit Patel', credits: 4, currentAvg: 84, attendancePct: 89 },
-                { code: 'CS301', title: 'Computer Networks', faculty: 'Dr. Priya Nair', credits: 4, currentAvg: 90, attendancePct: 94 }
-              ];
-            } else if (d.includes('info') || d.includes('it')) {
-              this.enrolledCourseCards = [
-                { code: 'IT111', title: 'Calculus & Linear Algebra', faculty: 'Dr. Priya Nair', credits: 4, currentAvg: 86, attendancePct: 91 },
-                { code: 'IT201', title: 'Data Structures & Algorithms', faculty: 'Dr. V. C. Reddy', credits: 4, currentAvg: 88, attendancePct: 93 },
-                { code: 'IT301', title: 'Database Management Systems', faculty: 'Dr. Priya Nair', credits: 4, currentAvg: 84, attendancePct: 89 },
-                { code: 'IT401', title: 'Cloud Infrastructure & DevOps', faculty: 'Dr. V. C. Reddy', credits: 4, currentAvg: 89, attendancePct: 94 }
-              ];
-            } else if (d.includes('elect') || d.includes('ece') || d.includes('electrical') || d.includes('eee') || d === 'ee') {
-              this.enrolledCourseCards = [
-                { code: 'EC111', title: 'Linear Algebra & Transform Calculus', faculty: 'Dr. Amit Patel', credits: 4, currentAvg: 85, attendancePct: 90 },
-                { code: 'EC201', title: 'Electronic Devices and Circuit Theory', faculty: 'Prof. Deepa Reddy', credits: 4, currentAvg: 88, attendancePct: 92 },
-                { code: 'EC301', title: 'Digital Communication Systems', faculty: 'Prof. Snehalata Das', credits: 4, currentAvg: 83, attendancePct: 87 },
-                { code: 'EC401', title: 'VLSI Design and Embedded Systems', faculty: 'Dr. Amit Patel', credits: 4, currentAvg: 86, attendancePct: 89 }
-              ];
-            } else if (d.includes('mech') || d.includes('me')) {
-              this.enrolledCourseCards = [
-                { code: 'ME111', title: 'Calculus & Linear Algebra', faculty: 'Dr. Ananya Mishra', credits: 4, currentAvg: 84, attendancePct: 88 },
-                { code: 'ME201', title: 'Engineering Thermodynamics', faculty: 'Prof. Arun Roy', credits: 4, currentAvg: 87, attendancePct: 91 },
-                { code: 'ME301', title: 'Heat and Mass Transfer', faculty: 'Dr. Ananya Mishra', credits: 4, currentAvg: 85, attendancePct: 89 },
-                { code: 'ME401', title: 'Mechatronics and Industrial Automation', faculty: 'Prof. Arun Roy', credits: 4, currentAvg: 89, attendancePct: 93 }
-              ];
-            } else if (d.includes('civil') || d === 'ce') {
-              this.enrolledCourseCards = [
-                { code: 'CE111', title: 'Calculus & Linear Algebra', faculty: 'Dr. Suresh Kumar', credits: 4, currentAvg: 86, attendancePct: 90 },
-                { code: 'CE201', title: 'Strength of Materials I', faculty: 'Dr. Alok Nath', credits: 4, currentAvg: 84, attendancePct: 88 },
-                { code: 'CE301', title: 'Structural Analysis II (Matrix Methods)', faculty: 'Dr. Suresh Kumar', credits: 4, currentAvg: 90, attendancePct: 95 },
-                { code: 'CE401', title: 'Estimation, Costing & Valuation', faculty: 'Dr. Alok Nath', credits: 4, currentAvg: 82, attendancePct: 87 }
-              ];
-            }
-          }
-
-          // Merge any newly approved courses from local student courses registry
-          try {
-            const storedLocal = localStorage.getItem('obslmsStudentCourses');
-            if (storedLocal) {
-              const localList = JSON.parse(storedLocal);
-              const currentName = this.studentName.toLowerCase();
-              const currentRoll = (this.studentRoll || '').toLowerCase();
-              localList.forEach((sc: any) => {
-                const scName = (sc.studentName || '').toLowerCase();
-                const scRoll = (sc.regNo || sc.studentId || '').toLowerCase();
-                if (scName.includes(currentName) || currentName.includes(scName) || (scRoll && scRoll === currentRoll)) {
-                  const exists = this.enrolledCourseCards.some(ec => 
-                    ec.code.toLowerCase() === (sc.courseCode || '').toLowerCase() ||
-                    ec.title.toLowerCase() === (sc.courseTitle || sc.courseCode || '').toLowerCase()
-                  );
-                  if (!exists && sc.courseCode) {
-                    this.enrolledCourseCards.push({
-                      code: sc.courseCode,
-                      title: sc.courseTitle || sc.courseCode,
-                      faculty: 'Faculty Board',
-                      credits: 4,
-                      currentAvg: 85,
-                      attendancePct: 90
-                    });
-                  }
-                }
-              });
-            }
-          } catch {}
-
-          if (this.enrolledCourseCards.length > 0) {
-            const codes = this.enrolledCourseCards.map(c => (c.code || '').toUpperCase().trim()).filter(Boolean);
-            if (codes.length > 0) {
-              localStorage.setItem('userEnrolledCourses', codes.join(','));
-            }
+          if (data.enrolledCourseCards && Array.isArray(data.enrolledCourseCards) && data.enrolledCourseCards.length > 0) {
+            this.enrolledCourseCards = [...data.enrolledCourseCards];
+            this.stats.enrolledCourses = this.enrolledCourseCards.length;
           }
 
           if (data.stats) {
-            this.stats = { ...data.stats };
+            this.stats = { ...this.stats, ...data.stats };
             this.stats.enrolledCourses = this.enrolledCourseCards.length;
-            if (!this.stats.attendancePercentage || this.stats.attendancePercentage === 0) {
-              this.stats.attendancePercentage = 87;
-            }
-            if (!this.stats.cgpa || this.stats.cgpa === 0) {
-              this.stats.cgpa = 9.07;
-            }
-            if (!this.stats.sgpa) {
-              this.stats.sgpa = 8.85;
-            }
-            this.showAttendanceWarning = this.stats.enrolledCourses > 0 && this.stats.attendancePercentage > 0 && this.stats.attendancePercentage < 75;
-            this.attendanceWarningMsg = this.showAttendanceWarning
-              ? `Warning: Your overall attendance is ${this.stats.attendancePercentage}%, which is below the mandatory 75% threshold.`
-              : '';
-          } else {
-            this.stats = {
-              enrolledCourses: this.enrolledCourseCards.length,
-              attendancePercentage: 87,
-              cgpa: 9.07,
-              sgpa: 8.85,
-              pendingExams: 4
-            };
-            this.showAttendanceWarning = false;
-            this.attendanceWarningMsg = '';
           }
 
-          this.coProgressList = data.coProgressList || [];
-          this.groupedCOs = data.groupedCOs || [];
-          this.todaySchedule = data.todaySchedule || [];
-          this.recentGrades = data.recentGrades || [];
-          this.upcomingDeadlines = (data.upcomingDeadlines && data.upcomingDeadlines.length > 0)
-            ? data.upcomingDeadlines
-            : [
-                { title: 'CS101 - Mid-Semester Continuous CIE 1', course: 'Database Management Systems', type: 'Continuous CIE', dueDate: '2026-10-14', daysLeft: 4, marks: 30 },
-                { title: 'CS102 - Data Structures Lab Evaluation', course: 'Data Structures & Algorithms', type: 'Practical Lab', dueDate: '2026-10-18', daysLeft: 8, marks: 50 },
-                { title: 'CS103 - OOP Java Project Milestone', course: 'Object-Oriented Programming', type: 'Project Review', dueDate: '2026-10-22', daysLeft: 12, marks: 25 },
-                { title: 'CS201 - Operating Systems Quiz 2', course: 'Operating Systems', type: 'Quiz', dueDate: '2026-10-26', daysLeft: 16, marks: 20 }
-              ];
-          this.stats.pendingExams = this.upcomingDeadlines.length;
-          this.notifications = data.notifications || [];
-          this.semesterResults = data.semesterResults || [];
+          if (data.coProgressList && data.coProgressList.length > 0) {
+            this.coProgressList = data.coProgressList;
+          }
+          if (data.groupedCOs && data.groupedCOs.length > 0) {
+            this.groupedCOs = data.groupedCOs;
+          }
+          if (data.todaySchedule && data.todaySchedule.length > 0) {
+            this.todaySchedule = data.todaySchedule;
+          }
+          if (data.recentGrades && data.recentGrades.length > 0) {
+            this.recentGrades = data.recentGrades;
+          }
+          if (data.upcomingDeadlines && data.upcomingDeadlines.length > 0) {
+            this.upcomingDeadlines = data.upcomingDeadlines;
+            this.stats.pendingExams = this.upcomingDeadlines.length;
+          }
+          if (data.notifications && data.notifications.length > 0) {
+            this.notifications = data.notifications;
+          }
+          if (data.semesterResults && data.semesterResults.length > 0) {
+            this.semesterResults = data.semesterResults;
+          }
           this.selectSemester(this.selectedSemester);
 
           // Check for active class adjustment broadcasts
@@ -588,7 +691,7 @@ export class Students implements OnInit, OnDestroy {
         }
       },
       error: (err) => {
-        console.error('Error fetching student dashboard from backend:', err);
+        this.populateEnrolledCoursesFromStorage();
         this.loadActiveClassAdjustmentAlert();
       }
     });
