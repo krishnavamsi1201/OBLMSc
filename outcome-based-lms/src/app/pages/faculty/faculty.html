@@ -1190,7 +1190,9 @@
 					<table class="data-table" style="width: 100%; font-size: 0.88rem;">
 						<thead>
 							<tr>
+								<th style="width: 90px;">Code</th>
 								<th>Subject Name</th>
+								<th>Faculty In-Charge</th>
 								<th>CO Attainment</th>
 								<th>Attendance</th>
 								<th>Assessments</th>
@@ -1199,7 +1201,9 @@
 						</thead>
 						<tbody>
 							<tr *ngFor="let sub of selectedDossierStudent.subjects">
+								<td><span class="course-code-badge">{{ sub.courseCode || 'CS100' }}</span></td>
 								<td><strong style="color: #ffffff;">{{ sub.courseName }}</strong></td>
+								<td><span style="color: #94a3b8; font-size: 0.82rem;">{{ sub.facultyName || 'Faculty Board' }}</span></td>
 								<td>
 									<span class="attainment-badge" 
 										  [class.good]="sub.coAttainment >= 75"
