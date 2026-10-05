@@ -29,27 +29,12 @@ export class Sidebar implements AfterViewInit {
 
   collapsed = localStorage.getItem('sidebarCollapsed') === 'true';
 
-  get role(): string {
-    return (localStorage.getItem('userRole') || 'faculty').toLowerCase();
-  }
-
-  get userName(): string {
-    return localStorage.getItem('userName') || (this.role === 'admin' ? 'Administrator' : this.role === 'faculty' ? 'Faculty Member' : 'Student');
-  }
-
-  get userEmail(): string {
-    return localStorage.getItem('userEmail') || '';
-  }
-
-  get portalTitle(): string {
-    if (this.role === 'admin') return 'ADMIN CONSOLE';
-    if (this.role === 'faculty') return 'FACULTY CONSOLE';
-    return 'STUDENT PORTAL';
-  }
-
-  get userInitial(): string {
-    return this.userName.trim().charAt(0).toUpperCase() || 'U';
-  }
+  role = 'faculty';
+  userName = 'Faculty Member';
+  userEmail = '';
+  portalTitle = 'FACULTY CONSOLE';
+  userInitial = 'F';
+  navGroups: NavGroup[] = [];
 
   studentNavGroups: NavGroup[] = [
     {
@@ -173,18 +158,21 @@ export class Sidebar implements AfterViewInit {
     }
   ];
 
-  get navGroups(): NavGroup[] {
-    const currentRole = this.role;
-    if (currentRole === 'student') {
-      return this.studentNavGroups;
-    }
-    if (currentRole === 'admin') {
-      return this.adminNavGroups;
-    }
-    return this.facultyNavGroups;
-  }
-
   constructor() {
+    this.role = (localStorage.getItem('userRole') || 'faculty').toLowerCase();
+    this.userName = localStorage.getItem('userName') || (this.role === 'admin' ? 'Administrator' : this.role === 'faculty' ? 'Faculty Member' : 'Student');
+    this.userEmail = localStorage.getItem('userEmail') || '';
+    this.portalTitle = this.role === 'admin' ? 'ADMIN CONSOLE' : (this.role === 'faculty' ? 'FACULTY CONSOLE' : 'STUDENT PORTAL');
+    this.userInitial = this.userName.trim().charAt(0).toUpperCase() || 'U';
+
+    if (this.role === 'student') {
+      this.navGroups = this.studentNavGroups;
+    } else if (this.role === 'admin') {
+      this.navGroups = this.adminNavGroups;
+    } else {
+      this.navGroups = this.facultyNavGroups;
+    }
+
     this.applySidebarState();
   }
 

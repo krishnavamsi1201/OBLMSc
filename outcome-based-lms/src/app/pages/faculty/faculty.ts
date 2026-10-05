@@ -454,37 +454,62 @@ export class Faculty implements OnInit {
 
     const allStudentsList = Array.from(studentMap.values());
 
+    // Pre-load shared datasets ONCE for all students to eliminate 1,200+ redundant JSON.parse calls
+    let sharedCourses: any[] = [];
+    try {
+      const storedCourses = localStorage.getItem('obslmsCourses');
+      if (storedCourses) sharedCourses = JSON.parse(storedCourses);
+    } catch {}
+    if (!sharedCourses || sharedCourses.length === 0) {
+      sharedCourses = [...DEFAULT_DATABASE_COURSES];
+    }
+    const sharedMarks = this.getSafeJson('obslmsMarkEntries');
+    const sharedAttendance = this.getSafeJson('obslmsAttendance');
+    const sharedAssessments = this.getSafeJson('obslmsAssessments');
+    const sharedData = {
+      allCourses: sharedCourses,
+      allStudents: allStudentsList,
+      marks: sharedMarks,
+      attendance: sharedAttendance,
+      assessments: sharedAssessments
+    };
+
     this.groupedStudentsList = allStudentsList.map(stu => {
-      return this.getStudentFullDossierFromDatabase(stu.name, stu.id || stu.regNo);
+      return this.getStudentFullDossierFromDatabase(stu.name, stu.id || stu.regNo, sharedData);
     });
 
     this.onProgressFilterChange();
   }
 
-  getStudentFullDossierFromDatabase(studentName: string, studentId?: string): StudentGroupSummary {
+  getStudentFullDossierFromDatabase(studentName: string, studentId?: string, sharedData?: any): StudentGroupSummary {
     const sName = (studentName || '').trim();
     const key = sName.toLowerCase();
 
-    // 1. Load courses catalogue from storage/defaults
-    let allCourses: any[] = [];
-    try {
-      const storedCourses = localStorage.getItem('obslmsCourses');
-      if (storedCourses) allCourses = JSON.parse(storedCourses);
-    } catch {}
-    if (!allCourses || allCourses.length === 0) {
-      allCourses = [...DEFAULT_DATABASE_COURSES];
+    // 1. Load courses catalogue from sharedData or storage
+    let allCourses: any[] = sharedData?.allCourses;
+    if (!allCourses) {
+      try {
+        const storedCourses = localStorage.getItem('obslmsCourses');
+        if (storedCourses) allCourses = JSON.parse(storedCourses);
+      } catch {}
+      if (!allCourses || allCourses.length === 0) {
+        allCourses = [...DEFAULT_DATABASE_COURSES];
+      }
     }
 
     // 2. Load students registry
-    let allStudents: any[] = [];
-    try {
-      const stored = localStorage.getItem('obslmsStudents');
-      if (stored) allStudents = JSON.parse(stored);
-      if (!allStudents.length) {
-        const users = JSON.parse(localStorage.getItem('obslmsUsersDatabase') || '[]');
-        allStudents = users.filter((u: any) => (u.role || '').toUpperCase() === 'STUDENT');
-      }
-    } catch {}
+    let allStudents: any[] = sharedData?.allStudents;
+    if (!allStudents) {
+      try {
+        const stored = localStorage.getItem('obslmsStudents');
+        if (stored) allStudents = JSON.parse(stored);
+        if (!allStudents || !allStudents.length) {
+          const users = JSON.parse(localStorage.getItem('obslmsUsersDatabase') || '[]');
+          allStudents = users.filter((u: any) => (u.role || '').toUpperCase() === 'STUDENT');
+        }
+      } catch {}
+      allStudents = allStudents || [];
+    }
 
     const stuRec = allStudents.find((s: any) =>
       (s.name && s.name.toLowerCase().trim() === key) ||
@@ -496,9 +521,9 @@ export class Faculty implements OnInit {
     const sId = stuRec?.regNo || stuRec?.id || studentId || ('STU' + Math.abs(key.split('').reduce((a, b) => ((a << 5) - a) + b.charCodeAt(0), 0) % 1000).toString().padStart(3, '0'));
 
     // 3. Load live evaluation marks, attendance and assessments
-    const marks = this.getSafeJson('obslmsMarkEntries');
-    const attendance = this.getSafeJson('obslmsAttendance');
-    const assessments = this.getSafeJson('obslmsAssessments');
+    const marks = sharedData?.marks ?? this.getSafeJson('obslmsMarkEntries');
+    const attendance = sharedData?.attendance ?? this.getSafeJson('obslmsAttendance');
+    const assessments = sharedData?.assessments ?? this.getSafeJson('obslmsAssessments');
 
     // 4. Find all enrolled courses for this student
     let enrolledCoursesList: any[] = [];
