@@ -399,8 +399,6 @@ export class Students implements OnInit, OnDestroy {
     } catch {
       this.role = null;
     }
-    this.populateEnrolledCoursesFromStorage();
-    this.loadAppearance();
   }
 
   logout(): void {
@@ -420,6 +418,7 @@ export class Students implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
+    this.loadAppearance();
     this.populateEnrolledCoursesFromStorage();
     this.loadDashboardData();
 
@@ -431,6 +430,12 @@ export class Students implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.syncSub?.unsubscribe();
+  }
+
+  private safeDetectChanges(): void {
+    try {
+      this.cdr.detectChanges();
+    } catch {}
   }
 
   private populateEnrolledCoursesFromStorage(): void {
@@ -618,7 +623,7 @@ export class Students implements OnInit, OnDestroy {
       ];
     }
 
-    this.cdr.detectChanges();
+    this.safeDetectChanges();
   }
 
   private loadDashboardData(): void {
@@ -685,7 +690,7 @@ export class Students implements OnInit, OnDestroy {
 
           // Check for active class adjustment broadcasts
           this.loadActiveClassAdjustmentAlert();
-          this.cdr.detectChanges();
+          this.safeDetectChanges();
         } catch (e) {
           console.error('Error processing student dashboard data:', e);
         }
@@ -712,7 +717,7 @@ export class Students implements OnInit, OnDestroy {
           );
           if (adjNotif) {
             this.activeClassAdjustmentAlert = adjNotif;
-            this.cdr.detectChanges();
+            this.safeDetectChanges();
           }
         }
       },
@@ -727,7 +732,7 @@ export class Students implements OnInit, OnDestroy {
     } else {
       this.selectedSemesterData = null;
     }
-    this.cdr.detectChanges();
+    this.safeDetectChanges();
   }
 
   downloadSemesterMemo(sem: SemesterResult | null): void {
@@ -795,7 +800,7 @@ export class Students implements OnInit, OnDestroy {
   setPoTab(): void {
     this.activeTab = 'po';
     this.computeRadarChart();
-    this.cdr.detectChanges();
+    this.safeDetectChanges();
   }
 
   computeRadarChart(): void {
@@ -1002,7 +1007,7 @@ export class Students implements OnInit, OnDestroy {
     this.http.get<any[]>(`http://localhost:8080/api/courses/requests/student/${encodeURIComponent(studentId)}`).subscribe({
       next: (reqs) => {
         this.pendingEnrollmentRequests = reqs || [];
-        this.cdr.detectChanges();
+        this.safeDetectChanges();
       },
       error: () => {
         try {
@@ -1015,7 +1020,7 @@ export class Students implements OnInit, OnDestroy {
         } catch {
           this.pendingEnrollmentRequests = [];
         }
-        this.cdr.detectChanges();
+        this.safeDetectChanges();
       }
     });
   }
@@ -1031,7 +1036,7 @@ export class Students implements OnInit, OnDestroy {
       const matchSem = !sem || c.semester === sem;
       return matchSearch && matchSem;
     });
-    this.cdr.detectChanges();
+    this.safeDetectChanges();
   }
 
   isCourseEnrolled(code: string): boolean {
@@ -1081,11 +1086,11 @@ export class Students implements OnInit, OnDestroy {
 
     this.syncService.emit('ENROLLMENTS_CHANGED', payload);
     this.toast.success(`Enrollment request submitted for "${course.title}"! Sent to Admin Approval Queue. ⏳`);
-    this.cdr.detectChanges();
+    this.safeDetectChanges();
 
     this.http.post('http://localhost:8080/api/courses/requests', payload).subscribe({
       next: (res: any) => {
-        this.cdr.detectChanges();
+        this.safeDetectChanges();
       },
       error: () => {
         // Safe fallback - already saved to local storage
