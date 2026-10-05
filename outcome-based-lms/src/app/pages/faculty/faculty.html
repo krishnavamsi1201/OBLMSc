@@ -240,6 +240,21 @@
 						</p>
 					</div>
 					<div class="header-btn-group" style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+						<!-- Quick Search Box -->
+						<div class="matrix-search-box" style="height: 38px; min-width: 240px;">
+							<span class="search-icon material-icons" style="font-size: 16px;">search</span>
+							<input type="text" 
+								   [(ngModel)]="progressSearchQuery" 
+								   (ngModelChange)="onProgressFilterChange()" 
+								   [placeholder]="matrixViewMode === 'STUDENTS' ? 'Search student name or ID...' : 'Search subject name or code...'" 
+								   class="matrix-search-input" />
+							<button *ngIf="progressSearchQuery" 
+									type="button" 
+									class="matrix-clear-btn" 
+									(click)="progressSearchQuery=''; onProgressFilterChange()"
+									title="Clear search">✕</button>
+						</div>
+
 						<!-- View Mode Toggle Bar -->
 						<div class="matrix-view-toggle-bar">
 							<button type="button" 
@@ -261,42 +276,6 @@
 						<button class="action-btn secondary small" (click)="exportGradebookCsv()" [title]="'Export ' + (matrixViewMode === 'STUDENTS' ? 'Students' : 'Subjects') + ' CSV'">
 							<span class="material-icons" style="font-size: 15px; vertical-align: middle;">download</span> Export CSV
 						</button>
-					</div>
-				</div>
-
-				<!-- Dedicated Non-Overlapping Filters & Controls Bar -->
-				<div class="progress-matrix-toolbar">
-					<!-- 1. Semester Selector -->
-					<div class="matrix-filter-item">
-						<span class="filter-icon material-icons">calendar_today</span>
-						<select [(ngModel)]="progressSemesterFilter" (ngModelChange)="onSemesterFilterChange()" class="matrix-select">
-							<option value="">All Semesters</option>
-							<option *ngFor="let sem of availableProgressSemesters" [value]="sem">{{ sem }}</option>
-						</select>
-					</div>
-
-					<!-- 2. Course Selector -->
-					<div class="matrix-filter-item">
-						<span class="filter-icon material-icons">menu_book</span>
-						<select [(ngModel)]="progressCourseFilter" (ngModelChange)="onProgressFilterChange()" class="matrix-select">
-							<option value="">All Courses ({{ availableProgressCourses.length }})</option>
-							<option *ngFor="let c of availableProgressCourses" [value]="c.name">{{ c.name }}</option>
-						</select>
-					</div>
-
-					<!-- 3. Search Box -->
-					<div class="matrix-search-box">
-						<span class="search-icon material-icons">search</span>
-						<input type="text" 
-							   [(ngModel)]="progressSearchQuery" 
-							   (ngModelChange)="onProgressFilterChange()" 
-							   [placeholder]="matrixViewMode === 'STUDENTS' ? 'Search student name or subject...' : 'Search subject name or code...'" 
-							   class="matrix-search-input" />
-						<button *ngIf="progressSearchQuery" 
-								type="button" 
-								class="matrix-clear-btn" 
-								(click)="progressSearchQuery=''; onProgressFilterChange()"
-								title="Clear search">✕</button>
 					</div>
 				</div>
 
