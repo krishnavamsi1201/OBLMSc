@@ -2440,4 +2440,422 @@
     font-size: 15px;
 }
 
+/* ========================================================================= */
+/* COMMAND CENTRE: Interactive Cockpit & AI Pulse Styles                    */
+/* ========================================================================= */
+
+/* Schedule Section */
+.schedule-tabs-bar {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-bottom: 16px;
+}
+
+.sch-tab-btn {
+    background: #091024;
+    border: 1px solid #1f2f54;
+    color: #94a3b8;
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size: 0.82rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.sch-tab-btn:hover {
+    color: #ffffff;
+    border-color: #38bdf8;
+}
+
+.sch-tab-btn.active {
+    background: linear-gradient(135deg, #2563eb, #1d4ed8);
+    color: #ffffff;
+    border-color: #3b82f6;
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+}
+
+.schedule-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 16px;
+}
+
+.schedule-card {
+    background: linear-gradient(145deg, #0d152e 0%, #080c1d 100%);
+    border: 1px solid #1f2f54;
+    border-radius: 14px;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    gap: 12px;
+    position: relative;
+    overflow: hidden;
+    transition: all 0.25s ease;
+}
+
+.schedule-card:hover {
+    transform: translateY(-3px);
+    border-color: #3b82f6;
+    box-shadow: 0 10px 24px rgba(0, 0, 0, 0.35);
+}
+
+.schedule-card.live-now {
+    border-color: #10b981;
+    box-shadow: 0 0 20px rgba(16, 185, 129, 0.15);
+}
+
+.schedule-card.live-now::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, #10b981, #34d399);
+}
+
+.sch-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.sch-time {
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: #38bdf8;
+    background: rgba(56, 189, 248, 0.1);
+    padding: 3px 8px;
+    border-radius: 6px;
+}
+
+.sch-status-badge {
+    font-size: 0.72rem;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+.sch-status-badge.live {
+    background: rgba(16, 185, 129, 0.2);
+    color: #34d399;
+    border: 1px solid #10b981;
+    animation: pulseGlow 2s infinite;
+}
+
+.sch-status-badge.done {
+    background: rgba(148, 163, 184, 0.15);
+    color: #94a3b8;
+}
+
+.sch-status-badge.upcoming {
+    background: rgba(245, 158, 11, 0.15);
+    color: #fbbf24;
+}
+
+@keyframes pulseGlow {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.6; }
+}
+
+.sch-title {
+    margin: 0;
+    font-size: 1rem;
+    font-weight: 700;
+    color: #ffffff;
+    line-height: 1.3;
+}
+
+.sch-room {
+    font-size: 0.82rem;
+    color: #94a3b8;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.sch-topic-box {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid #1f2f54;
+    border-radius: 8px;
+    padding: 8px 10px;
+    font-size: 0.8rem;
+}
+
+.sch-topic-box strong {
+    color: #d4af37;
+    display: block;
+    font-size: 0.74rem;
+    text-transform: uppercase;
+    margin-bottom: 2px;
+}
+
+.sch-topic-box span {
+    color: #cbd5e1;
+}
+
+.sch-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 4px;
+}
+
+/* AI Copilot & Insights */
+.ai-copilot-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 16px;
+    margin-bottom: 20px;
+}
+
+.ai-insight-card {
+    background: linear-gradient(135deg, rgba(17, 24, 39, 0.9) 0%, rgba(15, 23, 42, 0.95) 100%);
+    border: 1px solid #1f2f54;
+    border-left: 4px solid #3b82f6;
+    border-radius: 12px;
+    padding: 16px;
+    display: flex;
+    gap: 14px;
+    transition: all 0.2s ease;
+}
+
+.ai-insight-card:hover {
+    border-left-color: #d4af37;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+}
+
+.ai-icon-wrap {
+    width: 42px;
+    height: 42px;
+    border-radius: 10px;
+    background: rgba(59, 130, 246, 0.15);
+    color: #60a5fa;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.ai-content h4 {
+    margin: 0 0 4px;
+    font-size: 0.92rem;
+    color: #ffffff;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.ai-badge {
+    background: rgba(52, 211, 153, 0.15);
+    color: #34d399;
+    font-size: 0.72rem;
+    padding: 2px 6px;
+    border-radius: 6px;
+    font-weight: 700;
+}
+
+.ai-content p {
+    margin: 0;
+    font-size: 0.82rem;
+    color: #94a3b8;
+    line-height: 1.4;
+}
+
+/* Fast Action Launchpad */
+.action-launchpad {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 12px;
+    margin-bottom: 28px;
+}
+
+.launch-tile {
+    background: #091024;
+    border: 1px solid #1f2f54;
+    border-radius: 12px;
+    padding: 14px 16px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-align: left;
+}
+
+.launch-tile:hover {
+    background: #101b3b;
+    border-color: #38bdf8;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(56, 189, 248, 0.15);
+}
+
+.launch-icon {
+    width: 38px;
+    height: 38px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.launch-text strong {
+    display: block;
+    color: #ffffff;
+    font-size: 0.88rem;
+    font-weight: 700;
+}
+
+.launch-text span {
+    font-size: 0.74rem;
+    color: #94a3b8;
+}
+
+/* Blooms Visualizer */
+.blooms-container {
+    background: linear-gradient(145deg, #0d152e 0%, #080c1d 100%);
+    border: 1px solid #1f2f54;
+    border-radius: 14px;
+    padding: 20px;
+    margin-bottom: 28px;
+}
+
+.blooms-progress-stack {
+    display: flex;
+    height: 14px;
+    border-radius: 7px;
+    overflow: hidden;
+    margin: 14px 0 18px;
+    background: #091024;
+}
+
+.blooms-stack-bar {
+    height: 100%;
+    transition: width 0.4s ease;
+}
+
+.blooms-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+    gap: 12px;
+}
+
+.blooms-item-card {
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid #1f2f54;
+    border-radius: 10px;
+    padding: 12px;
+    position: relative;
+    overflow: hidden;
+}
+
+.blooms-item-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    width: 4px;
+    background: var(--bloom-color, #38bdf8);
+}
+
+.blooms-item-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 4px;
+}
+
+.blooms-level-title {
+    font-size: 0.82rem;
+    font-weight: 700;
+    color: #ffffff;
+}
+
+.blooms-pct {
+    font-size: 1.05rem;
+    font-weight: 800;
+    color: var(--bloom-color, #38bdf8);
+}
+
+.blooms-verbs {
+    font-size: 0.72rem;
+    color: #94a3b8;
+    margin-top: 4px;
+    line-height: 1.3;
+}
+
+/* Milestones Grid */
+.milestones-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 14px;
+}
+
+.milestone-card {
+    background: #091024;
+    border: 1px solid #1f2f54;
+    border-radius: 12px;
+    padding: 14px 16px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    gap: 10px;
+}
+
+.milestone-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 8px;
+}
+
+.milestone-title {
+    margin: 0;
+    font-size: 0.88rem;
+    font-weight: 700;
+    color: #ffffff;
+    line-height: 1.3;
+}
+
+.milestone-due {
+    font-size: 0.74rem;
+    font-weight: 700;
+    padding: 2px 6px;
+    border-radius: 6px;
+    white-space: nowrap;
+}
+
+.milestone-due.high, .milestone-due.urgent {
+    background: rgba(239, 68, 68, 0.2);
+    color: #f87171;
+    border: 1px solid #ef4444;
+}
+
+.milestone-due.medium {
+    background: rgba(245, 158, 11, 0.2);
+    color: #fbbf24;
+    border: 1px solid #f59e0b;
+}
+
+.milestone-progress-bar {
+    height: 6px;
+    background: rgba(255, 255, 255, 0.08);
+    border-radius: 3px;
+    overflow: hidden;
+}
+
+.milestone-progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #3b82f6, #60a5fa);
+    border-radius: 3px;
+}
+
+
 
