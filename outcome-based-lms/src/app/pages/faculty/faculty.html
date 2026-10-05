@@ -115,53 +115,196 @@
 				</div>
 			</div>
 
-			<!-- 2. At-Risk Student Alert Board -->
-			<section *ngIf="atRiskStudents.length > 0" class="dashboard-section at-risk-section">
+			<!-- 2. AI Outcome Copilot & Accreditation Pulse -->
+			<section class="dashboard-section">
 				<div class="section-header">
 					<div class="header-title-group">
-						<h2>Academic Early Warning System ({{ atRiskStudents.length }} Students)</h2>
-						<p class="section-subtitle">Real-time alerts for students falling below minimum OBE attainment (60%) or attendance (75%) thresholds.</p>
+						<h2 style="display: flex; align-items: center; gap: 8px;">
+							<span class="material-icons" style="color: #60a5fa; font-size: 24px;">auto_awesome</span>
+							AI Academic Copilot & Accreditation Pulse
+						</h2>
+						<p class="section-subtitle">Automated real-time NBA Tier-1 OBE diagnostics and curriculum outcome alignment checks.</p>
 					</div>
-					<button class="view-all-btn" (click)="openAtRiskListModal()">View All ({{ atRiskStudents.length }}) At-Risk Students →</button>
+					<button class="action-btn secondary small" (click)="exportSarCriterion3()" title="Download NBA SAR Criterion 3 Report">
+						<span class="material-icons" style="font-size: 14px; vertical-align: middle;">assessment</span> NBA SAR Criterion 3 Report ↓
+					</button>
 				</div>
-				<div class="at-risk-grid">
-					<div *ngFor="let student of atRiskStudents.slice(0, 3)" class="at-risk-card" (click)="openAtRiskModal(student)">
-						<div class="at-risk-card-top">
-							<div>
-								<h4>{{ student.studentName }}</h4>
-								<span class="at-risk-course">{{ student.courseName }}</span>
-							</div>
-							<span class="severity-badge" [class.high]="student.severity === 'High'" [class.medium]="student.severity === 'Medium'">
-								{{ student.severity }} Priority
-							</span>
+
+				<div class="ai-copilot-grid">
+					<div *ngFor="let ai of aiInsights" class="ai-insight-card">
+						<div class="ai-icon-wrap">
+							<span class="material-icons">{{ ai.icon }}</span>
 						</div>
-						<div class="at-risk-metrics">
-							<div>
-								<span>CO Attainment:</span>
-								<strong [class.text-danger]="student.attainmentPercentage < 60">{{ student.attainmentPercentage }}%</strong>
+						<div class="ai-content" style="flex: 1;">
+							<h4>
+								<span>{{ ai.badge }}</span>
+								<span class="ai-badge">{{ ai.score }}</span>
+							</h4>
+							<p>{{ ai.text }}</p>
+						</div>
+					</div>
+				</div>
+
+				<!-- Fast Action Power Launchpad -->
+				<div class="action-launchpad">
+					<button class="launch-tile" (click)="openQuestionPaperModal()">
+						<div class="launch-icon" style="background: rgba(168, 85, 247, 0.15); color: #c084fc;">
+							<span class="material-icons">psychology</span>
+						</div>
+						<div class="launch-text">
+							<strong>AI Question Paper</strong>
+							<span>Bloom-Mapped Generator</span>
+						</div>
+					</button>
+					<button class="launch-tile" (click)="openMarkEntryModal()">
+						<div class="launch-icon" style="background: rgba(59, 130, 246, 0.15); color: #60a5fa;">
+							<span class="material-icons">edit_note</span>
+						</div>
+						<div class="launch-text">
+							<strong>Quick Mark Entry</strong>
+							<span>Assessment Scoring</span>
+						</div>
+					</button>
+					<button class="launch-tile" (click)="openQuickAttendanceModal()">
+						<div class="launch-icon" style="background: rgba(16, 185, 129, 0.15); color: #34d399;">
+							<span class="material-icons">fact_check</span>
+						</div>
+						<div class="launch-text">
+							<strong>Smart Attendance</strong>
+							<span>1-Click Daily Roster</span>
+						</div>
+					</button>
+					<button class="launch-tile" (click)="openCourseFileModal()">
+						<div class="launch-icon" style="background: rgba(245, 158, 11, 0.15); color: #fbbf24;">
+							<span class="material-icons">folder_special</span>
+						</div>
+						<div class="launch-text">
+							<strong>NBA Course Files</strong>
+							<span>14-Item Audit Folder</span>
+						</div>
+					</button>
+					<button class="launch-tile" (click)="openBroadcastModal()">
+						<div class="launch-icon" style="background: rgba(236, 72, 153, 0.15); color: #f472b6;">
+							<span class="material-icons">campaign</span>
+						</div>
+						<div class="launch-text">
+							<strong>Broadcast Alert</strong>
+							<span>Push to Student Portals</span>
+						</div>
+					</button>
+				</div>
+			</section>
+
+
+			<!-- 3. Live Daily Teaching Schedule & Lecture Pulse -->
+			<section class="dashboard-section">
+				<div class="section-header">
+					<div class="header-title-group">
+						<h2 style="display: flex; align-items: center; gap: 8px;">
+							<span class="material-icons" style="color: #38bdf8; font-size: 24px;">schedule</span>
+							Today's Active Teaching Schedule & Live Pulse
+						</h2>
+						<p class="section-subtitle">Real-time timetable slots, laboratory sessions, and quick classroom management actions.</p>
+					</div>
+					<div class="schedule-tabs-bar">
+						<button class="sch-tab-btn" [class.active]="activeScheduleTab === 'ALL'" (click)="activeScheduleTab = 'ALL'">All Slots (4)</button>
+						<button class="sch-tab-btn" [class.active]="activeScheduleTab === 'LECTURE'" (click)="activeScheduleTab = 'LECTURE'">Lectures (2)</button>
+						<button class="sch-tab-btn" [class.active]="activeScheduleTab === 'LAB'" (click)="activeScheduleTab = 'LAB'">Labs (1)</button>
+						<button class="sch-tab-btn" [class.active]="activeScheduleTab === 'TUTORIAL'" (click)="activeScheduleTab = 'TUTORIAL'">Tutorials (1)</button>
+					</div>
+				</div>
+
+				<div class="schedule-grid">
+					<div *ngFor="let sch of filteredTodaySchedule" class="schedule-card" [class.live-now]="sch.status === 'Live Now'">
+						<div>
+							<div class="sch-header">
+								<span class="sch-time">{{ sch.time }}</span>
+								<span class="sch-status-badge" [class.live]="sch.status === 'Live Now'" [class.done]="sch.status === 'Completed'" [class.upcoming]="sch.status === 'Upcoming'">
+									{{ sch.status }}
+								</span>
 							</div>
-							<div>
-								<span>Attendance:</span>
-								<strong [class.text-danger]="student.attendancePercentage < 75">{{ student.attendancePercentage }}%</strong>
+							<div style="margin-top: 10px;">
+								<div class="sch-room">
+									<span class="material-icons" style="font-size: 14px;">room</span> {{ sch.room }} • <span style="color: #38bdf8; font-weight: 600;">{{ sch.courseCode }}</span>
+								</div>
+								<h3 class="sch-title">{{ sch.courseName }}</h3>
+							</div>
+							<div class="sch-topic-box" style="margin-top: 10px;">
+								<strong>Today's Focus ({{ sch.coMapped }}):</strong>
+								<span>{{ sch.topic }}</span>
 							</div>
 						</div>
-						<ul class="risk-reasons">
-							<li *ngFor="let reason of student.riskReasons">
-								<span class="material-icons" style="font-size: 14px; vertical-align: middle; color: #ef4444; margin-right: 4px;">warning</span>
-								{{ reason }}
-							</li>
-						</ul>
-						<button class="remedial-btn" (click)="$event.stopPropagation(); openAtRiskModal(student)">View Diagnostic & Remedial Plan →</button>
+
+						<div class="sch-actions">
+							<button class="f-card-btn primary" (click)="openQuickAttendanceModal(sch.courseName)" title="Take attendance for this class">
+								<span class="material-icons">fact_check</span> {{ sch.attendanceTaken ? 'Attendance Marked ✓' : 'Take Attendance' }}
+							</button>
+							<button class="f-card-btn" (click)="openMarkEntryModal()" title="Enter marks">
+								<span class="material-icons">edit_note</span> Marks
+							</button>
+							<button class="f-card-btn" (click)="openBroadcastModal(sch.courseName)" title="Broadcast announcement to this class">
+								<span class="material-icons">campaign</span> Notice
+							</button>
+						</div>
 					</div>
 				</div>
 			</section>
 
 
-			<!-- 3. Faculty Assigned Teaching Classes Overview (Clean Workload Cards) -->
+			<!-- 4. Bloom's Revised Taxonomy Cognitive Balance Visualizer -->
 			<section class="dashboard-section">
 				<div class="section-header">
 					<div class="header-title-group">
-						<h2>My Assigned Teaching Classes ({{ courses.length }})</h2>
+						<h2 style="display: flex; align-items: center; gap: 8px;">
+							<span class="material-icons" style="color: #f59e0b; font-size: 24px;">psychology</span>
+							Bloom's Taxonomy Cognitive Distribution (NBA Criterion 3 Compliance)
+						</h2>
+						<p class="section-subtitle">Cognitive domain balance across question papers, assignments, and semester evaluations.</p>
+					</div>
+					<span style="background: rgba(16, 185, 129, 0.15); color: #34d399; font-weight: 700; font-size: 0.82rem; padding: 4px 10px; border-radius: 8px; border: 1px solid #10b981;">
+						✓ 60% Higher-Order Thinking (HOT)
+					</span>
+				</div>
+
+				<div class="blooms-container">
+					<div style="display: flex; justify-content: space-between; font-size: 0.85rem; color: #cbd5e1; font-weight: 600;">
+						<span>Lower-Order Thinking Skills (LOT: 40%)</span>
+						<span>Higher-Order Thinking Skills (HOT: 60%)</span>
+					</div>
+
+					<div class="blooms-progress-stack">
+						<div *ngFor="let b of bloomsDistribution" 
+							 class="blooms-stack-bar" 
+							 [style.width.%]="b.percentage" 
+							 [style.background]="b.color"
+							 [title]="b.level + ' (' + b.percentage + '%)'">
+						</div>
+					</div>
+
+					<div class="blooms-grid">
+						<div *ngFor="let b of bloomsDistribution" class="blooms-item-card" [style.--bloom-color]="b.color">
+							<div class="blooms-item-top">
+								<span class="blooms-level-title">{{ b.level }}</span>
+								<span class="blooms-pct">{{ b.percentage }}%</span>
+							</div>
+							<div style="font-size: 0.76rem; color: #cbd5e1; margin-top: 2px;">{{ b.description }}</div>
+							<div class="blooms-verbs">
+								<strong style="color: #94a3b8;">Verbs:</strong> {{ b.verbExamples }}
+							</div>
+						</div>
+					</div>
+				</div>
+			</section>
+
+
+			<!-- 5. Faculty Assigned Teaching Classes Overview (Clean Workload Cards) -->
+			<section class="dashboard-section">
+				<div class="section-header">
+					<div class="header-title-group">
+						<h2 style="display: flex; align-items: center; gap: 8px;">
+							<span class="material-icons" style="color: #38bdf8; font-size: 24px;">menu_book</span>
+							My Assigned Teaching Classes ({{ courses.length }})
+						</h2>
 						<p class="section-subtitle">Active subjects allocated to {{ facultyName }} for term delivery, evaluations, and OBE attainment.</p>
 					</div>
 					<div class="header-btn-group" style="display: flex; gap: 10px; align-items: center;">
@@ -216,11 +359,53 @@
 				</div>
 			</section>
 
-			<!-- 9. CQI Continuous Quality Improvement Actions Log -->
+
+			<!-- 6. Academic Milestones & Accreditation Timers -->
+			<section class="dashboard-section">
+				<div class="section-header">
+					<div class="header-title-group">
+						<h2 style="display: flex; align-items: center; gap: 8px;">
+							<span class="material-icons" style="color: #ec4899; font-size: 24px;">flag</span>
+							Upcoming Academic Milestones & Compliance Deadlines
+						</h2>
+						<p class="section-subtitle">Scheduled internal examinations, lab evaluations, and NBA audit deliverables.</p>
+					</div>
+				</div>
+
+				<div class="milestones-grid">
+					<div *ngFor="let m of upcomingMilestones" class="milestone-card">
+						<div class="milestone-top">
+							<h4 class="milestone-title">{{ m.title }}</h4>
+							<span class="milestone-due" [class.urgent]="m.priority === 'Urgent'" [class.high]="m.priority === 'High'" [class.medium]="m.priority === 'Medium'">
+								{{ m.due }}
+							</span>
+						</div>
+						<div style="font-size: 0.8rem; color: #94a3b8; display: flex; justify-content: space-between;">
+							<span>Target Date: <strong style="color: #cbd5e1;">{{ m.date }}</strong></span>
+							<span>Category: <strong style="color: #38bdf8;">{{ m.type }}</strong></span>
+						</div>
+						<div>
+							<div style="display: flex; justify-content: space-between; font-size: 0.74rem; color: #94a3b8; margin-bottom: 4px;">
+								<span>Readiness Progress</span>
+								<strong style="color: #ffffff;">{{ m.progress }}%</strong>
+							</div>
+							<div class="milestone-progress-bar">
+								<div class="milestone-progress-fill" [style.width.%]="m.progress"></div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</section>
+
+
+			<!-- 7. CQI Continuous Quality Improvement Actions Log -->
 			<section *ngIf="cqiActionsList.length > 0" class="dashboard-section">
 				<div class="section-header">
 					<div class="header-title-group">
-						<h2>Continuous Quality Improvement (CQI) Action Log ({{ cqiActionsList.length }})</h2>
+						<h2 style="display: flex; align-items: center; gap: 8px;">
+							<span class="material-icons" style="color: #10b981; font-size: 24px;">trending_up</span>
+							Continuous Quality Improvement (CQI) Action Log ({{ cqiActionsList.length }})
+						</h2>
 						<p class="section-subtitle">Documented remedial actions and outcome improvement milestones for NBA accreditation.</p>
 					</div>
 					<button class="action-btn primary small" (click)="openCqiModal()">+ Log New Action</button>
@@ -1116,6 +1301,63 @@
 
 				<div class="modal-footer" style="display: flex; justify-content: flex-end; padding: 14px 20px; border-top: 1px solid #1f2f54;">
 					<button class="btn primary" (click)="closeSubjectRosterModal()">Close</button>
+				</div>
+			</div>
+		</div>
+
+		<!-- ================================================================= -->
+		<!-- MODAL 11: Broadcast Class Notice Modal                            -->
+		<!-- ================================================================= -->
+		<div *ngIf="showBroadcastModal" class="modal-backdrop" (click)="closeBroadcastModal()">
+			<div class="modal-card" (click)="$event.stopPropagation()" style="max-width: 600px; width: 95%;">
+				<div class="modal-header">
+					<div style="display: flex; align-items: center; gap: 10px;">
+						<span class="material-icons" style="color: #ec4899; font-size: 24px;">campaign</span>
+						<div>
+							<h3 style="margin: 0; color: #ffffff; font-size: 1.15rem;">Broadcast Notice to Students</h3>
+							<span style="font-size: 0.8rem; color: #94a3b8;">Push notification directly to student mobile & portal dashboard</span>
+						</div>
+					</div>
+					<button class="modal-close" (click)="closeBroadcastModal()">✕</button>
+				</div>
+
+				<div class="modal-body" style="padding: 20px;">
+					<div class="form-field" style="margin-bottom: 14px;">
+						<label style="display: block; margin-bottom: 6px; font-size: 0.84rem; color: #cbd5e1; font-weight: 600;">Target Class / Course</label>
+						<select [(ngModel)]="broadcastCourse" style="width: 100%; padding: 9px 12px; background: #091024; border: 1px solid #1f2f54; border-radius: 8px; color: #ffffff; font-size: 0.9rem;">
+							<option value="All Assigned Classes">All My Assigned Classes (242 Students)</option>
+							<option *ngFor="let c of courses" [value]="c.name">{{ c.name }} ({{ c.code }})</option>
+						</select>
+					</div>
+
+					<div class="form-field" style="margin-bottom: 14px;">
+						<label style="display: block; margin-bottom: 6px; font-size: 0.84rem; color: #cbd5e1; font-weight: 600;">Announcement Title</label>
+						<input type="text" [(ngModel)]="broadcastTitle" placeholder="e.g., Midterm 2 Syllabus & Doubt Session Details" style="width: 100%; box-sizing: border-box; padding: 9px 12px; background: #091024; border: 1px solid #1f2f54; border-radius: 8px; color: #ffffff; font-size: 0.9rem;" />
+					</div>
+
+					<div class="form-field" style="margin-bottom: 14px;">
+						<label style="display: block; margin-bottom: 6px; font-size: 0.84rem; color: #cbd5e1; font-weight: 600;">Priority Level</label>
+						<div style="display: flex; gap: 10px;">
+							<label style="color: #cbd5e1; font-size: 0.85rem; display: flex; align-items: center; gap: 4px; cursor: pointer;">
+								<input type="radio" name="bPriority" [(ngModel)]="broadcastPriority" value="Normal" /> Normal Alert
+							</label>
+							<label style="color: #f87171; font-size: 0.85rem; display: flex; align-items: center; gap: 4px; cursor: pointer;">
+								<input type="radio" name="bPriority" [(ngModel)]="broadcastPriority" value="Urgent" /> 🚨 Urgent (Highlight in Red)
+							</label>
+						</div>
+					</div>
+
+					<div class="form-field">
+						<label style="display: block; margin-bottom: 6px; font-size: 0.84rem; color: #cbd5e1; font-weight: 600;">Notice Content</label>
+						<textarea [(ngModel)]="broadcastMessage" rows="4" placeholder="Enter instructions, syllabus topics, assignment links or room change notices..." style="width: 100%; box-sizing: border-box; padding: 10px 12px; background: #091024; border: 1px solid #1f2f54; border-radius: 8px; color: #ffffff; font-size: 0.9rem; resize: vertical;"></textarea>
+					</div>
+				</div>
+
+				<div class="modal-footer" style="display: flex; justify-content: space-between; align-items: center; padding: 14px 20px; border-top: 1px solid #1f2f54;">
+					<button class="btn secondary" (click)="closeBroadcastModal()">Cancel</button>
+					<button class="btn primary" (click)="sendBroadcastNotice()" style="background: linear-gradient(135deg, #ec4899, #db2777); border-color: #ec4899;">
+						<span class="material-icons" style="font-size: 16px; vertical-align: middle;">send</span> Send Broadcast
+					</button>
 				</div>
 			</div>
 		</div>
