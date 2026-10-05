@@ -2072,4 +2072,205 @@
     white-space: nowrap;
 }
 
+/* ========================================================================= */
+/* SEMESTER-WISE GROUP CARDS & TABS STYLING                                  */
+/* ========================================================================= */
+.matrix-semesters-tab-bar {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 14px;
+    overflow-x: auto;
+    padding-bottom: 6px;
+    scrollbar-width: thin;
+}
+
+.matrix-sem-tab {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 14px;
+    background: #091024;
+    border: 1px solid #1f2f54;
+    border-radius: 20px;
+    color: #94a3b8;
+    font-size: 12.5px;
+    font-weight: 600;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all 0.2s ease;
+}
+
+.matrix-sem-tab:hover {
+    background: rgba(30, 58, 138, 0.3);
+    border-color: #3b82f6;
+    color: #ffffff;
+}
+
+.matrix-sem-tab.active {
+    background: linear-gradient(135deg, rgba(212, 175, 55, 0.25), rgba(184, 134, 11, 0.35));
+    border-color: #d4af37;
+    color: #fde68a;
+    box-shadow: 0 0 12px rgba(212, 175, 55, 0.25);
+}
+
+.matrix-sem-tab .tab-badge {
+    background: rgba(255, 255, 255, 0.1);
+    color: inherit;
+    font-size: 11px;
+    padding: 1px 6px;
+    border-radius: 10px;
+    font-weight: 700;
+}
+
+.matrix-sem-tab.active .tab-badge {
+    background: rgba(212, 175, 55, 0.3);
+    color: #ffffff;
+}
+
+.semester-groups-container {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.semester-group-card {
+    background: #091024;
+    border: 1.5px solid #1f2f54;
+    border-radius: 14px;
+    overflow: hidden;
+    transition: all 0.25s ease;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
+}
+
+.semester-group-card:hover {
+    border-color: rgba(56, 189, 248, 0.4);
+}
+
+.semester-group-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 20px;
+    background: linear-gradient(135deg, rgba(19, 34, 71, 0.9), rgba(10, 17, 40, 0.95));
+    border-bottom: 1px solid #1f2f54;
+    cursor: pointer;
+    flex-wrap: wrap;
+    gap: 14px;
+}
+
+.semester-group-header:hover {
+    background: linear-gradient(135deg, rgba(25, 45, 95, 0.95), rgba(14, 24, 55, 0.95));
+}
+
+.sem-header-left {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+
+.sem-icon-wrap {
+    width: 44px;
+    height: 44px;
+    border-radius: 10px;
+    background: rgba(212, 175, 55, 0.15);
+    border: 1px solid rgba(212, 175, 55, 0.3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+}
+
+.sem-title-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.sem-title {
+    margin: 0;
+    font-size: 1.15rem;
+    font-weight: 800;
+    color: #ffffff;
+    letter-spacing: -0.01em;
+}
+
+.sem-badge-pill {
+    background: rgba(56, 189, 248, 0.15);
+    color: #38bdf8;
+    border: 1px solid rgba(56, 189, 248, 0.3);
+    font-size: 0.75rem;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 12px;
+}
+
+.sem-subtitle {
+    font-size: 0.8rem;
+    color: #94a3b8;
+    display: block;
+    margin-top: 2px;
+}
+
+.sem-header-stats {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    flex-wrap: wrap;
+}
+
+.sem-stat-item {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+}
+
+.sem-stat-item .stat-lbl {
+    font-size: 0.7rem;
+    color: #94a3b8;
+    text-transform: uppercase;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+}
+
+.sem-stat-item .stat-val {
+    font-size: 1.1rem;
+    font-weight: 800;
+    color: #ffffff;
+}
+
+.sem-collapse-toggle {
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid #1f2f54;
+    color: #cbd5e1;
+    font-size: 0.78rem;
+    font-weight: 700;
+    padding: 6px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.sem-collapse-toggle:hover {
+    background: rgba(56, 189, 248, 0.2);
+    border-color: #38bdf8;
+    color: #ffffff;
+}
+
+.sem-table-wrap {
+    padding: 0;
+    overflow-x: auto;
+}
+
+.enrolled-count-chip {
+    background: rgba(52, 211, 153, 0.12);
+    color: #34d399;
+    border: 1px solid rgba(52, 211, 153, 0.25);
+    font-size: 0.78rem;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 6px;
+    white-space: nowrap;
+}
+
 
