@@ -158,15 +158,20 @@ export class Admin implements OnInit, OnDestroy {
     ];
 
     const firstNames = [
-      'Aarav', 'Aditya', 'Ananya', 'Diya', 'Ishaan', 'Kavya', 'Manish', 'Neha',
-      'Pranav', 'Pooja', 'Rahul', 'Riya', 'Rohan', 'Sneha', 'Tanvi', 'Varun',
-      'Vikram', 'Anjali', 'Sai', 'Karthik', 'Sanjay', 'Deepika', 'Harish', 'Meera'
+      'Sai Krishna', 'Karthik', 'Venkatesh', 'Keerthi', 'Chaitanya', 'Sravani',
+      'Harish', 'Akhil', 'Tarun', 'Bhavya', 'Manoj', 'Suresh', 'Swathi', 'Naveen',
+      'Madhuri', 'Prashanth', 'Teja', 'Lavanya', 'Rohit', 'Divya', 'Santosh',
+      'Deepak', 'Kalyan', 'Anusha', 'Vikas', 'Rithika', 'Gautam', 'Meera',
+      'Varun', 'Sneha', 'Nikhil', 'Pooja', 'Surya', 'Riya', 'Aditya', 'Kavya',
+      'Pranav', 'Sindhu', 'Rajesh', 'Sowmya', 'Srikanth', 'Harika', 'Murali',
+      'Pavani', 'Rakesh', 'Sunitha', 'Vinay', 'Manasa'
     ];
 
     const lastNames = [
-      'Sharma', 'Patel', 'Reddy', 'Nair', 'Singh', 'Roy', 'Gupta', 'Sri',
-      'Verma', 'Hegde', 'Rao', 'Kalyan', 'Pillai', 'Mishra', 'Joshi', 'Bhat',
-      'Choudhury', 'Das', 'Menon', 'Prasad', 'Naidu', 'Babu', 'Sundaram', 'Sen'
+      'Reddy', 'Rao', 'Naidu', 'Chowdary', 'Varma', 'Goud', 'Nair', 'Menon',
+      'Pillai', 'Hegde', 'Shetty', 'Babu', 'Kalyan', 'Sundaram', 'Bhat', 'Prasad',
+      'Raju', 'Murthy', 'Iyer', 'Iyengar', 'Sastry', 'Kulkarni', 'Deshmukh',
+      'Patel', 'Gupta', 'Roy', 'Sen', 'Banerjee', 'Verma', 'Mishra', 'Sharma', 'Das'
     ];
 
     const list: DirectoryUser[] = [];
@@ -193,10 +198,10 @@ export class Admin implements OnInit, OnDestroy {
             globalCounter++;
 
             const f = firstNames[nameIndex % firstNames.length];
-            const l = lastNames[Math.floor(nameIndex / firstNames.length) % lastNames.length];
+            const l = lastNames[(nameIndex * 7 + Math.floor(nameIndex / 3)) % lastNames.length];
             nameIndex++;
             fullName = `${f} ${l}`;
-            email = `${f.toLowerCase()}.${l.toLowerCase()}.${b.code.toLowerCase()}.s${sem}@oblms.edu`;
+            email = `${f.toLowerCase().replace(/\s+/g, '.')}.${l.toLowerCase()}.${b.code.toLowerCase()}.s${sem}@oblms.edu`;
           }
 
           list.push({
