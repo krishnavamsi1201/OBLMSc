@@ -1195,7 +1195,6 @@
 								<th>Attendance</th>
 								<th>Assessments</th>
 								<th>Status</th>
-								<th style="text-align: right;">Action</th>
 							</tr>
 						</thead>
 						<tbody>
@@ -1221,11 +1220,6 @@
 								<td>
 									<span *ngIf="sub.status === 'At-Risk'" class="status-pill open">At-Risk</span>
 									<span *ngIf="sub.status === 'On Track'" class="status-pill completed">On Track</span>
-								</td>
-								<td style="text-align: right;">
-									<button type="button" class="action-btn primary small" (click)="closeStudentDossierModal(); openMarkEntryModal()">
-										Enter Marks
-									</button>
 								</td>
 							</tr>
 						</tbody>
