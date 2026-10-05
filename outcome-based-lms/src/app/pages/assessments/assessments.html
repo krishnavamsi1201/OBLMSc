@@ -23,11 +23,11 @@
         <div class="assessment-tabs">
             <button class="tab-btn" [class.active]="activeTab === 'online-exams'" (click)="activeTab = 'online-exams'">
                 <span class="tab-icon">📝</span> Online Exams & Quizzes
-                <span class="tab-counter">{{ onlineExams.length }}</span>
+                <span class="tab-counter">{{ filteredOnlineExams.length }}</span>
             </button>
             <button class="tab-btn" [class.active]="activeTab === 'schedule-table'" (click)="activeTab = 'schedule-table'">
                 <span class="tab-icon">📋</span> Traditional Assessment Registry & Marks
-                <span class="tab-counter">{{ assessments.length }}</span>
+                <span class="tab-counter">{{ filteredAssessments.length }}</span>
             </button>
             <button class="tab-btn active-exam-tab" *ngIf="activeExamToTake || activeTab === 'take-exam'" [class.active]="activeTab === 'take-exam'" (click)="activeTab = 'take-exam'">
                 <span class="tab-icon">✍️</span> Live Exam Mode
@@ -88,7 +88,7 @@
                 </div>
                 <div class="filter-dropdowns">
                     <select [(ngModel)]="filterCourse" class="filter-select">
-                        <option value="">All Assigned Courses</option>
+                        <option value="">{{ role === 'student' ? 'All Enrolled Courses' : 'All Assigned Courses' }}</option>
                         <option *ngFor="let c of coursesList" [value]="c.code">{{ c.code }} - {{ c.title }}</option>
                     </select>
                 </div>

@@ -153,6 +153,22 @@ export class Assessments implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
+    if (this.role === 'student') {
+      const sId = localStorage.getItem('userId') || localStorage.getItem('userEmail') || this.userRoll;
+      if (sId) {
+        this.http.get<any>(`http://localhost:8080/api/users/${encodeURIComponent(sId)}`).subscribe({
+          next: (u) => {
+            if (u && u.enrolledCourses) {
+              localStorage.setItem('userEnrolledCourses', u.enrolledCourses);
+              this.loadCourses();
+              this.cdr.detectChanges();
+            }
+          },
+          error: () => {}
+        });
+      }
+    }
+
     this.loadCourses();
     this.loadStudents();
     this.loadAssessments();
@@ -451,12 +467,15 @@ export class Assessments implements OnInit, OnDestroy {
       );
     }
 
-    // If student, filter by student's department or enrolled courses
+    // If student, filter strictly by student's enrolled courses
     if (this.role === 'student') {
-      const studentDept = this.userDept.toLowerCase();
+      const myEnrolled = this.getStudentEnrolledCourses();
       list = list.filter(e => 
-        e.department.toLowerCase().includes(studentDept) || studentDept.includes(e.department.toLowerCase()) ||
-        e.courseCode.toLowerCase().startsWith(this.getShortDept(this.userDept).toLowerCase())
+        myEnrolled.some(code => 
+          code.toLowerCase() === (e.courseCode || '').toLowerCase().trim() ||
+          (e.courseTitle && e.courseTitle.toLowerCase().includes(code.toLowerCase())) ||
+          (e.courseCode && code.toLowerCase().includes(e.courseCode.toLowerCase()))
+        )
       );
     }
 
@@ -657,10 +676,14 @@ export class Assessments implements OnInit, OnDestroy {
 
     // Check student subject eligibility
     if (this.role === 'student') {
-      const studentShortDept = this.getShortDept(this.userDept);
-      const examShortDept = this.getShortDept(exam.department);
-      if (studentShortDept !== examShortDept && !exam.department.includes(this.userDept)) {
-        this.toast.warning(`Access Restricted: This exam is only for ${exam.department} (${examShortDept}) students.`);
+      const myEnrolled = this.getStudentEnrolledCourses();
+      const isEnrolled = myEnrolled.some(code => 
+        code.toLowerCase() === (exam.courseCode || '').toLowerCase().trim() ||
+        (exam.courseTitle && exam.courseTitle.toLowerCase().includes(code.toLowerCase())) ||
+        (exam.courseCode && code.toLowerCase().includes(exam.courseCode.toLowerCase()))
+      );
+      if (!isEnrolled) {
+        this.toast.warning(`Access Restricted: You are not enrolled in ${exam.courseCode} - ${exam.courseTitle}.`);
         return;
       }
     }
@@ -914,7 +937,7 @@ export class Assessments implements OnInit, OnDestroy {
   }
 
   countByType(type: string): number {
-    return this.assessments.filter(a => this.normalizeType(a.type) === type).length;
+    return this.filteredAssessments.filter(a => this.normalizeType(a.type) === type).length;
   }
 
   getFacultyAssignedCourses(): string[] {
@@ -937,12 +960,111 @@ export class Assessments implements OnInit, OnDestroy {
     return assigned;
   }
 
+  getStudentEnrolledCourses(): string[] {
+    let enrolled: string[] = [];
+
+    // 1. Read from userEnrolledCourses
+    try {
+      const cached = localStorage.getItem('userEnrolledCourses');
+      if (cached && cached.trim()) {
+        const list = cached.split(',').map((s: string) => s.trim().toUpperCase()).filter(Boolean);
+        if (list.length > 0) enrolled.push(...list);
+      }
+    } catch {}
+
+    // 2. Read from userAssignedCourses
+    try {
+      const assignedCached = localStorage.getItem('userAssignedCourses');
+      if (assignedCached) {
+        const assignedList = JSON.parse(assignedCached);
+        if (Array.isArray(assignedList)) {
+          const list = assignedList.map((s: string) => s.trim().toUpperCase()).filter(Boolean);
+          enrolled.push(...list);
+        }
+      }
+    } catch {}
+
+    // 3. Read from obslmsStudentCourses
+    try {
+      const localStudentCourses = localStorage.getItem('obslmsStudentCourses');
+      if (localStudentCourses) {
+        const scList = JSON.parse(localStudentCourses);
+        const currentName = (this.userName || localStorage.getItem('userName') || '').toLowerCase();
+        const currentRoll = (this.userRoll || localStorage.getItem('userRoll') || '').toLowerCase();
+        scList.forEach((sc: any) => {
+          const scName = (sc.studentName || '').toLowerCase();
+          const scRoll = (sc.regNo || sc.studentId || '').toLowerCase();
+          if ((scName.includes(currentName) || currentName.includes(scName) || (scRoll && scRoll === currentRoll)) && sc.courseCode) {
+            enrolled.push(sc.courseCode.trim().toUpperCase());
+          }
+        });
+      }
+    } catch {}
+
+    // 4. Read from obslmsStudents
+    try {
+      const localStudents = localStorage.getItem('obslmsStudents');
+      if (localStudents) {
+        const sList = JSON.parse(localStudents);
+        const currentName = (this.userName || localStorage.getItem('userName') || '').toLowerCase();
+        const currentRoll = (this.userRoll || localStorage.getItem('userRoll') || '').toLowerCase();
+        const currentEmail = (localStorage.getItem('userEmail') || '').toLowerCase();
+        const match = sList.find((s: any) => 
+          (s.name && s.name.toLowerCase() === currentName) ||
+          (s.id && s.id.toLowerCase() === currentRoll) ||
+          (s.regNo && s.regNo.toLowerCase() === currentRoll) ||
+          (s.email && s.email.toLowerCase() === currentEmail)
+        );
+        if (match && match.enrolledCourses) {
+          const list = match.enrolledCourses.split(',').map((s: string) => s.trim().toUpperCase()).filter(Boolean);
+          enrolled.push(...list);
+        }
+      }
+    } catch {}
+
+    // Clean up duplicates
+    enrolled = Array.from(new Set(enrolled));
+
+    // Fallback default courses if empty (matches student branch / semester or default CSE)
+    if (enrolled.length === 0) {
+      const dept = (this.userDept || localStorage.getItem('userDept') || '').toLowerCase();
+      
+      if (dept.includes('it')) {
+        enrolled = ['IT201', 'IT202', 'IT203', 'IT204', 'IT201L'];
+      } else if (dept.includes('electronic') || dept.includes('ece')) {
+        enrolled = ['EC201', 'EC202', 'EC203', 'EC204', 'EC201L'];
+      } else if (dept.includes('mech') || dept.includes('me')) {
+        enrolled = ['ME201', 'ME202', 'ME203', 'ME204', 'ME202L'];
+      } else if (dept.includes('civil') || dept.includes('ce')) {
+        enrolled = ['CE201', 'CE202', 'CE203', 'CE204', 'CE201L'];
+      } else if (dept.includes('electrical') || dept.includes('eee')) {
+        enrolled = ['EE201', 'EE202', 'EE203', 'EE204', 'EE201L'];
+      } else {
+        enrolled = ['CS101', 'CS102', 'CS103', 'CS203', 'CS204', 'CS101L', 'CS102L'];
+      }
+      try {
+        localStorage.setItem('userEnrolledCourses', enrolled.join(','));
+      } catch {}
+    }
+
+    return enrolled;
+  }
+
   get filteredAssessments(): Assessment[] {
     let list = this.assessments;
     if (this.role === 'faculty') {
       const myCourses = this.getFacultyAssignedCourses();
       list = list.filter(a =>
         myCourses.some(mc => (a.course || '').toLowerCase().includes(mc.toLowerCase()) || mc.toLowerCase().includes((a.course || '').toLowerCase()))
+      );
+    }
+    if (this.role === 'student') {
+      const myEnrolled = this.getStudentEnrolledCourses();
+      list = list.filter(a =>
+        myEnrolled.some(code => 
+          (a.course || '').toLowerCase().includes(code.toLowerCase()) ||
+          code.toLowerCase().includes((a.course || '').toLowerCase())
+        )
       );
     }
     if (this.typeFilter) {
@@ -990,6 +1112,27 @@ export class Assessments implements OnInit, OnDestroy {
       local = local.filter(c => 
         myCourses.some(mc => mc.toLowerCase() === (c.code || '').toLowerCase() || mc.toLowerCase() === (c.title || '').toLowerCase() || (c.title && c.title.toLowerCase().includes(mc.toLowerCase())))
       );
+    } else if (this.role === 'student') {
+      const myEnrolled = this.getStudentEnrolledCourses();
+      local = local.filter(c => 
+        myEnrolled.some(ec => 
+          ec.toLowerCase() === (c.code || '').toLowerCase().trim() ||
+          ec.toLowerCase() === (c.title || '').toLowerCase().trim() ||
+          (c.title && c.title.toLowerCase().includes(ec.toLowerCase())) ||
+          (c.code && ec.toLowerCase().includes(c.code.toLowerCase()))
+        )
+      );
+      for (const code of myEnrolled) {
+        if (!local.some(c => (c.code || '').toUpperCase() === code.toUpperCase())) {
+          local.push({
+            id: Date.now() + Math.random(),
+            code: code,
+            title: `${code} Course`,
+            faculty: 'Assigned Faculty',
+            semester: localStorage.getItem('userSemester') || 'Semester 3'
+          });
+        }
+      }
     }
     this.coursesList = local;
     if (!this.currentAssessment.course && this.coursesList.length > 0) {
@@ -1006,6 +1149,27 @@ export class Assessments implements OnInit, OnDestroy {
             list = list.filter(c => 
               myCourses.some(mc => mc.toLowerCase() === (c.code || '').toLowerCase() || mc.toLowerCase() === (c.title || '').toLowerCase() || (c.title && c.title.toLowerCase().includes(mc.toLowerCase())))
             );
+          } else if (this.role === 'student') {
+            const myEnrolled = this.getStudentEnrolledCourses();
+            list = list.filter(c => 
+              myEnrolled.some(ec => 
+                ec.toLowerCase() === (c.code || '').toLowerCase().trim() ||
+                ec.toLowerCase() === (c.title || '').toLowerCase().trim() ||
+                (c.title && c.title.toLowerCase().includes(ec.toLowerCase())) ||
+                (c.code && ec.toLowerCase().includes(c.code.toLowerCase()))
+              )
+            );
+            for (const code of myEnrolled) {
+              if (!list.some(c => (c.code || '').toUpperCase() === code.toUpperCase())) {
+                list.push({
+                  id: Date.now() + Math.random(),
+                  code: code,
+                  title: `${code} Course`,
+                  faculty: 'Assigned Faculty',
+                  semester: localStorage.getItem('userSemester') || 'Semester 3'
+                });
+              }
+            }
           }
           this.coursesList = list;
           if (!this.currentAssessment.course && this.coursesList.length > 0) {
@@ -1023,6 +1187,21 @@ export class Assessments implements OnInit, OnDestroy {
       next: (users) => {
         if (Array.isArray(users) && users.length > 0) {
           this.studentsList = users.filter(u => u.role?.toUpperCase() === 'STUDENT');
+          if (this.role === 'student') {
+            const myName = (this.userName || '').toLowerCase();
+            const myRoll = (this.userRoll || '').toLowerCase();
+            const myEmail = (localStorage.getItem('userEmail') || '').toLowerCase();
+            const me = this.studentsList.find(s => 
+              (s.name && s.name.toLowerCase() === myName) ||
+              (s.id && s.id.toLowerCase() === myRoll) ||
+              (s.regNo && s.regNo.toLowerCase() === myRoll) ||
+              (s.email && s.email.toLowerCase() === myEmail)
+            );
+            if (me && me.enrolledCourses) {
+              localStorage.setItem('userEnrolledCourses', me.enrolledCourses);
+              this.loadCourses();
+            }
+          }
           if (!this.currentMark.student && this.studentsList.length > 0) {
             this.currentMark.student = this.studentsList[0].name;
           }
