@@ -331,7 +331,6 @@
 						<thead>
 							<tr>
 								<th>Student Name</th>
-								<th>Enrolled Subjects</th>
 								<th>Overall CO Attainment</th>
 								<th>Overall Attendance</th>
 								<th>Evaluations</th>
@@ -351,18 +350,6 @@
 											<strong style="color: #ffffff; font-size: 0.95rem;">{{ student.studentName }}</strong>
 											<div style="font-size: 0.75rem; color: #64748b;">ID: {{ student.studentId }}</div>
 										</div>
-									</div>
-								</td>
-								<td>
-									<div style="display: flex; flex-wrap: wrap; gap: 4px; max-width: 280px;">
-										<span *ngFor="let sub of student.subjects | slice:0:2" 
-											  class="course-pill-tag" 
-											  [title]="sub.courseName">
-											{{ sub.courseName }}
-										</span>
-										<span *ngIf="student.subjects.length > 2" class="more-courses-badge">
-											+{{ student.subjects.length - 2 }} more
-										</span>
 									</div>
 								</td>
 								<td>
@@ -397,7 +384,7 @@
 									<button type="button" 
 											class="drilldown-action-btn" 
 											(click)="$event.stopPropagation(); openStudentDossierModal(student)">
-										View All Subjects →
+										View Subjects →
 									</button>
 								</td>
 							</tr>
