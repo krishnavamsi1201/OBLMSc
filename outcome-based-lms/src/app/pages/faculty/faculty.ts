@@ -609,6 +609,7 @@ export class Faculty implements OnInit {
       }
 
       this.filteredGroupedStudentsList = studentList;
+      this.totalStudents = this.progressSemesterFilter ? studentList.length : this.groupedStudentsList.length;
       this.buildSemesterStudentGroups();
     } else {
       let courseList = [...this.courses];
@@ -798,28 +799,16 @@ export class Faculty implements OnInit {
   }
 
   loadEnrolledStudentsRoster(): void {
-    let list: any[] = [];
-    try {
-      const stored = localStorage.getItem('obslmsStudents');
-      if (stored) list = JSON.parse(stored);
-      if (!list.length) {
-        const users = JSON.parse(localStorage.getItem('obslmsUsersDatabase') || '[]');
-        list = users.filter((u: any) => u.role?.toUpperCase() === 'STUDENT');
-      }
-    } catch {}
-
-    const defaultCourse = this.courses[0]?.name || 'Database Management Systems';
-    this.allEnrolledStudentsRoster = list.map((s: any, idx: number) => {
-      const sDept = s.department || s.dept || 'Computer Science & Engineering';
-      const sSem = s.semester || `Semester ${((idx % 8) + 1)}`;
+    const list = this.groupedStudentsList.length > 0 ? this.groupedStudentsList : [];
+    this.allEnrolledStudentsRoster = list.map((s, idx) => {
       return {
-        id: s.id || s.regNo || `STU${idx + 1}`,
-        regNo: s.regNo || s.id || `CUTM2026CSE${String(idx + 1).padStart(3, '0')}`,
-        name: s.name,
-        email: s.email || `${(s.name || 'student').toLowerCase().replace(/\s+/g, '.')}@centurionuniv.edu.in`,
-        department: sDept,
-        semester: sSem,
-        enrolledCourses: s.enrolledCourses || s.courses || defaultCourse
+        id: s.studentId,
+        regNo: s.studentId,
+        name: s.studentName,
+        email: `${s.studentName.toLowerCase().replace(/\s+/g, '.')}@centurionuniv.edu.in`,
+        department: s.department || this.facultyDepartment,
+        semester: s.semester || 'Semester 1',
+        enrolledCourses: `${s.enrolledCoursesCount} Subjects (${s.subjects.map(sub => sub.courseCode || sub.courseName).join(', ')})`
       };
     });
   }
@@ -958,9 +947,7 @@ export class Faculty implements OnInit {
       : (data.syllabusUnits || []).filter((u: any) => matchedNames.has((u.courseName || '').toLowerCase()));
 
     this.totalCourses = this.courses.length;
-    const uniqueStudents = new Set<string>();
-    this.studentProgressList.forEach(sp => uniqueStudents.add(sp.studentName.toLowerCase()));
-    this.totalStudents = uniqueStudents.size;
+    this.totalStudents = this.progressSemesterFilter ? this.filteredGroupedStudentsList.length : this.groupedStudentsList.length;
 
     const validCOs = this.courseCOAttainments.filter(co => co.attainmentPercentage > 0);
     this.overallAttainment = validCOs.length > 0
