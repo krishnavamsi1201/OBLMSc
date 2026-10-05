@@ -1,10 +1,19 @@
 /* ==========================================================================
-   Oxford Academic Navy & Gold Executive Login
+   SIDDHI Academic Navy & Gold Executive Login
    ========================================================================== */
+
+:host {
+  display: block;
+  width: 100%;
+  height: 100%;
+  overflow-y: auto;
+  overflow-x: hidden;
+  background: #0a1128;
+}
 
 .login-scene {
   position: relative;
-  min-height: 100vh;
+  min-height: 100%;
   width: 100%;
   display: flex;
   flex-direction: column;
@@ -12,23 +21,67 @@
   justify-content: center;
   background: #0a1128;
   background-image: 
-    radial-gradient(at 50% 0%, rgba(30, 58, 138, 0.5) 0px, transparent 60%),
-    radial-gradient(at 100% 100%, rgba(15, 29, 64, 0.8) 0px, transparent 50%);
+    radial-gradient(at 50% 0%, rgba(30, 58, 138, 0.45) 0px, transparent 65%),
+    radial-gradient(at 100% 100%, rgba(15, 29, 64, 0.75) 0px, transparent 50%);
   font-family: 'Plus Jakarta Sans', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   color: #ffffff;
-  overflow-x: hidden;
-  padding: 30px 16px;
+  padding: 16px 12px;
   box-sizing: border-box;
+}
+
+/* Background ambient glows */
+.bg-glow {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(100px);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.glow-one {
+  width: 420px;
+  height: 420px;
+  background: rgba(30, 58, 138, 0.4);
+  top: -80px;
+  left: 25%;
+}
+
+.glow-two {
+  width: 350px;
+  height: 350px;
+  background: rgba(212, 175, 55, 0.12);
+  bottom: -60px;
+  right: 20%;
 }
 
 .login-shell {
   position: relative;
-  z-index: 1;
+  z-index: 2;
   width: 100%;
   max-width: 440px;
   display: flex;
   flex-direction: column;
   align-items: center;
+  margin: auto;
+}
+
+/* Material Icons styling */
+.material-icons {
+  font-family: 'Material Icons' !important;
+  font-style: normal;
+  font-weight: normal;
+  font-size: 20px;
+  line-height: 1;
+  letter-spacing: normal;
+  text-transform: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  white-space: nowrap;
+  word-wrap: normal;
+  direction: ltr;
+  -webkit-font-feature-settings: 'liga';
+  -webkit-font-smoothing: antialiased;
 }
 
 /* Main Centered Oxford Navy Card */
@@ -36,12 +89,12 @@
   background: #101b38;
   border: 1px solid #233560;
   box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.6), 0 0 1px 1px rgba(212, 175, 55, 0.15);
-  border-radius: 18px;
+  border-radius: 16px;
 }
 
 .login-panel {
   width: 100%;
-  padding: 36px 32px 28px;
+  padding: 20px 22px 16px;
   box-sizing: border-box;
   text-align: center;
 }
@@ -51,56 +104,47 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  margin-bottom: 20px;
+  margin-bottom: 12px;
 }
 
 .logo-icon-pill {
-  width: 50px;
-  height: 50px;
+  width: 42px;
+  height: 42px;
   background: linear-gradient(135deg, #d4af37 0%, #b8860b 100%);
-  border-radius: 12px;
+  border-radius: 11px;
   display: flex;
   align-items: center;
   justify-content: center;
   box-shadow: 0 4px 14px rgba(212, 175, 55, 0.35);
-  margin-bottom: 10px;
+  margin-bottom: 6px;
   border: 1px solid rgba(255, 255, 255, 0.3);
 }
 
 .brand-icon {
-  font-size: 26px;
+  font-size: 22px;
   color: #0a1128;
 }
 
 .logo-text {
-  font-size: 1.45rem;
+  font-size: 1.35rem;
   font-weight: 800;
-  letter-spacing: 0.06em;
+  letter-spacing: 0.08em;
   color: #ffffff;
   margin: 0;
 }
 
 .logo-tagline {
-  font-size: 0.76rem;
+  font-size: 0.72rem;
   color: #fde68a;
-  margin: 3px 0 0;
+  margin: 2px 0 0;
   font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-}
-
-.login-panel h1 {
-  font-size: 1.5rem;
-  font-weight: 700;
-  margin: 0 0 6px 0;
-  color: #f8fafc;
-  letter-spacing: -0.02em;
+  letter-spacing: 0.04em;
 }
 
 .subtitle {
-  font-size: 0.86rem;
+  font-size: 0.78rem;
   color: #94a3b8;
-  margin: 0 0 20px 0;
+  margin: 3px 0 0;
 }
 
 /* Role Selector Tabs */
@@ -111,8 +155,10 @@
   background: #091024;
   padding: 4px;
   border-radius: 10px;
-  margin-bottom: 20px;
+  margin-bottom: 12px;
   border: 1px solid #1f2f54;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .role-tab-btn {
@@ -120,7 +166,7 @@
   align-items: center;
   justify-content: center;
   gap: 6px;
-  padding: 8px 6px;
+  padding: 8px 4px;
   border: none;
   background: transparent;
   color: #94a3b8;
@@ -129,6 +175,7 @@
   border-radius: 7px;
   cursor: pointer;
   transition: all 0.15s ease;
+  white-space: nowrap;
 }
 
 .role-tab-btn .material-icons {
@@ -137,7 +184,7 @@
 
 .role-tab-btn:hover {
   color: #f8fafc;
-  background: rgba(255, 255, 255, 0.05);
+  background: rgba(255, 255, 255, 0.06);
 }
 
 .role-tab-btn.active {
@@ -151,7 +198,7 @@
 form {
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: 10px;
 }
 
 .field {
@@ -160,9 +207,9 @@ form {
   align-items: center;
   background: #091024;
   border: 1px solid #1f2f54;
-  border-radius: 10px;
-  padding: 0 14px;
-  height: 46px;
+  border-radius: 9px;
+  padding: 0 12px;
+  height: 42px;
   transition: all 0.2s ease;
   box-sizing: border-box;
 }
@@ -175,7 +222,7 @@ form {
 .field-icon {
   font-size: 18px;
   color: #64748b;
-  margin-right: 10px;
+  margin-right: 8px;
   flex-shrink: 0;
 }
 
@@ -186,7 +233,7 @@ form {
   border: none !important;
   outline: none !important;
   color: #ffffff !important;
-  font-size: 0.94rem;
+  font-size: 0.92rem;
   font-family: inherit;
   height: 100%;
   width: 100%;
@@ -208,17 +255,15 @@ form {
 
 .field input::placeholder {
   color: #64748b;
-  font-size: 0.88rem;
+  font-size: 0.85rem;
 }
 
-/* Chrome, Edge, Safari browser Autofill override to match navy UI */
+/* Browser Autofill override to match dark navy UI */
 .field input:-webkit-autofill,
 .field input:-webkit-autofill:hover, 
 .field input:-webkit-autofill:focus, 
 .field input:-webkit-autofill:active,
-.field input:-internal-autofill-selected,
-:host ::ng-deep input:-webkit-autofill,
-:host ::ng-deep input:-internal-autofill-selected {
+.field input:-internal-autofill-selected {
   -webkit-box-shadow: 0 0 0 1000px #091024 inset !important;
   box-shadow: 0 0 0 1000px #091024 inset !important;
   -webkit-text-fill-color: #ffffff !important;
@@ -226,15 +271,6 @@ form {
   caret-color: #ffffff !important;
   transition: background-color 500000s ease-in-out 0s, color 500000s ease-in-out 0s !important;
   border-radius: 6px;
-}
-
-/* Firefox Autofill override */
-.field input:-moz-autofill,
-.field input:-moz-autofill-preview,
-:host ::ng-deep input:-moz-autofill {
-  filter: none !important;
-  background-color: #091024 !important;
-  color: #ffffff !important;
 }
 
 .password-toggle {
@@ -249,6 +285,10 @@ form {
   transition: color 0.15s ease;
 }
 
+.password-toggle .material-icons {
+  font-size: 18px;
+}
+
 .password-toggle:hover {
   color: #d4af37;
 }
@@ -257,9 +297,9 @@ form {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  font-size: 0.82rem;
+  font-size: 0.8rem;
   color: #94a3b8;
-  margin: 2px 0;
+  margin: 1px 0;
 }
 
 .check-wrap {
@@ -292,17 +332,17 @@ form {
   align-items: center;
   justify-content: center;
   gap: 8px;
-  height: 46px;
+  height: 42px;
   background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
   color: #ffffff;
   border: none;
-  border-radius: 10px;
-  font-size: 0.95rem;
+  border-radius: 9px;
+  font-size: 0.94rem;
   font-weight: 700;
   cursor: pointer;
   box-shadow: 0 4px 14px rgba(37, 99, 235, 0.35);
   transition: all 0.2s ease;
-  margin-top: 4px;
+  margin-top: 3px;
 }
 
 .primary-button:hover:not(:disabled) {
@@ -321,18 +361,18 @@ form {
   font-weight: 700;
 }
 
-/* Quick One-Click Demo Box */
+/* Quick Demo Box */
 .quick-demo-box {
-  margin-top: 14px;
-  padding-top: 14px;
+  margin-top: 8px;
+  padding-top: 8px;
   border-top: 1px solid #1f2f54;
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 5px;
 }
 
 .demo-label {
-  font-size: 0.72rem;
+  font-size: 0.68rem;
   font-weight: 700;
   color: #fde68a;
   text-transform: uppercase;
@@ -347,12 +387,12 @@ form {
 
 .demo-btn {
   flex: 1;
-  padding: 7px 10px;
+  padding: 5px 6px;
   background: #132247;
   border: 1px solid #25396b;
   color: #cbd5e1;
-  border-radius: 7px;
-  font-size: 0.78rem;
+  border-radius: 6px;
+  font-size: 0.74rem;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.15s ease;
@@ -369,10 +409,10 @@ form {
 .stats-panel {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 8px;
+  gap: 6px;
   width: 100%;
-  padding: 12px 14px;
-  margin-top: 16px;
+  padding: 8px 10px;
+  margin-top: 10px;
   background: #101b38;
   border: 1px solid #233560;
   border-radius: 12px;
@@ -382,8 +422,8 @@ form {
 .stat-item {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 4px 6px;
+  gap: 6px;
+  padding: 2px 4px;
 }
 
 .stat-icon {
@@ -399,14 +439,14 @@ form {
 }
 
 .stat-label {
-  font-size: 0.65rem;
+  font-size: 0.62rem;
   color: #94a3b8;
   font-weight: 600;
   text-transform: uppercase;
 }
 
 .stat-value {
-  font-size: 0.98rem;
+  font-size: 0.92rem;
   font-weight: 700;
   color: #f8fafc;
   line-height: 1.1;
@@ -417,14 +457,57 @@ form {
   position: relative;
   z-index: 1;
   text-align: center;
-  margin-top: 20px;
+  margin-top: 14px;
   color: #64748b;
-  font-size: 0.76rem;
+  font-size: 0.74rem;
+}
+
+/* Compact scaling for smaller vertical screens */
+@media (max-height: 700px) {
+  .login-scene {
+    padding: 12px 12px;
+  }
+  .login-panel {
+    padding: 18px 20px 16px;
+  }
+  .logo-branding {
+    margin-bottom: 12px;
+  }
+  .logo-icon-pill {
+    width: 40px;
+    height: 40px;
+    margin-bottom: 6px;
+  }
+  .brand-icon {
+    font-size: 22px;
+  }
+  .logo-text {
+    font-size: 1.3rem;
+  }
+  .role-selector-tabs {
+    margin-bottom: 12px;
+  }
+  form {
+    gap: 10px;
+  }
+  .field {
+    height: 40px;
+  }
+  .primary-button {
+    height: 40px;
+  }
+  .stats-panel {
+    padding: 8px 10px;
+    margin-top: 8px;
+  }
+  .login-footer {
+    margin-top: 8px;
+  }
 }
 
 @media (max-width: 480px) {
   .login-panel {
-    padding: 28px 20px 22px;
+    padding: 22px 16px 18px;
   }
 
   .stats-panel {

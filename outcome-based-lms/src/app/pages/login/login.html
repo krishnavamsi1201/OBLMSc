@@ -9,12 +9,10 @@
         <div class="logo-icon-pill">
           <span class="material-icons brand-icon">school</span>
         </div>
-        <h2 class="logo-text">SIDDHI</h2>
-        <p class="logo-tagline">Outcome-Based Education System • Centurion University</p>
+        <h1 class="logo-text">SIDDHI</h1>
+        <p class="logo-tagline">Centurion University of Technology and Management</p>
+        <p class="subtitle">Outcome-Based Learning & Attainment System</p>
       </div>
-
-      <h1>Welcome to SIDDHI</h1>
-      <p class="subtitle">Outcome-Based Education System • Sign in to continue</p>
 
       <!-- Clean Role Switcher Tabs -->
       <div class="role-selector-tabs">
@@ -54,9 +52,6 @@
             required 
             [(ngModel)]="identifier" 
             autocomplete="off"
-            readonly
-            onfocus="this.removeAttribute('readonly');"
-            style="background: transparent !important; background-color: transparent !important; color: #ffffff !important; -webkit-text-fill-color: #ffffff !important; -webkit-box-shadow: 0 0 0 1000px #091024 inset !important; box-shadow: 0 0 0 1000px #091024 inset !important;"
           />
         </div>
 
@@ -70,9 +65,6 @@
             required 
             [(ngModel)]="password" 
             autocomplete="new-password"
-            readonly
-            onfocus="this.removeAttribute('readonly');"
-            style="background: transparent !important; background-color: transparent !important; color: #ffffff !important; -webkit-text-fill-color: #ffffff !important; -webkit-box-shadow: 0 0 0 1000px #091024 inset !important; box-shadow: 0 0 0 1000px #091024 inset !important;"
           />
           <button 
             type="button" 
@@ -80,7 +72,7 @@
             (click)="togglePasswordVisibility()"
             [title]="showPassword ? 'Hide password' : 'Show password'"
           >
-            <span class="material-icons" style="font-size: 18px;">{{ showPassword ? 'visibility_off' : 'visibility' }}</span>
+            <span class="material-icons">{{ showPassword ? 'visibility_off' : 'visibility' }}</span>
           </button>
         </div>
 
@@ -143,10 +135,10 @@
         </div>
       </div>
     </section>
-  </main>
 
-  <!-- Clean Footer -->
-  <footer class="login-footer">
-    <p>© 2026 SIDDHI v2.0 • Centurion University</p>
-  </footer>
+    <!-- Clean Footer -->
+    <footer class="login-footer">
+      <p>© 2026 SIDDHI v2.0 • Centurion University</p>
+    </footer>
+  </main>
 </div>
