@@ -2042,8 +2042,38 @@ export class Faculty implements OnInit {
   }
 
   // ==========================================
-  // 7. AT-RISK STUDENT MODAL
+  // 7. AT-RISK STUDENT MODAL & DIRECTORY
   // ==========================================
+  showAtRiskListModal = false;
+  atRiskSearch = '';
+  atRiskCourseFilter = '';
+
+  openAtRiskListModal(): void {
+    this.showAtRiskListModal = true;
+    this.cdr.detectChanges();
+  }
+
+  closeAtRiskListModal(): void {
+    this.showAtRiskListModal = false;
+  }
+
+  get filteredAtRiskStudentsList(): AtRiskStudent[] {
+    let list = this.atRiskStudents || [];
+    if (this.atRiskSearch.trim()) {
+      const q = this.atRiskSearch.toLowerCase().trim();
+      list = list.filter(s =>
+        s.studentName.toLowerCase().includes(q) ||
+        s.courseName.toLowerCase().includes(q) ||
+        s.riskReasons.some(r => r.toLowerCase().includes(q))
+      );
+    }
+    if (this.atRiskCourseFilter) {
+      const cf = this.atRiskCourseFilter.toLowerCase();
+      list = list.filter(s => s.courseName.toLowerCase().includes(cf));
+    }
+    return list;
+  }
+
   openAtRiskModal(student?: AtRiskStudent): void {
     if (student) {
       this.selectedAtRiskStudent = student;
@@ -2069,11 +2099,7 @@ export class Faculty implements OnInit {
   goToCOAttainment(): void { this.router.navigate(['/co-attainment']); }
   goToNotifications(): void { this.router.navigate(['/notifications']); }
   goToAtRisk(): void {
-    if (this.atRiskStudents && this.atRiskStudents.length > 0) {
-      this.openAtRiskModal(this.atRiskStudents[0]);
-    } else {
-      this.router.navigate(['/performance']);
-    }
+    this.openAtRiskListModal();
   }
 
   getSubmissionPercentage(assessment: Assessment): number {

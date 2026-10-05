@@ -584,8 +584,8 @@ export class FacultyDataService {
             coAttainment = maxMarksTotal > 0 ? Math.round((obtainedTotal / maxMarksTotal) * 100) : 75;
           } else {
             const hash = Math.abs((sNameLower + courseCode).split('').reduce((a, b) => ((a << 5) - a) + b.charCodeAt(0), 0));
-            // Realistic attainment distribution (70 - 95%, with occasional student at 54-58%)
-            const isLow = (hash % 13 === 0);
+            // Realistic attainment distribution (70 - 95%, with occasional student at 52-58%)
+            const isLow = (hash % 29 === 0);
             coAttainment = isLow ? (52 + (hash % 7)) : (74 + (hash % 20));
           }
 
@@ -605,7 +605,7 @@ export class FacultyDataService {
             attendancePct = Math.round((presentCount / studentCourseAtt.length) * 100);
           } else {
             const hash = Math.abs((sNameLower + courseCode + 'attn').split('').reduce((a, b) => ((a << 5) - a) + b.charCodeAt(0), 0));
-            const isLowAttn = (hash % 11 === 0);
+            const isLowAttn = (hash % 27 === 0);
             attendancePct = isLowAttn ? (64 + (hash % 9)) : (78 + (hash % 18));
           }
 
