@@ -608,8 +608,15 @@ export class CourseOutcomes {
     }
 
     if (this.role === 'student') {
+      try {
+        const cached = localStorage.getItem('userEnrolledCourses');
+        if (cached && cached.trim()) {
+          const list = cached.split(',').map((s: string) => s.trim().toUpperCase()).filter(Boolean);
+          if (list.length > 0) return list;
+        }
+      } catch {}
       if (dept.includes('computer') || dept.includes('cse')) {
-        assigned = ['CS101', 'CS102', 'CS103', 'CS201', 'CS202', 'CS301', 'CS302', 'CS401', 'CS402'];
+        assigned = ['CS101', 'CS102', 'CS103', 'CS203', 'CS204', 'CS101L', 'CS102L'];
       } else if (dept.includes('information') || dept.includes('it')) {
         assigned = ['IT113', 'IT201', 'IT211', 'IT301', 'IT305'];
       } else if (dept.includes('electronic') || dept.includes('ece')) {

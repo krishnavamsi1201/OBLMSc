@@ -368,7 +368,14 @@ export class CopoMapping implements OnInit {
     }
 
     if (this.role === 'student') {
-      return ['CS101', 'CS102', 'CS103', 'CS201', 'CS202', 'CS301', 'CS302', 'CS303', 'CS401', 'CS402'];
+      try {
+        const cached = localStorage.getItem('userEnrolledCourses');
+        if (cached && cached.trim()) {
+          const list = cached.split(',').map((s: string) => s.trim().toUpperCase()).filter(Boolean);
+          if (list.length > 0) return list;
+        }
+      } catch {}
+      return ['CS101', 'CS102', 'CS103', 'CS203', 'CS204', 'CS101L', 'CS102L'];
     }
 
     return [];
@@ -386,6 +393,15 @@ export class CopoMapping implements OnInit {
   }
 
   get filteredGroupedMappings() {
+    if (this.role === 'student') {
+      const allowed = this.studentAllowedCourses;
+      if (allowed.length > 0) {
+        return this.groupedMappings.filter(g => 
+          allowed.some(a => g.courseName.toUpperCase().includes(a.toUpperCase()) || a.toUpperCase().includes(g.courseName.toUpperCase()))
+        );
+      }
+    }
+
     if (this.selectedBranch === 'ALL') {
       return this.groupedMappings;
     }
@@ -404,6 +420,15 @@ export class CopoMapping implements OnInit {
   }
 
   get filteredCourseOutcomes() {
+    if (this.role === 'student') {
+      const allowed = this.studentAllowedCourses;
+      if (allowed.length > 0) {
+        return this.courseOutcomes.filter(co => 
+          allowed.some(a => (co.course || '').toUpperCase().includes(a.toUpperCase()) || a.toUpperCase().includes((co.course || '').toUpperCase()))
+        );
+      }
+    }
+
     if (this.selectedBranch === 'ALL') {
       return this.courseOutcomes;
     }
@@ -798,6 +823,13 @@ export class CopoMapping implements OnInit {
             list = data.filter(c => 
               assigned.includes(c.title) || 
               assigned.includes(c.code)
+            );
+          }
+        } else if (this.role === 'student') {
+          const allowed = this.studentAllowedCourses;
+          if (allowed.length > 0) {
+            list = data.filter(c => 
+              allowed.some(a => a.toLowerCase() === (c.code || '').toLowerCase() || a.toLowerCase() === (c.title || '').toLowerCase() || (c.title && c.title.toLowerCase().includes(a.toLowerCase())))
             );
           }
         }
